@@ -1,0 +1,52 @@
+name: Check
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  check:
+    name: Format, analyze, test, build
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+
+      # Pinned to the exact version, kept in lockstep with the maintainer's
+      # local `fvm` stable — a channel name here would let CI and local
+      # machines analyze with different SDKs and disagree about lints.
+      - uses: subosito/flutter-action@v2
+        with:
+          flutter-version: 3.47.2
+          cache: true
+
+      - run: flutter pub get
+
+      - run: dart format --output=none --set-exit-if-changed .
+
+      - run: flutter analyze
+
+      - run: flutter test
+        working-directory: packages/kun_ui
+
+      # The Widgetbook is the docs surface; a book that does not compile to
+      # web is a broken docs site, so building it is part of the gate.
+      - run: flutter build web --release
+        working-directory: apps/widgetbook
+
+  parity:
+    name: Contract parity
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+
+      # Diffs contracts/components.manifest.json against kungal/kun-ui checked
+      # out at the release tag matching the kun_ui_tokens version in
+      # pubspec.lock — the lockstep version IS the contract version. Drift
+      # (a claimed component whose upstream surface grew, or a manifest entry
+      # upstream removed) fails; unported components are information only.
+      - run: ./scripts/parity.sh

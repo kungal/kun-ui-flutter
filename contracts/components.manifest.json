@@ -1,0 +1,28 @@
+{
+  "package": "kun_ui",
+  "components": {
+    "KunButton": {
+      "widget": "KunButton",
+      "props": {
+        "ariaLabel": "semanticLabel",
+        "color": "color",
+        "disabled": "disabled",
+        "fullWidth": "fullWidth",
+        "icon": "icon",
+        "iconPosition": "iconPosition",
+        "isIconOnly": "isIconOnly",
+        "loading": "loading",
+        "rounded": "rounded",
+        "size": "size",
+        "variant": "variant"
+      },
+      "events": {
+        "click": "onPressed"
+      },
+      "slots": {
+        "default": "child",
+        "icon": "icon"
+      }
+    }
+  }
+}

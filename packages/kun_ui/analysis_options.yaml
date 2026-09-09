@@ -1,0 +1,14 @@
+include: ../../analysis_options.yaml
+
+# `exclude: build/**` was inserted by `flutter pub get`'s automatic
+# analysis_options migration; keep it or the tool re-adds it.
+analyzer:
+  exclude:
+    - build/**
+
+# Library-only obligation (the apps are exempt): a dartdoc on every public
+# member is this repo's equivalent of kun-ui's "every public prop gets JSDoc"
+# rule — it is the documentation surface, not a comment.
+linter:
+  rules:
+    public_member_api_docs: true

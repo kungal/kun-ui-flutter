@@ -1,0 +1,32 @@
+name: kun_ui
+version: 0.1.0
+description: >-
+  KunUI for Flutter: the hand-written widget layer of the KunUI design
+  system, built on the generated kun_ui_tokens and kun_ui_icons packages
+  and verified against the web library's component contracts.
+
+repository: https://github.com/kungal/kun-ui-flutter
+homepage: https://github.com/kungal/kun-ui-flutter
+issue_tracker: https://github.com/kungal/kun-ui-flutter/issues
+
+environment:
+  # The floor is the token family's floor (kun_ui_tokens needs Color.from,
+  # stable in Flutter 3.27 / Dart 3.6), so the three packages install together.
+  sdk: ^3.6.0
+  flutter: '>=3.27.0'
+
+resolution: workspace
+
+dependencies:
+  flutter:
+    sdk: flutter
+  # The pinned MINOR of kun_ui_tokens is the contract version: CI checks this
+  # repo's manifest against kungal/kun-ui checked out at the release tag
+  # matching the version pubspec.lock resolves. See CLAUDE.md and scripts/parity.sh.
+  kun_ui_icons: ^2.35.1
+  kun_ui_tokens: ^2.35.1
+
+dev_dependencies:
+  flutter_lints: ^6.0.0
+  flutter_test:
+    sdk: flutter

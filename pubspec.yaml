@@ -1,0 +1,11 @@
+# Pub workspace root (Dart 3.6+): one shared resolution and one pubspec.lock
+# for the library and the apps, mirroring kun-ui's pnpm-workspace layout.
+name: kun_ui_workspace
+publish_to: none
+
+environment:
+  sdk: ^3.13.0
+
+workspace:
+  - packages/kun_ui
+  - apps/widgetbook

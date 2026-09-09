@@ -1,0 +1,26 @@
+# Publishes packages/kun_ui to pub.dev via OIDC. The FIRST version cannot go
+# through this workflow — pub.dev requires the initial `dart pub publish` to
+# be run manually by a human before automated publishing can be enabled (and
+# the tag pattern `kun_ui-v{{version}}` must be configured in the package's
+# pub.dev Admin tab).
+#
+# The tag filter is a plain glob on purpose: kun-ui's release train proved
+# the documented `[0-9]+` quantifier syntax matches nothing. Version
+# correctness is enforced by pub.dev server-side ({{version}} in the tag must
+# equal pubspec.yaml). workflow_dispatch exists because a tag pushed with
+# GITHUB_TOKEN never starts workflows — a human re-pushing the tag, or a
+# dispatch, does.
+name: Publish to pub.dev
+
+on:
+  push:
+    tags: ['kun_ui-v*']
+  workflow_dispatch:
+
+jobs:
+  publish:
+    permissions:
+      id-token: write # OIDC token for pub.dev automated publishing
+    uses: dart-lang/setup-dart/.github/workflows/publish.yml@v1
+    with:
+      working-directory: packages/kun_ui
