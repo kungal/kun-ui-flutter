@@ -98,6 +98,41 @@ can never silently break. Prop reference tables need no separate generator:
 `public_member_api_docs` forces dartdoc on the whole API, and the contract
 manifest records the web mapping.
 
+### Text fields are `EditableText`, not Material's `TextField` (decided 2026-09-15)
+
+Iron rule 4 leaves no other option, and it is worth being explicit about the
+cost, because every form control to come inherits this choice. `KunInput` is
+built on `EditableText` from `flutter/widgets` and passes no
+`selectionControls`. Mouse selection, the keyboard, obscured text and the
+clipboard shortcuts all work; what is absent is the **touch selection UI** —
+the drag handles and the copy/paste toolbar — because every ready-made
+implementation of those (`materialTextSelectionControls`,
+`cupertinoTextSelectionControls`) drags in a foreign design language along
+with its localizations.
+
+Verified 2026-09: the ports that claim independence do not actually hold this
+line — shadcn_ui and forui both reach for Material's text field internals
+here. KunUI takes the honest version instead: no Material, and a gap that is
+named. When a real app needs touch selection, the answer is a KunUI-drawn
+toolbar and handles, which is the design-system-correct answer anyway — not a
+Material import.
+
+Observed 2026-09-15 on an Android 16 emulator (Pixel 9 profile, API 36,
+Impeller): long-pressing text in a `KunInput` produces no selection highlight,
+no drag handles and no copy/paste toolbar — the gap above, confirmed rather
+than reasoned. Everything else on the touch path works: tap focuses, the soft
+keyboard opens, the field scrolls above it, the caret renders, the clear button
+appears only with text, and typing through the IME commits correctly.
+
+One finding worth carrying into that future work: Gboard's Simplified Chinese
+keyboard ships with **"Inline composing" off by default**, so pinyin never
+reaches the field as a composing region — it stays in Gboard's own candidate
+bar and only committed characters arrive. The composing underline
+`EditableText` draws is therefore invisible to a default-configured Gboard
+user, but not to the third-party IMEs (Sogou, Baidu) that do compose inline.
+That path is still unverified: the emulator's IME stopped presenting after its
+language config changed, so the real pinyin test belongs on hardware.
+
 ### Deferred, deliberately
 
 - **Input modality and breakpoint theme dimensions** (forui models
@@ -109,6 +144,9 @@ manifest records the web mapping.
   real app needs one; premature now.
 - **Ripple**: the web button's ripple is not contract surface; press
   feedback is the web's `active:scale-[0.97]`. Revisit if an app asks.
+- **Touch text-selection handles and toolbar**: see the `EditableText`
+  decision above. The trigger is the first app that edits text on a
+  touchscreen.
 - **Golden tests**: behaviour is widget-tested; visuals are verified by eye
   in Widgetbook. Goldens enter when the first visual regression actually
   bites (they are platform-brittle and each one is a maintenance contract).
