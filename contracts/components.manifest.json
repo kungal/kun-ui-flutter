@@ -23,6 +23,84 @@
         "default": "child",
         "icon": "icon"
       }
+    },
+    "KunCard": {
+      "widget": "KunCard",
+      "props": {
+        "bordered": "bordered",
+        "clickable": "clickable",
+        "color": "color",
+        "darkBorder": {
+          "omit": "Declared in Card.vue's props but never read by its template — a legacy toggle with no behaviour to port."
+        },
+        "isHoverable": "isHoverable",
+        "isTransparent": "isTransparent",
+        "padding": "padding",
+        "rounded": "rounded"
+      },
+      "events": {
+        "click": "onTap"
+      },
+      "slots": {
+        "cover": "cover",
+        "default": "child",
+        "footer": "footer",
+        "header": "header"
+      }
+    },
+    "KunChip": {
+      "widget": "KunChip",
+      "props": {
+        "closable": "closable",
+        "color": "color",
+        "disabled": "disabled",
+        "size": "size",
+        "variant": "variant"
+      },
+      "events": {
+        "close": "onClose"
+      },
+      "slots": {
+        "default": "child",
+        "end": "end",
+        "start": "start"
+      }
+    },
+    "KunInput": {
+      "widget": "KunInput",
+      "props": {
+        "autofocus": "autofocus",
+        "color": "color",
+        "darkBorder": {
+          "omit": "Declared in Input.vue's props but never read by its template — a legacy toggle with no behaviour to port."
+        },
+        "description": "description",
+        "disabled": "disabled",
+        "error": "error",
+        "helperText": {
+          "omit": "The web's own deprecated alias of `description`; a new API is not born with it."
+        },
+        "isClearable": "isClearable",
+        "isInvalid": "isInvalid",
+        "label": "label",
+        "modelValue": "value",
+        "placeholder": "placeholder",
+        "required": "required",
+        "revealPassword": "revealPassword",
+        "rounded": "rounded",
+        "size": "size",
+        "type": "type"
+      },
+      "events": {
+        "blur": "onBlur",
+        "clear": "onClear",
+        "focus": "onFocus",
+        "update:modelValue": "onChanged"
+      },
+      "slots": {
+        "prefix": "prefix",
+        "suffix": "suffix"
+      }
     }
   }
 }

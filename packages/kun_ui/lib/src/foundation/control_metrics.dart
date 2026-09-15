@@ -91,3 +91,72 @@ class KunControlMetrics {
           ),
       };
 }
+
+/// The size of a chip — a label, not a control, so it has its own scale.
+///
+/// Translated value-for-value from `kunChipSizeClasses`, the table sitting
+/// beside `kunControlSizeClasses` in `@kungal/ui-core` (packages/ui-core/src/
+/// controlSize.ts in kungal/kun-ui). A chip is deliberately tighter than a
+/// control of the same [KunUISize]: chips sit inside rows of text, controls
+/// sit in forms.
+///
+/// Heights (line height + 2·padding + 2·1px border): xs 22 · sm 26 · md 30 ·
+/// lg 34 · xl 42.
+class KunChipMetrics {
+  const KunChipMetrics._({
+    required this.fontSize,
+    required this.lineHeight,
+    required this.horizontalPadding,
+    required this.verticalPadding,
+  });
+
+  /// Label font size in logical pixels.
+  final double fontSize;
+
+  /// Label line height in logical pixels.
+  final double lineHeight;
+
+  /// Horizontal content padding.
+  final double horizontalPadding;
+
+  /// Vertical content padding.
+  final double verticalPadding;
+
+  /// The label [TextStyle] (size and line height only).
+  TextStyle get textStyle =>
+      TextStyle(fontSize: fontSize, height: lineHeight / fontSize);
+
+  /// The metrics for [size].
+  static KunChipMetrics of(KunUISize size) => switch (size) {
+        KunUISize.xs => const KunChipMetrics._(
+            fontSize: 12,
+            lineHeight: 16,
+            horizontalPadding: 8,
+            verticalPadding: 2,
+          ),
+        KunUISize.sm => const KunChipMetrics._(
+            fontSize: 12,
+            lineHeight: 16,
+            horizontalPadding: 8,
+            verticalPadding: 4,
+          ),
+        KunUISize.md => const KunChipMetrics._(
+            fontSize: 14,
+            lineHeight: 20,
+            horizontalPadding: 12,
+            verticalPadding: 4,
+          ),
+        KunUISize.lg => const KunChipMetrics._(
+            fontSize: 14,
+            lineHeight: 20,
+            horizontalPadding: 16,
+            verticalPadding: 6,
+          ),
+        KunUISize.xl => const KunChipMetrics._(
+            fontSize: 16,
+            lineHeight: 24,
+            horizontalPadding: 24,
+            verticalPadding: 8,
+          ),
+      };
+}
