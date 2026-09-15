@@ -30,11 +30,14 @@
    and shadcn_ui made the same call: an independent design language is not a
    Material skin). The Widgetbook app may use Material chrome; the library
    may not.
-5. **A push of a `kun_ui-v*` tag publishes to pub.dev.** Never tag, push, or
-   publish on your own initiative — only when the user asks. The FIRST
-   publish of the package must be run manually by the user (`dart pub
-   publish`); only after that can the tag-triggered OIDC workflow publish.
-   Never hand-edit a version to "fix" a release.
+5. **A push of a `kun_ui-v*` tag publishes to pub.dev.** Pushing `main` is
+   routine and needs no permission — the repo is public, CI costs nothing,
+   and a branch push is reversible. A *tag* is not: it publishes an immutable
+   version to pub.dev, so never tag, retag or publish on your own initiative
+   — only when the user asks. The FIRST publish of the package must be run
+   manually by the user (`dart pub publish`); only after that can the
+   tag-triggered OIDC workflow publish. Never hand-edit a version to "fix" a
+   release.
 6. **A new dependency needs a capability argument, never a convenience one**
    — inherited from kun-ui verbatim. The library depends on exactly the
    generated family — `kun_ui_tokens` + `kun_ui_icons` + `kun_ui_messages`,
