@@ -89,15 +89,102 @@ geometry (24-unit viewBox, 3-unit ring at 25% opacity, 90° arc, 750ms/turn
 linear). It is not the contract's `KunLoading` (a loading *overlay* with
 description/image surface) — that ports separately when an app needs it.
 
-### Widgetbook is both the playground and the docs site
+### The gallery is written here, not taken from Widgetbook (decided 2026-09-15)
 
-One app, two jobs: `flutter run -d chrome` during development,
-`flutter build web` as the deployable gallery — the role split kun-ui solves
-with two apps (`apps/docs` + `apps/playground`) collapses here because
-Widgetbook's knobs *are* the playground. CI builds it so the docs surface
-can never silently break. Prop reference tables need no separate generator:
-`public_member_api_docs` forces dartdoc on the whole API, and the contract
-manifest records the web mapping.
+`apps/widgetbook` was built on the `widgetbook` package. It is being
+replaced by a gallery written in this repo. Two reasons, in the order they
+weigh:
+
+- **It is a commercial product with the OSS package as its funnel.**
+  widgetbook.io sells Widgetbook Cloud, and the free package advertises it:
+  the welcome screen carries two promotional cards ("Deploy your Widgetbook
+  with our managed-hosting solution", "Detect visual changes in your PRs with
+  Widgetbook Cloud") and the sidebar footer a permanent "Golden test with
+  Widgetbook Cloud" link. Capability follows the same line — grepping the
+  3.25.0 package for `golden|toImage|snapshot` returns nothing, because
+  visual regression is the paid tier. A dependency whose feature boundary is
+  drawn by someone's pricing page is not one this repo's docs surface should
+  sit on.
+- **It answers a larger question than the one we have.** Of its 8,919 lines,
+  6,049 — fields, knobs, addons — exist to adjust a widget's props from a
+  panel at runtime. What a gallery owes a reader is narrower: show what the
+  component looks like, and let them click it. shadcn_ui's `playground/` and
+  forui's `docs_snippets/` both stop exactly there, and both are ~450 and
+  ~780 lines of machinery respectively. Neither has knobs.
+
+What made this decision cheap, and would make the reverse decision cheap
+too: `packages/kun_ui` contains zero references to `widgetbook`. The entire
+coupling is one file — `apps/widgetbook/lib/main.dart`, 574 lines, ten use
+cases — plus two lines of pubspec. The library, the contracts, the parity
+job and the tests are untouched by this.
+
+**The floor the replacement must hit**, and its ceiling:
+
+- One URL per use case, addressable and shareable.
+- No chrome around the widget by default. The gallery page *is* what an
+  `<iframe>` would show, which is the interface shadcn_ui and forui hand-wrote
+  their demo apps to expose (and which Widgetbook spelled `?preview`).
+- Theme and language switch from the URL — `KunTheme` and
+  `KunMessagesScope` are both plain `InheritedWidget`s, so this is a wrapper,
+  not a system.
+- Real widgets, really interactive. A button presses, an input takes text.
+- An index listing the components, because there is no JS documentation site
+  in this repo to provide navigation. kun-ui's `apps/docs` serves the web
+  library; a `/flutter` subpath there, iframing this, is the eventual shape.
+
+**Deliberately not rebuilt** — this list exists so the gallery does not grow
+back into Widgetbook one convenience at a time: a knob/field system, runtime
+prop panels, search, device frames, zoom, grid overlays, time dilation, the
+inspector, and visual-regression tooling.
+
+The one real cost: four of the ten current use cases are "Playground" cases
+driven by 33 knob calls, and they cannot survive as written. They become
+enumerated demos — which for a documentation surface is the better artifact
+anyway. A knob that toggles `disabled` shows one state at a time and only to
+someone holding the mouse; a matrix shows both states at once, in a
+screenshot, to a reader. Knobs serve exploration during development, which is
+the smaller need, and the one a `flutter run` and an edit already serve.
+
+The gallery is generated from `contracts/components.manifest.json` rather
+than hand-written — see the next decision. That is what makes the
+replacement an improvement rather than merely a smaller dependency: no
+generic tool can know this repo's contract, and the current gallery hand-
+copies axes (variant, color, size) the contract already carries.
+
+### The gallery's demos are generated from the contract (decided 2026-09-15)
+
+`contracts/components.manifest.json` already names, per claimed component,
+every contract prop and how this port answers it. The gallery hand-copies a
+subset of that: twenty-one `for (final … in …values)` sites spelling out
+variant × color × size axes the contract carries. A hand-copy is a drift
+surface — the thing this repo's whole design exists to close — and it is the
+same discipline forui applies to its docs, where the code a reader sees is
+extracted from compiling Dart rather than typed into a Markdown fence.
+
+So the demos are emitted from the manifest. Three things follow that no
+third-party gallery could do, because none of them can know this contract:
+
+- **The axes cannot drift.** A variant added upstream appears in every
+  matrix on the next generate, rather than waiting for someone to notice.
+- **Coverage becomes visible.** Each component's page can state what the
+  contract lists, what this port answers, and what it omits with the reason
+  already recorded in the manifest — information that today exists only in
+  `parity.sh`'s terminal output.
+- **A demo-parity gate.** `parity.sh` proves a claimed prop is *implemented*;
+  nothing proves it is *shown*. Generation makes the second check
+  mechanical, and iron rule 3's floor extends to the docs surface.
+
+The boundary, so the generator is not asked to be clever: it emits the
+mechanical axes — enum crosses and boolean states, which are exhaustive by
+construction. A demo that requires judgment stays hand-written and is
+declared as such: `KunCard`'s slot composition, `KunInput`'s error and
+helper interplay, anything whose point is a realistic arrangement rather
+than a complete enumeration. The generator's job is to remove transcription,
+not to invent taste.
+
+This also cuts the cost of the decision above. Once demos are generated,
+what a future gallery rewrite has to port is the generator's output target,
+not several hundred lines of hand-written cases.
 
 ### Text fields are `EditableText`, not Material's `TextField` (decided 2026-09-15)
 
@@ -181,8 +268,10 @@ is almost always upstream.
   decision above. The trigger is the first app that edits text on a
   touchscreen.
 - **Golden tests**: behaviour is widget-tested; visuals are verified by eye
-  in Widgetbook. Goldens enter when the first visual regression actually
+  in the gallery. Goldens enter when the first visual regression actually
   bites (they are platform-brittle and each one is a maintenance contract).
+  Note that leaving Widgetbook costs nothing here: its OSS package never
+  carried golden tooling, only a link to the paid tier that does.
 
 ## Risk register
 

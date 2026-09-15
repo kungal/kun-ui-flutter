@@ -28,7 +28,7 @@
    only ancestor a KunUI widget may require — never `Theme.of(context)`, no
    `MaterialApp` assumption, no Material widgets inside library code (forui
    and shadcn_ui made the same call: an independent design language is not a
-   Material skin). The Widgetbook app may use Material chrome; the library
+   Material skin). The gallery app may use Material chrome; the library
    may not.
 5. **A push of a `kun_ui-v*` tag publishes to pub.dev.** Pushing `main` is
    routine and needs no permission — the repo is public, CI costs nothing,
@@ -70,7 +70,13 @@ Pub workspace (Dart 3.6+), one lockfile at the root:
 - `apps/widgetbook` — plays the role `apps/docs` plays in kun-ui: the
   component gallery during development (`flutter run -d chrome`) and the
   deployable docs site (`flutter build web`). Every widget gets a use case;
-  a book that does not compile is a broken docs site, so CI builds it.
+  a gallery that does not compile is a broken docs site, so CI builds it.
+  **Being replaced.** The `widgetbook` package was ruled out on 2026-09-15 —
+  it is the funnel for a paid product and answers a much larger question than
+  a gallery needs — in favour of one written here and generated from the
+  contract manifest. Read both decisions in `docs/architecture.md` before
+  touching this app; in particular the list of things the replacement
+  deliberately does not rebuild, knobs first among them.
 - `contracts/components.manifest.json` — what this port claims, in the format
   documented in kun-ui `contracts/README.md`.
 
@@ -99,7 +105,7 @@ flutter build web --release        # in apps/widgetbook — the docs build
 
 ## The CI gate (`check.yml`)
 
-Two jobs. **check**: format → analyze → test → Widgetbook web build.
+Two jobs. **check**: format → analyze → test → gallery web build.
 **parity**: reads the resolved `kun_ui_tokens` version from pubspec.lock,
 clones kungal/kun-ui at `kun_ui_tokens-v<version>`, runs its
 `scripts/flutter-parity.mjs` against our manifest. Traps already hit:
@@ -130,8 +136,10 @@ when a real app needs it, and one consumer is not a component. Then:
    to its Dart name or `{"omit": "reason"}`. Run `./scripts/parity.sh`.
 5. Widget tests for behaviour (this repo HAS a test runner — use it: sizes,
    press/disabled/loading semantics, theme resolution). Golden tests are
-   deliberately not used yet; the eye-verification surface is Widgetbook.
-6. A use case in `apps/widgetbook` with knobs for the main props.
+   deliberately not used yet; the eye-verification surface is the gallery.
+6. A demo in the gallery. Mechanical axes — enum crosses, boolean states —
+   are generated from the manifest, not typed out; hand-write only a demo
+   that needs judgment, and say which it is.
 7. A `CHANGELOG.md` entry under the next version heading. English.
 
 ## Conventions
@@ -158,7 +166,7 @@ when a real app needs it, and one consumer is not a component. Then:
 ## Verifying work
 
 `flutter test` is the first line (unlike kun-ui, which has no test runner).
-For anything visual, run the Widgetbook (`flutter run -d chrome` in
+For anything visual, run the gallery (`flutter run -d chrome` in
 `apps/widgetbook`) and look — state what was measured or seen, never report
 reasoned-about behaviour as observed. The web reference for any component is
 the kun-ui docs site or its playground; when in doubt about a value, read the
