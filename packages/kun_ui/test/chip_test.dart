@@ -107,26 +107,29 @@ void main() {
     expect(label, lessThan(end));
   });
 
-  testWidgets('the close button carries an overridable accessible name',
+  testWidgets("the close button's accessible name comes from the catalog",
       (tester) async {
     final semantics = tester.ensureSemantics();
 
     await tester.pumpWidget(
       wrap(KunChip(closable: true, onClose: () {}, child: const Text('tag'))),
     );
-    expect(find.bySemanticsLabel('移除'), findsOneWidget);
+    expect(find.bySemanticsLabel(KunMessages.zhCN.chip.remove), findsOneWidget);
 
     await tester.pumpWidget(
       wrap(
-        KunChip(
-          closable: true,
-          onClose: () {},
-          closeSemanticLabel: 'Remove',
-          child: const Text('tag'),
+        KunMessagesScope(
+          messages: KunMessages.en,
+          child: KunChip(
+            closable: true,
+            onClose: () {},
+            child: const Text('tag'),
+          ),
         ),
       ),
     );
-    expect(find.bySemanticsLabel('Remove'), findsOneWidget);
+    expect(find.bySemanticsLabel(KunMessages.en.chip.remove), findsOneWidget);
+    expect(find.bySemanticsLabel(KunMessages.zhCN.chip.remove), findsNothing);
 
     semantics.dispose();
   });

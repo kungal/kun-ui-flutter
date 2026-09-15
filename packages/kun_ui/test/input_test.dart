@@ -165,25 +165,28 @@ void main() {
     );
   });
 
-  testWidgets('the clear button carries an overridable accessible name',
+  testWidgets("the clear button's accessible name comes from the catalog",
       (tester) async {
     final semantics = tester.ensureSemantics();
 
     await tester.pumpWidget(
       wrap(const KunInput(value: 'text', isClearable: true)),
     );
-    expect(find.bySemanticsLabel('清除'), findsOneWidget);
+    expect(
+      find.bySemanticsLabel(KunMessages.zhCN.input.clear),
+      findsOneWidget,
+    );
 
     await tester.pumpWidget(
       wrap(
-        const KunInput(
-          value: 'text',
-          isClearable: true,
-          clearSemanticLabel: 'Clear',
+        const KunMessagesScope(
+          messages: KunMessages.en,
+          child: KunInput(value: 'text', isClearable: true),
         ),
       ),
     );
-    expect(find.bySemanticsLabel('Clear'), findsOneWidget);
+    expect(find.bySemanticsLabel(KunMessages.en.input.clear), findsOneWidget);
+    expect(find.bySemanticsLabel(KunMessages.zhCN.input.clear), findsNothing);
 
     semantics.dispose();
   });
@@ -200,11 +203,14 @@ void main() {
         ),
       ),
     );
-    expect(find.bySemanticsLabel('显示密码'), findsOneWidget);
+    expect(
+      find.bySemanticsLabel(KunMessages.zhCN.input.reveal),
+      findsOneWidget,
+    );
 
-    await tester.tap(find.bySemanticsLabel('显示密码'));
+    await tester.tap(find.bySemanticsLabel(KunMessages.zhCN.input.reveal));
     await tester.pump();
-    expect(find.bySemanticsLabel('隐藏密码'), findsOneWidget);
+    expect(find.bySemanticsLabel(KunMessages.zhCN.input.hide), findsOneWidget);
 
     semantics.dispose();
   });

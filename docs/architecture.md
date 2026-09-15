@@ -11,6 +11,7 @@ decisions made *here*, and why.
 kungal/kun-ui (upstream, generates)          this repo (hand-written)
 ├── gen-tokens.mjs ─────► kun_ui_tokens ───► KunTheme / widgets paint with it
 ├── gen-icons-flutter ──► kun_ui_icons ────► re-exported, used by apps
+├── gen-messages-flutter► kun_ui_messages ─► KunMessagesScope resolves from it
 ├── motion-physics.mjs ─► KunShatterPhysics► future KunShatter port
 └── gen-flutter-contracts
       └── contracts/component-contracts.json ─► CI parity vs our manifest
@@ -132,6 +133,38 @@ bar and only committed characters arrive. The composing underline
 user, but not to the third-party IMEs (Sogou, Baidu) that do compose inline.
 That path is still unverified: the emulator's IME stopped presenting after its
 language config changed, so the real pinyin test belongs on hardware.
+
+### KunUI's own strings are a scope, not a theme field (decided 2026-09-15)
+
+A few strings belong to the library rather than to the app: the accessible
+name of a chip's close button, of an input's clear and reveal buttons. The web
+resolves them from a message catalog on `KunUIConfig`; since 2.37.0 the same
+catalogs also generate a Dart package, `kun_ui_messages`, so this port reads
+them instead of mirroring them.
+
+`KunMessagesScope` is a plain `InheritedWidget` holding a `KunMessages`, and
+`KunMessagesScope.of` falls back to `KunMessages.zhCN` when there is none.
+Two constraints decided that shape:
+
+- **Not a field on `KunThemeData`.** The web keeps its locale on
+  `KunUIConfig`, deliberately apart from the theme, and the separation is
+  right here too: an app that switches language does not switch colors, and a
+  theme carrying strings would repaint every surface to change one label.
+- **Never a required ancestor.** Iron rule 4 permits exactly one and
+  `KunTheme` already spends it. A missing theme is an integration mistake
+  worth throwing on — the colors would be wrong. A missing language is not:
+  zh-CN is KunUI's built-in default on both platforms, so the fallback is a
+  correct answer rather than a silent failure.
+
+How this port got here is worth recording, because the starting point was an
+iron-rule-2 violation. Before the catalogs existed the four strings lived as
+hand-mirrored Chinese literals behind props the web contract does not
+have — `KunChip.closeSemanticLabel` and three more on `KunInput`. Parity
+cannot catch surface invented locally: it checks that the contract's surface
+is covered, not that nothing extra was added. The props are gone in the same
+change that made them unnecessary, and they never reached a release. The
+general form: when a port wants a knob the contract lacks, the missing piece
+is almost always upstream.
 
 ### Deferred, deliberately
 

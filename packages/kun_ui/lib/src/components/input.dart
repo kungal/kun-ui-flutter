@@ -4,6 +4,7 @@ import 'package:kun_ui_tokens/kun_ui_tokens.dart';
 
 import '../foundation/control_metrics.dart';
 import '../foundation/design.dart';
+import '../locale/messages.dart';
 import '../theme/theme.dart';
 
 /// What a [KunInput] accepts — the web's `type` attribute, as the closed set
@@ -82,9 +83,6 @@ class KunInput extends StatefulWidget {
     this.isClearable = false,
     this.revealPassword = false,
     this.autofocus = false,
-    this.clearSemanticLabel = '清除',
-    this.revealSemanticLabel = '显示密码',
-    this.hideSemanticLabel = '隐藏密码',
   });
 
   /// The current text (web `modelValue`).
@@ -152,26 +150,6 @@ class KunInput extends StatefulWidget {
   /// Takes focus on mount.
   final bool autofocus;
 
-  /// Accessible name of the clear button.
-  ///
-  /// Transitional, and removed once `kun_ui_messages` exists — the same
-  /// stopgap as KunChip.closeSemanticLabel, for the same reason. The web has
-  /// no such prop: `Input.vue` renders `t('input.clear')` from the locale on
-  /// `KunUIConfig`.
-  final String clearSemanticLabel;
-
-  /// Accessible name of the reveal toggle while the password is hidden.
-  ///
-  /// Transitional, and removed once `kun_ui_messages` exists. The web renders
-  /// `t('input.reveal')`.
-  final String revealSemanticLabel;
-
-  /// Accessible name of the reveal toggle while the password is shown.
-  ///
-  /// Transitional, and removed once `kun_ui_messages` exists. The web renders
-  /// `t('input.hide')`.
-  final String hideSemanticLabel;
-
   @override
   State<KunInput> createState() => _KunInputState();
 }
@@ -235,6 +213,7 @@ class _KunInputState extends State<KunInput> {
     final radius = BorderRadius.circular(
       (widget.rounded ?? theme.rounded).radius,
     );
+    final messages = KunMessagesScope.of(context);
     final danger = KunUIColor.danger.scaleOf(scheme);
     final ringColor = (_invalid ? danger : widget.color.scaleOf(scheme)).solid;
 
@@ -243,7 +222,7 @@ class _KunInputState extends State<KunInput> {
       if (_showClear)
         _KunInputIconButton(
           icon: KunIcons.circleX,
-          semanticLabel: widget.clearSemanticLabel,
+          semanticLabel: messages.input.clear,
           scheme: scheme,
           onPressed: _clear,
         ),
@@ -251,7 +230,7 @@ class _KunInputState extends State<KunInput> {
         _KunInputIconButton(
           icon: _revealed ? KunIcons.eyeOff : KunIcons.eye,
           semanticLabel:
-              _revealed ? widget.hideSemanticLabel : widget.revealSemanticLabel,
+              _revealed ? messages.input.hide : messages.input.reveal,
           scheme: scheme,
           onPressed: () => setState(() => _revealed = !_revealed),
         ),

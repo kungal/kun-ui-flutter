@@ -14,8 +14,9 @@ dependencies:
       ref: main # or pin a commit for reproducible builds — recommended
 ```
 
-`kun_ui_tokens` and `kun_ui_icons` come with it from pub.dev and are
-re-exported, so `import 'package:kun_ui/kun_ui.dart';` is the only import.
+`kun_ui_tokens`, `kun_ui_icons` and `kun_ui_messages` come with it from
+pub.dev and are re-exported, so `import 'package:kun_ui/kun_ui.dart';` is the
+only import.
 
 After the first pub.dev release this becomes `kun_ui: ^<version>` — watch
 the repo's releases.

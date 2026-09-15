@@ -26,6 +26,7 @@ class WidgetbookApp extends StatelessWidget {
             ),
           ),
         ),
+        _KunMessagesAddon(),
       ],
       directories: [
         WidgetbookFolder(
@@ -466,6 +467,35 @@ Widget _spinnerRow() {
       KunSpinner(size: 48),
     ],
   );
+}
+
+/// Switches the whole gallery between KunUI's message catalogs, the way the
+/// Theme addon switches its color schemes: the strings a widget renders for
+/// itself are ambient configuration, not a prop.
+class _KunMessagesAddon extends WidgetbookAddon<KunMessages> {
+  _KunMessagesAddon() : super(name: 'Language');
+
+  @override
+  List<Field<dynamic>> get fields => [
+        ObjectDropdownField<KunMessages>(
+          name: 'catalog',
+          values: KunMessages.byCode.values.toList(),
+          initialValue: KunMessages.zhCN,
+          labelBuilder: (messages) => messages.name,
+        ),
+      ];
+
+  @override
+  KunMessages valueFromQueryGroup(Map<String, String> group) =>
+      valueOf('catalog', group)!;
+
+  @override
+  Widget buildUseCase(
+    BuildContext context,
+    Widget child,
+    KunMessages setting,
+  ) =>
+      KunMessagesScope(messages: setting, child: child);
 }
 
 Widget _colorGrid() {

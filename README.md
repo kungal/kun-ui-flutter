@@ -6,10 +6,12 @@ Flutter app in the NextMoe/KunGal ecosystem the way `@kungal/ui-vue` is
 shared by every website.
 
 One design language, two render layers, one source of truth: every color,
-radius, shadow, easing, duration and icon here comes from the generated
-[`kun_ui_tokens`](https://pub.dev/packages/kun_ui_tokens) and
-[`kun_ui_icons`](https://pub.dev/packages/kun_ui_icons) packages, emitted in
-kungal/kun-ui from the same generator as the web stylesheet. The widgets are
+radius, shadow, easing, duration and icon here — and every string KunUI
+renders for itself — comes from the generated
+[`kun_ui_tokens`](https://pub.dev/packages/kun_ui_tokens),
+[`kun_ui_icons`](https://pub.dev/packages/kun_ui_icons) and
+[`kun_ui_messages`](https://pub.dev/packages/kun_ui_messages) packages,
+emitted in kungal/kun-ui from the same generators as the web bundle. The widgets are
 hand-written (component code cannot be generated across frameworks — see
 kun-ui's `docs/architecture-flutter.md` for the constraint analysis), but
 their API is verified in CI against the web library's machine-readable

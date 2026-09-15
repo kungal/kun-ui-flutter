@@ -5,6 +5,7 @@ import 'package:kun_ui_tokens/kun_ui_tokens.dart';
 import '../foundation/control_metrics.dart';
 import '../foundation/design.dart';
 import '../foundation/variant_style.dart';
+import '../locale/messages.dart';
 import '../theme/theme.dart';
 
 /// A small pill — labels, status markers, taxonomy tags.
@@ -28,7 +29,6 @@ class KunChip extends StatelessWidget {
     this.size = KunUISize.sm,
     this.closable = false,
     this.disabled = false,
-    this.closeSemanticLabel = '移除',
   });
 
   /// The label (web slot `default`).
@@ -60,17 +60,6 @@ class KunChip extends StatelessWidget {
 
   /// Dims the chip and blocks the ×.
   final bool disabled;
-
-  /// Accessible name of the × button.
-  ///
-  /// Transitional, and removed once `kun_ui_messages` exists: the web has no
-  /// such prop. Its `Chip.vue` renders `t('chip.remove')`, resolved from the
-  /// locale on `KunUIConfig` — so this port invented a prop the contract does
-  /// not carry, because the string had to be mirrored by hand here and an app
-  /// that localizes its UI needed some way to override it. When the Dart side
-  /// of that locale lands, this resolves from it the way the web's does and
-  /// the prop goes in the same change. Do not build on it.
-  final String closeSemanticLabel;
 
   @override
   Widget build(BuildContext context) {
@@ -107,7 +96,7 @@ class KunChip extends StatelessWidget {
       row.add(
         _KunChipClose(
           color: style.foreground,
-          semanticLabel: closeSemanticLabel,
+          semanticLabel: KunMessagesScope.of(context).chip.remove,
           onPressed: disabled ? null : onClose,
         ),
       );

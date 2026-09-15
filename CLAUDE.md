@@ -36,10 +36,13 @@
    publish`); only after that can the tag-triggered OIDC workflow publish.
    Never hand-edit a version to "fix" a release.
 6. **A new dependency needs a capability argument, never a convenience one**
-   — inherited from kun-ui verbatim. The library currently depends on exactly
-   `kun_ui_tokens` + `kun_ui_icons`, and that is the intended steady state:
-   Flutter ships layout, gestures, animation and painting in the framework,
-   so the honest default answer to "should kun_ui use package X" is no.
+   — inherited from kun-ui verbatim. The library depends on exactly the
+   generated family — `kun_ui_tokens` + `kun_ui_icons` + `kun_ui_messages`,
+   all emitted upstream on one release train — and **zero** third-party
+   packages, which is the intended steady state: Flutter ships layout,
+   gestures, animation and painting in the framework, so the honest default
+   answer to "should kun_ui use package X" is no. A sibling arriving from
+   kun-ui is not a new dependency in this sense; anything else is.
 
 ## What this repo is
 
@@ -47,8 +50,9 @@ The tier-4 component implementations of the KunUI Flutter roadmap
 (kungal/kun-ui `docs/architecture-flutter.md` §5): hand-written widgets on the
 generated tokens, one shared library consumed by all Flutter apps — the exact
 analogue of `@kungal/ui-vue` serving N websites. Tiers 0–2 (tokens, icons,
-motion) generate in kun-ui and arrive here as pub dependencies; tier 3 (the
-contracts) lives in kun-ui and is enforced here by CI.
+motion — and the message catalogs) generate in kun-ui and arrive here as pub
+dependencies; tier 3 (the contracts) lives in kun-ui and is enforced here by
+CI.
 
 Pub workspace (Dart 3.6+), one lockfile at the root:
 
@@ -57,7 +61,9 @@ Pub workspace (Dart 3.6+), one lockfile at the root:
   the contract's unions verbatim, with web `default` → `neutral` because
   `default` is a Dart reserved word), `KunVariantStyle` (the variant × color
   matrix), `KunControlMetrics` (the shared control size scale), and the
-  widgets. Re-exports both token packages so consumers import one thing.
+  widgets, plus `KunMessagesScope` (KunUI's own strings, resolved from
+  `kun_ui_messages`, never a required ancestor). Re-exports all three
+  generated packages so consumers import one thing.
 - `apps/widgetbook` — plays the role `apps/docs` plays in kun-ui: the
   component gallery during development (`flutter run -d chrome`) and the
   deployable docs site (`flutter build web`). Every widget gets a use case;
