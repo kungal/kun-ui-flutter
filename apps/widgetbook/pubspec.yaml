@@ -17,3 +17,10 @@ dependencies:
 
 dev_dependencies:
   flutter_lints: ^6.0.0
+
+flutter:
+  # Widgetbook's own chrome (the sidebar, the knobs panel) is Material and
+  # draws Material icons. Without this the gallery renders them as tofu — the
+  # library itself stays Material-free; this is the app, which CLAUDE.md
+  # allows Material chrome.
+  uses-material-design: true
