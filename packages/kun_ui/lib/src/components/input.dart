@@ -82,6 +82,9 @@ class KunInput extends StatefulWidget {
     this.isClearable = false,
     this.revealPassword = false,
     this.autofocus = false,
+    this.clearSemanticLabel = '清除',
+    this.revealSemanticLabel = '显示密码',
+    this.hideSemanticLabel = '隐藏密码',
   });
 
   /// The current text (web `modelValue`).
@@ -148,6 +151,26 @@ class KunInput extends StatefulWidget {
 
   /// Takes focus on mount.
   final bool autofocus;
+
+  /// Accessible name of the clear button.
+  ///
+  /// Transitional, and removed once `kun_ui_messages` exists — the same
+  /// stopgap as KunChip.closeSemanticLabel, for the same reason. The web has
+  /// no such prop: `Input.vue` renders `t('input.clear')` from the locale on
+  /// `KunUIConfig`.
+  final String clearSemanticLabel;
+
+  /// Accessible name of the reveal toggle while the password is hidden.
+  ///
+  /// Transitional, and removed once `kun_ui_messages` exists. The web renders
+  /// `t('input.reveal')`.
+  final String revealSemanticLabel;
+
+  /// Accessible name of the reveal toggle while the password is shown.
+  ///
+  /// Transitional, and removed once `kun_ui_messages` exists. The web renders
+  /// `t('input.hide')`.
+  final String hideSemanticLabel;
 
   @override
   State<KunInput> createState() => _KunInputState();
@@ -220,14 +243,15 @@ class _KunInputState extends State<KunInput> {
       if (_showClear)
         _KunInputIconButton(
           icon: KunIcons.circleX,
-          semanticLabel: '清除',
+          semanticLabel: widget.clearSemanticLabel,
           scheme: scheme,
           onPressed: _clear,
         ),
       if (_showReveal)
         _KunInputIconButton(
           icon: _revealed ? KunIcons.eyeOff : KunIcons.eye,
-          semanticLabel: _revealed ? '隐藏密码' : '显示密码',
+          semanticLabel:
+              _revealed ? widget.hideSemanticLabel : widget.revealSemanticLabel,
           scheme: scheme,
           onPressed: () => setState(() => _revealed = !_revealed),
         ),

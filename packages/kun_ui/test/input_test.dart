@@ -164,4 +164,48 @@ void main() {
       isTrue,
     );
   });
+
+  testWidgets('the clear button carries an overridable accessible name',
+      (tester) async {
+    final semantics = tester.ensureSemantics();
+
+    await tester.pumpWidget(
+      wrap(const KunInput(value: 'text', isClearable: true)),
+    );
+    expect(find.bySemanticsLabel('清除'), findsOneWidget);
+
+    await tester.pumpWidget(
+      wrap(
+        const KunInput(
+          value: 'text',
+          isClearable: true,
+          clearSemanticLabel: 'Clear',
+        ),
+      ),
+    );
+    expect(find.bySemanticsLabel('Clear'), findsOneWidget);
+
+    semantics.dispose();
+  });
+
+  testWidgets('the reveal toggle names both of its states', (tester) async {
+    final semantics = tester.ensureSemantics();
+
+    await tester.pumpWidget(
+      wrap(
+        const KunInput(
+          value: 'secret',
+          type: KunInputType.password,
+          revealPassword: true,
+        ),
+      ),
+    );
+    expect(find.bySemanticsLabel('显示密码'), findsOneWidget);
+
+    await tester.tap(find.bySemanticsLabel('显示密码'));
+    await tester.pump();
+    expect(find.bySemanticsLabel('隐藏密码'), findsOneWidget);
+
+    semantics.dispose();
+  });
 }

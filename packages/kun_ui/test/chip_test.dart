@@ -106,4 +106,28 @@ void main() {
     expect(start, lessThan(label));
     expect(label, lessThan(end));
   });
+
+  testWidgets('the close button carries an overridable accessible name',
+      (tester) async {
+    final semantics = tester.ensureSemantics();
+
+    await tester.pumpWidget(
+      wrap(KunChip(closable: true, onClose: () {}, child: const Text('tag'))),
+    );
+    expect(find.bySemanticsLabel('移除'), findsOneWidget);
+
+    await tester.pumpWidget(
+      wrap(
+        KunChip(
+          closable: true,
+          onClose: () {},
+          closeSemanticLabel: 'Remove',
+          child: const Text('tag'),
+        ),
+      ),
+    );
+    expect(find.bySemanticsLabel('Remove'), findsOneWidget);
+
+    semantics.dispose();
+  });
 }

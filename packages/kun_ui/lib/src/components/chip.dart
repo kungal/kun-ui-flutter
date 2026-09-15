@@ -63,8 +63,13 @@ class KunChip extends StatelessWidget {
 
   /// Accessible name of the × button.
   ///
-  /// Defaults to the web component's hardcoded `aria-label` verbatim; an app
-  /// that localizes its UI passes its own.
+  /// Transitional, and removed once `kun_ui_messages` exists: the web has no
+  /// such prop. Its `Chip.vue` renders `t('chip.remove')`, resolved from the
+  /// locale on `KunUIConfig` — so this port invented a prop the contract does
+  /// not carry, because the string had to be mirrored by hand here and an app
+  /// that localizes its UI needed some way to override it. When the Dart side
+  /// of that locale lands, this resolves from it the way the web's does and
+  /// the prop goes in the same change. Do not build on it.
   final String closeSemanticLabel;
 
   @override
