@@ -1,0 +1,8 @@
+include: ../../analysis_options.yaml
+
+# The excludes are the ones `flutter create`/`flutter pub get` insist on; drop
+# them and the tooling re-adds them in a dirty tree.
+analyzer:
+  exclude:
+    - build/**
+    - web/**

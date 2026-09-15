@@ -33,8 +33,12 @@ jobs:
       - run: flutter test
         working-directory: packages/kun_ui
 
-      # The Widgetbook is the docs surface; a book that does not compile to
-      # web is a broken docs site, so building it is part of the gate.
+      # The gallery is the docs surface; a gallery that does not compile to
+      # web is a broken docs site, so building it is part of the gate. Both
+      # apps build while the Widgetbook-based one is being retired.
+      - run: flutter build web --release
+        working-directory: apps/gallery
+
       - run: flutter build web --release
         working-directory: apps/widgetbook
 
