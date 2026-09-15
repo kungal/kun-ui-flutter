@@ -1,0 +1,26 @@
+# Watches for the failure mode check.yml's parity job cannot see. That job
+# pins itself to the kun_ui_tokens version in pubspec.lock, so it stays green
+# no matter how far upstream moves: drift is guarded, falling behind is
+# silent. This one asks pub.dev what the current version is and fails when
+# the pin is older, with a report of what adopting it would cost.
+#
+# Scheduled, never on push: adopting a contract is a deliberate dependency
+# bump, so the red run is a notification, not a gate. GitHub disables
+# schedules in a repository with no activity for 60 days — this port is
+# scoped on demand and can be quiet that long, so if the weekly run stops
+# appearing, re-enable it from the Actions tab rather than assuming green.
+name: Contract lag
+
+on:
+  schedule:
+    - cron: '0 3 * * 1' # Mondays, 03:00 UTC
+  workflow_dispatch:
+
+jobs:
+  lag:
+    name: Is the pinned contract still the current one
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+
+      - run: ./scripts/contract-lag.sh
