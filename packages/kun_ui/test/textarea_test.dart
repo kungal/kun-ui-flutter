@@ -142,6 +142,25 @@ void main() {
     expect(find.text('3/10'), findsNothing);
   });
 
+  testWidgets('without maxLength the count stands alone and nothing caps',
+      (tester) async {
+    final seen = <String>[];
+    await tester.pumpWidget(
+      wrap(
+        KunTextarea(
+          showCharCount: true,
+          value: 'ab👍',
+          onChanged: seen.add,
+        ),
+      ),
+    );
+    expect(find.text('3'), findsOneWidget);
+
+    final long = 'k' * 100010;
+    await tester.enterText(find.byType(EditableText), long);
+    expect(seen.single.length, long.length);
+  });
+
   testWidgets('disabled is read-only, unfocusable, dimmed and unshadowed',
       (tester) async {
     await tester.pumpWidget(

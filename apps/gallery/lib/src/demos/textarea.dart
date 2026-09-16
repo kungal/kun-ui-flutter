@@ -190,6 +190,17 @@ Widget textareaCount(BuildContext context) {
               );
             },
           ),
+          const Text('showCharCount: true, no maxLength'),
+          _Field(
+            initial: 'KunUI',
+            builder: (String value, ValueChanged<String> onChanged) {
+              return KunTextarea(
+                value: value,
+                onChanged: onChanged,
+                showCharCount: true,
+              );
+            },
+          ),
           const Text('maxLength: 10, showCharCount: true'),
           _Field(
             initial: '0123456789',

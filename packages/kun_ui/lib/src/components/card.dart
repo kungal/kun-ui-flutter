@@ -173,13 +173,15 @@ class _KunCardState extends State<KunCard> {
         children: [
           card,
           // Web: an ::after state layer in `foreground` at 3% — darkens in
-          // light mode, lightens in dark, with no shadow change.
+          // light mode, lightens in dark, with no shadow change. Its
+          // `duration-kun-fast` names no ease, so the curve is the default
+          // transition's, not KunEasing.standard.
           Positioned.fill(
             child: IgnorePointer(
               child: AnimatedOpacity(
                 opacity: _hovered ? 0.03 : 0,
                 duration: KunDurations.fast,
-                curve: KunEasing.standard,
+                curve: KunDefaultTransition.curve,
                 child: DecoratedBox(
                   decoration: BoxDecoration(
                     color: scheme.foreground,
@@ -197,7 +199,7 @@ class _KunCardState extends State<KunCard> {
       card = AnimatedScale(
         scale: _pressed ? 0.97 : 1, // web active:scale-[0.97]
         duration: KunDurations.fast,
-        curve: KunEasing.standard,
+        curve: KunDefaultTransition.curve,
         child: card,
       );
     }

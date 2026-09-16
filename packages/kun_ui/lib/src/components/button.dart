@@ -263,14 +263,14 @@ class _KunButtonState extends State<KunButton> {
             onTap: _canPress ? _handleActivate : null,
             child: AnimatedScale(
               scale: _pressed ? 0.97 : 1, // web active:scale-[0.97]
-              duration: KunDurations.fast,
-              curve: KunEasing.standard,
+              duration: KunDefaultTransition.duration,
+              curve: KunDefaultTransition.curve,
               child: AnimatedOpacity(
                 // Web: hover:opacity-80 on every variant; disabled/loading
                 // opacity-50.
                 opacity: _inactive ? 0.5 : (_hovered ? 0.8 : 1),
-                duration: KunDurations.fast,
-                curve: KunEasing.standard,
+                duration: KunDefaultTransition.duration,
+                curve: KunDefaultTransition.curve,
                 child: withRing,
               ),
             ),

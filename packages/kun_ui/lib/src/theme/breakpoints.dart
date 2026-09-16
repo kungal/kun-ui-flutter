@@ -1,19 +1,20 @@
 import 'package:flutter/widgets.dart';
+import 'package:kun_ui_tokens/kun_ui_tokens.dart';
 
 /// The responsive breakpoints, as widths in logical pixels.
 ///
-/// The values are Tailwind's defaults — the exact widths the web layer's
+/// The defaults are [KunBreakpointWidths] — the exact widths the web layer's
 /// `sm:`/`md:`/… classes switch at — so a layout that changes at `md` on the
 /// web changes at the same width here.
 @immutable
 class KunBreakpoints {
   /// Creates the breakpoint set; defaults are the web's.
   const KunBreakpoints({
-    this.sm = 640,
-    this.md = 768,
-    this.lg = 1024,
-    this.xl = 1280,
-    this.xxl = 1536,
+    this.sm = KunBreakpointWidths.sm,
+    this.md = KunBreakpointWidths.md,
+    this.lg = KunBreakpointWidths.lg,
+    this.xl = KunBreakpointWidths.xl,
+    this.xxl = KunBreakpointWidths.xl2,
   });
 
   /// Tailwind `sm`.

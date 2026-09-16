@@ -38,14 +38,14 @@ class KunTextarea extends StatefulWidget {
     this.rows = 4,
     this.autoGrow = false,
     this.maxHeight,
-    this.maxLength = 100007,
+    this.maxLength,
     this.showCharCount = false,
     this.disabled = false,
     this.readOnly = false,
     this.required = false,
     this.autofocus = false,
   })  : assert(rows > 0),
-        assert(maxLength > 0);
+        assert(maxLength == null || maxLength > 0);
 
   /// The current text (web `modelValue`).
   final String value;
@@ -90,10 +90,12 @@ class KunTextarea extends StatefulWidget {
   /// [autoGrow] is set.
   final double? maxHeight;
 
-  /// Maximum user-perceived characters. The web default is 100007.
-  final int maxLength;
+  /// Maximum user-perceived characters. Left null, the field takes any
+  /// length.
+  final int? maxLength;
 
-  /// Shows `length/maxLength` over the bottom-right of the field.
+  /// Shows the character count over the bottom-right of the field, as
+  /// `length/maxLength` when [maxLength] is set.
   final bool showCharCount;
 
   /// Blocks editing and dims the field.
@@ -301,7 +303,9 @@ class _KunTextareaState extends State<KunTextarea>
             bottom: KunSpacing.unit * 2,
             child: IgnorePointer(
               child: Text(
-                '${widget.value.characters.length}/${widget.maxLength}',
+                widget.maxLength == null
+                    ? '${widget.value.characters.length}'
+                    : '${widget.value.characters.length}/${widget.maxLength}',
                 style: KunText.xs.copyWith(color: scheme.neutral.shade500),
               ),
             ),

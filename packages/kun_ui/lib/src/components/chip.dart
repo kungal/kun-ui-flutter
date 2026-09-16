@@ -194,8 +194,8 @@ class _KunChipCloseState extends State<_KunChipClose> {
             onTap: widget.onPressed,
             child: AnimatedOpacity(
               opacity: _hovered || _focused ? 1 : 0.7,
-              duration: KunDurations.fast,
-              curve: KunEasing.standard,
+              duration: KunDefaultTransition.duration,
+              curve: KunDefaultTransition.curve,
               child: Icon(
                 KunIcons.x,
                 size: KunSpacing.unit * 3.5,

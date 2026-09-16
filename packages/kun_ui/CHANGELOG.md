@@ -6,9 +6,11 @@
   (padding and type), a label with a required marker, helper text and an
   error, `rows`, `autoGrow` with a `maxHeight` cap, a character counter,
   `readOnly`, and the same caret, selection, focus ring and accessibility
-  behaviour as `KunInput`. `maxLength` and the counter count user-perceived
-  characters, where the browser counts UTF-16 code units. The web's `resize`
-  handle is browser chrome and is not ported.
+  behaviour as `KunInput`. `maxLength` is optional, as on the web since
+  kun-ui 2.39.0: without it the counter shows the bare count. `maxLength` and
+  the counter count user-perceived characters, where the browser counts
+  UTF-16 code units. The web's `resize` handle is browser chrome and is not
+  ported.
 - `KunInput`: a click or tap places the caret, and a drag, double-tap or
   long-press selects. 0.2.0 moved the caret to the end on every tap and could
   not select with the pointer at all. Touch selection handles and a copy/paste
@@ -22,6 +24,18 @@
   at once; the web does not transition it either.
 - `KunInput`: a disabled field can no longer take focus, from the keyboard or
   otherwise. Disabling a focused field blurs it and calls `onBlur`.
+- Built on kun-ui 2.39.0 (`kun_ui_tokens`, `kun_ui_icons` and
+  `kun_ui_messages` ^2.39.0). Its `KunShadows` convert the web's blur instead
+  of copying it, so every elevation — `KunCard`, `KunInput`, `KunTextarea` —
+  now draws as tight as the browser's; 2.38.0 drew each about 20% softer.
+- The `shadow` variant (`KunButton`, `KunChip`) takes its glow from
+  `KunShadows.glow`. The hand-copied glow had the same unconverted blur.
+- `KunButton`'s hover and press, `KunChip`'s remove button and `KunCard`'s
+  hover layer and press run on the web's default transition curve
+  (`KunDefaultTransition`); they had `KunEasing.standard`, which their web
+  classes never name.
+- `KunBreakpoints` defaults come from `KunBreakpointWidths`. The values are
+  unchanged.
 - `KunInput` and `KunTextarea` need an `Overlay` ancestor, as every Flutter
   text field does. `WidgetsApp` — and so `MaterialApp` and `CupertinoApp` —
   provides one; a bare widget tree, such as a test, has to add it.

@@ -93,26 +93,12 @@ class KunVariantStyle {
           border: transparent,
         );
       case KunUIVariant.shadow:
-        final glow = scale.solid.withValues(alpha: 0.4);
         return KunVariantStyle._(
           background: scale.solid,
           foreground: scale.onSolid,
           border: transparent,
-          // Tailwind's `shadow-lg` geometry with the tint `shadow-{color}/40`.
-          shadows: [
-            BoxShadow(
-              color: glow,
-              offset: const Offset(0, 10),
-              blurRadius: 15,
-              spreadRadius: -3,
-            ),
-            BoxShadow(
-              color: glow,
-              offset: const Offset(0, 4),
-              blurRadius: 6,
-              spreadRadius: -4,
-            ),
-          ],
+          // Web `shadow-lg shadow-{color}/40`.
+          shadows: KunShadows.glow(scale.solid.withValues(alpha: 0.4)),
         );
     }
   }
