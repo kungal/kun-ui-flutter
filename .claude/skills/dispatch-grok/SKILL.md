@@ -160,6 +160,11 @@ Template: `task-book-template.md` in this directory.
   English-only anyway.
 - **Self-contained.** grok sees none of this conversation. State the branch, where the code
   lives, and every prior adjudication it depends on, inline.
+- **Name the output directory by absolute path**, as the template does. `--prompt-file`
+  hands grok the book's text, not its location: "the directory this task book is in" once
+  resolved to grok's own session directory (`~/.grok/sessions/<cwd>/<session-id>/`), and the
+  report and every screenshot landed there while the run still ended `end_turn`. Look there
+  first if a finished run's output directory is empty.
 - **Quote the adjudication, don't cite it.** `docs/architecture.md` is this repo's decision
   record; "follow the architecture doc" makes it follow the wrong section. Name the section
   title and quote the clause.
