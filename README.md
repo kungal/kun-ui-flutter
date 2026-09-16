@@ -22,7 +22,7 @@ component contracts, so the port cannot silently drift.
 | Path | What |
 | --- | --- |
 | `packages/kun_ui` | The library: `KunTheme`, the design vocabulary, the widgets. |
-| `apps/widgetbook` | The component gallery and docs surface (builds to web). |
+| `apps/gallery` | The component gallery and docs surface (builds to web). |
 | `contracts/components.manifest.json` | What this port claims against the upstream contract. |
 
 ## Quick start

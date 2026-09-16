@@ -91,8 +91,9 @@ description/image surface) — that ports separately when an app needs it.
 
 ### The gallery is written here, not taken from Widgetbook (decided 2026-09-15)
 
-`apps/widgetbook` was built on the `widgetbook` package. It is being
-replaced by a gallery written in this repo. Two reasons, in the order they
+`apps/widgetbook` was built on the `widgetbook` package. It was replaced by
+`apps/gallery`, written in this repo, and deleted once the replacement
+covered every component the manifest claims. Two reasons, in the order they
 weigh:
 
 - **It is a commercial product with the OSS package as its funnel.**
@@ -137,13 +138,24 @@ back into Widgetbook one convenience at a time: a knob/field system, runtime
 prop panels, search, device frames, zoom, grid overlays, time dilation, the
 inspector, and visual-regression tooling.
 
-The one real cost: four of the ten current use cases are "Playground" cases
-driven by 33 knob calls, and they cannot survive as written. They become
-enumerated demos — which for a documentation surface is the better artifact
-anyway. A knob that toggles `disabled` shows one state at a time and only to
-someone holding the mouse; a matrix shows both states at once, in a
-screenshot, to a reader. Knobs serve exploration during development, which is
-the smaller need, and the one a `flutter run` and an edit already serve.
+The one real cost: four of the ten use cases were "Playground" cases driven
+by 33 knob calls, and could not survive as written. They became enumerated
+demos — which for a documentation surface is the better artifact anyway. A
+knob that toggles `disabled` shows one state at a time and only to someone
+holding the mouse; a matrix shows both states at once, in a screenshot, to a
+reader. Knobs serve exploration during development, which is the smaller
+need, and the one a `flutter run` and an edit already serve.
+
+One page was dropped outright rather than ported: a `_colorGrid` that painted
+eleven shades of all seven scales plus solid/onSolid. It was the only page in
+the old app that was not a component, so it is also the only one the manifest
+cannot name and the generator cannot check — a foundation page would have
+been a hand-written surface inside a gallery whose whole argument is that the
+contract drives it. The palette is `kun_ui_tokens`, generated upstream from
+the same source as the web stylesheet: the place to read it is there or on
+kun-ui's docs site, not in a grid this repo maintains downstream of it. If a
+foundation section is ever wanted here, it starts from that argument, not
+from a page inherited because deleting it felt lossy.
 
 The gallery is generated from `contracts/components.manifest.json` rather
 than hand-written — see the next decision. That is what makes the

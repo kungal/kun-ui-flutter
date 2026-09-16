@@ -67,16 +67,19 @@ Pub workspace (Dart 3.6+), one lockfile at the root:
   widgets, plus `KunMessagesScope` (KunUI's own strings, resolved from
   `kun_ui_messages`, never a required ancestor). Re-exports all three
   generated packages so consumers import one thing.
-- `apps/widgetbook` — plays the role `apps/docs` plays in kun-ui: the
-  component gallery during development (`flutter run -d chrome`) and the
-  deployable docs site (`flutter build web`). Every widget gets a use case;
-  a gallery that does not compile is a broken docs site, so CI builds it.
-  **Being replaced.** The `widgetbook` package was ruled out on 2026-09-15 —
-  it is the funnel for a paid product and answers a much larger question than
-  a gallery needs — in favour of one written here and generated from the
-  contract manifest. Read both decisions in `docs/architecture.md` before
-  touching this app; in particular the list of things the replacement
-  deliberately does not rebuild, knobs first among them.
+- `apps/gallery` — plays the role `apps/docs` plays in kun-ui: the component
+  gallery during development (`flutter run -d chrome`) and the deployable
+  docs site (`flutter build web`). Every claimed component gets a page; a
+  gallery that does not compile is a broken docs site, so CI builds it. One
+  URL per demo, theme and locale from the query string, no chrome around the
+  widget. `gallery.spec.json` says which demo shows which contract name and
+  `tool/gen_gallery.dart` emits the registry and the coverage pages from it
+  and the manifest — so a claimed name with neither a demo nor a recorded
+  reason fails generation, and CI re-runs the generator to prove the checked-in
+  output is current. The `widgetbook` package it replaced was ruled out on
+  2026-09-15: read both decisions in `docs/architecture.md` before growing
+  this app, in particular the list of things it deliberately does not rebuild,
+  knobs first among them.
 - `contracts/components.manifest.json` — what this port claims, in the format
   documented in kun-ui `contracts/README.md`.
 
@@ -98,8 +101,9 @@ flutter pub get                    # once, at the root (workspace-wide)
 dart format .                      # CI rejects unformatted code
 flutter analyze                    # workspace-wide, zero tolerance
 flutter test                       # in packages/kun_ui
-flutter run -d chrome              # in apps/widgetbook — the live gallery
-flutter build web --release        # in apps/widgetbook — the docs build
+flutter run -d chrome              # in apps/gallery — the live gallery
+flutter build web --release        # in apps/gallery — the docs build
+dart run tool/gen_gallery.dart     # in apps/gallery — regenerate the registry
 ./scripts/parity.sh                # contract parity (KUN_UI_DIR=... for a local checkout)
 ```
 
@@ -167,7 +171,7 @@ when a real app needs it, and one consumer is not a component. Then:
 
 `flutter test` is the first line (unlike kun-ui, which has no test runner).
 For anything visual, run the gallery (`flutter run -d chrome` in
-`apps/widgetbook`) and look — state what was measured or seen, never report
+`apps/gallery`) and look — state what was measured or seen, never report
 reasoned-about behaviour as observed. The web reference for any component is
 the kun-ui docs site or its playground; when in doubt about a value, read the
 web source, not the rendered pixels.

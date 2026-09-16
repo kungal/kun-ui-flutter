@@ -44,13 +44,9 @@ jobs:
       - run: git diff --exit-code -- apps/gallery/lib/src
 
       # The gallery is the docs surface; a gallery that does not compile to
-      # web is a broken docs site, so building it is part of the gate. Both
-      # apps build while the Widgetbook-based one is being retired.
+      # web is a broken docs site, so building it is part of the gate.
       - run: flutter build web --release
         working-directory: apps/gallery
-
-      - run: flutter build web --release
-        working-directory: apps/widgetbook
 
   parity:
     name: Contract parity

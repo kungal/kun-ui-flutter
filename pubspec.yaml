@@ -8,5 +8,4 @@ environment:
 
 workspace:
   - packages/kun_ui
-  - apps/widgetbook
   - apps/gallery
