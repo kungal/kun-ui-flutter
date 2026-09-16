@@ -33,6 +33,16 @@ jobs:
       - run: flutter test
         working-directory: packages/kun_ui
 
+      # The gallery's registry and its contract-coverage pages are emitted
+      # from gallery.spec.json and the manifest. Generating fails when a name
+      # the manifest claims has neither a demo that shows it nor a recorded
+      # reason -- parity proves a prop is implemented, this proves it is
+      # shown -- so regenerating here must be a no-op.
+      - run: dart run tool/gen_gallery.dart
+        working-directory: apps/gallery
+
+      - run: git diff --exit-code -- apps/gallery/lib/src
+
       # The gallery is the docs surface; a gallery that does not compile to
       # web is a broken docs site, so building it is part of the gate. Both
       # apps build while the Widgetbook-based one is being retired.

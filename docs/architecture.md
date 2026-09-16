@@ -161,12 +161,11 @@ surface — the thing this repo's whole design exists to close — and it is the
 same discipline forui applies to its docs, where the code a reader sees is
 extracted from compiling Dart rather than typed into a Markdown fence.
 
-So the demos are emitted from the manifest. Three things follow that no
-third-party gallery could do, because none of them can know this contract:
+So the gallery's registry and its coverage pages are emitted from the
+manifest. Two things follow that no third-party gallery could do, because
+none of them can know this contract:
 
-- **The axes cannot drift.** A variant added upstream appears in every
-  matrix on the next generate, rather than waiting for someone to notice.
-- **Coverage becomes visible.** Each component's page can state what the
+- **Coverage becomes visible.** Each component's page states what the
   contract lists, what this port answers, and what it omits with the reason
   already recorded in the manifest — information that today exists only in
   `parity.sh`'s terminal output.
@@ -174,17 +173,31 @@ third-party gallery could do, because none of them can know this contract:
   nothing proves it is *shown*. Generation makes the second check
   mechanical, and iron rule 3's floor extends to the docs surface.
 
-The boundary, so the generator is not asked to be clever: it emits the
-mechanical axes — enum crosses and boolean states, which are exhaustive by
-construction. A demo that requires judgment stays hand-written and is
-declared as such: `KunCard`'s slot composition, `KunInput`'s error and
-helper interplay, anything whose point is a realistic arrangement rather
-than a complete enumeration. The generator's job is to remove transcription,
-not to invent taste.
+**Amended 2026-09-15, on writing the generator.** A third claim stood here:
+that generation stops the *axes* drifting, so a variant added upstream would
+appear in every matrix on the next generate. The premise was wrong. Those
+twenty-one hand-copied sites are `for (final v in KunUIVariant.values)`
+loops, and a `.values` loop already picks up a new member the moment
+`design.dart` gains one — enum-member drift was closed by Dart before this
+decision was written. What actually drifts is narrower, and was never
+covered by anything: a prop the manifest newly *claims* that no demo shows.
+That is what the gate closes, and it closes it without a generator writing
+widget trees.
 
-This also cuts the cost of the decision above. Once demos are generated,
-what a future gallery rewrite has to port is the generator's output target,
-not several hundred lines of hand-written cases.
+The boundary, so the generator is not asked to be clever: **it emits data,
+not widget trees.** The registry, the per-component coverage tables, and the
+check that the two agree are all derivable from JSON. A demo body is not —
+the widget expression at the centre of one is exactly the taste the ruling
+above says a gallery owes a reader, and a Dart template held in a JSON string
+is a worse hand-copy than the hand-copy. So demo bodies stay hand-written in
+`apps/gallery/lib/src/demos/`, and `apps/gallery/gallery.spec.json` declares,
+for every name the manifest claims, either the demo that shows it or the
+reason it has none. Nothing may be silent: that file is the adjudication and
+the generator only enforces it, which is why a prop with no demo yet is
+recorded with that as its reason and rendered as a gap rather than left out.
+
+This also cuts the cost of the decision above. What a future gallery rewrite
+has to port is a registry shape and a set of demo functions, not a generator.
 
 ### Text fields are `EditableText`, not Material's `TextField` (decided 2026-09-15)
 

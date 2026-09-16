@@ -3,6 +3,7 @@ import 'package:kun_ui/kun_ui.dart';
 
 import 'navigator.dart';
 import 'registry.dart';
+import 'registry.g.dart';
 import 'route.dart';
 
 /// The gallery index: title, theme and language toggles, and a card per
@@ -118,6 +119,15 @@ class GalleryIndex extends StatelessWidget {
                               ),
                           ],
                         ),
+                      ),
+                    if (galleryUnbuiltComponents.isNotEmpty)
+                      Text(
+                        'Claimed in the contract, not yet in the gallery: ${galleryUnbuiltComponents.join(', ')}',
+                        style: KunControlMetrics.of(KunUISize.sm)
+                            .textStyle
+                            .copyWith(
+                              color: theme.colors.neutral.shade600,
+                            ),
                       ),
                   ],
                 ),

@@ -1,7 +1,6 @@
 import 'package:flutter/widgets.dart';
 
-import 'demos/button.dart';
-import 'demos/spinner.dart';
+import 'registry.g.dart';
 
 /// One addressable demo: the thing at `#/<component>/<slug>`.
 class GalleryDemo {
@@ -40,26 +39,6 @@ class GalleryComponent {
   /// Demos listed under this component, in index order.
   final List<GalleryDemo> demos;
 }
-
-/// Every component the gallery shows, in the order the index lists them.
-const List<GalleryComponent> galleryComponents = <GalleryComponent>[
-  GalleryComponent(
-    slug: 'kunbutton',
-    name: 'KunButton',
-    demos: <GalleryDemo>[
-      GalleryDemo(slug: 'matrix', title: 'Matrix', builder: buttonMatrix),
-      GalleryDemo(slug: 'sizes', title: 'Sizes', builder: buttonSizes),
-      GalleryDemo(slug: 'states', title: 'States', builder: buttonStates),
-    ],
-  ),
-  GalleryComponent(
-    slug: 'kunspinner',
-    name: 'KunSpinner',
-    demos: <GalleryDemo>[
-      GalleryDemo(slug: 'sizes', title: 'Sizes', builder: spinnerSizes),
-    ],
-  ),
-];
 
 /// The component whose [GalleryComponent.slug] is [slug], or null.
 GalleryComponent? componentBySlug(String slug) {

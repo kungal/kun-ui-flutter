@@ -1,0 +1,46 @@
+{
+  "note": "How the gallery demonstrates each component. tool/gen_gallery.dart reads this together with ../../contracts/components.manifest.json and fails when the two disagree: every name the manifest claims must appear either in a demo's `shows` or in `undemoed` with a reason. A component the gallery has not reached needs no entry here (absence is not drift), but a claimed prop with no demo is recorded as undemoed and rendered as a gap -- it is never left silent.",
+  "components": {
+    "KunButton": {
+      "source": "demos/button.dart",
+      "demos": [
+        {
+          "slug": "matrix",
+          "title": "Matrix",
+          "builder": "buttonMatrix",
+          "shows": ["props.variant", "props.color", "slots.default"]
+        },
+        {
+          "slug": "sizes",
+          "title": "Sizes",
+          "builder": "buttonSizes",
+          "shows": ["props.size", "props.icon", "props.isIconOnly", "slots.icon"]
+        },
+        {
+          "slug": "states",
+          "title": "States",
+          "builder": "buttonStates",
+          "shows": ["props.loading", "props.disabled", "props.fullWidth"]
+        }
+      ],
+      "undemoed": {
+        "props.ariaLabel": "An accessible name has no visual form. The sizes demo sets one on every icon-only button because the contract requires it there, but what is announced is asserted by the widget tests, not seen in a gallery.",
+        "events.click": "Every button in every demo carries a live onPressed -- that is the floor this gallery was built to meet. A callback has no appearance of its own to show.",
+        "props.iconPosition": "Not yet shown: the sizes demo places its icon in the default left position only.",
+        "props.rounded": "Not yet shown. The axis that matters is the theme-wide default -- KunThemeData.rounded squares or rounds every surface at once, as the web's config.rounded does -- and the gallery has no control for it; the per-widget override is the escape hatch, not the story."
+      }
+    },
+    "KunSpinner": {
+      "contract": false,
+      "source": "demos/spinner.dart",
+      "demos": [
+        {
+          "slug": "sizes",
+          "title": "Sizes",
+          "builder": "spinnerSizes",
+          "shows": []
+        }
+      ]
+    }
+  }
+}
