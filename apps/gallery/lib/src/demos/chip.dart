@@ -5,7 +5,7 @@ void _press() {}
 
 Widget chipMatrix(BuildContext context) {
   return Padding(
-    padding: EdgeInsets.all(KunCardPadding.lg.value),
+    padding: const EdgeInsets.all(KunSpacing.unit * 6),
     // A phone is narrower than the seven-colour matrix: at 1080px this
     // overflowed by 90px, where the same use case at 1440px in Chrome had
     // looked fine. The host already scrolls vertically, so a vertical
@@ -16,12 +16,12 @@ Widget chipMatrix(BuildContext context) {
       scrollDirection: Axis.horizontal,
       child: Column(
         mainAxisSize: MainAxisSize.min,
-        spacing: KunCardPadding.sm.value,
+        spacing: KunSpacing.unit * 3,
         children: [
           for (final KunUIVariant variant in KunUIVariant.values)
             Row(
               mainAxisSize: MainAxisSize.min,
-              spacing: 8,
+              spacing: KunSpacing.unit * 2,
               children: [
                 for (final KunUIColor color in KunUIColor.values)
                   KunChip(
@@ -39,15 +39,15 @@ Widget chipMatrix(BuildContext context) {
 
 Widget chipSizes(BuildContext context) {
   return Padding(
-    padding: EdgeInsets.all(KunCardPadding.lg.value),
+    padding: const EdgeInsets.all(KunSpacing.unit * 6),
     child: Column(
       mainAxisSize: MainAxisSize.min,
-      spacing: KunCardPadding.sm.value,
+      spacing: KunSpacing.unit * 3,
       children: [
         for (final KunUISize size in KunUISize.values)
           Row(
             mainAxisSize: MainAxisSize.min,
-            spacing: KunCardPadding.sm.value,
+            spacing: KunSpacing.unit * 3,
             children: [
               KunChip(
                 size: size,
@@ -66,13 +66,13 @@ Widget chipSizes(BuildContext context) {
 }
 
 Widget chipParts(BuildContext context) {
-  return Padding(
-    padding: EdgeInsets.all(KunCardPadding.lg.value),
+  return const Padding(
+    padding: EdgeInsets.all(KunSpacing.unit * 6),
     child: Column(
       mainAxisSize: MainAxisSize.min,
       crossAxisAlignment: CrossAxisAlignment.start,
-      spacing: KunCardPadding.md.value,
-      children: const [
+      spacing: KunSpacing.unit * 5,
+      children: [
         Text('start'),
         KunChip(
           start: Icon(KunIcons.circleCheck),
@@ -106,9 +106,9 @@ Widget chipParts(BuildContext context) {
 }
 
 Widget chipDismiss(BuildContext context) {
-  return Padding(
-    padding: EdgeInsets.all(KunCardPadding.lg.value),
-    child: const _ChipDismiss(),
+  return const Padding(
+    padding: EdgeInsets.all(KunSpacing.unit * 6),
+    child: _ChipDismiss(),
   );
 }
 
@@ -126,11 +126,11 @@ class _ChipDismissState extends State<_ChipDismiss> {
   Widget build(BuildContext context) {
     return Column(
       mainAxisSize: MainAxisSize.min,
-      spacing: KunCardPadding.md.value,
+      spacing: KunSpacing.unit * 5,
       children: [
         Wrap(
-          spacing: KunCardPadding.sm.value,
-          runSpacing: KunCardPadding.sm.value,
+          spacing: KunSpacing.unit * 3,
+          runSpacing: KunSpacing.unit * 3,
           children: [
             for (final KunUIColor color in _tags)
               KunChip(

@@ -58,18 +58,15 @@ class CoveragePage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final KunThemeData theme = KunTheme.of(context);
-    final TextStyle headerStyle =
-        KunControlMetrics.of(KunUISize.lg).textStyle.copyWith(
-              fontWeight: FontWeight.w600,
-            );
-    final TextStyle sectionStyle =
-        KunControlMetrics.of(KunUISize.md).textStyle.copyWith(
-              fontWeight: FontWeight.w600,
-            );
-    final TextStyle mutedStyle =
-        KunControlMetrics.of(KunUISize.sm).textStyle.copyWith(
-              color: theme.colors.neutral.shade600,
-            );
+    final TextStyle headerStyle = KunText.base.copyWith(
+      fontWeight: FontWeight.w600,
+    );
+    final TextStyle sectionStyle = KunText.sm.copyWith(
+      fontWeight: FontWeight.w600,
+    );
+    final TextStyle mutedStyle = KunText.sm.copyWith(
+      color: theme.colors.neutral.shade600,
+    );
 
     int shown = 0;
     int notYet = 0;
@@ -108,7 +105,7 @@ class CoveragePage extends StatelessWidget {
         Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,
           mainAxisSize: MainAxisSize.min,
-          spacing: KunCardPadding.sm.value,
+          spacing: KunSpacing.unit * 3,
           children: <Widget>[
             Text(section, style: sectionStyle),
             for (final CoverageEntry entry in group) _entry(entry, mutedStyle),
@@ -118,13 +115,13 @@ class CoveragePage extends StatelessWidget {
     }
 
     return Padding(
-      padding: EdgeInsets.all(KunCardPadding.lg.value),
+      padding: const EdgeInsets.all(KunSpacing.unit * 6),
       child: ConstrainedBox(
         constraints: BoxConstraints(maxWidth: theme.breakpoints.md),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,
           mainAxisSize: MainAxisSize.min,
-          spacing: KunCardPadding.md.value,
+          spacing: KunSpacing.unit * 5,
           children: children,
         ),
       ),
@@ -137,8 +134,8 @@ class CoveragePage extends StatelessWidget {
       mainAxisSize: MainAxisSize.min,
       children: <Widget>[
         Wrap(
-          spacing: KunCardPadding.sm.value,
-          runSpacing: KunCardPadding.sm.value,
+          spacing: KunSpacing.unit * 3,
+          runSpacing: KunSpacing.unit * 3,
           crossAxisAlignment: WrapCrossAlignment.center,
           children: <Widget>[
             KunChip(

@@ -24,14 +24,12 @@ class GalleryIndex extends StatelessWidget {
     final String themeLabel =
         isDark ? (isEn ? 'Light' : '浅色') : (isEn ? 'Dark' : '深色');
     final String langLabel = isEn ? KunMessages.zhCN.name : KunMessages.en.name;
-    final TextStyle titleStyle =
-        KunControlMetrics.of(KunUISize.xl).textStyle.copyWith(
-              fontWeight: FontWeight.w600,
-            );
-    final TextStyle headerStyle =
-        KunControlMetrics.of(KunUISize.lg).textStyle.copyWith(
-              fontWeight: FontWeight.w600,
-            );
+    final TextStyle titleStyle = KunText.lg.copyWith(
+      fontWeight: FontWeight.w600,
+    );
+    final TextStyle headerStyle = KunText.base.copyWith(
+      fontWeight: FontWeight.w600,
+    );
 
     return ColoredBox(
       color: theme.colors.background,
@@ -40,23 +38,23 @@ class GalleryIndex extends StatelessWidget {
           child: Align(
             alignment: Alignment.topCenter,
             child: SingleChildScrollView(
-              padding: EdgeInsets.all(KunCardPadding.lg.value),
+              padding: const EdgeInsets.all(KunSpacing.unit * 6),
               child: ConstrainedBox(
                 constraints: BoxConstraints(maxWidth: theme.breakpoints.md),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.stretch,
-                  spacing: KunCardPadding.md.value,
+                  spacing: KunSpacing.unit * 5,
                   children: [
                     Wrap(
                       alignment: WrapAlignment.spaceBetween,
                       crossAxisAlignment: WrapCrossAlignment.center,
-                      spacing: KunCardPadding.sm.value,
-                      runSpacing: KunCardPadding.sm.value,
+                      spacing: KunSpacing.unit * 3,
+                      runSpacing: KunSpacing.unit * 3,
                       children: [
                         Text('KunUI for Flutter', style: titleStyle),
                         Wrap(
-                          spacing: KunCardPadding.sm.value,
-                          runSpacing: KunCardPadding.sm.value,
+                          spacing: KunSpacing.unit * 3,
+                          runSpacing: KunSpacing.unit * 3,
                           crossAxisAlignment: WrapCrossAlignment.center,
                           children: [
                             KunButton(
@@ -86,11 +84,9 @@ class GalleryIndex extends StatelessWidget {
                             ),
                             Text(
                               'rounded',
-                              style: KunControlMetrics.of(KunUISize.sm)
-                                  .textStyle
-                                  .copyWith(
-                                    color: theme.colors.neutral.shade600,
-                                  ),
+                              style: KunText.sm.copyWith(
+                                color: theme.colors.neutral.shade600,
+                              ),
                             ),
                             for (final KunUIRounded value
                                 in KunUIRounded.values)
@@ -125,8 +121,8 @@ class GalleryIndex extends StatelessWidget {
                           ],
                         ),
                         child: Wrap(
-                          spacing: KunCardPadding.sm.value,
-                          runSpacing: KunCardPadding.sm.value,
+                          spacing: KunSpacing.unit * 3,
+                          runSpacing: KunSpacing.unit * 3,
                           children: [
                             for (final GalleryDemo demo in component.demos)
                               KunButton(
@@ -150,11 +146,9 @@ class GalleryIndex extends StatelessWidget {
                     if (galleryUnbuiltComponents.isNotEmpty)
                       Text(
                         'Claimed in the contract, not yet in the gallery: ${galleryUnbuiltComponents.join(', ')}',
-                        style: KunControlMetrics.of(KunUISize.sm)
-                            .textStyle
-                            .copyWith(
-                              color: theme.colors.neutral.shade600,
-                            ),
+                        style: KunText.sm.copyWith(
+                          color: theme.colors.neutral.shade600,
+                        ),
                       ),
                   ],
                 ),

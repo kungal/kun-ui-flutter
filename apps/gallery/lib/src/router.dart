@@ -83,9 +83,9 @@ class GalleryRouterDelegate extends RouterDelegate<GalleryRoute>
         child: KunMessagesScope(
           messages: _route.lang,
           child: DefaultTextStyle(
-            style: KunControlMetrics.of(KunUISize.md).textStyle.copyWith(
-                  color: theme.colors.foreground,
-                ),
+            style: KunText.sm.copyWith(
+              color: theme.colors.foreground,
+            ),
             child: page,
           ),
         ),

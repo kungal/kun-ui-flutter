@@ -6,7 +6,7 @@ void _press() {}
 Widget cardAnatomy(BuildContext context) {
   final KunThemeData theme = KunTheme.of(context);
   return Padding(
-    padding: EdgeInsets.all(KunCardPadding.lg.value),
+    padding: const EdgeInsets.all(KunSpacing.unit * 6),
     child: SizedBox(
       width: 360,
       child: KunCard(
@@ -18,10 +18,10 @@ Widget cardAnatomy(BuildContext context) {
             child: Center(child: Text('cover')),
           ),
         ),
-        footer: Row(
+        footer: const Row(
           mainAxisSize: MainAxisSize.min,
-          spacing: KunCardPadding.sm.value,
-          children: const [
+          spacing: KunSpacing.unit * 3,
+          children: [
             KunButton(
               onPressed: _press,
               child: Text('Save'),
@@ -44,10 +44,10 @@ Widget cardAnatomy(BuildContext context) {
 
 Widget cardTints(BuildContext context) {
   return Padding(
-    padding: EdgeInsets.all(KunCardPadding.lg.value),
+    padding: const EdgeInsets.all(KunSpacing.unit * 6),
     child: Column(
       mainAxisSize: MainAxisSize.min,
-      spacing: KunCardPadding.sm.value,
+      spacing: KunSpacing.unit * 3,
       children: [
         for (final KunUIColor? color in <KunUIColor?>[
           null,
@@ -68,10 +68,10 @@ Widget cardTints(BuildContext context) {
 
 Widget cardSurfaces(BuildContext context) {
   return Padding(
-    padding: EdgeInsets.all(KunCardPadding.lg.value),
+    padding: const EdgeInsets.all(KunSpacing.unit * 6),
     child: Column(
       mainAxisSize: MainAxisSize.min,
-      spacing: KunCardPadding.md.value,
+      spacing: KunSpacing.unit * 5,
       children: [
         for (final bool isTransparent in <bool>[false, true])
           for (final bool bordered in <bool>[true, false])
@@ -94,10 +94,10 @@ Widget cardSurfaces(BuildContext context) {
 Widget cardPadding(BuildContext context) {
   final KunThemeData theme = KunTheme.of(context);
   return Padding(
-    padding: EdgeInsets.all(KunCardPadding.lg.value),
+    padding: const EdgeInsets.all(KunSpacing.unit * 6),
     child: Column(
       mainAxisSize: MainAxisSize.min,
-      spacing: KunCardPadding.md.value,
+      spacing: KunSpacing.unit * 5,
       children: [
         for (final KunCardPadding padding in KunCardPadding.values)
           SizedBox(
@@ -107,7 +107,7 @@ Widget cardPadding(BuildContext context) {
               child: ColoredBox(
                 color: theme.colors.neutral.shade200,
                 child: Padding(
-                  padding: EdgeInsets.all(KunCardPadding.sm.value),
+                  padding: const EdgeInsets.all(KunSpacing.unit * 3),
                   child: Text(padding.name),
                 ),
               ),
@@ -119,14 +119,14 @@ Widget cardPadding(BuildContext context) {
 }
 
 Widget cardInteractive(BuildContext context) {
-  return Padding(
-    padding: EdgeInsets.all(KunCardPadding.lg.value),
+  return const Padding(
+    padding: EdgeInsets.all(KunSpacing.unit * 6),
     child: SingleChildScrollView(
       scrollDirection: Axis.horizontal,
       child: Row(
         mainAxisSize: MainAxisSize.min,
-        spacing: KunCardPadding.md.value,
-        children: const [
+        spacing: KunSpacing.unit * 5,
+        children: [
           SizedBox(
             width: 240,
             child: KunCard(
@@ -158,18 +158,18 @@ Widget cardInteractive(BuildContext context) {
 
 Widget cardRounded(BuildContext context) {
   return Padding(
-    padding: EdgeInsets.all(KunCardPadding.lg.value),
+    padding: const EdgeInsets.all(KunSpacing.unit * 6),
     child: Column(
       mainAxisSize: MainAxisSize.min,
       crossAxisAlignment: CrossAxisAlignment.start,
-      spacing: KunCardPadding.md.value,
+      spacing: KunSpacing.unit * 5,
       children: [
         Text(
           'The theme-wide default is ${KunTheme.of(context).rounded.name}; each explicit value overrides it.',
         ),
         Wrap(
-          spacing: KunCardPadding.md.value,
-          runSpacing: KunCardPadding.md.value,
+          spacing: KunSpacing.unit * 5,
+          runSpacing: KunSpacing.unit * 5,
           children: [
             for (final KunUIRounded? rounded in <KunUIRounded?>[
               null,
@@ -178,7 +178,7 @@ Widget cardRounded(BuildContext context) {
               Column(
                 mainAxisSize: MainAxisSize.min,
                 crossAxisAlignment: CrossAxisAlignment.start,
-                spacing: KunCardPadding.sm.value,
+                spacing: KunSpacing.unit * 3,
                 children: [
                   Text(
                     rounded == null ? 'null (follows the theme)' : rounded.name,

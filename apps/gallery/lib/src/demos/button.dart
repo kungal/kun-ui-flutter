@@ -5,7 +5,7 @@ void _press() {}
 
 Widget buttonMatrix(BuildContext context) {
   return Padding(
-    padding: EdgeInsets.all(KunCardPadding.lg.value),
+    padding: const EdgeInsets.all(KunSpacing.unit * 6),
     // A phone is narrower than the seven-colour matrix: at 1080px this
     // overflowed by 90px, where the same use case at 1440px in Chrome had
     // looked fine. The host already scrolls vertically, so a vertical
@@ -16,12 +16,12 @@ Widget buttonMatrix(BuildContext context) {
       scrollDirection: Axis.horizontal,
       child: Column(
         mainAxisSize: MainAxisSize.min,
-        spacing: KunCardPadding.sm.value,
+        spacing: KunSpacing.unit * 3,
         children: [
           for (final variant in KunUIVariant.values)
             Row(
               mainAxisSize: MainAxisSize.min,
-              spacing: KunCardPadding.sm.value,
+              spacing: KunSpacing.unit * 3,
               children: [
                 for (final color in KunUIColor.values)
                   KunButton(
@@ -40,15 +40,15 @@ Widget buttonMatrix(BuildContext context) {
 
 Widget buttonSizes(BuildContext context) {
   return Padding(
-    padding: EdgeInsets.all(KunCardPadding.lg.value),
+    padding: const EdgeInsets.all(KunSpacing.unit * 6),
     child: Column(
       mainAxisSize: MainAxisSize.min,
-      spacing: KunCardPadding.sm.value,
+      spacing: KunSpacing.unit * 3,
       children: [
         for (final size in KunUISize.values)
           Row(
             mainAxisSize: MainAxisSize.min,
-            spacing: KunCardPadding.sm.value,
+            spacing: KunSpacing.unit * 3,
             children: [
               KunButton(
                 size: size,
@@ -77,17 +77,17 @@ Widget buttonSizes(BuildContext context) {
 
 Widget buttonStates(BuildContext context) {
   return Padding(
-    padding: EdgeInsets.all(KunCardPadding.lg.value),
+    padding: const EdgeInsets.all(KunSpacing.unit * 6),
     child: Column(
       mainAxisSize: MainAxisSize.min,
       crossAxisAlignment: CrossAxisAlignment.start,
-      spacing: KunCardPadding.md.value,
+      spacing: KunSpacing.unit * 5,
       children: [
         const Text('loading'),
-        Row(
+        const Row(
           mainAxisSize: MainAxisSize.min,
-          spacing: KunCardPadding.sm.value,
-          children: const [
+          spacing: KunSpacing.unit * 3,
+          children: [
             KunButton(
               loading: true,
               onPressed: _press,
@@ -100,10 +100,10 @@ Widget buttonStates(BuildContext context) {
           ],
         ),
         const Text('disabled'),
-        Row(
+        const Row(
           mainAxisSize: MainAxisSize.min,
-          spacing: KunCardPadding.sm.value,
-          children: const [
+          spacing: KunSpacing.unit * 3,
+          children: [
             KunButton(
               disabled: true,
               onPressed: _press,
@@ -118,11 +118,11 @@ Widget buttonStates(BuildContext context) {
         const Text('fullWidth'),
         SizedBox(
           width: KunTheme.of(context).breakpoints.sm,
-          child: Column(
+          child: const Column(
             mainAxisSize: MainAxisSize.min,
             crossAxisAlignment: CrossAxisAlignment.start,
-            spacing: KunCardPadding.sm.value,
-            children: const [
+            spacing: KunSpacing.unit * 3,
+            children: [
               KunButton(
                 fullWidth: true,
                 onPressed: _press,
@@ -142,18 +142,18 @@ Widget buttonStates(BuildContext context) {
 
 Widget buttonRounded(BuildContext context) {
   return Padding(
-    padding: EdgeInsets.all(KunCardPadding.lg.value),
+    padding: const EdgeInsets.all(KunSpacing.unit * 6),
     child: Column(
       mainAxisSize: MainAxisSize.min,
       crossAxisAlignment: CrossAxisAlignment.start,
-      spacing: KunCardPadding.md.value,
+      spacing: KunSpacing.unit * 5,
       children: [
         Text(
           'The theme-wide default is ${KunTheme.of(context).rounded.name}; each explicit value overrides it.',
         ),
         Wrap(
-          spacing: KunCardPadding.md.value,
-          runSpacing: KunCardPadding.md.value,
+          spacing: KunSpacing.unit * 5,
+          runSpacing: KunSpacing.unit * 5,
           children: [
             for (final KunUIRounded? rounded in <KunUIRounded?>[
               null,
@@ -162,7 +162,7 @@ Widget buttonRounded(BuildContext context) {
               Column(
                 mainAxisSize: MainAxisSize.min,
                 crossAxisAlignment: CrossAxisAlignment.start,
-                spacing: KunCardPadding.sm.value,
+                spacing: KunSpacing.unit * 3,
                 children: [
                   Text(
                     rounded == null ? 'null (follows the theme)' : rounded.name,

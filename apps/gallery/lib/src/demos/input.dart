@@ -5,16 +5,16 @@ void _press() {}
 
 Widget inputSizes(BuildContext context) {
   return Padding(
-    padding: EdgeInsets.all(KunCardPadding.lg.value),
+    padding: const EdgeInsets.all(KunSpacing.unit * 6),
     child: Column(
       mainAxisSize: MainAxisSize.min,
-      spacing: KunCardPadding.sm.value,
+      spacing: KunSpacing.unit * 3,
       children: [
         for (final KunUISize size in KunUISize.values)
           SizedBox(
             width: 360,
             child: Row(
-              spacing: KunCardPadding.sm.value,
+              spacing: KunSpacing.unit * 3,
               children: [
                 Expanded(
                   child: _Field(
@@ -50,13 +50,13 @@ Widget inputSizes(BuildContext context) {
 
 Widget inputLabelling(BuildContext context) {
   return Padding(
-    padding: EdgeInsets.all(KunCardPadding.lg.value),
+    padding: const EdgeInsets.all(KunSpacing.unit * 6),
     child: SizedBox(
       width: 360,
       child: Column(
         mainAxisSize: MainAxisSize.min,
         crossAxisAlignment: CrossAxisAlignment.start,
-        spacing: KunCardPadding.md.value,
+        spacing: KunSpacing.unit * 5,
         children: [
           const Text('label'),
           _Field(
@@ -107,13 +107,13 @@ Widget inputLabelling(BuildContext context) {
 
 Widget inputValidation(BuildContext context) {
   return Padding(
-    padding: EdgeInsets.all(KunCardPadding.lg.value),
+    padding: const EdgeInsets.all(KunSpacing.unit * 6),
     child: SizedBox(
       width: 360,
       child: Column(
         mainAxisSize: MainAxisSize.min,
         crossAxisAlignment: CrossAxisAlignment.start,
-        spacing: KunCardPadding.md.value,
+        spacing: KunSpacing.unit * 5,
         children: [
           const Text('description'),
           _Field(
@@ -156,13 +156,13 @@ Widget inputValidation(BuildContext context) {
 Widget inputAffixes(BuildContext context) {
   final KunThemeData theme = KunTheme.of(context);
   return Padding(
-    padding: EdgeInsets.all(KunCardPadding.lg.value),
+    padding: const EdgeInsets.all(KunSpacing.unit * 6),
     child: SizedBox(
       width: 360,
       child: Column(
         mainAxisSize: MainAxisSize.min,
         crossAxisAlignment: CrossAxisAlignment.start,
-        spacing: KunCardPadding.md.value,
+        spacing: KunSpacing.unit * 5,
         children: [
           const Text('prefix'),
           _Field(
@@ -183,9 +183,9 @@ Widget inputAffixes(BuildContext context) {
                 onChanged: onChanged,
                 suffix: Text(
                   '.com',
-                  style: KunControlMetrics.of(KunUISize.md).textStyle.copyWith(
-                        color: theme.colors.neutral.shade500,
-                      ),
+                  style: KunText.sm.copyWith(
+                    color: theme.colors.neutral.shade500,
+                  ),
                 ),
               );
             },
@@ -221,16 +221,16 @@ Widget inputAffixes(BuildContext context) {
 
 Widget inputFocusRing(BuildContext context) {
   return Padding(
-    padding: EdgeInsets.all(KunCardPadding.lg.value),
+    padding: const EdgeInsets.all(KunSpacing.unit * 6),
     child: Column(
       mainAxisSize: MainAxisSize.min,
       crossAxisAlignment: CrossAxisAlignment.start,
-      spacing: KunCardPadding.md.value,
+      spacing: KunSpacing.unit * 5,
       children: [
         const Text('click a field to see its ring'),
         Wrap(
-          spacing: KunCardPadding.md.value,
-          runSpacing: KunCardPadding.md.value,
+          spacing: KunSpacing.unit * 5,
+          runSpacing: KunSpacing.unit * 5,
           children: [
             for (final KunUIColor color in KunUIColor.values)
               SizedBox(
@@ -238,7 +238,7 @@ Widget inputFocusRing(BuildContext context) {
                 child: Column(
                   mainAxisSize: MainAxisSize.min,
                   crossAxisAlignment: CrossAxisAlignment.start,
-                  spacing: KunCardPadding.sm.value,
+                  spacing: KunSpacing.unit * 3,
                   children: [
                     Text(color.name),
                     _Field(
@@ -261,27 +261,27 @@ Widget inputFocusRing(BuildContext context) {
 }
 
 Widget inputEvents(BuildContext context) {
-  return Padding(
-    padding: EdgeInsets.all(KunCardPadding.lg.value),
-    child: const _InputEvents(),
+  return const Padding(
+    padding: EdgeInsets.all(KunSpacing.unit * 6),
+    child: _InputEvents(),
   );
 }
 
 Widget inputStates(BuildContext context) {
   return Padding(
-    padding: EdgeInsets.all(KunCardPadding.lg.value),
+    padding: const EdgeInsets.all(KunSpacing.unit * 6),
     child: SingleChildScrollView(
       scrollDirection: Axis.horizontal,
       child: Row(
         mainAxisSize: MainAxisSize.min,
-        spacing: KunCardPadding.md.value,
+        spacing: KunSpacing.unit * 5,
         children: [
           SizedBox(
             width: 320,
             child: Column(
               mainAxisSize: MainAxisSize.min,
               crossAxisAlignment: CrossAxisAlignment.start,
-              spacing: KunCardPadding.sm.value,
+              spacing: KunSpacing.unit * 3,
               children: [
                 const Text('normal'),
                 _Field(
@@ -302,7 +302,7 @@ Widget inputStates(BuildContext context) {
             child: Column(
               mainAxisSize: MainAxisSize.min,
               crossAxisAlignment: CrossAxisAlignment.start,
-              spacing: KunCardPadding.sm.value,
+              spacing: KunSpacing.unit * 3,
               children: [
                 const Text('disabled'),
                 _Field(
@@ -327,18 +327,18 @@ Widget inputStates(BuildContext context) {
 
 Widget inputRounded(BuildContext context) {
   return Padding(
-    padding: EdgeInsets.all(KunCardPadding.lg.value),
+    padding: const EdgeInsets.all(KunSpacing.unit * 6),
     child: Column(
       mainAxisSize: MainAxisSize.min,
       crossAxisAlignment: CrossAxisAlignment.start,
-      spacing: KunCardPadding.md.value,
+      spacing: KunSpacing.unit * 5,
       children: [
         Text(
           'The theme-wide default is ${KunTheme.of(context).rounded.name}; each explicit value overrides it.',
         ),
         Wrap(
-          spacing: KunCardPadding.md.value,
-          runSpacing: KunCardPadding.md.value,
+          spacing: KunSpacing.unit * 5,
+          runSpacing: KunSpacing.unit * 5,
           children: [
             for (final KunUIRounded? rounded in <KunUIRounded?>[
               null,
@@ -347,7 +347,7 @@ Widget inputRounded(BuildContext context) {
               Column(
                 mainAxisSize: MainAxisSize.min,
                 crossAxisAlignment: CrossAxisAlignment.start,
-                spacing: KunCardPadding.sm.value,
+                spacing: KunSpacing.unit * 3,
                 children: [
                   Text(
                     rounded == null ? 'null (follows the theme)' : rounded.name,
@@ -417,7 +417,7 @@ class _InputEventsState extends State<_InputEvents> {
       child: Column(
         mainAxisSize: MainAxisSize.min,
         crossAxisAlignment: CrossAxisAlignment.start,
-        spacing: KunCardPadding.md.value,
+        spacing: KunSpacing.unit * 5,
         children: [
           KunInput(
             value: _value,
