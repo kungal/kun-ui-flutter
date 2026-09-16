@@ -16,6 +16,7 @@ export 'src/components/card.dart';
 export 'src/components/input.dart';
 export 'src/components/chip.dart';
 export 'src/components/spinner.dart';
+export 'src/components/textarea.dart';
 export 'src/foundation/control_metrics.dart';
 export 'src/foundation/design.dart';
 export 'src/foundation/variant_style.dart';

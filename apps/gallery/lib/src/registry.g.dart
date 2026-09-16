@@ -8,6 +8,7 @@ import 'demos/card.dart';
 import 'demos/chip.dart';
 import 'demos/input.dart';
 import 'demos/spinner.dart';
+import 'demos/textarea.dart';
 import 'registry.dart';
 
 /// Every component the gallery shows, in the order the index lists them.
@@ -75,6 +76,26 @@ const List<GalleryComponent> galleryComponents = <GalleryComponent>[
     name: 'KunSpinner',
     demos: <GalleryDemo>[
       GalleryDemo(slug: 'sizes', title: 'Sizes', builder: spinnerSizes),
+    ],
+  ),
+  GalleryComponent(
+    slug: 'kuntextarea',
+    name: 'KunTextarea',
+    demos: <GalleryDemo>[
+      GalleryDemo(slug: 'sizes', title: 'Sizes', builder: textareaSizes),
+      GalleryDemo(
+          slug: 'labelling', title: 'Labelling', builder: textareaLabelling),
+      GalleryDemo(
+          slug: 'validation', title: 'Validation', builder: textareaValidation),
+      GalleryDemo(slug: 'growth', title: 'Growth', builder: textareaGrowth),
+      GalleryDemo(slug: 'count', title: 'Count', builder: textareaCount),
+      GalleryDemo(
+          slug: 'focus-ring', title: 'Focus ring', builder: textareaFocusRing),
+      GalleryDemo(slug: 'rounded', title: 'Rounded', builder: textareaRounded),
+      GalleryDemo(slug: 'events', title: 'Events', builder: textareaEvents),
+      GalleryDemo(slug: 'states', title: 'States', builder: textareaStates),
+      GalleryDemo(
+          slug: 'contract', title: 'Contract', builder: kunTextareaContract),
     ],
   ),
 ];

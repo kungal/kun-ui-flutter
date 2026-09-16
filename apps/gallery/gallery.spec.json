@@ -250,6 +250,96 @@
           "shows": []
         }
       ]
+    },
+    "KunTextarea": {
+      "source": "demos/textarea.dart",
+      "demos": [
+        {
+          "slug": "sizes",
+          "title": "Sizes",
+          "builder": "textareaSizes",
+          "shows": [
+            "props.size"
+          ]
+        },
+        {
+          "slug": "labelling",
+          "title": "Labelling",
+          "builder": "textareaLabelling",
+          "shows": [
+            "props.label",
+            "props.required",
+            "props.placeholder",
+            "props.description"
+          ]
+        },
+        {
+          "slug": "validation",
+          "title": "Validation",
+          "builder": "textareaValidation",
+          "shows": [
+            "props.error"
+          ]
+        },
+        {
+          "slug": "growth",
+          "title": "Growth",
+          "builder": "textareaGrowth",
+          "shows": [
+            "props.rows",
+            "props.autoGrow",
+            "props.maxHeight"
+          ]
+        },
+        {
+          "slug": "count",
+          "title": "Count",
+          "builder": "textareaCount",
+          "shows": [
+            "props.maxlength",
+            "props.showCharCount"
+          ]
+        },
+        {
+          "slug": "focus-ring",
+          "title": "Focus ring",
+          "builder": "textareaFocusRing",
+          "shows": [
+            "props.color"
+          ]
+        },
+        {
+          "slug": "rounded",
+          "title": "Rounded",
+          "builder": "textareaRounded",
+          "shows": [
+            "props.rounded"
+          ]
+        },
+        {
+          "slug": "events",
+          "title": "Events",
+          "builder": "textareaEvents",
+          "shows": [
+            "props.modelValue",
+            "events.update:modelValue",
+            "events.focus",
+            "events.blur"
+          ]
+        },
+        {
+          "slug": "states",
+          "title": "States",
+          "builder": "textareaStates",
+          "shows": [
+            "props.disabled",
+            "props.readonly"
+          ]
+        }
+      ],
+      "gaps": {
+        "props.autofocus": "A demo page is the payload of an iframe, and a field that takes focus on mount steals the caret from the page hosting it. Showing this honestly needs a mount-on-demand control the gallery does not have."
+      }
     }
   }
 }

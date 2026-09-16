@@ -2,6 +2,13 @@
 
 ## 0.3.0
 
+- `KunTextarea` — the multi-line text field: the shared control scale
+  (padding and type), a label with a required marker, helper text and an
+  error, `rows`, `autoGrow` with a `maxHeight` cap, a character counter,
+  `readOnly`, and the same caret, selection, focus ring and accessibility
+  behaviour as `KunInput`. `maxLength` and the counter count user-perceived
+  characters, where the browser counts UTF-16 code units. The web's `resize`
+  handle is browser chrome and is not ported.
 - `KunInput`: a click or tap places the caret, and a drag, double-tap or
   long-press selects. 0.2.0 moved the caret to the end on every tap and could
   not select with the pointer at all. Touch selection handles and a copy/paste
@@ -15,9 +22,9 @@
   at once; the web does not transition it either.
 - `KunInput`: a disabled field can no longer take focus, from the keyboard or
   otherwise. Disabling a focused field blurs it and calls `onBlur`.
-- `KunInput` needs an `Overlay` ancestor, as every Flutter text field does.
-  `WidgetsApp` — and so `MaterialApp` and `CupertinoApp` — provides one; a
-  bare widget tree, such as a test, has to add it.
+- `KunInput` and `KunTextarea` need an `Overlay` ancestor, as every Flutter
+  text field does. `WidgetsApp` — and so `MaterialApp` and `CupertinoApp` —
+  provides one; a bare widget tree, such as a test, has to add it.
 
 ## 0.2.0
 

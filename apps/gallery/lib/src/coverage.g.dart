@@ -466,3 +466,194 @@ const ComponentCoverage _kunInput = ComponentCoverage(
 /// The contract coverage page for KunInput.
 Widget kunInputContract(BuildContext context) =>
     const CoveragePage(coverage: _kunInput);
+
+const ComponentCoverage _kunTextarea = ComponentCoverage(
+  name: 'KunTextarea',
+  entries: <CoverageEntry>[
+    CoverageEntry(
+      section: 'props',
+      contractName: 'autoGrow',
+      status: CoverageStatus.shown,
+      dartName: 'autoGrow',
+      shownBy: 'Growth',
+    ),
+    CoverageEntry(
+      section: 'props',
+      contractName: 'autofocus',
+      status: CoverageStatus.notYet,
+      dartName: 'autofocus',
+      reason:
+          'A demo page is the payload of an iframe, and a field that takes focus on mount steals the caret from the page hosting it. Showing this honestly needs a mount-on-demand control the gallery does not have.',
+    ),
+    CoverageEntry(
+      section: 'props',
+      contractName: 'color',
+      status: CoverageStatus.shown,
+      dartName: 'color',
+      shownBy: 'Focus ring',
+    ),
+    CoverageEntry(
+      section: 'props',
+      contractName: 'darkBorder',
+      status: CoverageStatus.omitted,
+      dartName: null,
+      reason:
+          'Declared in Textarea.vue\'s props but never read by its template — a legacy toggle with no behaviour to port.',
+    ),
+    CoverageEntry(
+      section: 'props',
+      contractName: 'description',
+      status: CoverageStatus.shown,
+      dartName: 'description',
+      shownBy: 'Labelling',
+    ),
+    CoverageEntry(
+      section: 'props',
+      contractName: 'disabled',
+      status: CoverageStatus.shown,
+      dartName: 'disabled',
+      shownBy: 'States',
+    ),
+    CoverageEntry(
+      section: 'props',
+      contractName: 'error',
+      status: CoverageStatus.shown,
+      dartName: 'error',
+      shownBy: 'Validation',
+    ),
+    CoverageEntry(
+      section: 'props',
+      contractName: 'hint',
+      status: CoverageStatus.omitted,
+      dartName: null,
+      reason:
+          'The web\'s own deprecated alias of `description`; a new API is not born with it.',
+    ),
+    CoverageEntry(
+      section: 'props',
+      contractName: 'label',
+      status: CoverageStatus.shown,
+      dartName: 'label',
+      shownBy: 'Labelling',
+    ),
+    CoverageEntry(
+      section: 'props',
+      contractName: 'maxHeight',
+      status: CoverageStatus.shown,
+      dartName: 'maxHeight',
+      shownBy: 'Growth',
+    ),
+    CoverageEntry(
+      section: 'props',
+      contractName: 'maxlength',
+      status: CoverageStatus.shown,
+      dartName: 'maxLength',
+      shownBy: 'Count',
+    ),
+    CoverageEntry(
+      section: 'props',
+      contractName: 'minlength',
+      status: CoverageStatus.omitted,
+      dartName: null,
+      reason:
+          'Feeds only the browser\'s submit-time constraint validation, which the component itself never renders; Flutter has no form submission for it to join.',
+    ),
+    CoverageEntry(
+      section: 'props',
+      contractName: 'modelValue',
+      status: CoverageStatus.shown,
+      dartName: 'value',
+      shownBy: 'Events',
+    ),
+    CoverageEntry(
+      section: 'props',
+      contractName: 'placeholder',
+      status: CoverageStatus.shown,
+      dartName: 'placeholder',
+      shownBy: 'Labelling',
+    ),
+    CoverageEntry(
+      section: 'props',
+      contractName: 'readonly',
+      status: CoverageStatus.shown,
+      dartName: 'readOnly',
+      shownBy: 'States',
+    ),
+    CoverageEntry(
+      section: 'props',
+      contractName: 'required',
+      status: CoverageStatus.shown,
+      dartName: 'required',
+      shownBy: 'Labelling',
+    ),
+    CoverageEntry(
+      section: 'props',
+      contractName: 'resize',
+      status: CoverageStatus.omitted,
+      dartName: null,
+      reason:
+          'The drag handle is the browser\'s own textarea chrome (CSS `resize`); Flutter text fields have none, and drawing one would be design upstream never specified. The port renders the web default, `none`.',
+    ),
+    CoverageEntry(
+      section: 'props',
+      contractName: 'rounded',
+      status: CoverageStatus.shown,
+      dartName: 'rounded',
+      shownBy: 'Rounded',
+    ),
+    CoverageEntry(
+      section: 'props',
+      contractName: 'rows',
+      status: CoverageStatus.shown,
+      dartName: 'rows',
+      shownBy: 'Growth',
+    ),
+    CoverageEntry(
+      section: 'props',
+      contractName: 'showCharCount',
+      status: CoverageStatus.shown,
+      dartName: 'showCharCount',
+      shownBy: 'Count',
+    ),
+    CoverageEntry(
+      section: 'props',
+      contractName: 'size',
+      status: CoverageStatus.shown,
+      dartName: 'size',
+      shownBy: 'Sizes',
+    ),
+    CoverageEntry(
+      section: 'events',
+      contractName: 'blur',
+      status: CoverageStatus.shown,
+      dartName: 'onBlur',
+      shownBy: 'Events',
+    ),
+    CoverageEntry(
+      section: 'events',
+      contractName: 'focus',
+      status: CoverageStatus.shown,
+      dartName: 'onFocus',
+      shownBy: 'Events',
+    ),
+    CoverageEntry(
+      section: 'events',
+      contractName: 'input',
+      status: CoverageStatus.omitted,
+      dartName: null,
+      reason:
+          'Carries the DOM event of each edit; the value it reports reaches onChanged (update:modelValue) on the same edit.',
+    ),
+    CoverageEntry(
+      section: 'events',
+      contractName: 'update:modelValue',
+      status: CoverageStatus.shown,
+      dartName: 'onChanged',
+      shownBy: 'Events',
+    ),
+  ],
+);
+
+/// The contract coverage page for KunTextarea.
+Widget kunTextareaContract(BuildContext context) =>
+    const CoveragePage(coverage: _kunTextarea);

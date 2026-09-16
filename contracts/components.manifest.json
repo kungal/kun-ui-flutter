@@ -101,6 +101,49 @@
         "prefix": "prefix",
         "suffix": "suffix"
       }
+    },
+    "KunTextarea": {
+      "widget": "KunTextarea",
+      "props": {
+        "autoGrow": "autoGrow",
+        "autofocus": "autofocus",
+        "color": "color",
+        "darkBorder": {
+          "omit": "Declared in Textarea.vue's props but never read by its template — a legacy toggle with no behaviour to port."
+        },
+        "description": "description",
+        "disabled": "disabled",
+        "error": "error",
+        "hint": {
+          "omit": "The web's own deprecated alias of `description`; a new API is not born with it."
+        },
+        "label": "label",
+        "maxHeight": "maxHeight",
+        "maxlength": "maxLength",
+        "minlength": {
+          "omit": "Feeds only the browser's submit-time constraint validation, which the component itself never renders; Flutter has no form submission for it to join."
+        },
+        "modelValue": "value",
+        "placeholder": "placeholder",
+        "readonly": "readOnly",
+        "required": "required",
+        "resize": {
+          "omit": "The drag handle is the browser's own textarea chrome (CSS `resize`); Flutter text fields have none, and drawing one would be design upstream never specified. The port renders the web default, `none`."
+        },
+        "rounded": "rounded",
+        "rows": "rows",
+        "showCharCount": "showCharCount",
+        "size": "size"
+      },
+      "events": {
+        "blur": "onBlur",
+        "focus": "onFocus",
+        "input": {
+          "omit": "Carries the DOM event of each edit; the value it reports reaches onChanged (update:modelValue) on the same edit."
+        },
+        "update:modelValue": "onChanged"
+      },
+      "slots": {}
     }
   }
 }
