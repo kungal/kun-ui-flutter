@@ -19,6 +19,7 @@ const List<GalleryComponent> galleryComponents = <GalleryComponent>[
       GalleryDemo(slug: 'matrix', title: 'Matrix', builder: buttonMatrix),
       GalleryDemo(slug: 'sizes', title: 'Sizes', builder: buttonSizes),
       GalleryDemo(slug: 'states', title: 'States', builder: buttonStates),
+      GalleryDemo(slug: 'rounded', title: 'Rounded', builder: buttonRounded),
       GalleryDemo(
           slug: 'contract', title: 'Contract', builder: kunButtonContract),
     ],
@@ -31,6 +32,7 @@ const List<GalleryComponent> galleryComponents = <GalleryComponent>[
       GalleryDemo(slug: 'tints', title: 'Tints', builder: cardTints),
       GalleryDemo(slug: 'surfaces', title: 'Surfaces', builder: cardSurfaces),
       GalleryDemo(slug: 'padding', title: 'Padding', builder: cardPadding),
+      GalleryDemo(slug: 'rounded', title: 'Rounded', builder: cardRounded),
       GalleryDemo(
           slug: 'interactive', title: 'Interactive', builder: cardInteractive),
       GalleryDemo(
@@ -61,6 +63,7 @@ const List<GalleryComponent> galleryComponents = <GalleryComponent>[
       GalleryDemo(slug: 'affixes', title: 'Affixes', builder: inputAffixes),
       GalleryDemo(
           slug: 'focus-ring', title: 'Focus ring', builder: inputFocusRing),
+      GalleryDemo(slug: 'rounded', title: 'Rounded', builder: inputRounded),
       GalleryDemo(slug: 'events', title: 'Events', builder: inputEvents),
       GalleryDemo(slug: 'states', title: 'States', builder: inputStates),
       GalleryDemo(

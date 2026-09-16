@@ -6,13 +6,14 @@ import 'registry.dart';
 import 'registry.g.dart';
 import 'route.dart';
 
-/// The gallery index: title, theme and language toggles, and a card per
-/// component.
+/// The gallery index: title, the theme, language and corner-radius controls,
+/// and a card per component.
 class GalleryIndex extends StatelessWidget {
   /// Creates the index for [route]'s theme and language.
   const GalleryIndex({required this.route, super.key});
 
-  /// The current address; toggles and demo links copy its theme and language.
+  /// The current address; the controls and every demo link carry its theme,
+  /// language and corner radius forward.
   final GalleryRoute route;
 
   @override
@@ -53,9 +54,10 @@ class GalleryIndex extends StatelessWidget {
                       runSpacing: KunCardPadding.sm.value,
                       children: [
                         Text('KunUI for Flutter', style: titleStyle),
-                        Row(
-                          mainAxisSize: MainAxisSize.min,
+                        Wrap(
                           spacing: KunCardPadding.sm.value,
+                          runSpacing: KunCardPadding.sm.value,
+                          crossAxisAlignment: WrapCrossAlignment.center,
                           children: [
                             KunButton(
                               variant: KunUIVariant.bordered,
@@ -82,6 +84,30 @@ class GalleryIndex extends StatelessWidget {
                               ),
                               child: Text(langLabel),
                             ),
+                            Text(
+                              'rounded',
+                              style: KunControlMetrics.of(KunUISize.sm)
+                                  .textStyle
+                                  .copyWith(
+                                    color: theme.colors.neutral.shade600,
+                                  ),
+                            ),
+                            for (final KunUIRounded value
+                                in KunUIRounded.values)
+                              KunButton(
+                                variant: value == route.rounded
+                                    ? KunUIVariant.solid
+                                    : KunUIVariant.bordered,
+                                color: value == route.rounded
+                                    ? KunUIColor.primary
+                                    : KunUIColor.neutral,
+                                size: KunUISize.sm,
+                                onPressed: () =>
+                                    GalleryNavigator.of(context).go(
+                                  route.copyWith(rounded: value),
+                                ),
+                                child: Text(value.name),
+                              ),
                           ],
                         ),
                       ],
@@ -113,6 +139,7 @@ class GalleryIndex extends StatelessWidget {
                                     demo: demo.slug,
                                     theme: route.theme,
                                     lang: route.lang,
+                                    rounded: route.rounded,
                                   ),
                                 ),
                                 child: Text(demo.title),

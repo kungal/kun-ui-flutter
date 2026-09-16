@@ -325,6 +325,55 @@ Widget inputStates(BuildContext context) {
   );
 }
 
+Widget inputRounded(BuildContext context) {
+  return Padding(
+    padding: EdgeInsets.all(KunCardPadding.lg.value),
+    child: Column(
+      mainAxisSize: MainAxisSize.min,
+      crossAxisAlignment: CrossAxisAlignment.start,
+      spacing: KunCardPadding.md.value,
+      children: [
+        Text(
+          'The theme-wide default is ${KunTheme.of(context).rounded.name}; each explicit value overrides it.',
+        ),
+        Wrap(
+          spacing: KunCardPadding.md.value,
+          runSpacing: KunCardPadding.md.value,
+          children: [
+            for (final KunUIRounded? rounded in <KunUIRounded?>[
+              null,
+              ...KunUIRounded.values,
+            ])
+              Column(
+                mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.start,
+                spacing: KunCardPadding.sm.value,
+                children: [
+                  Text(
+                    rounded == null ? 'null (follows the theme)' : rounded.name,
+                  ),
+                  SizedBox(
+                    width: 320,
+                    child: _Field(
+                      builder: (String value, ValueChanged<String> onChanged) {
+                        return KunInput(
+                          value: value,
+                          onChanged: onChanged,
+                          rounded: rounded,
+                          placeholder: 'Input',
+                        );
+                      },
+                    ),
+                  ),
+                ],
+              ),
+          ],
+        ),
+      ],
+    ),
+  );
+}
+
 class _Field extends StatefulWidget {
   const _Field({required this.builder, this.initial = ''});
 

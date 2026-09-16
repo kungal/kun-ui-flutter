@@ -11,7 +11,7 @@ enum GalleryTheme {
 }
 
 /// An address in the gallery: index, a demo, or an unknown path, plus the
-/// theme and language that wrap it.
+/// theme, language, and corner radius that wrap it.
 @immutable
 class GalleryRoute {
   /// Creates a gallery address. Null [component] is the index.
@@ -21,6 +21,7 @@ class GalleryRoute {
     this.extra = const <String>[],
     this.theme = GalleryTheme.light,
     this.lang = KunMessages.zhCN,
+    this.rounded = KunUIRounded.md,
   });
 
   /// Component slug (`kunbutton`), or null on the index.
@@ -37,6 +38,9 @@ class GalleryRoute {
 
   /// The message catalog [KunMessagesScope] wraps the tree with.
   final KunMessages lang;
+
+  /// The theme-wide corner radius the page's [KunThemeData] is built with.
+  final KunUIRounded rounded;
 
   /// Whether this address is the index (`#/`).
   bool get isIndex => component == null && demo == null && extra.isEmpty;
@@ -63,11 +67,18 @@ class GalleryRoute {
       'en' => KunMessages.en,
       _ => KunMessages.zhCN,
     };
+    final KunUIRounded rounded = switch (source.queryParameters['rounded']) {
+      'none' => KunUIRounded.none,
+      'sm' => KunUIRounded.sm,
+      'lg' => KunUIRounded.lg,
+      'full' => KunUIRounded.full,
+      _ => KunUIRounded.md,
+    };
     final List<String> segments = source.pathSegments
         .where((String segment) => segment.isNotEmpty)
         .toList();
     if (segments.isEmpty) {
-      return GalleryRoute(theme: theme, lang: lang);
+      return GalleryRoute(theme: theme, lang: lang, rounded: rounded);
     }
     return GalleryRoute(
       component: segments[0],
@@ -75,6 +86,7 @@ class GalleryRoute {
       extra: segments.length > 2 ? segments.sublist(2) : const <String>[],
       theme: theme,
       lang: lang,
+      rounded: rounded,
     );
   }
 
@@ -89,20 +101,27 @@ class GalleryRoute {
     final Map<String, String> query = <String, String>{};
     if (theme == GalleryTheme.dark) query['theme'] = 'dark';
     if (lang.code != 'zh-CN') query['lang'] = lang.code;
+    if (rounded != KunUIRounded.md) query['rounded'] = rounded.name;
     return Uri(
       path: path,
       queryParameters: query.isEmpty ? null : query,
     );
   }
 
-  /// A copy with [theme] and/or [lang] replaced; the path is unchanged.
-  GalleryRoute copyWith({GalleryTheme? theme, KunMessages? lang}) =>
+  /// A copy with [theme], [lang], and/or [rounded] replaced; the path is
+  /// unchanged.
+  GalleryRoute copyWith({
+    GalleryTheme? theme,
+    KunMessages? lang,
+    KunUIRounded? rounded,
+  }) =>
       GalleryRoute(
         component: component,
         demo: demo,
         extra: extra,
         theme: theme ?? this.theme,
         lang: lang ?? this.lang,
+        rounded: rounded ?? this.rounded,
       );
 
   @override
@@ -115,7 +134,8 @@ class GalleryRoute {
       other.demo == demo &&
       listEquals(other.extra, extra) &&
       other.theme == theme &&
-      other.lang.code == lang.code;
+      other.lang.code == lang.code &&
+      other.rounded == rounded;
 
   @override
   int get hashCode => Object.hash(
@@ -124,5 +144,6 @@ class GalleryRoute {
         Object.hashAll(extra),
         theme,
         lang.code,
+        rounded,
       );
 }

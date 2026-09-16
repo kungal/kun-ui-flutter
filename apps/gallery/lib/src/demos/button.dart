@@ -139,3 +139,44 @@ Widget buttonStates(BuildContext context) {
     ),
   );
 }
+
+Widget buttonRounded(BuildContext context) {
+  return Padding(
+    padding: EdgeInsets.all(KunCardPadding.lg.value),
+    child: Column(
+      mainAxisSize: MainAxisSize.min,
+      crossAxisAlignment: CrossAxisAlignment.start,
+      spacing: KunCardPadding.md.value,
+      children: [
+        Text(
+          'The theme-wide default is ${KunTheme.of(context).rounded.name}; each explicit value overrides it.',
+        ),
+        Wrap(
+          spacing: KunCardPadding.md.value,
+          runSpacing: KunCardPadding.md.value,
+          children: [
+            for (final KunUIRounded? rounded in <KunUIRounded?>[
+              null,
+              ...KunUIRounded.values,
+            ])
+              Column(
+                mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.start,
+                spacing: KunCardPadding.sm.value,
+                children: [
+                  Text(
+                    rounded == null ? 'null (follows the theme)' : rounded.name,
+                  ),
+                  KunButton(
+                    rounded: rounded,
+                    onPressed: _press,
+                    child: const Text('Button'),
+                  ),
+                ],
+              ),
+          ],
+        ),
+      ],
+    ),
+  );
+}

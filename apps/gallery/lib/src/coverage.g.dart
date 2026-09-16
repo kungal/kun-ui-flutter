@@ -70,10 +70,9 @@ const ComponentCoverage _kunButton = ComponentCoverage(
     CoverageEntry(
       section: 'props',
       contractName: 'rounded',
-      status: CoverageStatus.notYet,
+      status: CoverageStatus.shown,
       dartName: 'rounded',
-      reason:
-          'The axis that matters is the theme-wide default -- KunThemeData.rounded squares or rounds every surface at once, as the web\'s config.rounded does -- and the gallery has no control for it. The per-widget override is the escape hatch, not the story.',
+      shownBy: 'Rounded',
     ),
     CoverageEntry(
       section: 'props',
@@ -174,10 +173,9 @@ const ComponentCoverage _kunCard = ComponentCoverage(
     CoverageEntry(
       section: 'props',
       contractName: 'rounded',
-      status: CoverageStatus.notYet,
+      status: CoverageStatus.shown,
       dartName: 'rounded',
-      reason:
-          'The axis that matters is the theme-wide default -- KunThemeData.rounded squares or rounds every surface at once, as the web\'s config.rounded does -- and the gallery has no control for it. The per-widget override is the escape hatch, not the story.',
+      shownBy: 'Rounded',
     ),
     CoverageEntry(
       section: 'events',
@@ -402,10 +400,9 @@ const ComponentCoverage _kunInput = ComponentCoverage(
     CoverageEntry(
       section: 'props',
       contractName: 'rounded',
-      status: CoverageStatus.notYet,
+      status: CoverageStatus.shown,
       dartName: 'rounded',
-      reason:
-          'The axis that matters is the theme-wide default -- KunThemeData.rounded squares or rounds every surface at once, as the web\'s config.rounded does -- and the gallery has no control for it. The per-widget override is the escape hatch, not the story.',
+      shownBy: 'Rounded',
     ),
     CoverageEntry(
       section: 'props',

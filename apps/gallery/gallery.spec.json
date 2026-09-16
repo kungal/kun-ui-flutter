@@ -34,6 +34,14 @@
             "props.disabled",
             "props.fullWidth"
           ]
+        },
+        {
+          "slug": "rounded",
+          "title": "Rounded",
+          "builder": "buttonRounded",
+          "shows": [
+            "props.rounded"
+          ]
         }
       ],
       "undemoable": {
@@ -41,8 +49,7 @@
         "events.click": "Every button in every demo carries a live onPressed -- that is the floor this gallery was built to meet. A callback has no appearance of its own to show."
       },
       "gaps": {
-        "props.iconPosition": "The sizes demo places its icon in the default left position only.",
-        "props.rounded": "The axis that matters is the theme-wide default -- KunThemeData.rounded squares or rounds every surface at once, as the web's config.rounded does -- and the gallery has no control for it. The per-widget override is the escape hatch, not the story."
+        "props.iconPosition": "The sizes demo places its icon in the default left position only."
       }
     },
     "KunCard": {
@@ -85,6 +92,14 @@
           ]
         },
         {
+          "slug": "rounded",
+          "title": "Rounded",
+          "builder": "cardRounded",
+          "shows": [
+            "props.rounded"
+          ]
+        },
+        {
           "slug": "interactive",
           "title": "Interactive",
           "builder": "cardInteractive",
@@ -96,9 +111,6 @@
       ],
       "undemoable": {
         "events.click": "Every card in the Interactive demo carries a live onTap, and the prop's one subtlety -- that it fires whether or not the card is clickable -- is a behaviour, not an appearance. A callback has nothing of its own to show."
-      },
-      "gaps": {
-        "props.rounded": "The axis that matters is the theme-wide default -- KunThemeData.rounded squares or rounds every surface at once, as the web's config.rounded does -- and the gallery has no control for it. The per-widget override is the escape hatch, not the story."
       }
     },
     "KunChip": {
@@ -195,6 +207,14 @@
           ]
         },
         {
+          "slug": "rounded",
+          "title": "Rounded",
+          "builder": "inputRounded",
+          "shows": [
+            "props.rounded"
+          ]
+        },
+        {
           "slug": "events",
           "title": "Events",
           "builder": "inputEvents",
@@ -216,8 +236,7 @@
         }
       ],
       "gaps": {
-        "props.autofocus": "A demo page is the payload of an iframe, and a field that takes focus on mount steals the caret from the page hosting it. Showing this honestly needs a mount-on-demand control the gallery does not have.",
-        "props.rounded": "The axis that matters is the theme-wide default -- KunThemeData.rounded squares or rounds every surface at once, as the web's config.rounded does -- and the gallery has no control for it. The per-widget override is the escape hatch, not the story."
+        "props.autofocus": "A demo page is the payload of an iframe, and a field that takes focus on mount steals the caret from the page hosting it. Showing this honestly needs a mount-on-demand control the gallery does not have."
       }
     },
     "KunSpinner": {
