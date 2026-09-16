@@ -7,7 +7,9 @@ import 'demos/button.dart';
 import 'demos/card.dart';
 import 'demos/chip.dart';
 import 'demos/input.dart';
+import 'demos/null.dart';
 import 'demos/spinner.dart';
+import 'demos/switch.dart';
 import 'demos/textarea.dart';
 import 'registry.dart';
 
@@ -72,10 +74,32 @@ const List<GalleryComponent> galleryComponents = <GalleryComponent>[
     ],
   ),
   GalleryComponent(
+    slug: 'kunnull',
+    name: 'KunNull',
+    demos: <GalleryDemo>[
+      GalleryDemo(slug: 'default', title: 'Default', builder: nullDefault),
+      GalleryDemo(slug: 'custom', title: 'Custom', builder: nullCustom),
+      GalleryDemo(
+          slug: 'contract', title: 'Contract', builder: kunNullContract),
+    ],
+  ),
+  GalleryComponent(
     slug: 'kunspinner',
     name: 'KunSpinner',
     demos: <GalleryDemo>[
       GalleryDemo(slug: 'sizes', title: 'Sizes', builder: spinnerSizes),
+    ],
+  ),
+  GalleryComponent(
+    slug: 'kunswitch',
+    name: 'KunSwitch',
+    demos: <GalleryDemo>[
+      GalleryDemo(slug: 'sizes', title: 'Sizes', builder: switchSizes),
+      GalleryDemo(slug: 'states', title: 'States', builder: switchStates),
+      GalleryDemo(slug: 'help', title: 'Help text', builder: switchHelp),
+      GalleryDemo(slug: 'events', title: 'Events', builder: switchEvents),
+      GalleryDemo(
+          slug: 'contract', title: 'Contract', builder: kunSwitchContract),
     ],
   ),
   GalleryComponent(

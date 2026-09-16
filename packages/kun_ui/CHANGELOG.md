@@ -30,6 +30,16 @@
   at once; the web does not transition it either.
 - `KunInput`: a disabled field can no longer take focus, from the keyboard or
   otherwise. Disabling a focused field blurs it and calls `onBlur`.
+- `KunNull` — the empty state: the bundled mascot (`KunImages.nullImage`, no
+  network request) above the locale's "nothing here" line. `image` takes any
+  `ImageProvider` in place of the web's `src` URL. The mascot is decorative to
+  assistive technology, where the web gives it an untranslated `alt="empty"`.
+- `KunSwitch` — the toggle: the web's own five-step track and thumb scale, a
+  label row that is the tap target, helper and error text, and a
+  keyboard-only focus ring. The track colour eases, the thumb slides on
+  `KunEasing.emphasized`. Screen readers hear a switch; the web's checkbox
+  input has no `role="switch"`. As in a browser checkbox, Enter does not
+  toggle it on the web; Space does, and Enter does elsewhere.
 - Built on kun-ui 2.39.0 (`kun_ui_tokens`, `kun_ui_icons` and
   `kun_ui_messages` ^2.39.0). Its `KunShadows` convert the web's blur instead
   of copying it, so every elevation — `KunCard`, `KunInput`, `KunTextarea` —

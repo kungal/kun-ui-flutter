@@ -467,6 +467,96 @@ const ComponentCoverage _kunInput = ComponentCoverage(
 Widget kunInputContract(BuildContext context) =>
     const CoveragePage(coverage: _kunInput);
 
+const ComponentCoverage _kunNull = ComponentCoverage(
+  name: 'KunNull',
+  entries: <CoverageEntry>[
+    CoverageEntry(
+      section: 'props',
+      contractName: 'description',
+      status: CoverageStatus.shown,
+      dartName: 'description',
+      shownBy: 'Default',
+    ),
+    CoverageEntry(
+      section: 'props',
+      contractName: 'isShowSticker',
+      status: CoverageStatus.shown,
+      dartName: 'isShowSticker',
+      shownBy: 'Custom',
+    ),
+    CoverageEntry(
+      section: 'props',
+      contractName: 'src',
+      status: CoverageStatus.shown,
+      dartName: 'image',
+      shownBy: 'Custom',
+    ),
+  ],
+);
+
+/// The contract coverage page for KunNull.
+Widget kunNullContract(BuildContext context) =>
+    const CoveragePage(coverage: _kunNull);
+
+const ComponentCoverage _kunSwitch = ComponentCoverage(
+  name: 'KunSwitch',
+  entries: <CoverageEntry>[
+    CoverageEntry(
+      section: 'props',
+      contractName: 'description',
+      status: CoverageStatus.shown,
+      dartName: 'description',
+      shownBy: 'Help text',
+    ),
+    CoverageEntry(
+      section: 'props',
+      contractName: 'disabled',
+      status: CoverageStatus.shown,
+      dartName: 'disabled',
+      shownBy: 'States',
+    ),
+    CoverageEntry(
+      section: 'props',
+      contractName: 'error',
+      status: CoverageStatus.shown,
+      dartName: 'error',
+      shownBy: 'Help text',
+    ),
+    CoverageEntry(
+      section: 'props',
+      contractName: 'label',
+      status: CoverageStatus.shown,
+      dartName: 'label',
+      shownBy: 'Sizes',
+    ),
+    CoverageEntry(
+      section: 'props',
+      contractName: 'modelValue',
+      status: CoverageStatus.shown,
+      dartName: 'value',
+      shownBy: 'States',
+    ),
+    CoverageEntry(
+      section: 'props',
+      contractName: 'size',
+      status: CoverageStatus.shown,
+      dartName: 'size',
+      shownBy: 'Sizes',
+    ),
+    CoverageEntry(
+      section: 'events',
+      contractName: 'update:modelValue',
+      status: CoverageStatus.shown,
+      dartName: 'onChanged',
+      shownBy: 'Events',
+    ),
+  ],
+);
+
+/// The contract coverage page for KunSwitch.
+Widget kunSwitchContract(BuildContext context) =>
+    const CoveragePage(coverage: _kunSwitch);
+
 const ComponentCoverage _kunTextarea = ComponentCoverage(
   name: 'KunTextarea',
   entries: <CoverageEntry>[

@@ -239,6 +239,28 @@
         "props.autofocus": "A demo page is the payload of an iframe, and a field that takes focus on mount steals the caret from the page hosting it. Showing this honestly needs a mount-on-demand control the gallery does not have."
       }
     },
+    "KunNull": {
+      "source": "demos/null.dart",
+      "demos": [
+        {
+          "slug": "default",
+          "title": "Default",
+          "builder": "nullDefault",
+          "shows": [
+            "props.description"
+          ]
+        },
+        {
+          "slug": "custom",
+          "title": "Custom",
+          "builder": "nullCustom",
+          "shows": [
+            "props.isShowSticker",
+            "props.src"
+          ]
+        }
+      ]
+    },
     "KunSpinner": {
       "contract": false,
       "source": "demos/spinner.dart",
@@ -248,6 +270,46 @@
           "title": "Sizes",
           "builder": "spinnerSizes",
           "shows": []
+        }
+      ]
+    },
+    "KunSwitch": {
+      "source": "demos/switch.dart",
+      "demos": [
+        {
+          "slug": "sizes",
+          "title": "Sizes",
+          "builder": "switchSizes",
+          "shows": [
+            "props.size",
+            "props.label"
+          ]
+        },
+        {
+          "slug": "states",
+          "title": "States",
+          "builder": "switchStates",
+          "shows": [
+            "props.modelValue",
+            "props.disabled"
+          ]
+        },
+        {
+          "slug": "help",
+          "title": "Help text",
+          "builder": "switchHelp",
+          "shows": [
+            "props.description",
+            "props.error"
+          ]
+        },
+        {
+          "slug": "events",
+          "title": "Events",
+          "builder": "switchEvents",
+          "shows": [
+            "events.update:modelValue"
+          ]
         }
       ]
     },

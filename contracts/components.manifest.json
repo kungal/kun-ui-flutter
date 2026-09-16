@@ -102,6 +102,31 @@
         "suffix": "suffix"
       }
     },
+    "KunNull": {
+      "widget": "KunNull",
+      "props": {
+        "description": "description",
+        "isShowSticker": "isShowSticker",
+        "src": "image"
+      },
+      "events": {},
+      "slots": {}
+    },
+    "KunSwitch": {
+      "widget": "KunSwitch",
+      "props": {
+        "description": "description",
+        "disabled": "disabled",
+        "error": "error",
+        "label": "label",
+        "modelValue": "value",
+        "size": "size"
+      },
+      "events": {
+        "update:modelValue": "onChanged"
+      },
+      "slots": {}
+    },
     "KunTextarea": {
       "widget": "KunTextarea",
       "props": {
