@@ -52,6 +52,37 @@ void main() {
     expect(iconColor, KunColors.light.foreground);
   });
 
+  testWidgets('KunTheme sets even leading distribution', (tester) async {
+    await tester.pumpWidget(
+      KunTheme(
+        data: KunThemeData.light(),
+        child: const Directionality(
+          textDirection: TextDirection.ltr,
+          child: Text('hello'),
+        ),
+      ),
+    );
+    expect(
+      (tester.widget<RichText>(find.byType(RichText)).text as TextSpan)
+          .style!
+          .leadingDistribution,
+      TextLeadingDistribution.even,
+    );
+
+    await tester.pumpWidget(
+      const Directionality(
+        textDirection: TextDirection.ltr,
+        child: Text('hello'),
+      ),
+    );
+    expect(
+      (tester.widget<RichText>(find.byType(RichText)).text as TextSpan)
+          .style!
+          .leadingDistribution,
+      isNot(TextLeadingDistribution.even),
+    );
+  });
+
   test('breakpoints resolve mobile-first at the web widths', () {
     const breakpoints = KunBreakpoints();
     expect(breakpoints.resolve(320), KunBreakpoint.base);

@@ -94,6 +94,24 @@ void main() {
     }
   });
 
+  testWidgets('md label uses text-sm with CSS half-leading', (tester) async {
+    await tester.pumpWidget(
+      wrap(KunButton(onPressed: () {}, child: const Text('Save'))),
+    );
+    final style = (tester
+            .widget<RichText>(
+              find.descendant(
+                of: find.byType(KunButton),
+                matching: find.byType(RichText),
+              ),
+            )
+            .text as TextSpan)
+        .style!;
+    expect(style.fontSize, 14);
+    expect(style.height, 20 / 14);
+    expect(style.leadingDistribution, TextLeadingDistribution.even);
+  });
+
   testWidgets('solid primary paints the token fill', (tester) async {
     await tester.pumpWidget(
       wrap(KunButton(onPressed: () {}, child: const Text('Save'))),

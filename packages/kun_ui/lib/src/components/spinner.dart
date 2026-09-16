@@ -44,8 +44,9 @@ class _KunSpinnerState extends State<KunSpinner>
 
   @override
   Widget build(BuildContext context) {
-    final color =
-        widget.color ?? IconTheme.of(context).color ?? const Color(0xFF000000);
+    // IconTheme.of fills a null color from IconThemeData.fallback, so this is
+    // never null; the literal fallback that used to follow it was dead code.
+    final color = widget.color ?? IconTheme.of(context).color!;
     final spinner = AnimatedBuilder(
       animation: _controller,
       builder: (context, _) => CustomPaint(

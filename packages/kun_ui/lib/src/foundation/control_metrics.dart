@@ -1,4 +1,5 @@
 import 'package:flutter/widgets.dart';
+import 'package:kun_ui_tokens/kun_ui_tokens.dart';
 
 import 'design.dart';
 
@@ -11,24 +12,32 @@ import 'design.dart';
 /// controlSize.ts in kungal/kun-ui) — that file is the source of truth; a
 /// change starts there and is mirrored here, never invented here.
 ///
+/// Each padding is [KunSpacing.unit] times the class's own step (`px-2.5` is
+/// `KunSpacing.unit * 2.5`) and each text style is the class's [KunText] step
+/// (`text-xs` is [KunText.xs]), so the values are read off the web classes, not
+/// retyped from them.
+///
 /// Padding-driven, not fixed-height: height = line height + 2·padding + 2·1px
 /// border (every variant carries a 1px border, transparent on filled ones, so
 /// switching variants never shifts the box). Heights: xs 26 · sm 34 · md 38 ·
 /// lg 46 · xl 54.
 class KunControlMetrics {
   const KunControlMetrics._({
-    required this.fontSize,
-    required this.lineHeight,
+    required this.textStyle,
     required this.horizontalPadding,
     required this.verticalPadding,
     required this.square,
   });
 
+  /// The label [TextStyle]: a [KunText] step, so size, line height and CSS
+  /// half-leading only — color and weight are the component's.
+  final TextStyle textStyle;
+
   /// Label font size in logical pixels.
-  final double fontSize;
+  double get fontSize => textStyle.fontSize!;
 
   /// Label line height in logical pixels (web line-heights 16/20/20/24/28).
-  final double lineHeight;
+  double get lineHeight => textStyle.fontSize! * textStyle.height!;
 
   /// Horizontal content padding.
   final double horizontalPadding;
@@ -41,11 +50,6 @@ class KunControlMetrics {
   /// and text controls line up in a row.
   final double square;
 
-  /// The label [TextStyle] (size and line height only — color and weight are
-  /// the component's).
-  TextStyle get textStyle =>
-      TextStyle(fontSize: fontSize, height: lineHeight / fontSize);
-
   /// The content padding.
   EdgeInsets get padding => EdgeInsets.symmetric(
         horizontal: horizontalPadding,
@@ -55,38 +59,33 @@ class KunControlMetrics {
   /// The metrics for [size].
   static KunControlMetrics of(KunUISize size) => switch (size) {
         KunUISize.xs => const KunControlMetrics._(
-            fontSize: 12,
-            lineHeight: 16,
-            horizontalPadding: 10,
-            verticalPadding: 4,
+            textStyle: KunText.xs,
+            horizontalPadding: KunSpacing.unit * 2.5,
+            verticalPadding: KunSpacing.unit,
             square: 26,
           ),
         KunUISize.sm => const KunControlMetrics._(
-            fontSize: 14,
-            lineHeight: 20,
-            horizontalPadding: 14,
-            verticalPadding: 6,
+            textStyle: KunText.sm,
+            horizontalPadding: KunSpacing.unit * 3.5,
+            verticalPadding: KunSpacing.unit * 1.5,
             square: 34,
           ),
         KunUISize.md => const KunControlMetrics._(
-            fontSize: 14,
-            lineHeight: 20,
-            horizontalPadding: 16,
-            verticalPadding: 8,
+            textStyle: KunText.sm,
+            horizontalPadding: KunSpacing.unit * 4,
+            verticalPadding: KunSpacing.unit * 2,
             square: 38,
           ),
         KunUISize.lg => const KunControlMetrics._(
-            fontSize: 16,
-            lineHeight: 24,
-            horizontalPadding: 20,
-            verticalPadding: 10,
+            textStyle: KunText.base,
+            horizontalPadding: KunSpacing.unit * 5,
+            verticalPadding: KunSpacing.unit * 2.5,
             square: 46,
           ),
         KunUISize.xl => const KunControlMetrics._(
-            fontSize: 18,
-            lineHeight: 28,
-            horizontalPadding: 24,
-            verticalPadding: 12,
+            textStyle: KunText.lg,
+            horizontalPadding: KunSpacing.unit * 6,
+            verticalPadding: KunSpacing.unit * 3,
             square: 54,
           ),
       };
@@ -100,21 +99,29 @@ class KunControlMetrics {
 /// control of the same [KunUISize]: chips sit inside rows of text, controls
 /// sit in forms.
 ///
+/// Each padding is [KunSpacing.unit] times the class's own step (`px-2.5` is
+/// `KunSpacing.unit * 2.5`) and each text style is the class's [KunText] step
+/// (`text-xs` is [KunText.xs]), so the values are read off the web classes, not
+/// retyped from them.
+///
 /// Heights (line height + 2·padding + 2·1px border): xs 22 · sm 26 · md 30 ·
 /// lg 34 · xl 42.
 class KunChipMetrics {
   const KunChipMetrics._({
-    required this.fontSize,
-    required this.lineHeight,
+    required this.textStyle,
     required this.horizontalPadding,
     required this.verticalPadding,
   });
 
+  /// The label [TextStyle]: a [KunText] step, so size, line height and CSS
+  /// half-leading only — color and weight are the component's.
+  final TextStyle textStyle;
+
   /// Label font size in logical pixels.
-  final double fontSize;
+  double get fontSize => textStyle.fontSize!;
 
   /// Label line height in logical pixels.
-  final double lineHeight;
+  double get lineHeight => textStyle.fontSize! * textStyle.height!;
 
   /// Horizontal content padding.
   final double horizontalPadding;
@@ -122,41 +129,32 @@ class KunChipMetrics {
   /// Vertical content padding.
   final double verticalPadding;
 
-  /// The label [TextStyle] (size and line height only).
-  TextStyle get textStyle =>
-      TextStyle(fontSize: fontSize, height: lineHeight / fontSize);
-
   /// The metrics for [size].
   static KunChipMetrics of(KunUISize size) => switch (size) {
         KunUISize.xs => const KunChipMetrics._(
-            fontSize: 12,
-            lineHeight: 16,
-            horizontalPadding: 8,
-            verticalPadding: 2,
+            textStyle: KunText.xs,
+            horizontalPadding: KunSpacing.unit * 2,
+            verticalPadding: KunSpacing.unit * 0.5,
           ),
         KunUISize.sm => const KunChipMetrics._(
-            fontSize: 12,
-            lineHeight: 16,
-            horizontalPadding: 8,
-            verticalPadding: 4,
+            textStyle: KunText.xs,
+            horizontalPadding: KunSpacing.unit * 2,
+            verticalPadding: KunSpacing.unit,
           ),
         KunUISize.md => const KunChipMetrics._(
-            fontSize: 14,
-            lineHeight: 20,
-            horizontalPadding: 12,
-            verticalPadding: 4,
+            textStyle: KunText.sm,
+            horizontalPadding: KunSpacing.unit * 3,
+            verticalPadding: KunSpacing.unit,
           ),
         KunUISize.lg => const KunChipMetrics._(
-            fontSize: 14,
-            lineHeight: 20,
-            horizontalPadding: 16,
-            verticalPadding: 6,
+            textStyle: KunText.sm,
+            horizontalPadding: KunSpacing.unit * 4,
+            verticalPadding: KunSpacing.unit * 1.5,
           ),
         KunUISize.xl => const KunChipMetrics._(
-            fontSize: 16,
-            lineHeight: 24,
-            horizontalPadding: 24,
-            verticalPadding: 8,
+            textStyle: KunText.base,
+            horizontalPadding: KunSpacing.unit * 6,
+            verticalPadding: KunSpacing.unit * 2,
           ),
       };
 }

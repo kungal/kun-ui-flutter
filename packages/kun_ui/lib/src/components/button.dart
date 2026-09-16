@@ -142,18 +142,22 @@ class _KunButtonState extends State<KunButton> {
       content = IconTheme.merge(
         data: IconThemeData(color: style.foreground, size: metrics.fontSize),
         child: widget.loading
-            ? KunSpinner(size: 14, color: style.foreground)
+            ? KunSpinner(size: KunText.sm.fontSize!, color: style.foreground)
             : (widget.child ?? icon ?? const SizedBox.shrink()),
       );
     } else {
       content = Row(
         mainAxisSize: MainAxisSize.min,
         mainAxisAlignment: MainAxisAlignment.center,
-        spacing: 4, // web gap-1 between spinner, icon and label
+        spacing: KunSpacing.unit,
         children: [
-          if (widget.loading) KunSpinner(size: 14, color: style.foreground),
+          if (widget.loading)
+            KunSpinner(size: KunText.sm.fontSize!, color: style.foreground),
           if (icon != null && widget.iconPosition == KunIconPosition.left)
-            Padding(padding: const EdgeInsets.only(right: 8), child: icon),
+            Padding(
+              padding: const EdgeInsets.only(right: KunSpacing.unit * 2),
+              child: icon,
+            ),
           Flexible(
             child: DefaultTextStyle(
               style: metrics.textStyle.copyWith(
@@ -166,7 +170,10 @@ class _KunButtonState extends State<KunButton> {
             ),
           ),
           if (icon != null && widget.iconPosition == KunIconPosition.right)
-            Padding(padding: const EdgeInsets.only(left: 8), child: icon),
+            Padding(
+              padding: const EdgeInsets.only(left: KunSpacing.unit * 2),
+              child: icon,
+            ),
         ],
       );
     }

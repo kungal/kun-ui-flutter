@@ -149,6 +149,51 @@ void main() {
     );
   });
 
+  testWidgets('field, label, description and error use CSS half-leading',
+      (tester) async {
+    TextStyle resolved(String text) => (tester
+            .widget<RichText>(
+              find.descendant(
+                of: find.text(text),
+                matching: find.byType(RichText),
+              ),
+            )
+            .text as TextSpan)
+        .style!;
+
+    await tester.pumpWidget(wrap(const KunInput()));
+    expect(
+      tester
+          .widget<EditableText>(find.byType(EditableText))
+          .style
+          .leadingDistribution,
+      TextLeadingDistribution.even,
+    );
+
+    await tester.pumpWidget(wrap(const KunInput(label: 'Name')));
+    expect(resolved('Name').fontSize, 14);
+    expect(resolved('Name').height, 20 / 14);
+    expect(resolved('Name').leadingDistribution, TextLeadingDistribution.even);
+
+    await tester.pumpWidget(
+      wrap(const KunInput(description: 'Helper')),
+    );
+    expect(resolved('Helper').fontSize, 14);
+    expect(resolved('Helper').height, 20 / 14);
+    expect(
+      resolved('Helper').leadingDistribution,
+      TextLeadingDistribution.even,
+    );
+
+    await tester.pumpWidget(wrap(const KunInput(error: 'Required')));
+    expect(resolved('Required').fontSize, 14);
+    expect(resolved('Required').height, 20 / 14);
+    expect(
+      resolved('Required').leadingDistribution,
+      TextLeadingDistribution.even,
+    );
+  });
+
   testWidgets('the label carries the required marker', (tester) async {
     await tester.pumpWidget(
       wrap(const KunInput(label: 'Name', required: true)),

@@ -99,8 +99,11 @@ class KunThemeData {
 /// Besides exposing [KunThemeData], it sets the ambient text color and
 /// [IconTheme] to the scheme's foreground — the Flutter analogue of the web
 /// setting `color` on the page root and icons inheriting `currentColor`. It
-/// paints no background: put `KunTheme.of(context).colors.background` behind
-/// your page yourself.
+/// also sets the ambient [TextStyle.leadingDistribution] to
+/// [TextLeadingDistribution.even], which is how CSS places every line, so
+/// text in the subtree that sets a `height` sits in its line box where the
+/// browser would put it rather than lower. It paints no background: put
+/// `KunTheme.of(context).colors.background` behind your page yourself.
 class KunTheme extends StatelessWidget {
   /// Provides [data] to the subtree under [child].
   const KunTheme({required this.data, required this.child, super.key});
@@ -135,7 +138,10 @@ class KunTheme extends StatelessWidget {
   Widget build(BuildContext context) => _InheritedKunTheme(
         data: data,
         child: DefaultTextStyle.merge(
-          style: TextStyle(color: data.colors.foreground),
+          style: TextStyle(
+            color: data.colors.foreground,
+            leadingDistribution: TextLeadingDistribution.even,
+          ),
           child: IconTheme.merge(
             data: IconThemeData(color: data.colors.foreground),
             child: child,

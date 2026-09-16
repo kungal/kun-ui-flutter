@@ -21,9 +21,9 @@ enum KunCardPadding {
   /// The padding in logical pixels.
   double get value => switch (this) {
         KunCardPadding.none => 0,
-        KunCardPadding.sm => 12,
-        KunCardPadding.md => 20,
-        KunCardPadding.lg => 24,
+        KunCardPadding.sm => KunSpacing.unit * 3,
+        KunCardPadding.md => KunSpacing.unit * 5,
+        KunCardPadding.lg => KunSpacing.unit * 6,
       };
 }
 
@@ -148,7 +148,7 @@ class _KunCardState extends State<KunCard> {
     Widget content = Column(
       mainAxisSize: MainAxisSize.min,
       crossAxisAlignment: CrossAxisAlignment.stretch,
-      spacing: 16, // web gap-4
+      spacing: KunSpacing.unit * 4,
       children: blocks,
     );
 

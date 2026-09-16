@@ -41,6 +41,22 @@ void main() {
     }
   });
 
+  testWidgets('md label uses CSS half-leading', (tester) async {
+    await tester.pumpWidget(
+      wrap(const KunChip(size: KunUISize.md, child: Text('tag'))),
+    );
+    final style = (tester
+            .widget<RichText>(
+              find.descendant(
+                of: find.byType(KunChip),
+                matching: find.byType(RichText),
+              ),
+            )
+            .text as TextSpan)
+        .style!;
+    expect(style.leadingDistribution, TextLeadingDistribution.even);
+  });
+
   testWidgets('defaults to the flat variant in the neutral color',
       (tester) async {
     await tester.pumpWidget(wrap(const KunChip(child: Text('tag'))));

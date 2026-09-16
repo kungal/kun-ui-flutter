@@ -2,9 +2,10 @@
 
 ## 铁律 (Iron Rules — non-negotiable; these override every other guideline in this file)
 
-1. **Never hand-write a token value.** Every color, radius, shadow, easing and
-   duration comes from `kun_ui_tokens` (and every icon from `kun_ui_icons`) —
-   both generated in kungal/kun-ui from the same source as the web stylesheet.
+1. **Never hand-write a token value.** Every color, radius, shadow, spacing
+   step, type size, easing and duration comes from `kun_ui_tokens` (and every
+   icon from `kun_ui_icons`) — all generated in kungal/kun-ui from the same
+   source as the web stylesheet.
    The moment a hex literal or an ad-hoc `Duration` appears in a widget, web
    and Flutter fork silently; shadcn's `zinc.dart` (three ports, three
    different greys) is the exhibit the whole architecture exists to prevent.
@@ -120,6 +121,11 @@ clones kungal/kun-ui at `kun_ui_tokens-v<version>`, runs its
   highlight mode and is suppressed entirely under touch (including the test
   environment). The web's `:hover` has no such coupling, so hover state comes
   from a plain `MouseRegion` — a touch device simply never hovers.
+- In `flutter test` the paragraph cache does not key on
+  `leadingDistribution`: laying the same string out again with only that
+  changed returns the first layout's metrics, which reads as "even and
+  proportional place glyphs identically". Assert on the resolved
+  `TextStyle` instead, or use a different string per measurement.
 
 ## Porting a component (the recipe)
 
@@ -131,8 +137,13 @@ when a real app needs it, and one consumer is not a component. Then:
    `webOnlyProps` are already excluded with reasons.
 2. Read the web implementation (`packages/vue/src/components/X.vue`) and the
    ui-core tables it consumes (`variants.ts`, `controlSize.ts`) — translate
-   values, never re-derive by eye. `v-model` maps to `value` + `onChanged`;
-   slots map to `Widget` parameters; `ariaLabel` maps to `semanticLabel`.
+   values, never re-derive by eye. A spacing class is `KunSpacing.unit`
+   times its own step (`px-2.5` → `KunSpacing.unit * 2.5`; a value built
+   from several classes writes the class steps out, not their sum), and
+   `text-<step>` is `KunText.<step>`. Only an arbitrary value
+   (`size-[26px]`) or a non-spacing width (`ring-2`) stays a literal.
+   `v-model` maps to `value` + `onChanged`; slots map to `Widget`
+   parameters; `ariaLabel` maps to `semanticLabel`.
 3. Write the widget in `packages/kun_ui/lib/src/components/`, export it from
    `kun_ui.dart`, dartdoc every public member (`public_member_api_docs` is
    enforced — the dartdoc is the docs surface, as JSDoc is on the web).

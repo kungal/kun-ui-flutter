@@ -261,7 +261,8 @@ class _KunInputState extends State<KunInput> {
       children: [
         if (widget.prefix != null) ...[
           widget.prefix!,
-          const SizedBox(width: 12), // web pl-10 less pl-3 and a 16px icon
+          // web pl-10, less pl-3 and the size-4 icon
+          const SizedBox(width: KunSpacing.unit * (10 - 3 - 4)),
         ],
         Expanded(
           child: Stack(
@@ -287,9 +288,9 @@ class _KunInputState extends State<KunInput> {
           ),
         ),
         if (trailing.isNotEmpty) ...[
-          const SizedBox(width: 12), // web pr-3
+          const SizedBox(width: KunSpacing.unit * 3),
           for (var i = 0; i < trailing.length; i++) ...[
-            if (i > 0) const SizedBox(width: 4), // web gap-1
+            if (i > 0) const SizedBox(width: KunSpacing.unit),
             trailing[i],
           ],
         ],
@@ -298,9 +299,9 @@ class _KunInputState extends State<KunInput> {
 
     Widget box = Container(
       padding: EdgeInsets.fromLTRB(
-        widget.prefix != null ? 12 : metrics.horizontalPadding,
+        widget.prefix != null ? KunSpacing.unit * 3 : metrics.horizontalPadding,
         metrics.verticalPadding,
-        trailing.isNotEmpty ? 12 : metrics.horizontalPadding,
+        trailing.isNotEmpty ? KunSpacing.unit * 3 : metrics.horizontalPadding,
         metrics.verticalPadding,
       ),
       decoration: BoxDecoration(
@@ -348,14 +349,12 @@ class _KunInputState extends State<KunInput> {
                     ),
                 ],
               ),
-              style: TextStyle(
-                fontSize: 14,
-                height: 20 / 14,
+              style: KunText.sm.copyWith(
                 fontWeight: FontWeight.w500,
                 color: scheme.neutral.shade700,
               ),
             ),
-            const SizedBox(height: 4), // web mb-1
+            const SizedBox(height: KunSpacing.unit),
           ],
           GestureDetector(
             behavior: HitTestBehavior.opaque,
@@ -363,24 +362,16 @@ class _KunInputState extends State<KunInput> {
             child: box,
           ),
           if (widget.error?.isNotEmpty ?? false) ...[
-            const SizedBox(height: 4), // web mt-1
+            const SizedBox(height: KunSpacing.unit),
             Text(
               widget.error!,
-              style: TextStyle(
-                fontSize: 14,
-                height: 20 / 14,
-                color: danger.solid,
-              ),
+              style: KunText.sm.copyWith(color: danger.solid),
             ),
           ] else if (widget.description?.isNotEmpty ?? false) ...[
-            const SizedBox(height: 4),
+            const SizedBox(height: KunSpacing.unit),
             Text(
               widget.description!,
-              style: TextStyle(
-                fontSize: 14,
-                height: 20 / 14,
-                color: scheme.neutral.shade500,
-              ),
+              style: KunText.sm.copyWith(color: scheme.neutral.shade500),
             ),
           ],
         ],
@@ -426,7 +417,7 @@ class _KunInputIconButtonState extends State<_KunInputIconButton> {
           onTap: widget.onPressed,
           child: Icon(
             widget.icon,
-            size: 16,
+            size: KunSpacing.unit * 4,
             color: _hovered
                 ? widget.scheme.neutral.shade600
                 : widget.scheme.neutral.shade400,

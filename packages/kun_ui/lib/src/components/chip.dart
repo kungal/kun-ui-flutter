@@ -75,7 +75,7 @@ class KunChip extends StatelessWidget {
     final row = <Widget>[];
     if (start != null) row.add(start!);
     if (child != null) {
-      if (row.isNotEmpty) row.add(const SizedBox(width: 4)); // web gap-1
+      if (row.isNotEmpty) row.add(const SizedBox(width: KunSpacing.unit));
       row.add(
         Flexible(
           child: DefaultTextStyle(
@@ -92,7 +92,9 @@ class KunChip extends StatelessWidget {
     }
     if (closable) {
       // The web's gap-1 plus the button's own ml-0.5.
-      if (row.isNotEmpty) row.add(const SizedBox(width: 6));
+      if (row.isNotEmpty) {
+        row.add(const SizedBox(width: KunSpacing.unit * (1 + 0.5)));
+      }
       row.add(
         _KunChipClose(
           color: style.foreground,
@@ -103,7 +105,9 @@ class KunChip extends StatelessWidget {
     }
     if (end != null) {
       // gap-1 again, less the close button's -mr-0.5 when there is one.
-      if (row.isNotEmpty) row.add(SizedBox(width: closable ? 2 : 4));
+      if (row.isNotEmpty) {
+        row.add(SizedBox(width: KunSpacing.unit * (closable ? 1 - 0.5 : 1)));
+      }
       row.add(end!);
     }
 
@@ -113,7 +117,8 @@ class KunChip extends StatelessWidget {
       padding: EdgeInsets.fromLTRB(
         metrics.horizontalPadding,
         metrics.verticalPadding,
-        metrics.horizontalPadding - (closable && end == null ? 2 : 0),
+        metrics.horizontalPadding -
+            (closable && end == null ? KunSpacing.unit * 0.5 : 0),
         metrics.verticalPadding,
       ),
       decoration: BoxDecoration(
@@ -191,7 +196,11 @@ class _KunChipCloseState extends State<_KunChipClose> {
               opacity: _hovered || _focused ? 1 : 0.7,
               duration: KunDurations.fast,
               curve: KunEasing.standard,
-              child: Icon(KunIcons.x, size: 14, color: widget.color),
+              child: Icon(
+                KunIcons.x,
+                size: KunSpacing.unit * 3.5,
+                color: widget.color,
+              ),
             ),
           ),
         ),

@@ -25,6 +25,16 @@ void main() {
     expect(before!.shouldRepaint(after!), isTrue);
   });
 
+  testWidgets('pumps under only a Directionality', (tester) async {
+    await tester.pumpWidget(
+      const Directionality(
+        textDirection: TextDirection.ltr,
+        child: Center(child: KunSpinner()),
+      ),
+    );
+    expect(tester.takeException(), isNull);
+  });
+
   testWidgets('takes the ambient IconTheme color', (tester) async {
     await tester.pumpWidget(
       const Directionality(
