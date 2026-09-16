@@ -30,15 +30,20 @@ Future<void> main(List<String> args) async {
       errors.add('${component.name}: not in the manifest');
     }
     if (!component.hasContract) {
-      for (final String name in component.undemoed.keys) {
+      for (final String name in component.undemoable.keys) {
         errors.add(
-          '${component.name} $name: contract:false forbids shows and undemoed',
+          '${component.name} $name: contract:false forbids shows, undemoable and gaps',
+        );
+      }
+      for (final String name in component.gaps.keys) {
+        errors.add(
+          '${component.name} $name: contract:false forbids shows, undemoable and gaps',
         );
       }
       for (final _SpecDemo demo in component.demos) {
         for (final String name in demo.shows) {
           errors.add(
-            '${component.name} $name: contract:false forbids shows and undemoed',
+            '${component.name} $name: contract:false forbids shows, undemoable and gaps',
           );
         }
       }
@@ -165,25 +170,11 @@ List<_SpecComponent> _parseSpec(Map<String, dynamic> spec) {
         _SpecDemo(slug: slug, title: title, builder: builder, shows: shows),
       );
     }
-    final Map<String, String> undemoed = <String, String>{};
-    final Object? undemoedRaw = body['undemoed'];
-    if (undemoedRaw != null) {
-      final Map<String, dynamic>? undemoedMap = _asMap(undemoedRaw);
-      if (undemoedMap == null) {
-        stderr.writeln('${entry.key}: undemoed is not an object');
-        exit(1);
-      }
-      for (final MapEntry<String, dynamic> undemoedEntry
-          in undemoedMap.entries) {
-        final Object? reason = undemoedEntry.value;
-        if (reason is! String) {
-          stderr.writeln(
-            '${entry.key} ${undemoedEntry.key}: undemoed reason must be a string',
-          );
-          exit(1);
-        }
-        undemoed[undemoedEntry.key] = reason;
-      }
+    if (body.containsKey('undemoed')) {
+      stderr.writeln(
+        '${entry.key}: undemoed was replaced by undemoable and gaps',
+      );
+      exit(1);
     }
     parsed.add(
       _SpecComponent(
@@ -191,7 +182,8 @@ List<_SpecComponent> _parseSpec(Map<String, dynamic> spec) {
         source: source,
         hasContract: body['contract'] != false,
         demos: demos,
-        undemoed: undemoed,
+        undemoable: _readReasonMap(entry.key, 'undemoable', body['undemoable']),
+        gaps: _readReasonMap(entry.key, 'gaps', body['gaps']),
       ),
     );
   }
@@ -279,7 +271,10 @@ void _checkDeclarations(
       declare(name);
     }
   }
-  for (final String name in component.undemoed.keys) {
+  for (final String name in component.undemoable.keys) {
+    declare(name);
+  }
+  for (final String name in component.gaps.keys) {
     declare(name);
   }
 
@@ -308,12 +303,7 @@ String _emitCoverage(
   List<_SpecComponent> specComponents,
   Map<String, _ManifestComponent> manifest,
 ) {
-  final StringBuffer out = StringBuffer()
-    ..writeln(_header)
-    ..writeln("import 'package:flutter/widgets.dart';")
-    ..writeln()
-    ..writeln("import 'coverage.dart';")
-    ..writeln();
+  final StringBuffer out = StringBuffer();
 
   for (final _SpecComponent component in specComponents) {
     final _ManifestComponent? claimed = manifest[component.name];
@@ -333,12 +323,23 @@ String _emitCoverage(
       ..writeln('  entries: <CoverageEntry>[');
     for (final _ManifestEntry entry in claimed.entries) {
       final String qualified = '${entry.section}.${entry.contractName}';
+      final String? title = shownBy[qualified];
+      final String status;
+      if (entry.dartName == null) {
+        status = 'CoverageStatus.omitted';
+      } else if (title != null) {
+        status = 'CoverageStatus.shown';
+      } else if (component.undemoable.containsKey(qualified)) {
+        status = 'CoverageStatus.noVisualForm';
+      } else {
+        status = 'CoverageStatus.notYet';
+      }
       out
         ..writeln('    CoverageEntry(')
         ..writeln('      section: ${_quote(entry.section)},')
         ..writeln('      contractName: ${_quote(entry.contractName)},')
+        ..writeln('      status: $status,')
         ..writeln('      dartName: ${_quoteOrNull(entry.dartName)},');
-      final String? title = shownBy[qualified];
       if (title != null) {
         out.writeln('      shownBy: ${_quote(title)},');
       }
@@ -346,7 +347,7 @@ String _emitCoverage(
           ? null
           : (entry.dartName == null
               ? entry.reason
-              : component.undemoed[qualified]);
+              : (component.undemoable[qualified] ?? component.gaps[qualified]));
       if (reason != null) {
         out.writeln('      reason: ${_quote(reason)},');
       }
@@ -363,7 +364,17 @@ String _emitCoverage(
       ..writeln('    const CoveragePage(coverage: _$id);')
       ..writeln();
   }
-  return out.toString();
+
+  final StringBuffer file = StringBuffer()..writeln(_header);
+  if (out.isNotEmpty) {
+    file
+      ..writeln("import 'package:flutter/widgets.dart';")
+      ..writeln()
+      ..writeln("import 'coverage.dart';")
+      ..writeln()
+      ..write(out);
+  }
+  return file.toString();
 }
 
 String _emitRegistry(
@@ -371,8 +382,11 @@ String _emitRegistry(
   Map<String, _ManifestComponent> manifest,
   List<String> unbuilt,
 ) {
+  final bool importCoverage = specComponents.any(
+    (_SpecComponent component) => manifest.containsKey(component.name),
+  );
   final List<String> imports = <String>{
-    'coverage.g.dart',
+    if (importCoverage) 'coverage.g.dart',
     'registry.dart',
     for (final _SpecComponent component in specComponents) component.source,
   }.toList()
@@ -429,6 +443,29 @@ String _emitRegistry(
   return out.toString();
 }
 
+Map<String, String> _readReasonMap(
+  String component,
+  String key,
+  Object? raw,
+) {
+  if (raw == null) return <String, String>{};
+  final Map<String, dynamic>? map = _asMap(raw);
+  if (map == null) {
+    stderr.writeln('$component: $key is not an object');
+    exit(1);
+  }
+  final Map<String, String> result = <String, String>{};
+  for (final MapEntry<String, dynamic> item in map.entries) {
+    final Object? reason = item.value;
+    if (reason is! String) {
+      stderr.writeln('$component ${item.key}: $key reason must be a string');
+      exit(1);
+    }
+    result[item.key] = reason;
+  }
+  return result;
+}
+
 Map<String, dynamic>? _asMap(Object? value) {
   if (value is Map<String, dynamic>) return value;
   if (value is Map) {
@@ -464,14 +501,16 @@ class _SpecComponent {
     required this.source,
     required this.hasContract,
     required this.demos,
-    required this.undemoed,
+    required this.undemoable,
+    required this.gaps,
   });
 
   final String name;
   final String source;
   final bool hasContract;
   final List<_SpecDemo> demos;
-  final Map<String, String> undemoed;
+  final Map<String, String> undemoable;
+  final Map<String, String> gaps;
 }
 
 class _SpecDemo {

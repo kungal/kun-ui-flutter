@@ -6,6 +6,7 @@ class CoverageEntry {
   const CoverageEntry({
     required this.section,
     required this.contractName,
+    required this.status,
     this.dartName,
     this.shownBy,
     this.reason,
@@ -13,18 +14,32 @@ class CoverageEntry {
 
   final String section;
   final String contractName;
+  final CoverageStatus status;
   final String? dartName;
   final String? shownBy;
   final String? reason;
-
-  CoverageStatus get status => dartName == null
-      ? CoverageStatus.omitted
-      : shownBy != null
-          ? CoverageStatus.shown
-          : CoverageStatus.gap;
 }
 
-enum CoverageStatus { shown, gap, omitted }
+enum CoverageStatus {
+  shown,
+  notYet,
+  noVisualForm,
+  omitted;
+
+  String get label => switch (this) {
+        CoverageStatus.shown => 'shown',
+        CoverageStatus.notYet => 'not yet',
+        CoverageStatus.noVisualForm => 'no visual form',
+        CoverageStatus.omitted => 'omitted',
+      };
+
+  KunUIColor get color => switch (this) {
+        CoverageStatus.shown => KunUIColor.success,
+        CoverageStatus.notYet => KunUIColor.warning,
+        CoverageStatus.noVisualForm => KunUIColor.info,
+        CoverageStatus.omitted => KunUIColor.neutral,
+      };
+}
 
 /// One component's contract coverage, as the manifest and the spec record it.
 class ComponentCoverage {
@@ -57,14 +72,17 @@ class CoveragePage extends StatelessWidget {
             );
 
     int shown = 0;
-    int gap = 0;
+    int notYet = 0;
+    int noVisualForm = 0;
     int omitted = 0;
     for (final CoverageEntry entry in coverage.entries) {
       switch (entry.status) {
         case CoverageStatus.shown:
           shown += 1;
-        case CoverageStatus.gap:
-          gap += 1;
+        case CoverageStatus.notYet:
+          notYet += 1;
+        case CoverageStatus.noVisualForm:
+          noVisualForm += 1;
         case CoverageStatus.omitted:
           omitted += 1;
       }
@@ -73,7 +91,12 @@ class CoveragePage extends StatelessWidget {
 
     final List<Widget> children = <Widget>[
       Text(coverage.name, style: headerStyle),
-      Text('$shown shown / $gap gap / $omitted omitted of $total'),
+      Text(
+        '$shown ${CoverageStatus.shown.label}, '
+        '$notYet ${CoverageStatus.notYet.label}, '
+        '$noVisualForm ${CoverageStatus.noVisualForm.label}, '
+        '$omitted ${CoverageStatus.omitted.label}, of $total',
+      ),
     ];
     for (final String section in <String>['props', 'events', 'slots']) {
       final List<CoverageEntry> group = <CoverageEntry>[
@@ -120,13 +143,9 @@ class CoveragePage extends StatelessWidget {
           children: <Widget>[
             KunChip(
               variant: KunUIVariant.flat,
-              color: switch (entry.status) {
-                CoverageStatus.shown => KunUIColor.success,
-                CoverageStatus.gap => KunUIColor.warning,
-                CoverageStatus.omitted => KunUIColor.neutral,
-              },
+              color: entry.status.color,
               size: KunUISize.xs,
-              child: Text(entry.status.name),
+              child: Text(entry.status.label),
             ),
             Text(entry.contractName),
             Text(entry.dartName ?? '-'),

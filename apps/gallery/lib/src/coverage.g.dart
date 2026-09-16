@@ -12,6 +12,7 @@ const ComponentCoverage _kunButton = ComponentCoverage(
     CoverageEntry(
       section: 'props',
       contractName: 'ariaLabel',
+      status: CoverageStatus.noVisualForm,
       dartName: 'semanticLabel',
       reason:
           'An accessible name has no visual form. The sizes demo sets one on every icon-only button because the contract requires it there, but what is announced is asserted by the widget tests, not seen in a gallery.',
@@ -19,68 +20,79 @@ const ComponentCoverage _kunButton = ComponentCoverage(
     CoverageEntry(
       section: 'props',
       contractName: 'color',
+      status: CoverageStatus.shown,
       dartName: 'color',
       shownBy: 'Matrix',
     ),
     CoverageEntry(
       section: 'props',
       contractName: 'disabled',
+      status: CoverageStatus.shown,
       dartName: 'disabled',
       shownBy: 'States',
     ),
     CoverageEntry(
       section: 'props',
       contractName: 'fullWidth',
+      status: CoverageStatus.shown,
       dartName: 'fullWidth',
       shownBy: 'States',
     ),
     CoverageEntry(
       section: 'props',
       contractName: 'icon',
+      status: CoverageStatus.shown,
       dartName: 'icon',
       shownBy: 'Sizes',
     ),
     CoverageEntry(
       section: 'props',
       contractName: 'iconPosition',
+      status: CoverageStatus.notYet,
       dartName: 'iconPosition',
       reason:
-          'Not yet shown: the sizes demo places its icon in the default left position only.',
+          'The sizes demo places its icon in the default left position only.',
     ),
     CoverageEntry(
       section: 'props',
       contractName: 'isIconOnly',
+      status: CoverageStatus.shown,
       dartName: 'isIconOnly',
       shownBy: 'Sizes',
     ),
     CoverageEntry(
       section: 'props',
       contractName: 'loading',
+      status: CoverageStatus.shown,
       dartName: 'loading',
       shownBy: 'States',
     ),
     CoverageEntry(
       section: 'props',
       contractName: 'rounded',
+      status: CoverageStatus.notYet,
       dartName: 'rounded',
       reason:
-          'Not yet shown. The axis that matters is the theme-wide default -- KunThemeData.rounded squares or rounds every surface at once, as the web\'s config.rounded does -- and the gallery has no control for it; the per-widget override is the escape hatch, not the story.',
+          'The axis that matters is the theme-wide default -- KunThemeData.rounded squares or rounds every surface at once, as the web\'s config.rounded does -- and the gallery has no control for it. The per-widget override is the escape hatch, not the story.',
     ),
     CoverageEntry(
       section: 'props',
       contractName: 'size',
+      status: CoverageStatus.shown,
       dartName: 'size',
       shownBy: 'Sizes',
     ),
     CoverageEntry(
       section: 'props',
       contractName: 'variant',
+      status: CoverageStatus.shown,
       dartName: 'variant',
       shownBy: 'Matrix',
     ),
     CoverageEntry(
       section: 'events',
       contractName: 'click',
+      status: CoverageStatus.noVisualForm,
       dartName: 'onPressed',
       reason:
           'Every button in every demo carries a live onPressed -- that is the floor this gallery was built to meet. A callback has no appearance of its own to show.',
@@ -88,12 +100,14 @@ const ComponentCoverage _kunButton = ComponentCoverage(
     CoverageEntry(
       section: 'slots',
       contractName: 'default',
+      status: CoverageStatus.shown,
       dartName: 'child',
       shownBy: 'Matrix',
     ),
     CoverageEntry(
       section: 'slots',
       contractName: 'icon',
+      status: CoverageStatus.shown,
       dartName: 'icon',
       shownBy: 'Sizes',
     ),
