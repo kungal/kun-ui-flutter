@@ -179,6 +179,15 @@ Template: `task-book-template.md` in this directory.
   verify".
 - **Demand a positive control on any search, audit or census.** "I found 4" is unreadable
   without "and here are the 16 I checked that were clean".
+- **Make it compare what it saw with what the book says it should see.** On the
+  KunTextarea dispatch the book said the scrollbar is hidden; grok's own screenshot
+  of the capped field showed one, and the report listed "scrollbar" under *What I
+  saw* as a plain observation. The book was wrong (`EditableText` overrides an
+  ancestor `ScrollConfiguration` when multiline) and the screenshot was the only
+  evidence. Ask for every mismatch between a screenshot and the book under
+  *Anything that looks wrong*, and read the screenshots yourself either way. The
+  same run also reported that Enter did not insert a newline; driven directly in
+  Chrome it did — a browser finding is a lead, not a result, in both directions.
 - **Require a missing token to be reported, not invented.** This is the single most likely way
   a dispatch silently violates iron rule 1, and the executor will not feel it as a violation —
   it will feel like being helpful.
