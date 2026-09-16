@@ -149,6 +149,7 @@ class CoveragePage extends StatelessWidget {
             ),
             Text(entry.contractName),
             Text(entry.dartName ?? '-'),
+            if (entry.shownBy != null) Text(entry.shownBy!, style: mutedStyle),
           ],
         ),
         if (entry.reason != null) Text(entry.reason!, style: mutedStyle),
