@@ -123,6 +123,10 @@ clones kungal/kun-ui at `kun_ui_tokens-v<version>`, runs its
   highlight mode and is suppressed entirely under touch (including the test
   environment). The web's `:hover` has no such coupling, so hover state comes
   from a plain `MouseRegion` — a touch device simply never hovers.
+- Flutter web sends Enter as `ButtonActivateIntent`, not `ActivateIntent`
+  (`WidgetsApp` keeps a separate web shortcut map), so a pressable widget
+  handles both — and a test proving it binds the web map itself, because
+  the VM's defaults send Enter as `ActivateIntent` and hide the bug.
 - In `flutter test` the paragraph cache does not key on
   `leadingDistribution`: laying the same string out again with only that
   changed returns the first layout's metrics, which reads as "even and

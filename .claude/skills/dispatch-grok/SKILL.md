@@ -150,7 +150,11 @@ exception that has to be argued. A headless executor writing Flutter will reach 
 of the rule that the analyzer cannot express. Read every hit; do not skim the count.
 
 Finally, for anything visual: look at grok's screenshots, and if the claim matters, take your
-own.
+own. Checksum them first (`md5sum`): on the KunSwitch dispatch the "before Tab" and "after Tab"
+frames were byte-identical, so the report's before/after claim rested on one frame. When you
+drive the keyboard yourself, click the page before the first Tab — and know that this first
+click into a Flutter web view itself moves focus to the view's first focusable widget, ring
+included, so a "mouse click shows no ring" check needs a second click.
 
 ## 5. The task book
 
