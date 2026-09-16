@@ -1,3 +1,4 @@
+import 'package:flutter/gestures.dart';
 import 'package:flutter/widgets.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:kun_ui/kun_ui.dart';
@@ -6,7 +7,15 @@ Widget wrap(Widget child) => KunTheme(
       data: KunThemeData.light(),
       child: Directionality(
         textDirection: TextDirection.ltr,
-        child: Center(child: SizedBox(width: 300, child: child)),
+        child: Overlay(
+          key: UniqueKey(),
+          initialEntries: [
+            OverlayEntry(
+              builder: (context) =>
+                  Center(child: SizedBox(width: 300, child: child)),
+            ),
+          ],
+        ),
       ),
     );
 
@@ -136,10 +145,13 @@ void main() {
   testWidgets('focus paints the flush 2px ring in the control color',
       (tester) async {
     await tester.pumpWidget(wrap(const KunInput(color: KunUIColor.primary)));
-    expect(decorationOf(tester).boxShadow, KunShadows.sm);
+    expect(decorationOf(tester).boxShadow!.first.spreadRadius, 0);
+    expect(decorationOf(tester).boxShadow!.first.color.a, 0);
+    expect(decorationOf(tester).boxShadow!.skip(1), KunShadows.sm);
 
     await tester.tap(find.byType(KunInput));
     await tester.pump();
+    await tester.pump(KunDurations.fast);
     final shadows = decorationOf(tester).boxShadow!;
     expect(shadows.first.spreadRadius, 2);
     expect(shadows.first.blurRadius, 0);
@@ -257,6 +269,98 @@ void main() {
     await tester.pump();
     expect(find.bySemanticsLabel(KunMessages.zhCN.input.hide), findsOneWidget);
 
+    semantics.dispose();
+  });
+
+  testWidgets('a tap places the caret', (tester) async {
+    await tester.pumpWidget(wrap(const KunInput(value: 'hello world')));
+    final editable = find.byType(EditableText);
+    await tester.tapAt(tester.getTopLeft(editable) + const Offset(2, 5));
+    await tester.pump();
+    expect(
+      tester.widget<EditableText>(editable).controller.selection,
+      const TextSelection.collapsed(offset: 0),
+    );
+
+    await tester.tapAt(tester.getTopRight(editable) - const Offset(2, -5));
+    await tester.pump();
+    final end = tester.widget<EditableText>(editable).controller.selection;
+    expect(end.isCollapsed, isTrue);
+    expect(end.baseOffset, 11);
+  });
+
+  testWidgets('a mouse drag selects', (tester) async {
+    await tester.pumpWidget(wrap(const KunInput(value: 'hello world')));
+    final start =
+        tester.getTopLeft(find.byType(EditableText)) + const Offset(2, 5);
+    final gesture = await tester.startGesture(
+      start,
+      kind: PointerDeviceKind.mouse,
+    );
+    await tester.pump();
+    await gesture.moveBy(const Offset(60, 0));
+    await tester.pump();
+    await gesture.up();
+    await tester.pump();
+    final selection = tester
+        .widget<EditableText>(find.byType(EditableText))
+        .controller
+        .selection;
+    expect(selection.isCollapsed, isFalse);
+    expect(selection.start, 0);
+  });
+
+  testWidgets('disabled cannot take focus', (tester) async {
+    await tester.pumpWidget(wrap(const KunInput(disabled: true)));
+    final focus =
+        tester.widget<EditableText>(find.byType(EditableText)).focusNode;
+    expect(focus.canRequestFocus, isFalse);
+    await tester.tap(find.byType(KunInput));
+    await tester.pump();
+    expect(focus.hasFocus, isFalse);
+  });
+
+  testWidgets('the ring fades in', (tester) async {
+    await tester.pumpWidget(wrap(const KunInput()));
+    expect(decorationOf(tester).boxShadow!.first.spreadRadius, 0);
+
+    await tester.tap(find.byType(KunInput));
+    await tester.pump();
+    expect(decorationOf(tester).boxShadow!.first.spreadRadius, 0);
+
+    await tester.pump(KunDurations.fast);
+    expect(decorationOf(tester).boxShadow!.first.spreadRadius, 2);
+    expect(
+      decorationOf(tester).boxShadow!.first.color.a,
+      moreOrLessEquals(0.5),
+    );
+  });
+
+  testWidgets('assistive technology sees an enabled text field',
+      (tester) async {
+    final semantics = tester.ensureSemantics();
+    await tester.pumpWidget(wrap(const KunInput()));
+    expect(
+      tester.getSemantics(find.byType(EditableText)),
+      isSemantics(
+        isTextField: true,
+        hasEnabledState: true,
+        isEnabled: true,
+        hasTapAction: true,
+        hasFocusAction: true,
+      ),
+    );
+
+    await tester.pumpWidget(wrap(const KunInput(disabled: true)));
+    expect(
+      tester.getSemantics(find.byType(EditableText)),
+      isSemantics(
+        isTextField: true,
+        hasEnabledState: true,
+        isEnabled: false,
+        hasTapAction: false,
+      ),
+    );
     semantics.dispose();
   });
 }

@@ -4,6 +4,7 @@ import 'package:kun_ui_tokens/kun_ui_tokens.dart';
 
 import '../foundation/control_metrics.dart';
 import '../foundation/design.dart';
+import '../foundation/field_ring.dart';
 import '../locale/messages.dart';
 import '../theme/theme.dart';
 
@@ -58,6 +59,9 @@ enum KunInputType {
 /// a [Row] does that structurally, so the text cannot slide under them at any
 /// widget width. The geometry matches the web's for the 16px icons the ladder
 /// was sized around.
+///
+/// Like every Flutter text field, it needs an [Overlay] ancestor, which
+/// `WidgetsApp` — and so `MaterialApp` and `CupertinoApp` — provides.
 class KunInput extends StatefulWidget {
   /// Creates a text field.
   const KunInput({
@@ -154,11 +158,24 @@ class KunInput extends StatefulWidget {
   State<KunInput> createState() => _KunInputState();
 }
 
-class _KunInputState extends State<KunInput> {
+class _KunInputState extends State<KunInput>
+    implements TextSelectionGestureDetectorBuilderDelegate {
   late final TextEditingController _controller;
   late final FocusNode _focusNode;
+  late final TextSelectionGestureDetectorBuilder
+      _selectionGestureDetectorBuilder;
   bool _focused = false;
   bool _revealed = false;
+
+  @override
+  final GlobalKey<EditableTextState> editableTextKey =
+      GlobalKey<EditableTextState>();
+
+  @override
+  bool get forcePressEnabled => false;
+
+  @override
+  bool get selectionEnabled => !widget.disabled;
 
   bool get _invalid => (widget.error?.isNotEmpty ?? false) || widget.isInvalid;
   bool get _isPassword => widget.type == KunInputType.password;
@@ -172,11 +189,15 @@ class _KunInputState extends State<KunInput> {
     super.initState();
     _controller = TextEditingController(text: widget.value);
     _focusNode = FocusNode()..addListener(_handleFocusChange);
+    _focusNode.canRequestFocus = !widget.disabled;
+    _selectionGestureDetectorBuilder =
+        TextSelectionGestureDetectorBuilder(delegate: this);
   }
 
   @override
   void didUpdateWidget(KunInput oldWidget) {
     super.didUpdateWidget(oldWidget);
+    _focusNode.canRequestFocus = !widget.disabled;
     if (widget.value != _controller.text) {
       _controller.value = TextEditingValue(
         text: widget.value,
@@ -197,6 +218,22 @@ class _KunInputState extends State<KunInput> {
     if (_focusNode.hasFocus == _focused) return;
     setState(() => _focused = _focusNode.hasFocus);
     (_focused ? widget.onFocus : widget.onBlur)?.call();
+  }
+
+  void _handleSemanticsTap() {
+    if (!_controller.selection.isValid) {
+      _controller.selection =
+          TextSelection.collapsed(offset: _controller.text.length);
+    }
+    editableTextKey.currentState?.requestKeyboard();
+  }
+
+  void _handleSemanticsFocus() {
+    if (!_focusNode.hasFocus) {
+      _focusNode.requestFocus();
+    } else {
+      editableTextKey.currentState?.requestKeyboard();
+    }
   }
 
   void _clear() {
@@ -239,6 +276,7 @@ class _KunInputState extends State<KunInput> {
     final textStyle = metrics.textStyle.copyWith(color: scheme.foreground);
 
     final editable = EditableText(
+      key: editableTextKey,
       controller: _controller,
       focusNode: _focusNode,
       style: textStyle,
@@ -297,37 +335,61 @@ class _KunInputState extends State<KunInput> {
       ],
     );
 
-    Widget box = Container(
-      padding: EdgeInsets.fromLTRB(
-        widget.prefix != null ? KunSpacing.unit * 3 : metrics.horizontalPadding,
-        metrics.verticalPadding,
-        trailing.isNotEmpty ? KunSpacing.unit * 3 : metrics.horizontalPadding,
-        metrics.verticalPadding,
+    Widget box = TweenAnimationBuilder<BoxShadow>(
+      tween: KunFieldRingTween(
+        end: kunFieldRing(ringColor, visible: _focused && !widget.disabled),
       ),
-      decoration: BoxDecoration(
-        color: scheme.content1,
-        border: Border.all(
-          color: _invalid ? danger.shade300 : scheme.neutral.shade100,
-        ),
-        borderRadius: radius,
-        boxShadow: [
-          // The web's flush 2px ring at 50% (kunFocusRingClasses) — a
-          // Tailwind ring IS a zero-blur spread shadow, so it composes with
-          // the card shadow exactly as it does there.
-          if (_focused)
-            BoxShadow(
-              color: ringColor.withValues(alpha: 0.5),
-              spreadRadius: 2,
+      duration: KunDurations.fast,
+      curve: KunEasing.standard,
+      builder: (context, ring, child) {
+        return Container(
+          padding: EdgeInsets.fromLTRB(
+            widget.prefix != null
+                ? KunSpacing.unit * 3
+                : metrics.horizontalPadding,
+            metrics.verticalPadding,
+            trailing.isNotEmpty
+                ? KunSpacing.unit * 3
+                : metrics.horizontalPadding,
+            metrics.verticalPadding,
+          ),
+          decoration: BoxDecoration(
+            color: scheme.content1,
+            border: Border.all(
+              color: _invalid ? danger.shade300 : scheme.neutral.shade100,
             ),
-          ...KunShadows.sm,
-        ],
-      ),
+            borderRadius: radius,
+            boxShadow: [
+              ring,
+              ...KunShadows.sm,
+            ],
+          ),
+          child: child,
+        );
+      },
       child: field,
     );
 
     if (widget.disabled) {
       box = Opacity(opacity: 0.6, child: box);
     }
+
+    // Flutter web renders a text field whose semantics node does not say
+    // it is enabled as a disabled <input>, so with accessibility on nothing
+    // could be typed. Material's TextField sets the same three properties.
+    box = Semantics(
+      enabled: !widget.disabled,
+      onTap: widget.disabled ? null : _handleSemanticsTap,
+      onFocus: widget.disabled ? null : _handleSemanticsFocus,
+      child: TextFieldTapRegion(
+        child: widget.disabled
+            ? IgnorePointer(child: box)
+            : _selectionGestureDetectorBuilder.buildGestureDetector(
+                behavior: HitTestBehavior.translucent,
+                child: box,
+              ),
+      ),
+    );
 
     return MouseRegion(
       cursor: widget.disabled
@@ -356,11 +418,7 @@ class _KunInputState extends State<KunInput> {
             ),
             const SizedBox(height: KunSpacing.unit),
           ],
-          GestureDetector(
-            behavior: HitTestBehavior.opaque,
-            onTap: widget.disabled ? null : _focusNode.requestFocus,
-            child: box,
-          ),
+          box,
           if (widget.error?.isNotEmpty ?? false) ...[
             const SizedBox(height: KunSpacing.unit),
             Text(

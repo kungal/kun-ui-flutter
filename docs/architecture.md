@@ -214,9 +214,9 @@ has to port is a registry shape and a set of demo functions, not a generator.
 ### Text fields are `EditableText`, not Material's `TextField` (decided 2026-09-15)
 
 Iron rule 4 leaves no other option, and it is worth being explicit about the
-cost, because every form control to come inherits this choice. `KunInput` is
-built on `EditableText` from `flutter/widgets` and passes no
-`selectionControls`. Mouse selection, the keyboard, obscured text and the
+cost, because every form control to come inherits this choice. `KunInput` and
+`KunTextarea` are built on `EditableText` from `flutter/widgets` and pass no
+`selectionControls`. Pointer selection, the keyboard, obscured text and the
 clipboard shortcuts all work; what is absent is the **touch selection UI** —
 the drag handles and the copy/paste toolbar — because every ready-made
 implementation of those (`materialTextSelectionControls`,
@@ -245,6 +245,35 @@ bar and only committed characters arrive. The composing underline
 user, but not to the third-party IMEs (Sogou, Baidu) that do compose inline.
 That path is still unverified: the emulator's IME stopped presenting after its
 language config changed, so the real pinyin test belongs on hardware.
+
+Corrected 2026-09-16. The first version of this section said mouse selection
+worked. That was reasoned, not measured, and wrong: `KunInput` 0.2.0 passed
+`rendererIgnoresPointer: true` without the gesture builder that makes the flag
+safe, so a click never placed the caret (a widget test tapping the start of
+`hello world` got offset 11) and a drag selected nothing. `EditableText` alone
+is not a text field. What `TextField` wraps around it, every KunUI text field
+now wraps too, all of it from `flutter/widgets`:
+
+- **`TextSelectionGestureDetectorBuilder`** — a tap places the caret; drag,
+  double-tap and long-press select. It also makes `EditableText` create its
+  selection overlay on a tap, which asserts an `Overlay` ancestor in debug
+  builds. Every `WidgetsApp` provides one, so this costs an app nothing, but
+  a bare widget tree (a test) has to add it.
+- **`Semantics(enabled: …, onTap: …, onFocus: …)`** — Flutter web renders a
+  text field whose semantics node does not say it is enabled as a *disabled*
+  `<input>`. With accessibility turned on, nothing could be typed into
+  `KunInput` 0.2.0; measured in Chrome, the element read `disabled: true`
+  before this and accepted typing after.
+- **`TextFieldTapRegion`** — so a tap on the field's own clear or reveal
+  button is not a tap outside the field, which unfocuses it on touch.
+
+A multi-line field needs one more: `EditableText` replaces the inherited
+`ScrollBehavior` with one that shows scrollbars whenever it is multiline, so
+an ancestor `ScrollConfiguration` hides nothing — `scrollbar-hide` is a
+`scrollBehavior` passed to the `EditableText` itself.
+
+Whether long-press now highlights a word on Android is unverified on a
+device. Drag handles and the toolbar are still absent, by the decision above.
 
 ### KunUI's own strings are a scope, not a theme field (decided 2026-09-15)
 

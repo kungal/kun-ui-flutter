@@ -1,5 +1,24 @@
 # Changelog
 
+## 0.3.0
+
+- `KunInput`: a click or tap places the caret, and a drag, double-tap or
+  long-press selects. 0.2.0 moved the caret to the end on every tap and could
+  not select with the pointer at all. Touch selection handles and a copy/paste
+  toolbar are still absent.
+- `KunInput`: with Flutter web's accessibility turned on, the field could not
+  be typed into — its semantics node never said it was enabled, and the web
+  engine renders such a field as a disabled `<input>`. It now reports its
+  enabled state and answers the tap and focus actions.
+- `KunInput`: the focus ring fades in and out over `KunDurations.fast`, as the
+  web's `transition-[color,box-shadow]` does. The border colour still changes
+  at once; the web does not transition it either.
+- `KunInput`: a disabled field can no longer take focus, from the keyboard or
+  otherwise. Disabling a focused field blurs it and calls `onBlur`.
+- `KunInput` needs an `Overlay` ancestor, as every Flutter text field does.
+  `WidgetsApp` — and so `MaterialApp` and `CupertinoApp` — provides one; a
+  bare widget tree, such as a test, has to add it.
+
 ## 0.2.0
 
 The first components ported on demand, chosen by how heavily the web library

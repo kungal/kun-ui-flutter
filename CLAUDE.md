@@ -26,8 +26,11 @@
    Absence is not drift: unported components are information (scope is
    on-demand), so an unstarted component needs no manifest entry.
 4. **No Material coupling.** `KunTheme` (KunUI's own `InheritedWidget`) is the
-   only ancestor a KunUI widget may require — never `Theme.of(context)`, no
-   `MaterialApp` assumption, no Material widgets inside library code (forui
+   only KunUI ancestor a widget may require, and beyond it nothing an app
+   shell does not already build (a text field needs the `Overlay` every
+   `WidgetsApp` provides, as every Flutter text field does) — never
+   `Theme.of(context)`, no `MaterialApp` assumption, no Material widgets
+   inside library code (forui
    and shadcn_ui made the same call: an independent design language is not a
    Material skin). The gallery app may use Material chrome; the library
    may not.
