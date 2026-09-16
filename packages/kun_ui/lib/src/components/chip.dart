@@ -182,6 +182,13 @@ class _KunChipCloseState extends State<_KunChipClose> {
               return null;
             },
           ),
+          // See button.dart: the web's Enter is a ButtonActivateIntent.
+          ButtonActivateIntent: CallbackAction<ButtonActivateIntent>(
+            onInvoke: (_) {
+              widget.onPressed?.call();
+              return null;
+            },
+          ),
         },
         // Hover through a plain MouseRegion — see button.dart for why the
         // detector's own hover callback cannot be used.

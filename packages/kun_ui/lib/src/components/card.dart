@@ -204,24 +204,47 @@ class _KunCardState extends State<KunCard> {
       );
     }
 
+    // The web's clickable card is a <button>: focusable, activated by Space
+    // and Enter, and — under base.css's `*:focus { outline: none }` — drawn
+    // with no focus indicator, so none is drawn here either.
     return Semantics(
       button: widget.clickable,
-      child: MouseRegion(
-        cursor: widget.clickable
-            ? SystemMouseCursors.click
-            : SystemMouseCursors.basic,
-        onEnter: (_) => setState(() => _hovered = true),
-        onExit: (_) => setState(() => _hovered = false),
-        child: GestureDetector(
-          behavior: HitTestBehavior.opaque,
-          onTapDown:
-              widget.clickable ? (_) => setState(() => _pressed = true) : null,
-          onTapUp:
-              widget.clickable ? (_) => setState(() => _pressed = false) : null,
-          onTapCancel:
-              widget.clickable ? () => setState(() => _pressed = false) : null,
-          onTap: widget.onTap,
-          child: card,
+      child: FocusableActionDetector(
+        enabled: widget.clickable,
+        actions: {
+          ActivateIntent: CallbackAction<ActivateIntent>(
+            onInvoke: (_) {
+              widget.onTap?.call();
+              return null;
+            },
+          ),
+          ButtonActivateIntent: CallbackAction<ButtonActivateIntent>(
+            onInvoke: (_) {
+              widget.onTap?.call();
+              return null;
+            },
+          ),
+        },
+        child: MouseRegion(
+          cursor: widget.clickable
+              ? SystemMouseCursors.click
+              : SystemMouseCursors.basic,
+          onEnter: (_) => setState(() => _hovered = true),
+          onExit: (_) => setState(() => _hovered = false),
+          child: GestureDetector(
+            behavior: HitTestBehavior.opaque,
+            onTapDown: widget.clickable
+                ? (_) => setState(() => _pressed = true)
+                : null,
+            onTapUp: widget.clickable
+                ? (_) => setState(() => _pressed = false)
+                : null,
+            onTapCancel: widget.clickable
+                ? () => setState(() => _pressed = false)
+                : null,
+            onTap: widget.onTap,
+            child: card,
+          ),
         ),
       ),
     );

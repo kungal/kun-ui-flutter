@@ -1,4 +1,5 @@
 import 'package:flutter/gestures.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter/widgets.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:kun_ui/kun_ui.dart';
@@ -9,6 +10,17 @@ Widget wrap(Widget child) => KunTheme(
         textDirection: TextDirection.ltr,
         child: Center(child: child),
       ),
+    );
+
+// Flutter web's activation bindings. The VM's WidgetsApp.defaultShortcuts
+// send Enter as ActivateIntent too, which hid that a browser's Enter did
+// nothing on a KunButton.
+Widget wrapWebKeys(Widget child) => Shortcuts(
+      shortcuts: const {
+        SingleActivator(LogicalKeyboardKey.space): ActivateIntent(),
+        SingleActivator(LogicalKeyboardKey.enter): ButtonActivateIntent(),
+      },
+      child: wrap(child),
     );
 
 void main() {
@@ -171,5 +183,20 @@ void main() {
       decoration().color,
       KunColors.light.primary.solid.withValues(alpha: 0.2),
     );
+  });
+  testWidgets('Space and web Enter press a focused button', (tester) async {
+    var presses = 0;
+    await tester.pumpWidget(
+      wrapWebKeys(
+        KunButton(onPressed: () => presses++, child: const Text('Save')),
+      ),
+    );
+    Focus.of(tester.element(find.text('Save'))).requestFocus();
+    await tester.pump();
+
+    await tester.sendKeyEvent(LogicalKeyboardKey.space);
+    expect(presses, 1);
+    await tester.sendKeyEvent(LogicalKeyboardKey.enter);
+    expect(presses, 2);
   });
 }

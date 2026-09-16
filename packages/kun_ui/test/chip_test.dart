@@ -1,3 +1,4 @@
+import 'package:flutter/services.dart';
 import 'package:flutter/widgets.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:kun_ui/kun_ui.dart';
@@ -19,6 +20,17 @@ BoxDecoration decorationOf(WidgetTester tester) {
   );
   return container.decoration! as BoxDecoration;
 }
+
+// Flutter web's activation bindings. The VM's WidgetsApp.defaultShortcuts
+// send Enter as ActivateIntent too, which hid that a browser's Enter did
+// nothing on a KunButton.
+Widget wrapWebKeys(Widget child) => Shortcuts(
+      shortcuts: const {
+        SingleActivator(LogicalKeyboardKey.space): ActivateIntent(),
+        SingleActivator(LogicalKeyboardKey.enter): ButtonActivateIntent(),
+      },
+      child: wrap(child),
+    );
 
 void main() {
   testWidgets('the chip scale produces the web heights', (tester) async {
@@ -148,5 +160,25 @@ void main() {
     expect(find.bySemanticsLabel(KunMessages.zhCN.chip.remove), findsNothing);
 
     semantics.dispose();
+  });
+  testWidgets('Space and web Enter press a focused remove button',
+      (tester) async {
+    var closes = 0;
+    await tester.pumpWidget(
+      wrapWebKeys(
+        KunChip(
+          closable: true,
+          onClose: () => closes++,
+          child: const Text('tag'),
+        ),
+      ),
+    );
+    Focus.of(tester.element(find.byIcon(KunIcons.x))).requestFocus();
+    await tester.pump();
+
+    await tester.sendKeyEvent(LogicalKeyboardKey.space);
+    expect(closes, 1);
+    await tester.sendKeyEvent(LogicalKeyboardKey.enter);
+    expect(closes, 2);
   });
 }

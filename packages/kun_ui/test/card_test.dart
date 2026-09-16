@@ -1,3 +1,4 @@
+import 'package:flutter/services.dart';
 import 'package:flutter/widgets.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:kun_ui/kun_ui.dart';
@@ -20,6 +21,17 @@ BoxDecoration decorationOf(WidgetTester tester) {
 }
 
 const body = SizedBox(width: 100, height: 40, key: ValueKey('body'));
+
+// Flutter web's activation bindings. The VM's WidgetsApp.defaultShortcuts
+// send Enter as ActivateIntent too, which hid that a browser's Enter did
+// nothing on a KunButton.
+Widget wrapWebKeys(Widget child) => Shortcuts(
+      shortcuts: const {
+        SingleActivator(LogicalKeyboardKey.space): ActivateIntent(),
+        SingleActivator(LogicalKeyboardKey.enter): ButtonActivateIntent(),
+      },
+      child: wrap(child),
+    );
 
 void main() {
   testWidgets('the padding scale matches the web', (tester) async {
@@ -135,5 +147,29 @@ void main() {
     final footer = tester.getCenter(find.text('footer')).dy;
     expect(header, lessThan(bodyY));
     expect(bodyY, lessThan(footer));
+  });
+  testWidgets('a clickable card takes focus and Space or Enter taps it',
+      (tester) async {
+    var taps = 0;
+    await tester.pumpWidget(
+      wrapWebKeys(
+        KunCard(clickable: true, onTap: () => taps++, child: const Text('go')),
+      ),
+    );
+    final node = Focus.of(tester.element(find.text('go')));
+    expect(node.canRequestFocus, isTrue);
+    node.requestFocus();
+    await tester.pump();
+
+    await tester.sendKeyEvent(LogicalKeyboardKey.space);
+    expect(taps, 1);
+    await tester.sendKeyEvent(LogicalKeyboardKey.enter);
+    expect(taps, 2);
+
+    await tester.pumpWidget(
+      wrapWebKeys(KunCard(onTap: () => taps++, child: const Text('static'))),
+    );
+    expect(
+        Focus.of(tester.element(find.text('static'))).canRequestFocus, isFalse);
   });
 }

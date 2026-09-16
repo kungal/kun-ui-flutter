@@ -11,6 +11,12 @@
   the counter count user-perceived characters, where the browser counts
   UTF-16 code units. The web's `resize` handle is browser chrome and is not
   ported.
+- `KunButton` and `KunChip`'s remove button answer Enter in a browser. Flutter
+  web sends Enter as `ButtonActivateIntent`, which neither handled, so only
+  Space pressed them there; other platforms were unaffected.
+- A `clickable` `KunCard` takes keyboard focus and is tapped by Space and
+  Enter, as the web's `<button>` card is. Like the web's, it draws no focus
+  indicator.
 - `KunInput`: a click or tap places the caret, and a drag, double-tap or
   long-press selects. 0.2.0 moved the caret to the end on every tap and could
   not select with the pointer at all. Touch selection handles and a copy/paste

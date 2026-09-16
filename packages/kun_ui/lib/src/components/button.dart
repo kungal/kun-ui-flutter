@@ -242,6 +242,14 @@ class _KunButtonState extends State<KunButton> {
               return null;
             },
           ),
+          // Flutter web binds Enter to ButtonActivateIntent alone, so with
+          // only ActivateIntent a focused button ignored Enter in a browser.
+          ButtonActivateIntent: CallbackAction<ButtonActivateIntent>(
+            onInvoke: (_) {
+              _handleActivate();
+              return null;
+            },
+          ),
         },
         // Hover through a plain MouseRegion, NOT the detector's
         // onShowHoverHighlight: that callback is gated on the focus highlight
