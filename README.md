@@ -47,9 +47,8 @@ KunButton(
 
 `KunTheme` is KunUI's own `InheritedWidget` — no Material `ThemeData`
 coupling; it composes fine inside or outside a `MaterialApp`. See
-`docs/INTEGRATION.md` for consuming the package today (git dependency until
-the first pub.dev release) and `docs/architecture.md` for the design
-decisions.
+`docs/INTEGRATION.md` for consuming the package and `docs/architecture.md`
+for the design decisions.
 
 ## Status
 

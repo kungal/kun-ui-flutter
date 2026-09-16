@@ -1,9 +1,22 @@
 # Consuming kun_ui in an app
 
-## Today: git dependency
+## The dependency
 
-`kun_ui` is not yet on pub.dev (the first publish is a manual step still
-ahead). Until then, depend on the repo directly:
+```yaml
+dependencies:
+  kun_ui: ^0.2.0
+```
+
+`kun_ui_tokens`, `kun_ui_icons` and `kun_ui_messages` come with it from
+pub.dev and are re-exported, so `import 'package:kun_ui/kun_ui.dart';` is the
+only import.
+
+While `kun_ui` is 0.x, a minor bump may break and the caret stops at it
+(`^0.2.0` never resolves 0.3.0): read the
+[CHANGELOG](../packages/kun_ui/CHANGELOG.md) before raising the floor.
+
+A fix that is on `main` but not yet released can be taken from the repo,
+pinned to its commit:
 
 ```yaml
 dependencies:
@@ -11,15 +24,8 @@ dependencies:
     git:
       url: https://github.com/kungal/kun-ui-flutter
       path: packages/kun_ui
-      ref: main # or pin a commit for reproducible builds — recommended
+      ref: <commit>
 ```
-
-`kun_ui_tokens`, `kun_ui_icons` and `kun_ui_messages` come with it from
-pub.dev and are re-exported, so `import 'package:kun_ui/kun_ui.dart';` is the
-only import.
-
-After the first pub.dev release this becomes `kun_ui: ^<version>` — watch
-the repo's releases.
 
 ## Setup
 

@@ -23,8 +23,9 @@ runApp(
 ```
 
 `kun_ui` re-exports `kun_ui_tokens`, `kun_ui_icons` and `kun_ui_messages`, so
-one import serves an app: `KunColors`, `KunRadius`, `KunShadows`, `KunEasing`,
-`KunDurations`, `KunIcons` and `KunMessages` all come with it.
+one import serves an app: `KunColors`, `KunRadius`, `KunShadows`,
+`KunSpacing`, `KunText`, `KunEasing`, `KunDurations`, `KunIcons` and
+`KunMessages` all come with it.
 
 The strings KunUI renders for itself — a chip's close button, an input's clear
 and reveal buttons — come from `KunMessages`, with `zh-CN` as the built-in

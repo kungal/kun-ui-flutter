@@ -190,6 +190,6 @@ web source, not the rendered pixels.
 ## Key docs
 
 `docs/architecture.md` (this repo's design decisions and their reasons),
-`docs/INTEGRATION.md` (how an app consumes kun_ui today, pre-pub.dev),
+`docs/INTEGRATION.md` (how an app consumes kun_ui),
 kun-ui's `docs/architecture-flutter.md` (the five-tier roadmap this repo is
 tier 4 of) and `contracts/README.md` (manifest format, parity semantics).
