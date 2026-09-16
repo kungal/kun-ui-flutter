@@ -4,22 +4,24 @@ import 'package:kun_ui/kun_ui.dart';
 void _press() {}
 
 Widget buttonMatrix(BuildContext context) {
-  return SingleChildScrollView(
-    padding: const EdgeInsets.all(24),
+  return Padding(
+    padding: EdgeInsets.all(KunCardPadding.lg.value),
     // A phone is narrower than the seven-colour matrix: at 1080px this
     // overflowed by 90px, where the same use case at 1440px in Chrome had
-    // looked fine. Scrolling the Column rather than each Row keeps the
+    // looked fine. The host already scrolls vertically, so a vertical
+    // SingleChildScrollView here receives unbounded height, sizes to its
+    // content and never scrolls. The remaining horizontal scroll keeps the
     // columns aligned across variants.
     child: SingleChildScrollView(
       scrollDirection: Axis.horizontal,
       child: Column(
         mainAxisSize: MainAxisSize.min,
-        spacing: 12,
+        spacing: KunCardPadding.sm.value,
         children: [
           for (final variant in KunUIVariant.values)
             Row(
               mainAxisSize: MainAxisSize.min,
-              spacing: 12,
+              spacing: KunCardPadding.sm.value,
               children: [
                 for (final color in KunUIColor.values)
                   KunButton(

@@ -45,6 +45,181 @@
         "props.rounded": "The axis that matters is the theme-wide default -- KunThemeData.rounded squares or rounds every surface at once, as the web's config.rounded does -- and the gallery has no control for it. The per-widget override is the escape hatch, not the story."
       }
     },
+    "KunCard": {
+      "source": "demos/card.dart",
+      "demos": [
+        {
+          "slug": "anatomy",
+          "title": "Anatomy",
+          "builder": "cardAnatomy",
+          "shows": [
+            "slots.header",
+            "slots.cover",
+            "slots.default",
+            "slots.footer"
+          ]
+        },
+        {
+          "slug": "tints",
+          "title": "Tints",
+          "builder": "cardTints",
+          "shows": [
+            "props.color"
+          ]
+        },
+        {
+          "slug": "surfaces",
+          "title": "Surfaces",
+          "builder": "cardSurfaces",
+          "shows": [
+            "props.bordered",
+            "props.isTransparent"
+          ]
+        },
+        {
+          "slug": "padding",
+          "title": "Padding",
+          "builder": "cardPadding",
+          "shows": [
+            "props.padding"
+          ]
+        },
+        {
+          "slug": "interactive",
+          "title": "Interactive",
+          "builder": "cardInteractive",
+          "shows": [
+            "props.clickable",
+            "props.isHoverable"
+          ]
+        }
+      ],
+      "undemoable": {
+        "events.click": "Every card in the Interactive demo carries a live onTap, and the prop's one subtlety -- that it fires whether or not the card is clickable -- is a behaviour, not an appearance. A callback has nothing of its own to show."
+      },
+      "gaps": {
+        "props.rounded": "The axis that matters is the theme-wide default -- KunThemeData.rounded squares or rounds every surface at once, as the web's config.rounded does -- and the gallery has no control for it. The per-widget override is the escape hatch, not the story."
+      }
+    },
+    "KunChip": {
+      "source": "demos/chip.dart",
+      "demos": [
+        {
+          "slug": "matrix",
+          "title": "Matrix",
+          "builder": "chipMatrix",
+          "shows": [
+            "props.variant",
+            "props.color",
+            "slots.default"
+          ]
+        },
+        {
+          "slug": "sizes",
+          "title": "Sizes",
+          "builder": "chipSizes",
+          "shows": [
+            "props.size"
+          ]
+        },
+        {
+          "slug": "parts",
+          "title": "Parts",
+          "builder": "chipParts",
+          "shows": [
+            "slots.start",
+            "slots.end",
+            "props.closable",
+            "props.disabled"
+          ]
+        },
+        {
+          "slug": "dismiss",
+          "title": "Dismiss",
+          "builder": "chipDismiss",
+          "shows": [
+            "events.close"
+          ]
+        }
+      ]
+    },
+    "KunInput": {
+      "source": "demos/input.dart",
+      "demos": [
+        {
+          "slug": "sizes",
+          "title": "Sizes",
+          "builder": "inputSizes",
+          "shows": [
+            "props.size"
+          ]
+        },
+        {
+          "slug": "labelling",
+          "title": "Labelling",
+          "builder": "inputLabelling",
+          "shows": [
+            "props.label",
+            "props.required",
+            "props.placeholder",
+            "props.description"
+          ]
+        },
+        {
+          "slug": "validation",
+          "title": "Validation",
+          "builder": "inputValidation",
+          "shows": [
+            "props.error",
+            "props.isInvalid"
+          ]
+        },
+        {
+          "slug": "affixes",
+          "title": "Affixes",
+          "builder": "inputAffixes",
+          "shows": [
+            "slots.prefix",
+            "slots.suffix",
+            "props.isClearable",
+            "props.revealPassword",
+            "props.type"
+          ]
+        },
+        {
+          "slug": "focus-ring",
+          "title": "Focus ring",
+          "builder": "inputFocusRing",
+          "shows": [
+            "props.color"
+          ]
+        },
+        {
+          "slug": "events",
+          "title": "Events",
+          "builder": "inputEvents",
+          "shows": [
+            "props.modelValue",
+            "events.update:modelValue",
+            "events.focus",
+            "events.blur",
+            "events.clear"
+          ]
+        },
+        {
+          "slug": "states",
+          "title": "States",
+          "builder": "inputStates",
+          "shows": [
+            "props.disabled"
+          ]
+        }
+      ],
+      "gaps": {
+        "props.autofocus": "A demo page is the payload of an iframe, and a field that takes focus on mount steals the caret from the page hosting it. Showing this honestly needs a mount-on-demand control the gallery does not have.",
+        "props.rounded": "The axis that matters is the theme-wide default -- KunThemeData.rounded squares or rounds every surface at once, as the web's config.rounded does -- and the gallery has no control for it. The per-widget override is the escape hatch, not the story."
+      }
+    },
     "KunSpinner": {
       "contract": false,
       "source": "demos/spinner.dart",

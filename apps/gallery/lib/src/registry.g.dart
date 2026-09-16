@@ -4,6 +4,9 @@
 
 import 'coverage.g.dart';
 import 'demos/button.dart';
+import 'demos/card.dart';
+import 'demos/chip.dart';
+import 'demos/input.dart';
 import 'demos/spinner.dart';
 import 'registry.dart';
 
@@ -21,6 +24,50 @@ const List<GalleryComponent> galleryComponents = <GalleryComponent>[
     ],
   ),
   GalleryComponent(
+    slug: 'kuncard',
+    name: 'KunCard',
+    demos: <GalleryDemo>[
+      GalleryDemo(slug: 'anatomy', title: 'Anatomy', builder: cardAnatomy),
+      GalleryDemo(slug: 'tints', title: 'Tints', builder: cardTints),
+      GalleryDemo(slug: 'surfaces', title: 'Surfaces', builder: cardSurfaces),
+      GalleryDemo(slug: 'padding', title: 'Padding', builder: cardPadding),
+      GalleryDemo(
+          slug: 'interactive', title: 'Interactive', builder: cardInteractive),
+      GalleryDemo(
+          slug: 'contract', title: 'Contract', builder: kunCardContract),
+    ],
+  ),
+  GalleryComponent(
+    slug: 'kunchip',
+    name: 'KunChip',
+    demos: <GalleryDemo>[
+      GalleryDemo(slug: 'matrix', title: 'Matrix', builder: chipMatrix),
+      GalleryDemo(slug: 'sizes', title: 'Sizes', builder: chipSizes),
+      GalleryDemo(slug: 'parts', title: 'Parts', builder: chipParts),
+      GalleryDemo(slug: 'dismiss', title: 'Dismiss', builder: chipDismiss),
+      GalleryDemo(
+          slug: 'contract', title: 'Contract', builder: kunChipContract),
+    ],
+  ),
+  GalleryComponent(
+    slug: 'kuninput',
+    name: 'KunInput',
+    demos: <GalleryDemo>[
+      GalleryDemo(slug: 'sizes', title: 'Sizes', builder: inputSizes),
+      GalleryDemo(
+          slug: 'labelling', title: 'Labelling', builder: inputLabelling),
+      GalleryDemo(
+          slug: 'validation', title: 'Validation', builder: inputValidation),
+      GalleryDemo(slug: 'affixes', title: 'Affixes', builder: inputAffixes),
+      GalleryDemo(
+          slug: 'focus-ring', title: 'Focus ring', builder: inputFocusRing),
+      GalleryDemo(slug: 'events', title: 'Events', builder: inputEvents),
+      GalleryDemo(slug: 'states', title: 'States', builder: inputStates),
+      GalleryDemo(
+          slug: 'contract', title: 'Contract', builder: kunInputContract),
+    ],
+  ),
+  GalleryComponent(
     slug: 'kunspinner',
     name: 'KunSpinner',
     demos: <GalleryDemo>[
@@ -30,8 +77,4 @@ const List<GalleryComponent> galleryComponents = <GalleryComponent>[
 ];
 
 /// Components the manifest claims that the gallery has not reached.
-const List<String> galleryUnbuiltComponents = <String>[
-  'KunCard',
-  'KunChip',
-  'KunInput',
-];
+const List<String> galleryUnbuiltComponents = <String>[];

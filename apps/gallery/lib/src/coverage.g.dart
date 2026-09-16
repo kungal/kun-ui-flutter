@@ -117,3 +117,355 @@ const ComponentCoverage _kunButton = ComponentCoverage(
 /// The contract coverage page for KunButton.
 Widget kunButtonContract(BuildContext context) =>
     const CoveragePage(coverage: _kunButton);
+
+const ComponentCoverage _kunCard = ComponentCoverage(
+  name: 'KunCard',
+  entries: <CoverageEntry>[
+    CoverageEntry(
+      section: 'props',
+      contractName: 'bordered',
+      status: CoverageStatus.shown,
+      dartName: 'bordered',
+      shownBy: 'Surfaces',
+    ),
+    CoverageEntry(
+      section: 'props',
+      contractName: 'clickable',
+      status: CoverageStatus.shown,
+      dartName: 'clickable',
+      shownBy: 'Interactive',
+    ),
+    CoverageEntry(
+      section: 'props',
+      contractName: 'color',
+      status: CoverageStatus.shown,
+      dartName: 'color',
+      shownBy: 'Tints',
+    ),
+    CoverageEntry(
+      section: 'props',
+      contractName: 'darkBorder',
+      status: CoverageStatus.omitted,
+      dartName: null,
+      reason:
+          'Declared in Card.vue\'s props but never read by its template — a legacy toggle with no behaviour to port.',
+    ),
+    CoverageEntry(
+      section: 'props',
+      contractName: 'isHoverable',
+      status: CoverageStatus.shown,
+      dartName: 'isHoverable',
+      shownBy: 'Interactive',
+    ),
+    CoverageEntry(
+      section: 'props',
+      contractName: 'isTransparent',
+      status: CoverageStatus.shown,
+      dartName: 'isTransparent',
+      shownBy: 'Surfaces',
+    ),
+    CoverageEntry(
+      section: 'props',
+      contractName: 'padding',
+      status: CoverageStatus.shown,
+      dartName: 'padding',
+      shownBy: 'Padding',
+    ),
+    CoverageEntry(
+      section: 'props',
+      contractName: 'rounded',
+      status: CoverageStatus.notYet,
+      dartName: 'rounded',
+      reason:
+          'The axis that matters is the theme-wide default -- KunThemeData.rounded squares or rounds every surface at once, as the web\'s config.rounded does -- and the gallery has no control for it. The per-widget override is the escape hatch, not the story.',
+    ),
+    CoverageEntry(
+      section: 'events',
+      contractName: 'click',
+      status: CoverageStatus.noVisualForm,
+      dartName: 'onTap',
+      reason:
+          'Every card in the Interactive demo carries a live onTap, and the prop\'s one subtlety -- that it fires whether or not the card is clickable -- is a behaviour, not an appearance. A callback has nothing of its own to show.',
+    ),
+    CoverageEntry(
+      section: 'slots',
+      contractName: 'cover',
+      status: CoverageStatus.shown,
+      dartName: 'cover',
+      shownBy: 'Anatomy',
+    ),
+    CoverageEntry(
+      section: 'slots',
+      contractName: 'default',
+      status: CoverageStatus.shown,
+      dartName: 'child',
+      shownBy: 'Anatomy',
+    ),
+    CoverageEntry(
+      section: 'slots',
+      contractName: 'footer',
+      status: CoverageStatus.shown,
+      dartName: 'footer',
+      shownBy: 'Anatomy',
+    ),
+    CoverageEntry(
+      section: 'slots',
+      contractName: 'header',
+      status: CoverageStatus.shown,
+      dartName: 'header',
+      shownBy: 'Anatomy',
+    ),
+  ],
+);
+
+/// The contract coverage page for KunCard.
+Widget kunCardContract(BuildContext context) =>
+    const CoveragePage(coverage: _kunCard);
+
+const ComponentCoverage _kunChip = ComponentCoverage(
+  name: 'KunChip',
+  entries: <CoverageEntry>[
+    CoverageEntry(
+      section: 'props',
+      contractName: 'closable',
+      status: CoverageStatus.shown,
+      dartName: 'closable',
+      shownBy: 'Parts',
+    ),
+    CoverageEntry(
+      section: 'props',
+      contractName: 'color',
+      status: CoverageStatus.shown,
+      dartName: 'color',
+      shownBy: 'Matrix',
+    ),
+    CoverageEntry(
+      section: 'props',
+      contractName: 'disabled',
+      status: CoverageStatus.shown,
+      dartName: 'disabled',
+      shownBy: 'Parts',
+    ),
+    CoverageEntry(
+      section: 'props',
+      contractName: 'size',
+      status: CoverageStatus.shown,
+      dartName: 'size',
+      shownBy: 'Sizes',
+    ),
+    CoverageEntry(
+      section: 'props',
+      contractName: 'variant',
+      status: CoverageStatus.shown,
+      dartName: 'variant',
+      shownBy: 'Matrix',
+    ),
+    CoverageEntry(
+      section: 'events',
+      contractName: 'close',
+      status: CoverageStatus.shown,
+      dartName: 'onClose',
+      shownBy: 'Dismiss',
+    ),
+    CoverageEntry(
+      section: 'slots',
+      contractName: 'default',
+      status: CoverageStatus.shown,
+      dartName: 'child',
+      shownBy: 'Matrix',
+    ),
+    CoverageEntry(
+      section: 'slots',
+      contractName: 'end',
+      status: CoverageStatus.shown,
+      dartName: 'end',
+      shownBy: 'Parts',
+    ),
+    CoverageEntry(
+      section: 'slots',
+      contractName: 'start',
+      status: CoverageStatus.shown,
+      dartName: 'start',
+      shownBy: 'Parts',
+    ),
+  ],
+);
+
+/// The contract coverage page for KunChip.
+Widget kunChipContract(BuildContext context) =>
+    const CoveragePage(coverage: _kunChip);
+
+const ComponentCoverage _kunInput = ComponentCoverage(
+  name: 'KunInput',
+  entries: <CoverageEntry>[
+    CoverageEntry(
+      section: 'props',
+      contractName: 'autofocus',
+      status: CoverageStatus.notYet,
+      dartName: 'autofocus',
+      reason:
+          'A demo page is the payload of an iframe, and a field that takes focus on mount steals the caret from the page hosting it. Showing this honestly needs a mount-on-demand control the gallery does not have.',
+    ),
+    CoverageEntry(
+      section: 'props',
+      contractName: 'color',
+      status: CoverageStatus.shown,
+      dartName: 'color',
+      shownBy: 'Focus ring',
+    ),
+    CoverageEntry(
+      section: 'props',
+      contractName: 'darkBorder',
+      status: CoverageStatus.omitted,
+      dartName: null,
+      reason:
+          'Declared in Input.vue\'s props but never read by its template — a legacy toggle with no behaviour to port.',
+    ),
+    CoverageEntry(
+      section: 'props',
+      contractName: 'description',
+      status: CoverageStatus.shown,
+      dartName: 'description',
+      shownBy: 'Labelling',
+    ),
+    CoverageEntry(
+      section: 'props',
+      contractName: 'disabled',
+      status: CoverageStatus.shown,
+      dartName: 'disabled',
+      shownBy: 'States',
+    ),
+    CoverageEntry(
+      section: 'props',
+      contractName: 'error',
+      status: CoverageStatus.shown,
+      dartName: 'error',
+      shownBy: 'Validation',
+    ),
+    CoverageEntry(
+      section: 'props',
+      contractName: 'helperText',
+      status: CoverageStatus.omitted,
+      dartName: null,
+      reason:
+          'The web\'s own deprecated alias of `description`; a new API is not born with it.',
+    ),
+    CoverageEntry(
+      section: 'props',
+      contractName: 'isClearable',
+      status: CoverageStatus.shown,
+      dartName: 'isClearable',
+      shownBy: 'Affixes',
+    ),
+    CoverageEntry(
+      section: 'props',
+      contractName: 'isInvalid',
+      status: CoverageStatus.shown,
+      dartName: 'isInvalid',
+      shownBy: 'Validation',
+    ),
+    CoverageEntry(
+      section: 'props',
+      contractName: 'label',
+      status: CoverageStatus.shown,
+      dartName: 'label',
+      shownBy: 'Labelling',
+    ),
+    CoverageEntry(
+      section: 'props',
+      contractName: 'modelValue',
+      status: CoverageStatus.shown,
+      dartName: 'value',
+      shownBy: 'Events',
+    ),
+    CoverageEntry(
+      section: 'props',
+      contractName: 'placeholder',
+      status: CoverageStatus.shown,
+      dartName: 'placeholder',
+      shownBy: 'Labelling',
+    ),
+    CoverageEntry(
+      section: 'props',
+      contractName: 'required',
+      status: CoverageStatus.shown,
+      dartName: 'required',
+      shownBy: 'Labelling',
+    ),
+    CoverageEntry(
+      section: 'props',
+      contractName: 'revealPassword',
+      status: CoverageStatus.shown,
+      dartName: 'revealPassword',
+      shownBy: 'Affixes',
+    ),
+    CoverageEntry(
+      section: 'props',
+      contractName: 'rounded',
+      status: CoverageStatus.notYet,
+      dartName: 'rounded',
+      reason:
+          'The axis that matters is the theme-wide default -- KunThemeData.rounded squares or rounds every surface at once, as the web\'s config.rounded does -- and the gallery has no control for it. The per-widget override is the escape hatch, not the story.',
+    ),
+    CoverageEntry(
+      section: 'props',
+      contractName: 'size',
+      status: CoverageStatus.shown,
+      dartName: 'size',
+      shownBy: 'Sizes',
+    ),
+    CoverageEntry(
+      section: 'props',
+      contractName: 'type',
+      status: CoverageStatus.shown,
+      dartName: 'type',
+      shownBy: 'Affixes',
+    ),
+    CoverageEntry(
+      section: 'events',
+      contractName: 'blur',
+      status: CoverageStatus.shown,
+      dartName: 'onBlur',
+      shownBy: 'Events',
+    ),
+    CoverageEntry(
+      section: 'events',
+      contractName: 'clear',
+      status: CoverageStatus.shown,
+      dartName: 'onClear',
+      shownBy: 'Events',
+    ),
+    CoverageEntry(
+      section: 'events',
+      contractName: 'focus',
+      status: CoverageStatus.shown,
+      dartName: 'onFocus',
+      shownBy: 'Events',
+    ),
+    CoverageEntry(
+      section: 'events',
+      contractName: 'update:modelValue',
+      status: CoverageStatus.shown,
+      dartName: 'onChanged',
+      shownBy: 'Events',
+    ),
+    CoverageEntry(
+      section: 'slots',
+      contractName: 'prefix',
+      status: CoverageStatus.shown,
+      dartName: 'prefix',
+      shownBy: 'Affixes',
+    ),
+    CoverageEntry(
+      section: 'slots',
+      contractName: 'suffix',
+      status: CoverageStatus.shown,
+      dartName: 'suffix',
+      shownBy: 'Affixes',
+    ),
+  ],
+);
+
+/// The contract coverage page for KunInput.
+Widget kunInputContract(BuildContext context) =>
+    const CoveragePage(coverage: _kunInput);
