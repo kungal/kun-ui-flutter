@@ -35,10 +35,9 @@
    routine and needs no permission — the repo is public, CI costs nothing,
    and a branch push is reversible. A *tag* is not: it publishes an immutable
    version to pub.dev, so never tag, retag or publish on your own initiative
-   — only when the user asks. The FIRST publish of the package must be run
-   manually by the user (`dart pub publish`); only after that can the
-   tag-triggered OIDC workflow publish. Never hand-edit a version to "fix" a
-   release.
+   — only when the user asks. The first publish had to be run manually by
+   the user (0.1.0, 2026-09-15); from 0.2.0 on, the tag-triggered OIDC
+   workflow publishes. Never hand-edit a version to "fix" a release.
 6. **A new dependency needs a capability argument, never a convenience one**
    — inherited from kun-ui verbatim. The library depends on exactly the
    generated family — `kun_ui_tokens` + `kun_ui_icons` + `kun_ui_messages`,
@@ -126,6 +125,21 @@ clones kungal/kun-ui at `kun_ui_tokens-v<version>`, runs its
   changed returns the first layout's metrics, which reads as "even and
   proportional place glyphs identically". Assert on the resolved
   `TextStyle` instead, or use a different string per measurement.
+
+## Cutting a release (only when asked — iron rule 5)
+
+1. The CHANGELOG already carries the version's heading. Bump
+   `packages/kun_ui/pubspec.yaml` **and** the gallery's `kun_ui:` constraint:
+   while the package is 0.x, `^0.1.0` does not admit 0.2.0 and the
+   workspace stops resolving.
+2. `flutter pub publish --dry-run` in `packages/kun_ui` — the only
+   acceptable warning is the uncommitted tree.
+3. Commit, push, and wait for `check.yml` to pass on that commit.
+4. `git tag -a kun_ui-v<version>` on it and push the tag; `publish-pub.yml`
+   uploads. The job log's "Successfully uploaded" is the verdict — the
+   pub.dev API can take up to 10 minutes to list the version.
+5. `gh release create kun_ui-v<version>` with the CHANGELOG section as the
+   notes.
 
 ## Porting a component (the recipe)
 
