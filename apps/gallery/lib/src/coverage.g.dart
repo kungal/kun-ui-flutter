@@ -637,6 +637,129 @@ const ComponentCoverage _kunSwitch = ComponentCoverage(
 Widget kunSwitchContract(BuildContext context) =>
     const CoveragePage(coverage: _kunSwitch);
 
+const ComponentCoverage _kunTab = ComponentCoverage(
+  name: 'KunTab',
+  entries: <CoverageEntry>[
+    CoverageEntry(
+      section: 'props',
+      contractName: 'align',
+      status: CoverageStatus.shown,
+      dartName: 'align',
+      shownBy: 'Align',
+    ),
+    CoverageEntry(
+      section: 'props',
+      contractName: 'color',
+      status: CoverageStatus.shown,
+      dartName: 'color',
+      shownBy: 'Colors',
+    ),
+    CoverageEntry(
+      section: 'props',
+      contractName: 'disableAnimation',
+      status: CoverageStatus.shown,
+      dartName: 'disableAnimation',
+      shownBy: 'Scrollable',
+    ),
+    CoverageEntry(
+      section: 'props',
+      contractName: 'disabled',
+      status: CoverageStatus.shown,
+      dartName: 'disabled',
+      shownBy: 'Disabled',
+    ),
+    CoverageEntry(
+      section: 'props',
+      contractName: 'fullWidth',
+      status: CoverageStatus.shown,
+      dartName: 'fullWidth',
+      shownBy: 'Align',
+    ),
+    CoverageEntry(
+      section: 'props',
+      contractName: 'iconSize',
+      status: CoverageStatus.shown,
+      dartName: 'iconSize',
+      shownBy: 'Custom tabs',
+    ),
+    CoverageEntry(
+      section: 'props',
+      contractName: 'items',
+      status: CoverageStatus.shown,
+      dartName: 'items',
+      shownBy: 'Basic',
+    ),
+    CoverageEntry(
+      section: 'props',
+      contractName: 'modelValue',
+      status: CoverageStatus.shown,
+      dartName: 'value',
+      shownBy: 'Basic',
+    ),
+    CoverageEntry(
+      section: 'props',
+      contractName: 'orientation',
+      status: CoverageStatus.shown,
+      dartName: 'orientation',
+      shownBy: 'Vertical',
+    ),
+    CoverageEntry(
+      section: 'props',
+      contractName: 'scrollButtons',
+      status: CoverageStatus.shown,
+      dartName: 'scrollButtons',
+      shownBy: 'Overflow',
+    ),
+    CoverageEntry(
+      section: 'props',
+      contractName: 'scrollable',
+      status: CoverageStatus.shown,
+      dartName: 'scrollable',
+      shownBy: 'Scrollable',
+    ),
+    CoverageEntry(
+      section: 'props',
+      contractName: 'size',
+      status: CoverageStatus.shown,
+      dartName: 'size',
+      shownBy: 'Sizes',
+    ),
+    CoverageEntry(
+      section: 'props',
+      contractName: 'variant',
+      status: CoverageStatus.shown,
+      dartName: 'variant',
+      shownBy: 'Variants',
+    ),
+    CoverageEntry(
+      section: 'events',
+      contractName: 'change',
+      status: CoverageStatus.omitted,
+      dartName: null,
+      reason:
+          'Fires on exactly the selections update:modelValue fires on, with the same value; onChanged answers both.',
+    ),
+    CoverageEntry(
+      section: 'events',
+      contractName: 'update:modelValue',
+      status: CoverageStatus.shown,
+      dartName: 'onChanged',
+      shownBy: 'Basic',
+    ),
+    CoverageEntry(
+      section: 'slots',
+      contractName: 'tab',
+      status: CoverageStatus.shown,
+      dartName: 'tabBuilder',
+      shownBy: 'Custom tabs',
+    ),
+  ],
+);
+
+/// The contract coverage page for KunTab.
+Widget kunTabContract(BuildContext context) =>
+    const CoveragePage(coverage: _kunTab);
+
 const ComponentCoverage _kunTextarea = ComponentCoverage(
   name: 'KunTextarea',
   entries: <CoverageEntry>[

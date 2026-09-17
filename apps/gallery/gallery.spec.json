@@ -384,6 +384,108 @@
         }
       ]
     },
+    "KunTab": {
+      "source": "demos/tab.dart",
+      "demos": [
+        {
+          "slug": "basic",
+          "title": "Basic",
+          "builder": "tabBasic",
+          "shows": [
+            "props.items",
+            "props.modelValue",
+            "events.update:modelValue"
+          ]
+        },
+        {
+          "slug": "variants",
+          "title": "Variants",
+          "builder": "tabVariants",
+          "shows": [
+            "props.variant"
+          ]
+        },
+        {
+          "slug": "colors",
+          "title": "Colors",
+          "builder": "tabColors",
+          "shows": [
+            "props.color"
+          ]
+        },
+        {
+          "slug": "sizes",
+          "title": "Sizes",
+          "builder": "tabSizes",
+          "shows": [
+            "props.size"
+          ]
+        },
+        {
+          "slug": "vertical",
+          "title": "Vertical",
+          "builder": "tabVertical",
+          "shows": [
+            "props.orientation"
+          ]
+        },
+        {
+          "slug": "overflow",
+          "title": "Overflow",
+          "builder": "tabOverflow",
+          "shows": [
+            "props.scrollButtons"
+          ]
+        },
+        {
+          "slug": "icons",
+          "title": "Icons",
+          "builder": "tabIcons",
+          "shows": []
+        },
+        {
+          "slug": "align",
+          "title": "Align",
+          "builder": "tabAlign",
+          "shows": [
+            "props.align",
+            "props.fullWidth"
+          ]
+        },
+        {
+          "slug": "disabled",
+          "title": "Disabled",
+          "builder": "tabDisabled",
+          "shows": [
+            "props.disabled"
+          ]
+        },
+        {
+          "slug": "links",
+          "title": "Links",
+          "builder": "tabLinks",
+          "shows": []
+        },
+        {
+          "slug": "custom",
+          "title": "Custom tabs",
+          "builder": "tabCustom",
+          "shows": [
+            "slots.tab",
+            "props.iconSize"
+          ]
+        },
+        {
+          "slug": "scrollable",
+          "title": "Scrollable",
+          "builder": "tabScrollable",
+          "shows": [
+            "props.scrollable",
+            "props.disableAnimation"
+          ]
+        }
+      ]
+    },
     "KunTextarea": {
       "source": "demos/textarea.dart",
       "demos": [

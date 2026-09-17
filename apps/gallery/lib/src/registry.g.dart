@@ -11,6 +11,7 @@ import 'demos/input.dart';
 import 'demos/null.dart';
 import 'demos/spinner.dart';
 import 'demos/switch.dart';
+import 'demos/tab.dart';
 import 'demos/textarea.dart';
 import 'registry.dart';
 
@@ -119,6 +120,26 @@ const List<GalleryComponent> galleryComponents = <GalleryComponent>[
       GalleryDemo(slug: 'events', title: 'Events', builder: switchEvents),
       GalleryDemo(
           slug: 'contract', title: 'Contract', builder: kunSwitchContract),
+    ],
+  ),
+  GalleryComponent(
+    slug: 'kuntab',
+    name: 'KunTab',
+    demos: <GalleryDemo>[
+      GalleryDemo(slug: 'basic', title: 'Basic', builder: tabBasic),
+      GalleryDemo(slug: 'variants', title: 'Variants', builder: tabVariants),
+      GalleryDemo(slug: 'colors', title: 'Colors', builder: tabColors),
+      GalleryDemo(slug: 'sizes', title: 'Sizes', builder: tabSizes),
+      GalleryDemo(slug: 'vertical', title: 'Vertical', builder: tabVertical),
+      GalleryDemo(slug: 'overflow', title: 'Overflow', builder: tabOverflow),
+      GalleryDemo(slug: 'icons', title: 'Icons', builder: tabIcons),
+      GalleryDemo(slug: 'align', title: 'Align', builder: tabAlign),
+      GalleryDemo(slug: 'disabled', title: 'Disabled', builder: tabDisabled),
+      GalleryDemo(slug: 'links', title: 'Links', builder: tabLinks),
+      GalleryDemo(slug: 'custom', title: 'Custom tabs', builder: tabCustom),
+      GalleryDemo(
+          slug: 'scrollable', title: 'Scrollable', builder: tabScrollable),
+      GalleryDemo(slug: 'contract', title: 'Contract', builder: kunTabContract),
     ],
   ),
   GalleryComponent(

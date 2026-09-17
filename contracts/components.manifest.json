@@ -145,6 +145,33 @@
       },
       "slots": {}
     },
+    "KunTab": {
+      "widget": "KunTab",
+      "props": {
+        "align": "align",
+        "color": "color",
+        "disableAnimation": "disableAnimation",
+        "disabled": "disabled",
+        "fullWidth": "fullWidth",
+        "iconSize": "iconSize",
+        "items": "items",
+        "modelValue": "value",
+        "orientation": "orientation",
+        "scrollButtons": "scrollButtons",
+        "scrollable": "scrollable",
+        "size": "size",
+        "variant": "variant"
+      },
+      "events": {
+        "change": {
+          "omit": "Fires on exactly the selections update:modelValue fires on, with the same value; onChanged answers both."
+        },
+        "update:modelValue": "onChanged"
+      },
+      "slots": {
+        "tab": "tabBuilder"
+      }
+    },
     "KunTextarea": {
       "widget": "KunTextarea",
       "props": {

@@ -20,6 +20,7 @@ export 'src/components/spinner.dart';
 export 'src/components/textarea.dart';
 export 'src/components/null.dart';
 export 'src/components/switch.dart';
+export 'src/components/tab.dart';
 export 'src/config/config.dart';
 export 'src/foundation/control_metrics.dart';
 export 'src/foundation/design.dart';

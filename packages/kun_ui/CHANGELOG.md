@@ -16,6 +16,22 @@
   `navigate`, a tap that would navigate does nothing, and a debug build
   says so once. `kunPickAvatarFallback` is the web's fallback pick, hash
   for hash.
+- `KunTab` — the tab strip: the web's five variants with the sliding
+  indicator, three sizes, any `KunUIColor`, vertical strips, `fullWidth`,
+  `align`, and disabled tabs or a disabled strip. The value is controlled
+  (`value` + `onChanged`). An item with an `href` navigates through
+  `KunUIConfigScope` on every tap, including a tap on the selected tab. A
+  horizontal strip wider than its parent scrolls inside it: the edges that
+  can scroll fade out, chevrons page through it, and the selected tab is
+  kept in view. Arrow keys move the selection and focus with it, Home and
+  End jump to the ends, and Tab visits only the selected tab. Screen
+  readers hear a tab bar of tabs. `tabBuilder` replaces a tab's content and
+  receives the app's own `KunTabItem` subclass. The indicator re-measures
+  on any relayout, such as a parent resize or a text scale change. Under
+  the platform's reduced-motion setting the indicator, colours and
+  scrolling jump instead of animating, as the web's base stylesheet makes
+  them. Like the web's, the strip draws no focus indicator.
+  `KunTabPanels` is not ported: switch content on `value`.
 
 ## 0.3.0
 
