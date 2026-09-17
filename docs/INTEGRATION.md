@@ -64,8 +64,9 @@ Two things `KunTheme` does *not* do:
 - It brings no navigation, snackbars or dialogs. KunUI widgets work inside
   `MaterialApp`, `CupertinoApp` or a bare `WidgetsApp`, so keep whatever app
   shell you have. They do need the `Navigator` that shell builds: text
-  fields use its `Overlay`. Under `*.router` the navigator is your router
-  delegate's to build, and go_router's does.
+  fields use its `Overlay`, and `KunModal` opens as a route on the root
+  navigator. Under `*.router` the navigator is your router delegate's to
+  build, and go_router's does.
 
 ## App-wide rounding
 

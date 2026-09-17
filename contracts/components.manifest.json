@@ -120,6 +120,32 @@
         "suffix": "suffix"
       }
     },
+    "KunModal": {
+      "widget": "KunModal",
+      "props": {
+        "ariaLabel": "semanticLabel",
+        "description": "description",
+        "isCloseRequestDismissable": "isCloseRequestDismissable",
+        "isDismissable": "isDismissable",
+        "isShowCloseButton": "isShowCloseButton",
+        "isSwipeDismissable": "isSwipeDismissable",
+        "modelValue": "value",
+        "placement": "placement",
+        "role": "role",
+        "rounded": "rounded",
+        "scrollBehavior": "scrollBehavior",
+        "size": "size",
+        "title": "title",
+        "withContainer": "withContainer"
+      },
+      "events": {
+        "close": "onClose",
+        "update:modelValue": "onChanged"
+      },
+      "slots": {
+        "default": "child"
+      }
+    },
     "KunNull": {
       "widget": "KunNull",
       "props": {

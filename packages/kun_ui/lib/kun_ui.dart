@@ -15,6 +15,7 @@ export 'src/components/badge.dart';
 export 'src/components/button.dart';
 export 'src/components/card.dart';
 export 'src/components/input.dart';
+export 'src/components/modal.dart';
 export 'src/components/chip.dart';
 export 'src/components/spinner.dart';
 export 'src/components/textarea.dart';

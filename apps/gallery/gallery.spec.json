@@ -310,6 +310,97 @@
         "props.autofocus": "A demo page is the payload of an iframe, and a field that takes focus on mount steals the caret from the page hosting it. Showing this honestly needs a mount-on-demand control the gallery does not have."
       }
     },
+    "KunModal": {
+      "source": "demos/modal.dart",
+      "demos": [
+        {
+          "slug": "basic",
+          "title": "Basic",
+          "builder": "modalBasic",
+          "shows": [
+            "props.modelValue",
+            "props.title",
+            "props.description",
+            "slots.default"
+          ]
+        },
+        {
+          "slug": "sizes",
+          "title": "Sizes",
+          "builder": "modalSizes",
+          "shows": [
+            "props.size"
+          ]
+        },
+        {
+          "slug": "placement",
+          "title": "Placement",
+          "builder": "modalPlacement",
+          "shows": [
+            "props.placement",
+            "props.isSwipeDismissable"
+          ]
+        },
+        {
+          "slug": "scroll",
+          "title": "Scroll behaviour",
+          "builder": "modalScroll",
+          "shows": [
+            "props.scrollBehavior"
+          ]
+        },
+        {
+          "slug": "non-dismissable",
+          "title": "Non-dismissable",
+          "builder": "modalNonDismissable",
+          "shows": [
+            "props.isDismissable",
+            "props.isShowCloseButton",
+            "props.isCloseRequestDismissable"
+          ]
+        },
+        {
+          "slug": "alert",
+          "title": "Alert dialog",
+          "builder": "modalAlert",
+          "shows": [
+            "props.role",
+            "props.ariaLabel"
+          ]
+        },
+        {
+          "slug": "form",
+          "title": "Form",
+          "builder": "modalForm",
+          "shows": [
+            "props.rounded"
+          ]
+        },
+        {
+          "slug": "nested",
+          "title": "Nested",
+          "builder": "modalNested",
+          "shows": []
+        },
+        {
+          "slug": "events",
+          "title": "Events",
+          "builder": "modalEvents",
+          "shows": [
+            "events.update:modelValue",
+            "events.close"
+          ]
+        },
+        {
+          "slug": "bare",
+          "title": "Without container",
+          "builder": "modalBare",
+          "shows": [
+            "props.withContainer"
+          ]
+        }
+      ]
+    },
     "KunNull": {
       "source": "demos/null.dart",
       "demos": [

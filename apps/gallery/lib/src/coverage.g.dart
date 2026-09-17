@@ -547,6 +547,135 @@ const ComponentCoverage _kunInput = ComponentCoverage(
 Widget kunInputContract(BuildContext context) =>
     const CoveragePage(coverage: _kunInput);
 
+const ComponentCoverage _kunModal = ComponentCoverage(
+  name: 'KunModal',
+  entries: <CoverageEntry>[
+    CoverageEntry(
+      section: 'props',
+      contractName: 'ariaLabel',
+      status: CoverageStatus.shown,
+      dartName: 'semanticLabel',
+      shownBy: 'Alert dialog',
+    ),
+    CoverageEntry(
+      section: 'props',
+      contractName: 'description',
+      status: CoverageStatus.shown,
+      dartName: 'description',
+      shownBy: 'Basic',
+    ),
+    CoverageEntry(
+      section: 'props',
+      contractName: 'isCloseRequestDismissable',
+      status: CoverageStatus.shown,
+      dartName: 'isCloseRequestDismissable',
+      shownBy: 'Non-dismissable',
+    ),
+    CoverageEntry(
+      section: 'props',
+      contractName: 'isDismissable',
+      status: CoverageStatus.shown,
+      dartName: 'isDismissable',
+      shownBy: 'Non-dismissable',
+    ),
+    CoverageEntry(
+      section: 'props',
+      contractName: 'isShowCloseButton',
+      status: CoverageStatus.shown,
+      dartName: 'isShowCloseButton',
+      shownBy: 'Non-dismissable',
+    ),
+    CoverageEntry(
+      section: 'props',
+      contractName: 'isSwipeDismissable',
+      status: CoverageStatus.shown,
+      dartName: 'isSwipeDismissable',
+      shownBy: 'Placement',
+    ),
+    CoverageEntry(
+      section: 'props',
+      contractName: 'modelValue',
+      status: CoverageStatus.shown,
+      dartName: 'value',
+      shownBy: 'Basic',
+    ),
+    CoverageEntry(
+      section: 'props',
+      contractName: 'placement',
+      status: CoverageStatus.shown,
+      dartName: 'placement',
+      shownBy: 'Placement',
+    ),
+    CoverageEntry(
+      section: 'props',
+      contractName: 'role',
+      status: CoverageStatus.shown,
+      dartName: 'role',
+      shownBy: 'Alert dialog',
+    ),
+    CoverageEntry(
+      section: 'props',
+      contractName: 'rounded',
+      status: CoverageStatus.shown,
+      dartName: 'rounded',
+      shownBy: 'Form',
+    ),
+    CoverageEntry(
+      section: 'props',
+      contractName: 'scrollBehavior',
+      status: CoverageStatus.shown,
+      dartName: 'scrollBehavior',
+      shownBy: 'Scroll behaviour',
+    ),
+    CoverageEntry(
+      section: 'props',
+      contractName: 'size',
+      status: CoverageStatus.shown,
+      dartName: 'size',
+      shownBy: 'Sizes',
+    ),
+    CoverageEntry(
+      section: 'props',
+      contractName: 'title',
+      status: CoverageStatus.shown,
+      dartName: 'title',
+      shownBy: 'Basic',
+    ),
+    CoverageEntry(
+      section: 'props',
+      contractName: 'withContainer',
+      status: CoverageStatus.shown,
+      dartName: 'withContainer',
+      shownBy: 'Without container',
+    ),
+    CoverageEntry(
+      section: 'events',
+      contractName: 'close',
+      status: CoverageStatus.shown,
+      dartName: 'onClose',
+      shownBy: 'Events',
+    ),
+    CoverageEntry(
+      section: 'events',
+      contractName: 'update:modelValue',
+      status: CoverageStatus.shown,
+      dartName: 'onChanged',
+      shownBy: 'Events',
+    ),
+    CoverageEntry(
+      section: 'slots',
+      contractName: 'default',
+      status: CoverageStatus.shown,
+      dartName: 'child',
+      shownBy: 'Basic',
+    ),
+  ],
+);
+
+/// The contract coverage page for KunModal.
+Widget kunModalContract(BuildContext context) =>
+    const CoveragePage(coverage: _kunModal);
+
 const ComponentCoverage _kunNull = ComponentCoverage(
   name: 'KunNull',
   entries: <CoverageEntry>[

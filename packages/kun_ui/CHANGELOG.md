@@ -32,6 +32,26 @@
   scrolling jump instead of animating, as the web's base stylesheet makes
   them. Like the web's, the strip draws no focus indicator.
   `KunTabPanels` is not ported: switch content on `value`.
+- `KunModal` — the dialog. It is controlled (`value` + `onChanged`, then
+  `onClose` after a dismissal by the user) and opens as a route on the root
+  `Navigator`, so it draws nothing where it sits. It has the web's five
+  sizes, `placement` (`auto` is a bottom sheet below `md` and follows a
+  resize while open), inside or outside scrolling, the `alertdialog` role,
+  `withContainer: false`, the header, the close button and the drag handle.
+  The backdrop, Escape, the system back gesture and the close button
+  dismiss it under the web's rules; with `isCloseRequestDismissable: false`,
+  back closes the dialog and goes back on the page, as a browser's close
+  request does. Focus moves into the dialog (onto its first control when it
+  was opened from the keyboard), Tab stays inside, and focus returns to the
+  trigger on close. On Android and iOS a sheet can be swiped down to
+  dismiss, with the web's thresholds; a swipe never scrolls or taps what it
+  started on, and scrolled content keeps the drag until it is back at its
+  top. Screen readers hear a dialog named by its title. The content sees the
+  theme, language and `KunUIConfigScope` in force where the `KunModal` sits.
+  Under reduced motion it opens and closes at once. The panel is as wide as
+  its content lays out, between the web's minimum and the size cap: a child
+  that fills the width it is given, like a default `Row`, makes it as wide
+  as the cap, where the browser would size it by its content.
 - `KunTheme`, `KunMessagesScope` and `KunUIConfigScope` are
   `InheritedTheme`s, so `InheritedTheme.capture` carries them into a route.
   A route is built under the navigator, not where it was opened: without

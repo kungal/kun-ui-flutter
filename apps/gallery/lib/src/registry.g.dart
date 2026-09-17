@@ -8,6 +8,7 @@ import 'demos/button.dart';
 import 'demos/card.dart';
 import 'demos/chip.dart';
 import 'demos/input.dart';
+import 'demos/modal.dart';
 import 'demos/null.dart';
 import 'demos/spinner.dart';
 import 'demos/switch.dart';
@@ -91,6 +92,29 @@ const List<GalleryComponent> galleryComponents = <GalleryComponent>[
       GalleryDemo(slug: 'states', title: 'States', builder: inputStates),
       GalleryDemo(
           slug: 'contract', title: 'Contract', builder: kunInputContract),
+    ],
+  ),
+  GalleryComponent(
+    slug: 'kunmodal',
+    name: 'KunModal',
+    demos: <GalleryDemo>[
+      GalleryDemo(slug: 'basic', title: 'Basic', builder: modalBasic),
+      GalleryDemo(slug: 'sizes', title: 'Sizes', builder: modalSizes),
+      GalleryDemo(
+          slug: 'placement', title: 'Placement', builder: modalPlacement),
+      GalleryDemo(
+          slug: 'scroll', title: 'Scroll behaviour', builder: modalScroll),
+      GalleryDemo(
+          slug: 'non-dismissable',
+          title: 'Non-dismissable',
+          builder: modalNonDismissable),
+      GalleryDemo(slug: 'alert', title: 'Alert dialog', builder: modalAlert),
+      GalleryDemo(slug: 'form', title: 'Form', builder: modalForm),
+      GalleryDemo(slug: 'nested', title: 'Nested', builder: modalNested),
+      GalleryDemo(slug: 'events', title: 'Events', builder: modalEvents),
+      GalleryDemo(slug: 'bare', title: 'Without container', builder: modalBare),
+      GalleryDemo(
+          slug: 'contract', title: 'Contract', builder: kunModalContract),
     ],
   ),
   GalleryComponent(

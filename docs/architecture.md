@@ -393,10 +393,30 @@ differ from the web's.
   own them:
   - "no drag while the enter animation runs" means the route animation
     has not completed;
-  - "no drag right after a scroll" means a scroll activity is still
-    running;
+  - "no drag right after a scroll" means a scroll view under the touch is
+    still scrolling, or is not exactly at its top (an overscrolled one is
+    still settling, and a touch holds it before the swipe can see it move);
   - "content wins until scrolled to the top" means every `Scrollable`
-    between the touch and the panel is at its minimum extent.
+    that contains the touch is at its minimum extent.
+- **The swipe wins the gesture arena, under the touch slop.** A `Listener`
+  that claimed the drag at `kTouchSlop` could not stop a scroll view's drag
+  recognizer, which accepted in the same event: the content scrolled, or
+  bounced on iOS, under a claimed swipe, and a button under the finger
+  still competed for the tap. The sheet has its own recognizer, which
+  decides at the web's 6px (`DRAG_START_THRESHOLD`, kept under the
+  browser's slop for the same reason) and then accepts. The route page's
+  `Listener` asks it to decide before the gesture binding routes each move,
+  so a single move past both thresholds still reaches it first.
+- **The panel is sized by layout, not by intrinsics.** On the web the panel
+  is a flex item, as wide as its content between `min-w-80` and the size
+  cap. `IntrinsicWidth` would reproduce that, but a `LayoutBuilder` or a
+  `ListView` in the content, KunTab included, asserts when asked for an
+  intrinsic width. So the panel lays its content out under the minimum
+  and the cap. A `Text`, a `Column` or a `Row(mainAxisSize: min)` sizes it
+  as the browser does; a widget that fills the width it is given (a
+  default `Row`, an `Align`) widens it to the cap. Content that should be
+  narrow and aligned, like the confirm dialog's, uses `IntrinsicWidth`
+  itself.
 - **Toasts are a store plus one host**, as on the web. `showKunMessage`
   needs no `BuildContext`, so a repository or a notifier can raise one. The
   app mounts a `KunMessageProvider` once, around its navigator (in
