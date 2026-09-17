@@ -802,7 +802,14 @@
           "title": "Align",
           "builder": "tabAlign",
           "shows": [
-            "props.align",
+            "props.align"
+          ]
+        },
+        {
+          "slug": "full-width",
+          "title": "Full width",
+          "builder": "tabFullWidth",
+          "shows": [
             "props.fullWidth"
           ]
         },

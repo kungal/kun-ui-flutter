@@ -1,3 +1,4 @@
+import 'dart:math' as math;
 import 'dart:ui' show Tristate;
 
 import 'package:flutter/foundation.dart';
@@ -7,6 +8,7 @@ import 'package:flutter/services.dart';
 import 'package:flutter/widgets.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:kun_ui/kun_ui.dart';
+import 'package:kun_ui/src/foundation/focus_outline.dart';
 import 'package:kun_ui/src/foundation/outer_shadow.dart';
 
 Widget wrap(Widget child) => KunTheme(
@@ -47,9 +49,29 @@ const List<KunTabItem> homeDocsSettings = <KunTabItem>[
   KunTabItem(value: 'settings', textValue: 'Settings'),
 ];
 
+const List<KunTabItem> homeDocsChat = <KunTabItem>[
+  KunTabItem(value: 'home', textValue: 'Home'),
+  KunTabItem(value: 'docs', textValue: 'Docs'),
+  KunTabItem(value: 'chat', textValue: 'Chat'),
+];
+
 Finder tabOf(String value) => find.byKey(ValueKey<String>('KunTab.$value'));
 
+KunFocusOutline tabOutline(WidgetTester tester, String value) {
+  return tester.widget<KunFocusOutline>(
+    find.descendant(of: tabOf(value), matching: find.byType(KunFocusOutline)),
+  );
+}
+
 Finder get indicator => find.byKey(const ValueKey<String>('KunTab.indicator'));
+
+void expectIndicatorFollowsTab(WidgetTester tester, String value) {
+  final Rect tab = tester.getRect(tabOf(value));
+  final Rect bar = tester.getRect(indicator);
+  expect(bar.left, closeTo(tab.left, 0.5));
+  expect(bar.width, closeTo(tab.width, 0.5));
+  expect(bar.bottom, closeTo(tab.bottom, 0.5));
+}
 
 Finder get fallback => find.byKey(const ValueKey<String>('KunTab.fallback'));
 
@@ -248,7 +270,7 @@ void main() {
                 of: tabOf('home'), matching: find.byType(MouseRegion)),
           )
           .cursor,
-      SystemMouseCursors.click,
+      SystemMouseCursors.forbidden,
     );
 
     await tester.pumpWidget(
@@ -940,14 +962,14 @@ void main() {
     expect(find.byIcon(KunIcons.chevronLeft), findsNothing);
   });
 
-  testWidgets('layout: fullWidth packs at the start; vertical stretches',
+  testWidgets('layout: fullWidth splits horizontal tabs; vertical stretches',
       (tester) async {
     await tester.pumpWidget(
       wrap(
         SizedBox(
           width: 400,
           child: KunTab(
-            items: homeDocs,
+            items: homeDocsChat,
             value: 'home',
             fullWidth: true,
             onChanged: (_) {},
@@ -957,10 +979,12 @@ void main() {
     );
     await tester.pumpAndSettle();
     expect(tester.getSize(find.byType(KunTab)).width, 400);
-    expect(
-      tester.getRect(tabOf('home')).left,
-      tester.getRect(find.byType(KunTab)).left,
-    );
+    const double gap = KunSpacing.unit * 1.5;
+    final double share = (400 - 2 * gap) / 3;
+    expect(tester.getSize(tabOf('home')).width, closeTo(share, 0.5));
+    expect(tester.getSize(tabOf('docs')).width, closeTo(share, 0.5));
+    expect(tester.getSize(tabOf('chat')).width, closeTo(share, 0.5));
+    expectIndicatorFollowsTab(tester, 'home');
 
     await tester.pumpWidget(
       wrap(
@@ -1295,4 +1319,314 @@ void main() {
     await tester.pumpAndSettle();
     expect(tester.state<ScrollableState>(strip).position.pixels, 0);
   });
+
+  testWidgets(
+      'Tab into the strip shows an inset outline; a mouse tap does not; '
+      'an arrow key after the tap shows it', (tester) async {
+    final previous = FocusManager.instance.highlightStrategy;
+    FocusManager.instance.highlightStrategy =
+        FocusHighlightStrategy.alwaysTraditional;
+    addTearDown(() => FocusManager.instance.highlightStrategy = previous);
+
+    final FocusNode before = FocusNode();
+    final FocusNode after = FocusNode();
+    addTearDown(before.dispose);
+    addTearDown(after.dispose);
+
+    await tester.pumpWidget(
+      wrapTraversal(
+        Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Focus(
+              focusNode: before,
+              child: const SizedBox(width: 10, height: 10),
+            ),
+            KunTab(
+              items: homeDocsSettings,
+              value: 'home',
+              onChanged: (_) {},
+            ),
+            Focus(
+              focusNode: after,
+              child: const SizedBox(width: 10, height: 10),
+            ),
+          ],
+        ),
+      ),
+    );
+    await tester.pumpAndSettle();
+    before.requestFocus();
+    await tester.pump();
+    await tester.sendKeyEvent(LogicalKeyboardKey.tab);
+    await tester.pump();
+    await tester.pump(KunDurations.base);
+    expect(tabOutline(tester, 'home').visible, isTrue);
+    expect(tabOutline(tester, 'home').offset, -2);
+    expect(
+      tabOutline(tester, 'home').color,
+      resolvedOf(tester, 'Home').color!.withValues(alpha: 0.5),
+    );
+    expect(tabOutline(tester, 'docs').visible, isFalse);
+
+    await tester.sendKeyEvent(LogicalKeyboardKey.tab);
+    await tester.pump();
+    expect(after.hasFocus, isTrue);
+    expect(tabOutline(tester, 'home').visible, isFalse);
+
+    await tester.sendKeyDownEvent(LogicalKeyboardKey.shiftLeft);
+    await tester.sendKeyEvent(LogicalKeyboardKey.tab);
+    await tester.sendKeyUpEvent(LogicalKeyboardKey.shiftLeft);
+    await tester.pump();
+    expect(tabOutline(tester, 'home').visible, isTrue);
+
+    await tester.tap(find.text('Home'), kind: PointerDeviceKind.mouse);
+    await tester.pump();
+    expect(tabOutline(tester, 'home').visible, isFalse);
+
+    await tester.sendKeyEvent(LogicalKeyboardKey.arrowRight);
+    await tester.pump();
+    await tester.pump(KunDurations.base);
+    expect(tabOutline(tester, 'home').visible, isFalse);
+    expect(tabOutline(tester, 'docs').visible, isTrue);
+    expect(
+      tabOutline(tester, 'docs').color,
+      resolvedOf(tester, 'Docs').color!.withValues(alpha: 0.5),
+    );
+  });
+
+  testWidgets('hovering a disabled tab keeps neutral 500', (tester) async {
+    await tester.pumpWidget(
+      wrap(
+        KunTab(
+          items: const [
+            KunTabItem(value: 'home', textValue: 'Home'),
+            KunTabItem(value: 'docs', textValue: 'Docs', disabled: true),
+          ],
+          value: 'home',
+          onChanged: (_) {},
+        ),
+      ),
+    );
+    await tester.pumpAndSettle();
+    expect(resolvedOf(tester, 'Docs').color, KunColors.light.neutral.shade500);
+
+    final TestGesture gesture =
+        await tester.createGesture(kind: PointerDeviceKind.mouse);
+    await gesture.addPointer(location: Offset.zero);
+    addTearDown(gesture.removePointer);
+    await gesture.moveTo(tester.getCenter(find.text('Docs')));
+    await tester.pump();
+    await tester.pump(KunDurations.base);
+    expect(resolvedOf(tester, 'Docs').color, KunColors.light.neutral.shade500);
+  });
+
+  testWidgets('a disabled strip sets the forbidden cursor on every tab',
+      (tester) async {
+    await tester.pumpWidget(
+      wrap(
+        KunTab(
+          items: homeDocsSettings,
+          value: 'home',
+          disabled: true,
+          onChanged: (_) {},
+        ),
+      ),
+    );
+    await tester.pump();
+    for (final String value in <String>['home', 'docs', 'settings']) {
+      expect(
+        tester
+            .widget<MouseRegion>(
+              find.descendant(
+                of: tabOf(value),
+                matching: find.byType(MouseRegion),
+              ),
+            )
+            .cursor,
+        SystemMouseCursors.forbidden,
+        reason: value,
+      );
+    }
+  });
+
+  testWidgets(
+      'fullWidth: long label keeps its natural width; overflow scrolls; '
+      'framed subtracts the frame; align moves the label; tabBuilder lays out',
+      (tester) async {
+    const List<KunTabItem> longMiddle = <KunTabItem>[
+      KunTabItem(value: 'home', textValue: 'Home'),
+      KunTabItem(value: 'docs', textValue: 'A much longer label'),
+      KunTabItem(value: 'settings', textValue: 'Settings'),
+    ];
+    await tester.pumpWidget(
+      wrap(
+        KunTab(
+          items: longMiddle,
+          value: 'home',
+          onChanged: (_) {},
+        ),
+      ),
+    );
+    await tester.pumpAndSettle();
+    final double longNatural = tester.getSize(tabOf('docs')).width;
+    final double homeNatural = tester.getSize(tabOf('home')).width;
+    final double settingsNatural = tester.getSize(tabOf('settings')).width;
+    const double gap = KunSpacing.unit * 1.5;
+    final double shareParent =
+        longNatural + 2 * math.max(homeNatural, settingsNatural) + 2 * gap + 80;
+
+    await tester.pumpWidget(
+      wrap(
+        SizedBox(
+          width: shareParent,
+          child: KunTab(
+            items: longMiddle,
+            value: 'home',
+            fullWidth: true,
+            onChanged: (_) {},
+          ),
+        ),
+      ),
+    );
+    await tester.pumpAndSettle();
+    expect(tester.getSize(tabOf('docs')).width, closeTo(longNatural, 0.5));
+    final double rest = (shareParent - longNatural - 2 * gap) / 2;
+    expect(tester.getSize(tabOf('home')).width, closeTo(rest, 0.5));
+    expect(tester.getSize(tabOf('settings')).width, closeTo(rest, 0.5));
+    expectIndicatorFollowsTab(tester, 'home');
+
+    const List<KunTabItem> wide = <KunTabItem>[
+      KunTabItem(value: 'a', textValue: 'A very very long first label'),
+      KunTabItem(value: 'b', textValue: 'A very very long second label'),
+      KunTabItem(value: 'c', textValue: 'A very very long third label'),
+    ];
+    await tester.pumpWidget(
+      wrap(
+        KunTab(
+          items: wide,
+          value: 'a',
+          onChanged: (_) {},
+        ),
+      ),
+    );
+    await tester.pumpAndSettle();
+    final double aNatural = tester.getSize(tabOf('a')).width;
+    final double bNatural = tester.getSize(tabOf('b')).width;
+    final double cNatural = tester.getSize(tabOf('c')).width;
+
+    await tester.pumpWidget(
+      wrap(
+        SizedBox(
+          width: 400,
+          child: KunTab(
+            items: wide,
+            value: 'a',
+            fullWidth: true,
+            onChanged: (_) {},
+          ),
+        ),
+      ),
+    );
+    await tester.pumpAndSettle();
+    expect(tester.getSize(tabOf('a')).width, closeTo(aNatural, 0.5));
+    expect(tester.getSize(tabOf('b')).width, closeTo(bNatural, 0.5));
+    expect(tester.getSize(tabOf('c')).width, closeTo(cNatural, 0.5));
+    expect(
+      tester
+          .state<ScrollableState>(find.byType(Scrollable))
+          .position
+          .maxScrollExtent,
+      greaterThan(0),
+    );
+
+    await tester.pumpWidget(
+      wrap(
+        SizedBox(
+          width: 400,
+          child: KunTab(
+            items: homeDocsChat,
+            value: 'home',
+            fullWidth: true,
+            variant: KunTabVariant.solid,
+            onChanged: (_) {},
+          ),
+        ),
+      ),
+    );
+    await tester.pumpAndSettle();
+    final double inner = 400 - 2 * (KunSpacing.unit * 1 + 1);
+    final double framedShare = (inner - 2 * gap) / 3;
+    expect(tester.getSize(tabOf('home')).width, closeTo(framedShare, 0.5));
+    expect(tester.getSize(tabOf('docs')).width, closeTo(framedShare, 0.5));
+    expect(tester.getSize(tabOf('chat')).width, closeTo(framedShare, 0.5));
+    expect(tester.getRect(indicator), tester.getRect(tabOf('home')));
+
+    await tester.pumpWidget(
+      wrap(
+        SizedBox(
+          width: 400,
+          child: KunTab(
+            items: homeDocsSettings,
+            value: 'home',
+            fullWidth: true,
+            align: KunTabAlign.start,
+            onChanged: (_) {},
+          ),
+        ),
+      ),
+    );
+    await tester.pumpAndSettle();
+    expect(
+      tester.getRect(find.text('Home')).left,
+      closeTo(tester.getRect(tabOf('home')).left + KunSpacing.unit * 3, 1),
+    );
+
+    await tester.pumpWidget(
+      wrap(
+        SizedBox(
+          width: 400,
+          child: KunTab(
+            items: homeDocsSettings,
+            value: 'home',
+            fullWidth: true,
+            align: KunTabAlign.end,
+            onChanged: (_) {},
+          ),
+        ),
+      ),
+    );
+    await tester.pumpAndSettle();
+    expect(
+      tester.getRect(find.text('Home')).right,
+      closeTo(tester.getRect(tabOf('home')).right - KunSpacing.unit * 3, 1),
+    );
+
+    await tester.pumpWidget(
+      wrap(
+        SizedBox(
+          width: 400,
+          child: KunTab(
+            items: homeDocsChat,
+            value: 'home',
+            fullWidth: true,
+            tabBuilder: (
+              BuildContext context,
+              KunTabItem item,
+              int index,
+              bool active,
+            ) {
+              return Text(item.textValue!);
+            },
+            onChanged: (_) {},
+          ),
+        ),
+      ),
+    );
+    await tester.pumpAndSettle();
+    expect(find.text('Home'), findsOneWidget);
+    expect(tester.getSize(tabOf('home')).width, closeTo(shareOf400(), 0.5));
+  });
 }
+
+double shareOf400() => (400 - 2 * (KunSpacing.unit * 1.5)) / 3;

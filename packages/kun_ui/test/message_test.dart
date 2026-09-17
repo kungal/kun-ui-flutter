@@ -5,6 +5,7 @@ import 'package:flutter/services.dart';
 import 'package:flutter/widgets.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:kun_ui/kun_ui.dart';
+import 'package:kun_ui/src/foundation/focus_outline.dart';
 import 'package:kun_ui/src/foundation/outer_shadow.dart';
 
 Finder toast(String id) => find.byKey(ValueKey<String>('KunMessage.$id'));
@@ -1060,6 +1061,69 @@ void main() {
     } finally {
       handle.dispose();
     }
+  });
+
+  testWidgets(
+      'close button keyboard focus shows a circular outline; a tap does not',
+      (WidgetTester tester) async {
+    setView(tester, const Size(1280, 800));
+    final FocusHighlightStrategy previous =
+        FocusManager.instance.highlightStrategy;
+    FocusManager.instance.highlightStrategy =
+        FocusHighlightStrategy.alwaysTraditional;
+    addTearDown(() {
+      FocusManager.instance.highlightStrategy = previous;
+    });
+
+    await tester.pumpWidget(wrap(const SizedBox(), webKeys: true));
+    showKunMessage('outlined', KunMessageType.info, duration: _sticky);
+    await pumpToast(tester);
+
+    expect(
+      tester
+          .widget<KunFocusOutline>(
+            find.descendant(
+              of: toastClose('message_1'),
+              matching: find.byType(KunFocusOutline),
+            ),
+          )
+          .visible,
+      isFalse,
+    );
+
+    Focus.of(tester.element(toastClose('message_1'))).requestFocus();
+    await tester.pump();
+    await tester.pump();
+    final KunFocusOutline outline = tester.widget<KunFocusOutline>(
+      find.descendant(
+        of: toastClose('message_1'),
+        matching: find.byType(KunFocusOutline),
+      ),
+    );
+    expect(outline.visible, isTrue);
+    expect(outline.circle, isTrue);
+    expect(
+      outline.color,
+      KunColors.light.primary.solid.withValues(alpha: 0.5),
+    );
+
+    dismissKunMessage('message_1');
+    await pumpToast(tester);
+    showKunMessage('tap-outline', KunMessageType.info, duration: _sticky);
+    await pumpToast(tester);
+    await tester.tap(toast('message_2'));
+    await tester.pump();
+    expect(
+      tester
+          .widget<KunFocusOutline>(
+            find.descendant(
+              of: toastClose('message_2'),
+              matching: find.byType(KunFocusOutline),
+            ),
+          )
+          .visible,
+      isFalse,
+    );
   });
 }
 

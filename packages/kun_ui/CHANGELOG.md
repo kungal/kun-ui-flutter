@@ -1,5 +1,42 @@
 # Changelog
 
+## 0.6.0
+
+- Built on kun-ui 2.42.0 (`kun_ui_tokens`, `kun_ui_icons` and
+  `kun_ui_messages` ^2.42.0). The contract changed three descriptions and no
+  names. The behaviour those releases changed is ported below.
+- **Keyboard focus is visible** on `KunAvatar` and `KunUserChip` links, a
+  `clickable` `KunCard` and the close button of a `KunMessage` toast. As on
+  the web since kun-ui 2.41.0, a 2px line in primary at 50% sits 2px outside
+  the control and follows its shape. Keyboard focus shows it and a tap does
+  not.
+- **`KunTab` shows keyboard focus** too, as the web has since 2.41.0: a line
+  inside the tab, in the tab's text colour at 50%. A click leaves none, as
+  the browser's `:focus-visible` does, and the next key press brings it back.
+  The 0.2.0 (`KunCard`), 0.4.0 (`KunTab`) and 0.5.0 (`KunAvatar`) entries
+  say these controls draw no focus indicator, like the web's. That was true
+  of the web then and is no longer.
+- **A horizontal `KunTab` with `fullWidth` splits the width between its
+  tabs.** Before, the strip filled its parent and the tabs stayed packed at
+  the start. Each tab now gets an equal share, and never less than its
+  label needs. Tabs that do not fit still scroll. `align` places each label
+  inside its tab. To keep the packed layout, drop `fullWidth`. A vertical
+  strip is unchanged.
+- **A disabled tab no longer changes colour under the mouse**, and every
+  tab of a disabled `KunTab` shows the forbidden cursor. Before, a disabled
+  tab took the foreground colour on hover, and only a disabled item showed
+  the forbidden cursor.
+- **A `KunUser` whose `id` is 0 is not a link.** `KunAvatar` and
+  `KunUserChip` render it as plain content. kun-ui 2.42.0 documents `id: 0`
+  as "no profile", which is what the web has always done. Pass 0 for an
+  unknown or deleted author, or for a signed-out viewer.
+- **`KunInput` and `KunTextarea` do not call `onChanged` while an input
+  method is composing.** They report the committed text once the
+  composition ends, as the web's fields do since kun-ui 2.40.3. Rebuilding
+  the field during a composition no longer resets its text. Before, every
+  composing edit reached `onChanged`, so a search driven by it ran on
+  romanised input the user had not chosen yet.
+
 ## 0.5.0
 
 - `KunSkeleton` — the loading placeholder: `text` (one em tall), `circle`

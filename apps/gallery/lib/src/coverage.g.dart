@@ -1122,7 +1122,7 @@ const ComponentCoverage _kunTab = ComponentCoverage(
       contractName: 'fullWidth',
       status: CoverageStatus.shown,
       dartName: 'fullWidth',
-      shownBy: 'Align',
+      shownBy: 'Full width',
     ),
     CoverageEntry(
       section: 'props',

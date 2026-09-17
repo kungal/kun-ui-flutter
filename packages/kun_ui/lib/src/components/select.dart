@@ -13,6 +13,7 @@ import 'package:kun_ui_tokens/kun_ui_tokens.dart';
 import '../foundation/control_metrics.dart';
 import '../foundation/design.dart';
 import '../foundation/field_ring.dart';
+import '../foundation/focus_outline.dart';
 import '../foundation/motion.dart';
 import '../locale/messages.dart';
 import '../theme/theme.dart';
@@ -451,21 +452,6 @@ class _KunSelectState<T, O extends KunSelectOption<T>>
     _syncTriggerPresentation();
   }
 
-  bool _isModifierKey(LogicalKeyboardKey key) {
-    return key == LogicalKeyboardKey.shift ||
-        key == LogicalKeyboardKey.shiftLeft ||
-        key == LogicalKeyboardKey.shiftRight ||
-        key == LogicalKeyboardKey.control ||
-        key == LogicalKeyboardKey.controlLeft ||
-        key == LogicalKeyboardKey.controlRight ||
-        key == LogicalKeyboardKey.alt ||
-        key == LogicalKeyboardKey.altLeft ||
-        key == LogicalKeyboardKey.altRight ||
-        key == LogicalKeyboardKey.meta ||
-        key == LogicalKeyboardKey.metaLeft ||
-        key == LogicalKeyboardKey.metaRight;
-  }
-
   void _setActiveIndex(int index) {
     if (_activeIndex == index) {
       return;
@@ -885,7 +871,7 @@ class _KunSelectState<T, O extends KunSelectOption<T>>
   }
 
   KeyEventResult _onKey(KeyEvent event) {
-    if (event is KeyDownEvent && !_isModifierKey(event.logicalKey)) {
+    if (event is KeyDownEvent && !kunIsModifierKey(event.logicalKey)) {
       _setRingSuppressed(false);
     }
     if (event is! KeyDownEvent) {

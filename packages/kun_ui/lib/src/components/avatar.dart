@@ -3,6 +3,8 @@ import 'package:kun_ui_icons/kun_ui_icons.dart';
 import 'package:kun_ui_tokens/kun_ui_tokens.dart';
 
 import '../config/config.dart';
+import '../foundation/design.dart';
+import '../foundation/focus_outline.dart';
 import '../foundation/motion.dart';
 import '../locale/messages.dart';
 import '../theme/theme.dart';
@@ -15,6 +17,10 @@ class KunUser {
   const KunUser({required this.id, required this.name, this.avatar = ''});
 
   /// The user's id, used to build the profile path.
+  ///
+  /// `0` means there is no profile to link to — an unknown or deleted author,
+  /// a signed-out viewer. [KunAvatar] and [KunUserChip] render it without a
+  /// link.
   final int id;
 
   /// The display name. Empty is treated as missing in [KunUserChip], and
@@ -71,9 +77,10 @@ void debugResetKunAvatarWarning() {
 
 /// A user's picture, implementing the web `KunAvatar` contract.
 ///
-/// With a [user] and [isNavigation], a tap opens the profile through
-/// [KunUIConfigScope]. A null [user] always shows the fallback picture and
-/// is never a link.
+/// When [isNavigation] is true (the default) and [user] is non-null with a
+/// [KunUser.id] that is not 0, a tap opens the profile through
+/// [KunUIConfigScope]. A null [user], or a user whose id is 0, always shows
+/// the picture and is never a link.
 class KunAvatar extends StatefulWidget {
   /// Creates an avatar.
   const KunAvatar({
@@ -89,7 +96,8 @@ class KunAvatar extends StatefulWidget {
   /// The rendered square.
   final KunAvatarSize size;
 
-  /// With a [user], a tap opens the profile.
+  /// When true (the default) and [user] is non-null with a [KunUser.id] that
+  /// is not 0, the avatar is a real link to the user's profile.
   final bool isNavigation;
 
   @override
@@ -99,9 +107,11 @@ class KunAvatar extends StatefulWidget {
 class _KunAvatarState extends State<KunAvatar> {
   bool _failed = false;
   bool _hovered = false;
+  bool _focused = false;
   bool _fallbackScheduled = false;
 
-  bool get _isLink => widget.isNavigation && widget.user != null;
+  bool get _isLink =>
+      widget.isNavigation && widget.user != null && widget.user!.id != 0;
 
   double get _side =>
       KunSpacing.unit *
@@ -268,6 +278,7 @@ class _KunAvatarState extends State<KunAvatar> {
       onTap: _open,
       excludeSemantics: true,
       child: FocusableActionDetector(
+        onShowFocusHighlight: (bool value) => setState(() => _focused = value),
         actions: <Type, Action<Intent>>{
           ActivateIntent: CallbackAction<ActivateIntent>(
             onInvoke: (_) {
@@ -293,7 +304,15 @@ class _KunAvatarState extends State<KunAvatar> {
               scale: _hovered ? 1.1 : 1,
               duration: kunMotion(context, KunDurations.fast),
               curve: KunEasing.standard,
-              child: body,
+              child: KunFocusOutline(
+                visible: _focused,
+                color: KunUIColor.primary
+                    .scaleOf(KunTheme.of(context).colors)
+                    .solid
+                    .withValues(alpha: 0.5),
+                circle: true,
+                child: body,
+              ),
             ),
           ),
         ),

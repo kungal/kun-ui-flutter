@@ -96,6 +96,13 @@ Widget tabAlign(BuildContext context) {
   );
 }
 
+Widget tabFullWidth(BuildContext context) {
+  return const Padding(
+    padding: EdgeInsets.all(KunSpacing.unit * 6),
+    child: _TabFullWidth(),
+  );
+}
+
 Widget tabDisabled(BuildContext context) {
   return const Padding(
     padding: EdgeInsets.all(KunSpacing.unit * 6),
@@ -460,6 +467,100 @@ class _TabAlign extends StatelessWidget {
           ],
         );
       },
+    );
+  }
+}
+
+class _TabFullWidth extends StatelessWidget {
+  const _TabFullWidth();
+
+  static const List<KunTabItem> _longMiddle = <KunTabItem>[
+    KunTabItem(value: 'home', textValue: 'Home'),
+    KunTabItem(value: 'docs', textValue: 'A much longer label'),
+    KunTabItem(value: 'settings', textValue: 'Settings'),
+  ];
+
+  static final List<KunTabItem> _eight = <KunTabItem>[
+    for (int i = 1; i <= 8; i++)
+      KunTabItem(value: 's$i', textValue: 'Section $i'),
+  ];
+
+  @override
+  Widget build(BuildContext context) {
+    return Column(
+      mainAxisSize: MainAxisSize.min,
+      crossAxisAlignment: CrossAxisAlignment.start,
+      spacing: KunSpacing.unit * 4,
+      children: [
+        _SharedTabs(
+          builder: (String value, ValueChanged<String> onChanged) {
+            return SizedBox(
+              width: KunSpacing.unit * 112,
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.start,
+                spacing: KunSpacing.unit * 4,
+                children: [
+                  for (final KunTabVariant variant in KunTabVariant.values)
+                    Column(
+                      mainAxisSize: MainAxisSize.min,
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      spacing: KunSpacing.unit * 1,
+                      children: [
+                        _caption(context, variant.name),
+                        KunTab(
+                          items: _homeDocsSettings,
+                          value: value,
+                          onChanged: onChanged,
+                          variant: variant,
+                          fullWidth: true,
+                        ),
+                      ],
+                    ),
+                  Column(
+                    mainAxisSize: MainAxisSize.min,
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    spacing: KunSpacing.unit * 1,
+                    children: [
+                      _caption(context, 'solid, a much longer label'),
+                      KunTab(
+                        items: _longMiddle,
+                        value: value,
+                        onChanged: onChanged,
+                        variant: KunTabVariant.solid,
+                        fullWidth: true,
+                      ),
+                    ],
+                  ),
+                ],
+              ),
+            );
+          },
+        ),
+        _SharedTabs(
+          initial: 's1',
+          builder: (String value, ValueChanged<String> onChanged) {
+            return SizedBox(
+              width: KunSpacing.unit * 112,
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.start,
+                spacing: KunSpacing.unit * 1,
+                children: [
+                  _caption(context, 'underlined, eight items'),
+                  KunTab(
+                    items: _eight,
+                    value: value,
+                    onChanged: onChanged,
+                    variant: KunTabVariant.underlined,
+                    fullWidth: true,
+                  ),
+                ],
+              ),
+            );
+          },
+        ),
+      ],
     );
   }
 }

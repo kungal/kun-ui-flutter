@@ -243,6 +243,8 @@ const List<GalleryComponent> galleryComponents = <GalleryComponent>[
       GalleryDemo(slug: 'overflow', title: 'Overflow', builder: tabOverflow),
       GalleryDemo(slug: 'icons', title: 'Icons', builder: tabIcons),
       GalleryDemo(slug: 'align', title: 'Align', builder: tabAlign),
+      GalleryDemo(
+          slug: 'full-width', title: 'Full width', builder: tabFullWidth),
       GalleryDemo(slug: 'disabled', title: 'Disabled', builder: tabDisabled),
       GalleryDemo(slug: 'links', title: 'Links', builder: tabLinks),
       GalleryDemo(slug: 'custom', title: 'Custom tabs', builder: tabCustom),

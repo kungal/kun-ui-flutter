@@ -168,6 +168,8 @@ class _KunInputState extends State<KunInput>
       _selectionGestureDetectorBuilder;
   bool _focused = false;
   bool _revealed = false;
+  late String _reported;
+  bool _wasComposing = false;
 
   @override
   final GlobalKey<EditableTextState> editableTextKey =
@@ -189,7 +191,9 @@ class _KunInputState extends State<KunInput>
   @override
   void initState() {
     super.initState();
+    _reported = widget.value;
     _controller = TextEditingController(text: widget.value);
+    _controller.addListener(_handleControllerChanged);
     _focusNode = FocusNode()..addListener(_handleFocusChange);
     _focusNode.canRequestFocus = !widget.disabled;
     _selectionGestureDetectorBuilder =
@@ -200,7 +204,8 @@ class _KunInputState extends State<KunInput>
   void didUpdateWidget(KunInput oldWidget) {
     super.didUpdateWidget(oldWidget);
     _focusNode.canRequestFocus = !widget.disabled;
-    if (widget.value != _controller.text) {
+    _reported = widget.value;
+    if (!_isComposing && widget.value != _controller.text) {
       _controller.value = TextEditingValue(
         text: widget.value,
         selection: TextSelection.collapsed(offset: widget.value.length),
@@ -212,8 +217,37 @@ class _KunInputState extends State<KunInput>
   void dispose() {
     _focusNode.removeListener(_handleFocusChange);
     _focusNode.dispose();
+    _controller.removeListener(_handleControllerChanged);
     _controller.dispose();
     super.dispose();
+  }
+
+  bool get _isComposing {
+    final TextRange composing = _controller.value.composing;
+    return composing.isValid && !composing.isCollapsed;
+  }
+
+  void _commit(String text) {
+    if (text == _reported) {
+      return;
+    }
+    _reported = text;
+    widget.onChanged?.call(text);
+  }
+
+  void _handleChanged(String text) {
+    if (_isComposing) {
+      return;
+    }
+    _commit(text);
+  }
+
+  void _handleControllerChanged() {
+    final bool composing = _isComposing;
+    if (_wasComposing && !composing) {
+      _commit(_controller.text);
+    }
+    _wasComposing = composing;
   }
 
   void _handleFocusChange() {
@@ -239,7 +273,7 @@ class _KunInputState extends State<KunInput>
   }
 
   void _clear() {
-    widget.onChanged?.call('');
+    _commit('');
     widget.onClear?.call();
     _focusNode.requestFocus();
   }
@@ -293,7 +327,7 @@ class _KunInputState extends State<KunInput>
       readOnly: widget.disabled,
       autofocus: widget.autofocus,
       maxLines: 1,
-      onChanged: widget.onChanged,
+      onChanged: _handleChanged,
       rendererIgnoresPointer: true,
     );
 

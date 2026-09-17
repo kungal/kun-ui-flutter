@@ -437,4 +437,112 @@ void main() {
     );
     semantics.dispose();
   });
+
+  testWidgets('IME composing does not call onChanged until commit',
+      (tester) async {
+    final seen = <String>[];
+    await tester.pumpWidget(wrap(KunTextarea(onChanged: seen.add)));
+    await tester.tap(find.byType(EditableText));
+    await tester.pump();
+
+    tester.testTextInput.updateEditingValue(
+      const TextEditingValue(
+        text: 'ni',
+        selection: TextSelection.collapsed(offset: 2),
+        composing: TextRange(start: 0, end: 2),
+      ),
+    );
+    await tester.pump();
+    expect(seen, isEmpty);
+
+    tester.testTextInput.updateEditingValue(
+      const TextEditingValue(
+        text: '你',
+        selection: TextSelection.collapsed(offset: 1),
+      ),
+    );
+    await tester.pump();
+    expect(seen, ['你']);
+  });
+
+  testWidgets('ending composition without a text change reports once',
+      (tester) async {
+    final seen = <String>[];
+    await tester.pumpWidget(wrap(KunTextarea(onChanged: seen.add)));
+    await tester.tap(find.byType(EditableText));
+    await tester.pump();
+
+    tester.testTextInput.updateEditingValue(
+      const TextEditingValue(
+        text: 'ni',
+        selection: TextSelection.collapsed(offset: 2),
+        composing: TextRange(start: 0, end: 2),
+      ),
+    );
+    await tester.pump();
+    expect(seen, isEmpty);
+
+    tester.testTextInput.updateEditingValue(
+      const TextEditingValue(
+        text: 'ni',
+        selection: TextSelection.collapsed(offset: 2),
+      ),
+    );
+    await tester.pump();
+    expect(seen, ['ni']);
+  });
+
+  testWidgets('a parent rebuild during composition keeps the composing text',
+      (tester) async {
+    final seen = <String>[];
+    final host = GlobalKey<_ComposeHostState>();
+    await tester.pumpWidget(
+      wrap(_ComposeHost(key: host, onChanged: seen.add)),
+    );
+    await tester.tap(find.byType(EditableText));
+    await tester.pump();
+
+    tester.testTextInput.updateEditingValue(
+      const TextEditingValue(
+        text: 'ni',
+        selection: TextSelection.collapsed(offset: 2),
+        composing: TextRange(start: 0, end: 2),
+      ),
+    );
+    await tester.pump();
+    host.currentState!.bump();
+    await tester.pump();
+    expect(seen, isEmpty);
+    expect(
+      tester.widget<EditableText>(find.byType(EditableText)).controller.text,
+      'ni',
+    );
+  });
+
+  testWidgets('plain typing still calls onChanged once per edit',
+      (tester) async {
+    final seen = <String>[];
+    await tester.pumpWidget(wrap(KunTextarea(onChanged: seen.add)));
+    await tester.enterText(find.byType(EditableText), 'k');
+    await tester.enterText(find.byType(EditableText), 'ku');
+    expect(seen, ['k', 'ku']);
+  });
+}
+
+class _ComposeHost extends StatefulWidget {
+  const _ComposeHost({super.key, required this.onChanged});
+
+  final ValueChanged<String> onChanged;
+
+  @override
+  State<_ComposeHost> createState() => _ComposeHostState();
+}
+
+class _ComposeHostState extends State<_ComposeHost> {
+  void bump() => setState(() {});
+
+  @override
+  Widget build(BuildContext context) {
+    return KunTextarea(onChanged: widget.onChanged);
+  }
 }

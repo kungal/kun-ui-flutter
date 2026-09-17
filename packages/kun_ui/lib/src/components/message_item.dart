@@ -602,21 +602,29 @@ class _KunMessageToastState extends State<_KunMessageToast>
               opacity: (_hovered || _closeFocused) ? 1 : 0,
               duration: fade,
               curve: KunDefaultTransition.curve,
-              child: AnimatedContainer(
-                key: _closeKey,
-                duration: fade,
-                curve: KunDefaultTransition.curve,
-                width: KunSpacing.unit * 6,
-                height: KunSpacing.unit * 6,
-                alignment: Alignment.center,
-                decoration: BoxDecoration(
-                  shape: BoxShape.circle,
-                  color: _closeHovered ? hoverFill : null,
-                ),
-                child: Icon(
-                  KunIcons.x,
-                  size: KunSpacing.unit * 4,
-                  color: textColor,
+              child: KunFocusOutline(
+                visible: _closeFocused,
+                color: KunUIColor.primary
+                    .scaleOf(KunTheme.of(context).colors)
+                    .solid
+                    .withValues(alpha: 0.5),
+                circle: true,
+                child: AnimatedContainer(
+                  key: _closeKey,
+                  duration: fade,
+                  curve: KunDefaultTransition.curve,
+                  width: KunSpacing.unit * 6,
+                  height: KunSpacing.unit * 6,
+                  alignment: Alignment.center,
+                  decoration: BoxDecoration(
+                    shape: BoxShape.circle,
+                    color: _closeHovered ? hoverFill : null,
+                  ),
+                  child: Icon(
+                    KunIcons.x,
+                    size: KunSpacing.unit * 4,
+                    color: textColor,
+                  ),
                 ),
               ),
             ),

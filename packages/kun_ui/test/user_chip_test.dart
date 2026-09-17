@@ -4,6 +4,7 @@ import 'package:flutter/services.dart';
 import 'package:flutter/widgets.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:kun_ui/kun_ui.dart';
+import 'package:kun_ui/src/foundation/focus_outline.dart';
 
 const KunUser kun = KunUser(id: 1, name: 'Kun', avatar: '');
 
@@ -267,5 +268,67 @@ void main() {
     );
     expect(find.bySemanticsLabel(RegExp(r'^Kun$')), findsNothing);
     handle.dispose();
+  });
+
+  testWidgets('id 0 is not a link and does not navigate', (tester) async {
+    final SemanticsHandle handle = tester.ensureSemantics();
+    final List<String> hrefs = <String>[];
+    await tester.pumpWidget(
+      wrap(
+        const KunUserChip(user: KunUser(id: 0, name: 'Kun', avatar: '')),
+        config: KunUIConfig(
+          navigate: (BuildContext context, String href) => hrefs.add(href),
+        ),
+      ),
+    );
+    expect(find.byType(FocusableActionDetector), findsNothing);
+    expect(
+      tester.getSemantics(find.bySemanticsLabel('Kun')),
+      isSemantics(label: 'Kun'),
+    );
+    await tester.tap(find.byType(KunUserChip), warnIfMissed: false);
+    expect(hrefs, isEmpty);
+    handle.dispose();
+  });
+
+  testWidgets(
+      'keyboard focus shows a rectangular primary outline; a tap does not',
+      (tester) async {
+    final FocusHighlightStrategy previous =
+        FocusManager.instance.highlightStrategy;
+    FocusManager.instance.highlightStrategy =
+        FocusHighlightStrategy.alwaysTraditional;
+    addTearDown(() {
+      FocusManager.instance.highlightStrategy = previous;
+    });
+
+    await tester.pumpWidget(
+      wrapWebKeys(
+        const KunUserChip(user: KunUser(id: 42, name: 'Kun', avatar: '')),
+      ),
+    );
+    await tester.pump();
+    requestFocusOn(tester, find.byType(KunUserChip));
+    await tester.pump();
+    await tester.pump();
+    final KunFocusOutline outline = tester.widget<KunFocusOutline>(
+      find.byType(KunFocusOutline),
+    );
+    expect(outline.visible, isTrue);
+    expect(outline.circle, isFalse);
+    expect(outline.color, KunColors.light.primary.solid.withValues(alpha: 0.5));
+
+    await tester.pumpWidget(wrap(const SizedBox()));
+    await tester.pumpWidget(
+      wrapWebKeys(
+        const KunUserChip(user: KunUser(id: 42, name: 'Kun', avatar: '')),
+      ),
+    );
+    await tester.tap(find.byType(KunUserChip));
+    await tester.pump();
+    expect(
+      tester.widget<KunFocusOutline>(find.byType(KunFocusOutline)).visible,
+      isFalse,
+    );
   });
 }

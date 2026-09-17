@@ -10,6 +10,7 @@ import 'package:kun_ui_tokens/kun_ui_tokens.dart';
 
 import '../config/config.dart';
 import '../foundation/design.dart';
+import '../foundation/focus_outline.dart';
 import '../foundation/motion.dart';
 import '../foundation/outer_shadow.dart';
 import '../theme/theme.dart';
@@ -193,8 +194,10 @@ class KunTab<T extends KunTabItem> extends StatefulWidget {
   /// Row or column.
   final KunTabOrientation orientation;
 
-  /// Stretch the strip (and a vertical list) to the parent's width. Horizontal
-  /// tabs still pack at the start.
+  /// Fill the container's width. Horizontal tabs split it evenly, though none
+  /// gets narrower than its label; when they do not fit, the strip scrolls as
+  /// usual. In a vertical column every tab takes the full width. Either way,
+  /// [align] places each label inside its tab.
   final bool fullWidth;
 
   /// Alignment of each tab's content inside its box. Null: [KunTabAlign.center]
@@ -244,6 +247,7 @@ class _KunTabState<T extends KunTabItem> extends State<KunTab<T>>
   bool _canScrollRight = false;
   bool _layoutScheduled = false;
   bool _reduceMotion = false;
+  bool _ringSuppressed = false;
   final Set<int> _hovered = <int>{};
   final Set<int> _chevronHovered = <int>{};
 
@@ -261,6 +265,7 @@ class _KunTabState<T extends KunTabItem> extends State<KunTab<T>>
     );
     _syncKeys();
     _scrollController.addListener(_handleScroll);
+    FocusManager.instance.addHighlightModeListener(_handleHighlightMode);
   }
 
   @override
@@ -282,7 +287,9 @@ class _KunTabState<T extends KunTabItem> extends State<KunTab<T>>
     _scrollController
       ..removeListener(_handleScroll)
       ..dispose();
+    FocusManager.instance.removeHighlightModeListener(_handleHighlightMode);
     for (final FocusNode node in _focusNodes) {
+      node.removeListener(_handleTabFocus);
       node.dispose();
     }
     super.dispose();
@@ -296,11 +303,41 @@ class _KunTabState<T extends KunTabItem> extends State<KunTab<T>>
       _tabKeys.removeRange(widget.items.length, _tabKeys.length);
     }
     while (_focusNodes.length < widget.items.length) {
-      _focusNodes.add(FocusNode(debugLabel: 'KunTab'));
+      final FocusNode node = FocusNode(debugLabel: 'KunTab');
+      node.addListener(_handleTabFocus);
+      _focusNodes.add(node);
     }
     while (_focusNodes.length > widget.items.length) {
-      _focusNodes.removeLast().dispose();
+      _focusNodes.removeLast()
+        ..removeListener(_handleTabFocus)
+        ..dispose();
     }
+  }
+
+  void _handleHighlightMode(FocusHighlightMode mode) {
+    if (mounted) {
+      setState(() {});
+    }
+  }
+
+  void _handleTabFocus() {
+    if (mounted) {
+      setState(() {});
+    }
+  }
+
+  void _setRingSuppressed(bool value) {
+    if (_ringSuppressed == value) {
+      return;
+    }
+    setState(() => _ringSuppressed = value);
+  }
+
+  bool _showsTabOutline(int index, bool itemEnabled) {
+    return itemEnabled &&
+        _focusNodes[index].hasFocus &&
+        FocusManager.instance.highlightMode == FocusHighlightMode.traditional &&
+        !_ringSuppressed;
   }
 
   void _scheduleAfterLayout() {
@@ -548,6 +585,9 @@ class _KunTabState<T extends KunTabItem> extends State<KunTab<T>>
   }
 
   KeyEventResult _onKey(KeyEvent event) {
+    if (event is KeyDownEvent && !kunIsModifierKey(event.logicalKey)) {
+      _setRingSuppressed(false);
+    }
     if (event is! KeyDownEvent) {
       return KeyEventResult.ignored;
     }
@@ -604,7 +644,6 @@ class _KunTabState<T extends KunTabItem> extends State<KunTab<T>>
   }
 
   Color _unselectedTextColor(KunColorScheme scheme, {required bool hovered}) {
-    // CSS `:hover` matches a disabled button; the web does not exclude it.
     return hovered ? scheme.foreground : scheme.neutral.shade500;
   }
 
@@ -690,17 +729,22 @@ class _KunTabState<T extends KunTabItem> extends State<KunTab<T>>
     BuildContext context,
     KunColorScheme scheme,
     KunColorScale scale,
-    _KunTabMetrics metrics,
-  ) {
+    _KunTabMetrics metrics, {
+    required double fillWidth,
+  }) {
     final bool framed = widget.variant == KunTabVariant.solid ||
         widget.variant == KunTabVariant.light ||
         widget.variant == KunTabVariant.bordered;
     final bool filled = widget.variant == KunTabVariant.solid ||
         widget.variant == KunTabVariant.light;
+    final double rowFill = !_isVertical && fillWidth > 0 && framed
+        ? math.max(0, fillWidth - 2 * (KunSpacing.unit * 1 + 1))
+        : (_isVertical ? 0 : fillWidth);
+    final bool stretch = _isVertical || fillWidth > 0;
 
     final List<Widget> tabs = <Widget>[
       for (int i = 0; i < widget.items.length; i++)
-        _buildTab(i, scheme, scale, metrics),
+        _buildTab(i, scheme, scale, metrics, stretch: stretch),
     ];
 
     Widget body = _isVertical
@@ -710,10 +754,9 @@ class _KunTabState<T extends KunTabItem> extends State<KunTab<T>>
             spacing: metrics.gap,
             children: tabs,
           )
-        : Row(
-            mainAxisSize: MainAxisSize.min,
-            crossAxisAlignment: CrossAxisAlignment.center,
-            spacing: metrics.gap,
+        : _KunTabRow(
+            gap: metrics.gap,
+            fillWidth: rowFill,
             children: tabs,
           );
 
@@ -773,15 +816,16 @@ class _KunTabState<T extends KunTabItem> extends State<KunTab<T>>
     int index,
     KunColorScheme scheme,
     KunColorScale scale,
-    _KunTabMetrics metrics,
-  ) {
+    _KunTabMetrics metrics, {
+    required bool stretch,
+  }) {
     final T item = widget.items[index];
     final bool selected = item.value == widget.value;
     final bool itemEnabled = !widget.disabled && !item.disabled;
     final bool hovered = _hovered.contains(index);
     final Color targetColor = selected
         ? _selectedTextColor(scheme, scale)
-        : _unselectedTextColor(scheme, hovered: hovered);
+        : _unselectedTextColor(scheme, hovered: hovered && itemEnabled);
     final bool showFallback = !_hasMeasured && selected;
     final BorderRadius? radius = _tabRadius();
 
@@ -808,21 +852,17 @@ class _KunTabState<T extends KunTabItem> extends State<KunTab<T>>
       }
     }
 
-    final bool stretch = _isVertical;
     Widget content;
     if (widget.tabBuilder != null) {
       content = widget.tabBuilder!(context, item, index, selected);
       if (stretch) {
-        content = SizedBox(
-          width: double.infinity,
-          child: Align(
-            alignment: switch (_align) {
-              KunTabAlign.start => Alignment.centerLeft,
-              KunTabAlign.center => Alignment.center,
-              KunTabAlign.end => Alignment.centerRight,
-            },
-            child: content,
-          ),
+        content = Align(
+          alignment: switch (_align) {
+            KunTabAlign.start => Alignment.centerLeft,
+            KunTabAlign.center => Alignment.center,
+            KunTabAlign.end => Alignment.centerRight,
+          },
+          child: content,
         );
       }
     } else {
@@ -870,28 +910,35 @@ class _KunTabState<T extends KunTabItem> extends State<KunTab<T>>
                         ),
                       ),
               );
-        return Container(
-          key: showFallback ? const ValueKey<String>('KunTab.fallback') : null,
-          padding: EdgeInsets.symmetric(
-            horizontal: metrics.paddingH,
-            vertical: metrics.paddingV,
-          ),
-          decoration: BoxDecoration(
-            color: fill,
-            border: border,
-            borderRadius: radius,
-          ),
-          foregroundDecoration: foreground,
-          child: DefaultTextStyle(
-            style: metrics.labelStyle.copyWith(color: resolved),
-            maxLines: 1,
-            softWrap: false,
-            child: IconTheme.merge(
-              data: IconThemeData(
-                color: resolved,
-                size: widget.iconSize ?? metrics.labelStyle.fontSize,
+        return KunFocusOutline(
+          visible: _showsTabOutline(index, itemEnabled),
+          color: resolved.withValues(alpha: 0.5),
+          offset: -2,
+          borderRadius: radius ?? BorderRadius.zero,
+          child: Container(
+            key:
+                showFallback ? const ValueKey<String>('KunTab.fallback') : null,
+            padding: EdgeInsets.symmetric(
+              horizontal: metrics.paddingH,
+              vertical: metrics.paddingV,
+            ),
+            decoration: BoxDecoration(
+              color: fill,
+              border: border,
+              borderRadius: radius,
+            ),
+            foregroundDecoration: foreground,
+            child: DefaultTextStyle(
+              style: metrics.labelStyle.copyWith(color: resolved),
+              maxLines: 1,
+              softWrap: false,
+              child: IconTheme.merge(
+                data: IconThemeData(
+                  color: resolved,
+                  size: widget.iconSize ?? metrics.labelStyle.fontSize,
+                ),
+                child: child!,
               ),
-              child: child!,
             ),
           ),
         );
@@ -916,9 +963,7 @@ class _KunTabState<T extends KunTabItem> extends State<KunTab<T>>
     );
 
     tab = MouseRegion(
-      // The web's root `cursor-not-allowed` on a disabled group is overridden
-      // by each tab's own `cursor-pointer`.
-      cursor: item.disabled
+      cursor: !itemEnabled
           ? SystemMouseCursors.forbidden
           : SystemMouseCursors.click,
       onEnter: (_) => setState(() => _hovered.add(index)),
@@ -1089,8 +1134,14 @@ class _KunTabState<T extends KunTabItem> extends State<KunTab<T>>
 
     Widget strip = LayoutBuilder(
       builder: (BuildContext context, BoxConstraints constraints) {
-        Widget list = _buildList(context, scheme, scale, metrics);
         if (_isVertical) {
+          Widget list = _buildList(
+            context,
+            scheme,
+            scale,
+            metrics,
+            fillWidth: 0,
+          );
           if (widget.fullWidth && constraints.maxWidth.isFinite) {
             list = SizedBox(width: constraints.maxWidth, child: list);
           }
@@ -1101,6 +1152,13 @@ class _KunTabState<T extends KunTabItem> extends State<KunTab<T>>
         }
 
         final bool fill = widget.fullWidth && constraints.hasBoundedWidth;
+        final Widget list = _buildList(
+          context,
+          scheme,
+          scale,
+          metrics,
+          fillWidth: fill ? constraints.maxWidth : 0,
+        );
         final Widget viewport = _maybeFade(
           _wrapScroll(
             ConstrainedBox(
@@ -1128,7 +1186,20 @@ class _KunTabState<T extends KunTabItem> extends State<KunTab<T>>
     if (widget.disabled) {
       strip = Opacity(opacity: 0.5, child: strip);
     }
-    return strip;
+    return Focus(
+      canRequestFocus: false,
+      skipTraversal: true,
+      includeSemantics: false,
+      onFocusChange: (bool focused) {
+        if (!focused) {
+          _setRingSuppressed(false);
+        }
+      },
+      child: Listener(
+        onPointerDown: (_) => _setRingSuppressed(true),
+        child: strip,
+      ),
+    );
   }
 }
 
@@ -1159,5 +1230,248 @@ class _RenderLayoutProbe extends RenderProxyBox {
   void performLayout() {
     super.performLayout();
     onLayout();
+  }
+}
+
+class _KunTabRowParentData extends ContainerBoxParentData<RenderBox> {}
+
+class _KunTabRow extends MultiChildRenderObjectWidget {
+  const _KunTabRow({
+    required this.gap,
+    required this.fillWidth,
+    required super.children,
+  });
+
+  final double gap;
+  final double fillWidth;
+
+  @override
+  RenderObject createRenderObject(BuildContext context) {
+    return _RenderKunTabRow(gap: gap, fillWidth: fillWidth);
+  }
+
+  @override
+  void updateRenderObject(
+    BuildContext context,
+    covariant _RenderKunTabRow renderObject,
+  ) {
+    renderObject
+      ..gap = gap
+      ..fillWidth = fillWidth;
+  }
+}
+
+class _RenderKunTabRow extends RenderBox
+    with
+        ContainerRenderObjectMixin<RenderBox, _KunTabRowParentData>,
+        RenderBoxContainerDefaultsMixin<RenderBox, _KunTabRowParentData> {
+  _RenderKunTabRow({required double gap, required double fillWidth})
+      : _gap = gap,
+        _fillWidth = fillWidth;
+
+  double _gap;
+  double get gap => _gap;
+  set gap(double value) {
+    if (_gap == value) {
+      return;
+    }
+    _gap = value;
+    markNeedsLayout();
+  }
+
+  double _fillWidth;
+  double get fillWidth => _fillWidth;
+  set fillWidth(double value) {
+    if (_fillWidth == value) {
+      return;
+    }
+    _fillWidth = value;
+    markNeedsLayout();
+  }
+
+  @override
+  void setupParentData(RenderBox child) {
+    if (child.parentData is! _KunTabRowParentData) {
+      child.parentData = _KunTabRowParentData();
+    }
+  }
+
+  List<double> _distribute(List<double> naturals) {
+    final int n = naturals.length;
+    if (n == 0) {
+      return const <double>[];
+    }
+    final double gaps = gap * (n - 1);
+    double naturalSum = 0;
+    for (final double width in naturals) {
+      naturalSum += width;
+    }
+    final double rowWidth = math.max(fillWidth, naturalSum + gaps);
+    double remaining = rowWidth - gaps;
+    int remainingCount = n;
+    final List<bool> frozen = List<bool>.filled(n, false);
+    final List<double> widths = List<double>.from(naturals);
+    while (remainingCount > 0) {
+      final double share = remaining / remainingCount;
+      bool froze = false;
+      for (int i = 0; i < n; i++) {
+        if (frozen[i]) {
+          continue;
+        }
+        if (naturals[i] > share) {
+          frozen[i] = true;
+          widths[i] = naturals[i];
+          remaining -= naturals[i];
+          remainingCount--;
+          froze = true;
+        }
+      }
+      if (!froze) {
+        for (int i = 0; i < n; i++) {
+          if (!frozen[i]) {
+            widths[i] = share;
+          }
+        }
+        break;
+      }
+    }
+    return widths;
+  }
+
+  Size _layout({
+    required BoxConstraints constraints,
+    required ChildLayouter layouter,
+    required bool position,
+  }) {
+    final List<RenderBox> children = <RenderBox>[];
+    RenderBox? child = firstChild;
+    while (child != null) {
+      children.add(child);
+      child = childAfter(child);
+    }
+    final int n = children.length;
+    if (n == 0) {
+      return constraints.smallest;
+    }
+    final BoxConstraints measure = BoxConstraints(
+      maxHeight: constraints.maxHeight,
+    );
+    final List<Size> naturals = <Size>[
+      for (final RenderBox box in children) layouter(box, measure),
+    ];
+    final List<double> widths = _distribute(
+      <double>[for (final Size size in naturals) size.width],
+    );
+    final List<Size> sizes = List<Size>.from(naturals);
+    double height = 0;
+    for (int i = 0; i < n; i++) {
+      if (naturals[i].width != widths[i]) {
+        sizes[i] = layouter(
+          children[i],
+          BoxConstraints(
+            minWidth: widths[i],
+            maxWidth: widths[i],
+            maxHeight: constraints.maxHeight,
+          ),
+        );
+      }
+      height = math.max(height, sizes[i].height);
+    }
+    double rowWidth = gap * (n - 1);
+    for (final double width in widths) {
+      rowWidth += width;
+    }
+    final Size size = constraints.constrain(Size(rowWidth, height));
+    if (position) {
+      double x = 0;
+      for (int i = 0; i < n; i++) {
+        final _KunTabRowParentData parentData =
+            children[i].parentData! as _KunTabRowParentData;
+        parentData.offset = Offset(x, (size.height - sizes[i].height) / 2);
+        x += widths[i] + gap;
+      }
+    }
+    return size;
+  }
+
+  @override
+  void performLayout() {
+    size = _layout(
+      constraints: constraints,
+      layouter: ChildLayoutHelper.layoutChild,
+      position: true,
+    );
+  }
+
+  @override
+  Size computeDryLayout(BoxConstraints constraints) {
+    return _layout(
+      constraints: constraints,
+      layouter: ChildLayoutHelper.dryLayoutChild,
+      position: false,
+    );
+  }
+
+  @override
+  double computeMinIntrinsicWidth(double height) {
+    double sum = 0;
+    int n = 0;
+    RenderBox? child = firstChild;
+    while (child != null) {
+      sum += child.getMinIntrinsicWidth(height);
+      n++;
+      child = childAfter(child);
+    }
+    return n == 0 ? 0 : sum + gap * (n - 1);
+  }
+
+  @override
+  double computeMaxIntrinsicWidth(double height) {
+    double sum = 0;
+    int n = 0;
+    RenderBox? child = firstChild;
+    while (child != null) {
+      sum += child.getMaxIntrinsicWidth(height);
+      n++;
+      child = childAfter(child);
+    }
+    return n == 0 ? 0 : sum + gap * (n - 1);
+  }
+
+  @override
+  double computeMinIntrinsicHeight(double width) {
+    double maxH = 0;
+    RenderBox? child = firstChild;
+    while (child != null) {
+      maxH = math.max(maxH, child.getMinIntrinsicHeight(double.infinity));
+      child = childAfter(child);
+    }
+    return maxH;
+  }
+
+  @override
+  double computeMaxIntrinsicHeight(double width) {
+    double maxH = 0;
+    RenderBox? child = firstChild;
+    while (child != null) {
+      maxH = math.max(maxH, child.getMaxIntrinsicHeight(double.infinity));
+      child = childAfter(child);
+    }
+    return maxH;
+  }
+
+  @override
+  void paint(PaintingContext context, Offset offset) {
+    defaultPaint(context, offset);
+  }
+
+  @override
+  bool hitTestChildren(BoxHitTestResult result, {required Offset position}) {
+    return defaultHitTestChildren(result, position: position);
+  }
+
+  @override
+  double? computeDistanceToActualBaseline(TextBaseline baseline) {
+    return defaultComputeDistanceToHighestActualBaseline(baseline);
   }
 }

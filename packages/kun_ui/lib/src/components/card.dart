@@ -2,6 +2,7 @@ import 'package:flutter/widgets.dart';
 import 'package:kun_ui_tokens/kun_ui_tokens.dart';
 
 import '../foundation/design.dart';
+import '../foundation/focus_outline.dart';
 import '../foundation/motion.dart';
 import '../foundation/outer_shadow.dart';
 import '../theme/theme.dart';
@@ -113,6 +114,7 @@ class KunCard extends StatefulWidget {
 class _KunCardState extends State<KunCard> {
   bool _hovered = false;
   bool _pressed = false;
+  bool _focused = false;
 
   bool get _showsHoverLayer => widget.clickable || widget.isHoverable;
 
@@ -218,17 +220,21 @@ class _KunCardState extends State<KunCard> {
         scale: _pressed ? 0.97 : 1, // web active:scale-[0.97]
         duration: kunMotion(context, KunDurations.fast),
         curve: KunDefaultTransition.curve,
-        child: card,
+        child: KunFocusOutline(
+          visible: _focused,
+          color:
+              KunUIColor.primary.scaleOf(scheme).solid.withValues(alpha: 0.5),
+          borderRadius: radius,
+          child: card,
+        ),
       );
     }
 
-    // The web's clickable card is a <button>: focusable, activated by Space
-    // and Enter, and — under base.css's `*:focus { outline: none }` — drawn
-    // with no focus indicator, so none is drawn here either.
     return Semantics(
       button: widget.clickable,
       child: FocusableActionDetector(
         enabled: widget.clickable,
+        onShowFocusHighlight: (bool value) => setState(() => _focused = value),
         actions: {
           ActivateIntent: CallbackAction<ActivateIntent>(
             onInvoke: (_) {

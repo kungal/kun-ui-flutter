@@ -2,6 +2,7 @@ import 'package:flutter/services.dart';
 import 'package:flutter/widgets.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:kun_ui/kun_ui.dart';
+import 'package:kun_ui/src/foundation/focus_outline.dart';
 import 'package:kun_ui/src/foundation/outer_shadow.dart';
 
 Widget wrap(Widget child) => KunTheme(
@@ -222,5 +223,49 @@ void main() {
     );
     expect(
         Focus.of(tester.element(find.text('static'))).canRequestFocus, isFalse);
+  });
+
+  testWidgets(
+      'a clickable card shows the primary outline on keyboard focus, not a tap',
+      (tester) async {
+    final previous = FocusManager.instance.highlightStrategy;
+    FocusManager.instance.highlightStrategy =
+        FocusHighlightStrategy.alwaysTraditional;
+    addTearDown(() => FocusManager.instance.highlightStrategy = previous);
+
+    await tester.pumpWidget(
+      wrapWebKeys(
+        const KunCard(clickable: true, child: Text('go')),
+      ),
+    );
+    await tester.pump();
+    Focus.of(tester.element(find.text('go'))).requestFocus();
+    await tester.pump();
+    await tester.pump();
+    final KunFocusOutline outline = tester.widget<KunFocusOutline>(
+      find.byType(KunFocusOutline),
+    );
+    expect(outline.visible, isTrue);
+    expect(outline.circle, isFalse);
+    expect(
+      outline.color,
+      KunColors.light.primary.solid.withValues(alpha: 0.5),
+    );
+
+    await tester.pumpWidget(wrap(const SizedBox()));
+    await tester.pumpWidget(
+      wrapWebKeys(
+        const KunCard(clickable: true, child: Text('go')),
+      ),
+    );
+    await tester.tap(find.text('go'));
+    await tester.pump();
+    expect(
+      tester.widget<KunFocusOutline>(find.byType(KunFocusOutline)).visible,
+      isFalse,
+    );
+
+    await tester.pumpWidget(wrap(const KunCard(child: Text('static'))));
+    expect(find.byType(KunFocusOutline), findsNothing);
   });
 }
