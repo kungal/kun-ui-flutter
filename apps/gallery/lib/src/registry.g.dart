@@ -13,6 +13,7 @@ import 'demos/input.dart';
 import 'demos/message.dart';
 import 'demos/modal.dart';
 import 'demos/null.dart';
+import 'demos/select.dart';
 import 'demos/skeleton.dart';
 import 'demos/spinner.dart';
 import 'demos/switch.dart';
@@ -169,6 +170,33 @@ const List<GalleryComponent> galleryComponents = <GalleryComponent>[
       GalleryDemo(slug: 'custom', title: 'Custom', builder: nullCustom),
       GalleryDemo(
           slug: 'contract', title: 'Contract', builder: kunNullContract),
+    ],
+  ),
+  GalleryComponent(
+    slug: 'kunselect',
+    name: 'KunSelect',
+    demos: <GalleryDemo>[
+      GalleryDemo(slug: 'basic', title: 'Basic', builder: selectBasic),
+      GalleryDemo(
+          slug: 'clearable', title: 'Clearable', builder: selectClearable),
+      GalleryDemo(slug: 'colors', title: 'Colors', builder: selectColors),
+      GalleryDemo(
+          slug: 'custom-option',
+          title: 'Custom option',
+          builder: selectCustomOption),
+      GalleryDemo(slug: 'disabled', title: 'Disabled', builder: selectDisabled),
+      GalleryDemo(slug: 'error', title: 'Error', builder: selectError),
+      GalleryDemo(slug: 'multiple', title: 'Multiple', builder: selectMultiple),
+      GalleryDemo(
+          slug: 'searchable', title: 'Searchable', builder: selectSearchable),
+      GalleryDemo(slug: 'async', title: 'Async', builder: selectAsync),
+      GalleryDemo(
+          slug: 'filter-bar', title: 'Filter bar', builder: selectFilterBar),
+      GalleryDemo(
+          slug: 'in-modal', title: 'In a modal', builder: selectInModal),
+      GalleryDemo(slug: 'sizes', title: 'Sizes', builder: selectSizes),
+      GalleryDemo(
+          slug: 'contract', title: 'Contract', builder: kunSelectContract),
     ],
   ),
   GalleryComponent(

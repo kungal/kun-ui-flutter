@@ -172,6 +172,46 @@
       "events": {},
       "slots": {}
     },
+    "KunSelect": {
+      "widget": "KunSelect",
+      "props": {
+        "ariaLabel": "semanticLabel",
+        "clearable": "clearable",
+        "color": "color",
+        "darkBorder": {
+          "omit": "No-op since 0.18.0. Every neutral border now resolves to the unified `--color-kun-border` token (the `border-kun` utility), which already flips light↔dark — so the old light-translucent / dark-solid split this prop toggled is gone. Safe to remove from call sites."
+        },
+        "debounce": "debounce",
+        "description": "description",
+        "disabled": "disabled",
+        "error": "error",
+        "fullWidth": "fullWidth",
+        "icon": "icon",
+        "label": "label",
+        "loading": "loading",
+        "loadingText": "loadingText",
+        "manualFilter": "manualFilter",
+        "maxVisibleTags": "maxVisibleTags",
+        "modelValue": "value / values",
+        "multiple": "KunSelect.multiple",
+        "noResultText": "noResultText",
+        "options": "options",
+        "placeholder": "placeholder",
+        "popupWidth": "popupWidth",
+        "rounded": "rounded",
+        "searchable": "searchable",
+        "searchPlaceholder": "searchPlaceholder",
+        "size": "size"
+      },
+      "events": {
+        "search": "onSearch",
+        "set": "onSet",
+        "update:modelValue": "onChanged / onValuesChanged"
+      },
+      "slots": {
+        "option": "optionBuilder"
+      }
+    },
     "KunSkeleton": {
       "widget": "KunSkeleton",
       "props": {

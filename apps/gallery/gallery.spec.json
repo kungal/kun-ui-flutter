@@ -530,6 +530,122 @@
         }
       ]
     },
+    "KunSelect": {
+      "source": "demos/select.dart",
+      "demos": [
+        {
+          "slug": "basic",
+          "title": "Basic",
+          "builder": "selectBasic",
+          "shows": [
+            "props.options",
+            "props.modelValue",
+            "events.update:modelValue",
+            "props.label"
+          ]
+        },
+        {
+          "slug": "clearable",
+          "title": "Clearable",
+          "builder": "selectClearable",
+          "shows": [
+            "props.clearable",
+            "props.placeholder"
+          ]
+        },
+        {
+          "slug": "colors",
+          "title": "Colors",
+          "builder": "selectColors",
+          "shows": [
+            "props.color"
+          ]
+        },
+        {
+          "slug": "custom-option",
+          "title": "Custom option",
+          "builder": "selectCustomOption",
+          "shows": [
+            "slots.option"
+          ]
+        },
+        {
+          "slug": "disabled",
+          "title": "Disabled",
+          "builder": "selectDisabled",
+          "shows": [
+            "props.disabled"
+          ]
+        },
+        {
+          "slug": "error",
+          "title": "Error",
+          "builder": "selectError",
+          "shows": [
+            "props.error"
+          ]
+        },
+        {
+          "slug": "multiple",
+          "title": "Multiple",
+          "builder": "selectMultiple",
+          "shows": [
+            "props.multiple",
+            "events.set"
+          ]
+        },
+        {
+          "slug": "searchable",
+          "title": "Searchable",
+          "builder": "selectSearchable",
+          "shows": [
+            "props.searchable"
+          ]
+        },
+        {
+          "slug": "async",
+          "title": "Async",
+          "builder": "selectAsync",
+          "shows": [
+            "props.loading",
+            "props.loadingText",
+            "props.manualFilter",
+            "props.debounce",
+            "events.search",
+            "props.searchPlaceholder",
+            "props.noResultText"
+          ]
+        },
+        {
+          "slug": "filter-bar",
+          "title": "Filter bar",
+          "builder": "selectFilterBar",
+          "shows": [
+            "props.fullWidth",
+            "props.popupWidth",
+            "props.maxVisibleTags",
+            "props.icon",
+            "props.ariaLabel"
+          ]
+        },
+        {
+          "slug": "in-modal",
+          "title": "In a modal",
+          "builder": "selectInModal",
+          "shows": []
+        },
+        {
+          "slug": "sizes",
+          "title": "Sizes",
+          "builder": "selectSizes",
+          "shows": [
+            "props.size",
+            "props.rounded",
+            "props.description"
+          ]
+        }
+      ]
+    },
     "KunSkeleton": {
       "source": "demos/skeleton.dart",
       "demos": [

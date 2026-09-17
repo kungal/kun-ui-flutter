@@ -754,6 +754,220 @@ const ComponentCoverage _kunNull = ComponentCoverage(
 Widget kunNullContract(BuildContext context) =>
     const CoveragePage(coverage: _kunNull);
 
+const ComponentCoverage _kunSelect = ComponentCoverage(
+  name: 'KunSelect',
+  entries: <CoverageEntry>[
+    CoverageEntry(
+      section: 'props',
+      contractName: 'ariaLabel',
+      status: CoverageStatus.shown,
+      dartName: 'semanticLabel',
+      shownBy: 'Filter bar',
+    ),
+    CoverageEntry(
+      section: 'props',
+      contractName: 'clearable',
+      status: CoverageStatus.shown,
+      dartName: 'clearable',
+      shownBy: 'Clearable',
+    ),
+    CoverageEntry(
+      section: 'props',
+      contractName: 'color',
+      status: CoverageStatus.shown,
+      dartName: 'color',
+      shownBy: 'Colors',
+    ),
+    CoverageEntry(
+      section: 'props',
+      contractName: 'darkBorder',
+      status: CoverageStatus.omitted,
+      dartName: null,
+      reason:
+          'No-op since 0.18.0. Every neutral border now resolves to the unified `--color-kun-border` token (the `border-kun` utility), which already flips light↔dark — so the old light-translucent / dark-solid split this prop toggled is gone. Safe to remove from call sites.',
+    ),
+    CoverageEntry(
+      section: 'props',
+      contractName: 'debounce',
+      status: CoverageStatus.shown,
+      dartName: 'debounce',
+      shownBy: 'Async',
+    ),
+    CoverageEntry(
+      section: 'props',
+      contractName: 'description',
+      status: CoverageStatus.shown,
+      dartName: 'description',
+      shownBy: 'Sizes',
+    ),
+    CoverageEntry(
+      section: 'props',
+      contractName: 'disabled',
+      status: CoverageStatus.shown,
+      dartName: 'disabled',
+      shownBy: 'Disabled',
+    ),
+    CoverageEntry(
+      section: 'props',
+      contractName: 'error',
+      status: CoverageStatus.shown,
+      dartName: 'error',
+      shownBy: 'Error',
+    ),
+    CoverageEntry(
+      section: 'props',
+      contractName: 'fullWidth',
+      status: CoverageStatus.shown,
+      dartName: 'fullWidth',
+      shownBy: 'Filter bar',
+    ),
+    CoverageEntry(
+      section: 'props',
+      contractName: 'icon',
+      status: CoverageStatus.shown,
+      dartName: 'icon',
+      shownBy: 'Filter bar',
+    ),
+    CoverageEntry(
+      section: 'props',
+      contractName: 'label',
+      status: CoverageStatus.shown,
+      dartName: 'label',
+      shownBy: 'Basic',
+    ),
+    CoverageEntry(
+      section: 'props',
+      contractName: 'loading',
+      status: CoverageStatus.shown,
+      dartName: 'loading',
+      shownBy: 'Async',
+    ),
+    CoverageEntry(
+      section: 'props',
+      contractName: 'loadingText',
+      status: CoverageStatus.shown,
+      dartName: 'loadingText',
+      shownBy: 'Async',
+    ),
+    CoverageEntry(
+      section: 'props',
+      contractName: 'manualFilter',
+      status: CoverageStatus.shown,
+      dartName: 'manualFilter',
+      shownBy: 'Async',
+    ),
+    CoverageEntry(
+      section: 'props',
+      contractName: 'maxVisibleTags',
+      status: CoverageStatus.shown,
+      dartName: 'maxVisibleTags',
+      shownBy: 'Filter bar',
+    ),
+    CoverageEntry(
+      section: 'props',
+      contractName: 'modelValue',
+      status: CoverageStatus.shown,
+      dartName: 'value / values',
+      shownBy: 'Basic',
+    ),
+    CoverageEntry(
+      section: 'props',
+      contractName: 'multiple',
+      status: CoverageStatus.shown,
+      dartName: 'KunSelect.multiple',
+      shownBy: 'Multiple',
+    ),
+    CoverageEntry(
+      section: 'props',
+      contractName: 'noResultText',
+      status: CoverageStatus.shown,
+      dartName: 'noResultText',
+      shownBy: 'Async',
+    ),
+    CoverageEntry(
+      section: 'props',
+      contractName: 'options',
+      status: CoverageStatus.shown,
+      dartName: 'options',
+      shownBy: 'Basic',
+    ),
+    CoverageEntry(
+      section: 'props',
+      contractName: 'placeholder',
+      status: CoverageStatus.shown,
+      dartName: 'placeholder',
+      shownBy: 'Clearable',
+    ),
+    CoverageEntry(
+      section: 'props',
+      contractName: 'popupWidth',
+      status: CoverageStatus.shown,
+      dartName: 'popupWidth',
+      shownBy: 'Filter bar',
+    ),
+    CoverageEntry(
+      section: 'props',
+      contractName: 'rounded',
+      status: CoverageStatus.shown,
+      dartName: 'rounded',
+      shownBy: 'Sizes',
+    ),
+    CoverageEntry(
+      section: 'props',
+      contractName: 'searchable',
+      status: CoverageStatus.shown,
+      dartName: 'searchable',
+      shownBy: 'Searchable',
+    ),
+    CoverageEntry(
+      section: 'props',
+      contractName: 'searchPlaceholder',
+      status: CoverageStatus.shown,
+      dartName: 'searchPlaceholder',
+      shownBy: 'Async',
+    ),
+    CoverageEntry(
+      section: 'props',
+      contractName: 'size',
+      status: CoverageStatus.shown,
+      dartName: 'size',
+      shownBy: 'Sizes',
+    ),
+    CoverageEntry(
+      section: 'events',
+      contractName: 'search',
+      status: CoverageStatus.shown,
+      dartName: 'onSearch',
+      shownBy: 'Async',
+    ),
+    CoverageEntry(
+      section: 'events',
+      contractName: 'set',
+      status: CoverageStatus.shown,
+      dartName: 'onSet',
+      shownBy: 'Multiple',
+    ),
+    CoverageEntry(
+      section: 'events',
+      contractName: 'update:modelValue',
+      status: CoverageStatus.shown,
+      dartName: 'onChanged / onValuesChanged',
+      shownBy: 'Basic',
+    ),
+    CoverageEntry(
+      section: 'slots',
+      contractName: 'option',
+      status: CoverageStatus.shown,
+      dartName: 'optionBuilder',
+      shownBy: 'Custom option',
+    ),
+  ],
+);
+
+/// The contract coverage page for KunSelect.
+Widget kunSelectContract(BuildContext context) =>
+    const CoveragePage(coverage: _kunSelect);
+
 const ComponentCoverage _kunSkeleton = ComponentCoverage(
   name: 'KunSkeleton',
   entries: <CoverageEntry>[

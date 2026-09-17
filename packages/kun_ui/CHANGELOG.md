@@ -19,6 +19,28 @@
   link. A missing name reads as the unknown-user string. The web's chip
   is a block that fills its container, but this one is only as wide as its
   content.
+- `KunSelect` and `KunSelect.multiple` — a select with a popup anchored to
+  its trigger.
+  - **Placement:** the popup opens below the trigger, or above it when its
+    list does not fit below. It is at most 280 tall, stays 8px inside the
+    screen and follows the trigger as the page scrolls.
+  - **Width:** `popupWidth` makes the popup as wide as the trigger, as wide
+    as its content (`auto`) or a fixed width.
+  - **In a modal:** the popup is not a route, so it works inside a
+    `KunModal`. Escape closes the popup first, then the modal.
+  - **Multiple:** the chosen values show as removable chips in the order
+    they were picked. `maxVisibleTags` collapses the rest into a `+N` chip,
+    and a chosen value keeps its label after a search replaces `options`.
+  - **Search:** `searchable` adds a search box. `manualFilter`, `debounce`,
+    `onSearch` and `loading` cover a remote source, and filtering waits
+    while an input method is composing.
+  - **Keyboard:** matches the web. The arrow keys skip disabled options and
+    wrap, Home and End jump, and typing on a list without a search box
+    jumps to the matching option.
+  - **Focus ring:** follows the browser's `:focus-visible`. A mouse press
+    leaves none, and a key press brings it back.
+  - **Custom rows:** `optionBuilder` builds each row, and a subclass of
+    `KunSelectOption` carries extra fields to it.
 
 ## 0.4.0
 
