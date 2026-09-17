@@ -216,6 +216,10 @@ Template: `task-book-template.md` in this directory.
 - **Name the server port** for eye verification, a different one per concurrent dispatch,
   and have the executor stop its own server by PID. Another session on this machine keeps a
   docs server on 3917.
+- **Upstream reads go through `cd`, never `git -C`.** `*git -C*` is denied, since the fence
+  cannot tell a read from a write, so a book that says `git -C <kun-ui> show <tag>:<path>`
+  gets refused calls. Write `cd /home/kun/Desktop/code/website/kun-ui && git show <tag>:<path>`
+  instead. The KunSelect book said `git -C` and got refused.
 - **Quote the adjudication, don't cite it.** `docs/architecture.md` is this repo's decision
   record, and "follow the architecture doc" makes an executor follow the wrong section. Name
   the section title and quote the clause.

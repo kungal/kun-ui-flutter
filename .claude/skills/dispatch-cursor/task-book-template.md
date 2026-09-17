@@ -43,6 +43,8 @@ quote the clauses this task turns on rather than pointing at the file.>
   orchestrator owns all of them. Do not try, and do not look for a way around; report instead.
 - Do not write outside the paths named in Discipline, and never write a sibling repository.
   `../kun-ui` is the read-only upstream: read it freely, change nothing in it.
+  Read it at a tag with `cd /home/kun/Desktop/code/website/kun-ui && git show <tag>:<path>`;
+  `git -C` is denied like the git writes.
 
 ## Binding constraints for this task
 
