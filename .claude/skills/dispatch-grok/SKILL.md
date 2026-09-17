@@ -9,6 +9,11 @@ description: Dispatch implementation and investigation work in kun-ui-flutter to
 > It describes how the orchestrator dispatches *you*. It is not a task book. Your task book
 > is the file passed to `--prompt-file`, and nothing here overrides it.
 
+> **Not the default executor since 2026-09-17.** grok's usage balance ran out mid-dispatch
+> (a 402), and the maintainer moved dispatches to `cursor-agent`. Use `dispatch-cursor`
+> unless the maintainer names grok. That skill carries this one's lessons forward and is
+> the one kept current.
+
 This session is the **orchestrator**: it adjudicates design, writes the task book, owns git
 and every release action, and accepts or rejects the result. The local `grok` CLI (Grok Build,
 xAI) is the **executor**: it reads, writes, runs the Flutter toolchain, and drives a browser.
