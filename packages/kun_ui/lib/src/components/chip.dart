@@ -4,6 +4,7 @@ import 'package:kun_ui_tokens/kun_ui_tokens.dart';
 
 import '../foundation/control_metrics.dart';
 import '../foundation/design.dart';
+import '../foundation/motion.dart';
 import '../foundation/variant_style.dart';
 import '../locale/messages.dart';
 import '../theme/theme.dart';
@@ -201,7 +202,7 @@ class _KunChipCloseState extends State<_KunChipClose> {
             onTap: widget.onPressed,
             child: AnimatedOpacity(
               opacity: _hovered || _focused ? 1 : 0.7,
-              duration: KunDefaultTransition.duration,
+              duration: kunMotion(context, KunDefaultTransition.duration),
               curve: KunDefaultTransition.curve,
               child: Icon(
                 KunIcons.x,

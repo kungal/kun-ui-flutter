@@ -88,6 +88,7 @@ carry. `KunSpinner` is that 30th icon, hand-written to the SVG's exact
 geometry (24-unit viewBox, 3-unit ring at 25% opacity, 90° arc, 750ms/turn
 linear). It is not the contract's `KunLoading` (a loading *overlay* with
 description/image surface) — that ports separately when an app needs it.
+It keeps turning under reduced motion, as the web's does (see below).
 
 ### The gallery is written here, not taken from Widgetbook (decided 2026-09-15)
 
@@ -351,8 +352,9 @@ counterpart when a link is a tap and an icon is `IconData`.
 The web builds its overlays by hand: a Teleport to `<body>`, a focus trap, a
 refcounted scroll lock, a z-index stack, an `inert` background, a
 close-watcher for Android's back gesture. A Flutter `Navigator` route
-already does each of those jobs, and every `WidgetsApp` builds a
-`Navigator`, so iron rule 4 allows depending on it. The port is built on
+already does each of those jobs, and every app shell builds a `Navigator`
+(`WidgetsApp` itself, or the router delegate under `WidgetsApp.router`), so
+iron rule 4 allows depending on it. The port is built on
 routes, and its own code covers only the places where Flutter's defaults
 differ from the web's.
 
@@ -408,6 +410,24 @@ differ from the web's.
   question already has a context.
 - Anchored popups (Select, Popover, Tooltip, Dropdown) are decided with
   `KunSelect`, their first consumer.
+
+### Reduced motion collapses every transition (decided 2026-09-17)
+
+kun-ui's base stylesheet sets every transition and animation to 0.01ms
+under `prefers-reduced-motion: reduce`, so a web component never needs its
+own check. Flutter's counterpart is `MediaQuery.disableAnimations`. Nothing
+applies it globally, so each widget runs its durations through `kunMotion`
+(`lib/src/foundation/motion.dart`, not exported):
+
+- An implicit animation takes `kunMotion(context, KunDurations.x)`.
+- A widget that animates by hand (KunTab's indicator, a route's
+  transition) reads `kunReducedMotion(context)` and jumps.
+- `KunSpinner` is the exception. The web spinner turns by SMIL
+  `<animateTransform>`, which the stylesheet rule does not reach, so the
+  spinner keeps turning there and here.
+
+KunUI 0.3.0 ignored the setting everywhere. It was found while accepting
+KunTab, whose web scroll code checks `prefers-reduced-motion` by hand.
 
 ### Deferred, deliberately
 

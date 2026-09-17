@@ -2,6 +2,7 @@ import 'package:flutter/widgets.dart';
 import 'package:kun_ui_tokens/kun_ui_tokens.dart';
 
 import '../foundation/design.dart';
+import '../foundation/motion.dart';
 import '../theme/theme.dart';
 
 /// A card's inner padding (web type `KunCardPadding`).
@@ -180,7 +181,7 @@ class _KunCardState extends State<KunCard> {
             child: IgnorePointer(
               child: AnimatedOpacity(
                 opacity: _hovered ? 0.03 : 0,
-                duration: KunDurations.fast,
+                duration: kunMotion(context, KunDurations.fast),
                 curve: KunDefaultTransition.curve,
                 child: DecoratedBox(
                   decoration: BoxDecoration(
@@ -198,7 +199,7 @@ class _KunCardState extends State<KunCard> {
     if (widget.clickable) {
       card = AnimatedScale(
         scale: _pressed ? 0.97 : 1, // web active:scale-[0.97]
-        duration: KunDurations.fast,
+        duration: kunMotion(context, KunDurations.fast),
         curve: KunDefaultTransition.curve,
         child: card,
       );

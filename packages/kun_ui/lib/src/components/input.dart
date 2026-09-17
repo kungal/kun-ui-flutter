@@ -5,6 +5,7 @@ import 'package:kun_ui_tokens/kun_ui_tokens.dart';
 import '../foundation/control_metrics.dart';
 import '../foundation/design.dart';
 import '../foundation/field_ring.dart';
+import '../foundation/motion.dart';
 import '../locale/messages.dart';
 import '../theme/theme.dart';
 
@@ -340,7 +341,7 @@ class _KunInputState extends State<KunInput>
       tween: KunFieldRingTween(
         end: kunFieldRing(ringColor, visible: _focused && !widget.disabled),
       ),
-      duration: KunDurations.fast,
+      duration: kunMotion(context, KunDurations.fast),
       curve: KunEasing.standard,
       builder: (context, ring, child) {
         return Container(

@@ -43,6 +43,13 @@
   `Navigator` the router delegate builds, and a delegate that builds none
   leaves the fields without one. A touch tap then asserts in a debug build.
   The dartdoc and `INTEGRATION.md` now say so.
+- Reduced motion: when the platform asks for it
+  (`MediaQuery.disableAnimations`), every transition is instant, as kun-ui's
+  base stylesheet makes it under `prefers-reduced-motion`. That covers
+  `KunButton`'s hover and press, `KunCard`'s hover layer and press,
+  `KunChip`'s remove button, the focus ring and text colour of `KunInput`
+  and `KunTextarea`, and `KunSwitch`'s track and thumb. `KunSpinner` keeps
+  turning, as the web's does.
 
 ## 0.3.0
 

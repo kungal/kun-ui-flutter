@@ -10,6 +10,7 @@ import 'package:kun_ui_tokens/kun_ui_tokens.dart';
 
 import '../config/config.dart';
 import '../foundation/design.dart';
+import '../foundation/motion.dart';
 import '../theme/theme.dart';
 
 /// Visual style of a [KunTab] strip.
@@ -1079,7 +1080,7 @@ class _KunTabState<T extends KunTabItem> extends State<KunTab<T>>
   @override
   Widget build(BuildContext context) {
     _scheduleAfterLayout();
-    _reduceMotion = MediaQuery.disableAnimationsOf(context);
+    _reduceMotion = kunReducedMotion(context);
     final KunColorScheme scheme = KunTheme.of(context).colors;
     final KunColorScale scale = widget.color.scaleOf(scheme);
     final _KunTabMetrics metrics = _KunTabMetrics.of(widget.size);

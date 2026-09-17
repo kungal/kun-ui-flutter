@@ -203,7 +203,10 @@ when a real app needs it, and one consumer is not a component. Then:
 - Animations use `KunEasing`/`KunDurations` from tokens; anything ballistic
   shares its physics via `KunShatterPhysics`-style generated constants — if a
   new animation needs a constant the tokens don't carry, that constant is
-  born in kun-ui's generator, not here (iron rule 1).
+  born in kun-ui's generator, not here (iron rule 1). Every duration goes
+  through `kunMotion`, or the widget checks `kunReducedMotion` and jumps:
+  kun-ui's base stylesheet collapses every transition under reduced motion,
+  and nothing in Flutter does that for us.
 - The `KunUI*` enum names look unusual next to Dart's `KunUi` casing
   convention for >2-letter acronyms, but `UI` is two letters and the names
   match the contract vocabulary exactly — grep-ability across the two repos

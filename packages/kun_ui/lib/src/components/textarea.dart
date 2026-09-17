@@ -6,6 +6,7 @@ import 'package:kun_ui_tokens/kun_ui_tokens.dart';
 import '../foundation/control_metrics.dart';
 import '../foundation/design.dart';
 import '../foundation/field_ring.dart';
+import '../foundation/motion.dart';
 import '../theme/theme.dart';
 
 /// A multi-line text field implementing the web `KunTextarea` contract.
@@ -225,7 +226,7 @@ class _KunTextareaState extends State<KunTextarea>
         if (placeholder != null) placeholder,
         TweenAnimationBuilder<Color?>(
           tween: ColorTween(end: textColor),
-          duration: KunDurations.fast,
+          duration: kunMotion(context, KunDurations.fast),
           curve: KunEasing.standard,
           builder: (context, color, child) {
             return EditableText(
@@ -263,7 +264,7 @@ class _KunTextareaState extends State<KunTextarea>
       tween: KunFieldRingTween(
         end: kunFieldRing(ringColor, visible: _focused && !widget.disabled),
       ),
-      duration: KunDurations.fast,
+      duration: kunMotion(context, KunDurations.fast),
       curve: KunEasing.standard,
       builder: (context, ring, child) {
         return Container(

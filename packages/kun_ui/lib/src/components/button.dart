@@ -3,6 +3,7 @@ import 'package:kun_ui_tokens/kun_ui_tokens.dart';
 
 import '../foundation/control_metrics.dart';
 import '../foundation/design.dart';
+import '../foundation/motion.dart';
 import '../foundation/variant_style.dart';
 import '../theme/theme.dart';
 import 'spinner.dart';
@@ -271,13 +272,13 @@ class _KunButtonState extends State<KunButton> {
             onTap: _canPress ? _handleActivate : null,
             child: AnimatedScale(
               scale: _pressed ? 0.97 : 1, // web active:scale-[0.97]
-              duration: KunDefaultTransition.duration,
+              duration: kunMotion(context, KunDefaultTransition.duration),
               curve: KunDefaultTransition.curve,
               child: AnimatedOpacity(
                 // Web: hover:opacity-80 on every variant; disabled/loading
                 // opacity-50.
                 opacity: _inactive ? 0.5 : (_hovered ? 0.8 : 1),
-                duration: KunDefaultTransition.duration,
+                duration: kunMotion(context, KunDefaultTransition.duration),
                 curve: KunDefaultTransition.curve,
                 child: withRing,
               ),
