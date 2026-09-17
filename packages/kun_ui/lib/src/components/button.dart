@@ -163,7 +163,7 @@ class _KunButtonState extends State<KunButton> {
             child: DefaultTextStyle(
               style: metrics.textStyle.copyWith(
                 color: style.foreground,
-                fontWeight: FontWeight.w500,
+                fontWeight: KunFontWeights.medium,
               ),
               softWrap: false, // web: a label is one atomic action, one line
               overflow: TextOverflow.fade,
@@ -199,33 +199,41 @@ class _KunButtonState extends State<KunButton> {
       child: content,
     );
 
-    // The keyboard-focus ring: 2px in the semantic color at 50%, floated 2px
-    // off the edge (web ring-offset-2 — the page shows through the gap), in
-    // a Stack overlay so its appearance never shifts layout.
-    final ring = widget.color.scaleOf(theme.colors).solid.withValues(
-          alpha: 0.5,
+    // The keyboard-focus ring, in a Stack overlay so it never shifts layout.
+    // Its 2px gap (web ring-offset-2) is not see-through: the web paints it
+    // with the page background at the global opacity, over the inner half of
+    // a 4px ring.
+    final corner = (widget.rounded ?? theme.rounded).radius;
+    Widget band(double outset, Color color) => Positioned(
+          left: -outset,
+          top: -outset,
+          right: -outset,
+          bottom: -outset,
+          child: IgnorePointer(
+            child: DecoratedBox(
+              decoration: BoxDecoration(
+                border: Border.all(color: color, width: outset),
+                borderRadius: BorderRadius.circular(corner + outset),
+              ),
+            ),
+          ),
         );
     final withRing = Stack(
       clipBehavior: Clip.none,
       children: [
         box,
-        if (_focused)
-          Positioned(
-            left: -4,
-            top: -4,
-            right: -4,
-            bottom: -4,
-            child: IgnorePointer(
-              child: DecoratedBox(
-                decoration: BoxDecoration(
-                  border: Border.all(color: ring, width: 2),
-                  borderRadius: BorderRadius.circular(
-                    (widget.rounded ?? theme.rounded).radius + 4,
-                  ),
-                ),
-              ),
+        if (_focused) ...[
+          band(
+            4,
+            widget.color.scaleOf(theme.colors).solid.withValues(alpha: 0.5),
+          ),
+          band(
+            2,
+            theme.colors.background.withValues(
+              alpha: KunColors.globalOpacity,
             ),
           ),
+        ],
       ],
     );
 

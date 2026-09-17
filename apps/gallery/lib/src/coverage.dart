@@ -59,10 +59,10 @@ class CoveragePage extends StatelessWidget {
   Widget build(BuildContext context) {
     final KunThemeData theme = KunTheme.of(context);
     final TextStyle headerStyle = KunText.base.copyWith(
-      fontWeight: FontWeight.w600,
+      fontWeight: KunFontWeights.semibold,
     );
     final TextStyle sectionStyle = KunText.sm.copyWith(
-      fontWeight: FontWeight.w600,
+      fontWeight: KunFontWeights.semibold,
     );
     final TextStyle mutedStyle = KunText.sm.copyWith(
       color: theme.colors.neutral.shade600,

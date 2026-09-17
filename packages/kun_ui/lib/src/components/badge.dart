@@ -191,7 +191,9 @@ class KunBadge extends StatelessWidget {
       boxShadow: anchored
           ? [
               BoxShadow(
-                color: scheme.background,
+                color: scheme.background.withValues(
+                  alpha: KunColors.globalOpacity,
+                ),
                 spreadRadius: 2,
                 blurRadius: 0,
                 offset: Offset.zero,
@@ -225,7 +227,7 @@ class KunBadge extends StatelessWidget {
             softWrap: false,
             style: metrics.textStyle.copyWith(
               color: scale.onSolid,
-              fontWeight: FontWeight.w500,
+              fontWeight: KunFontWeights.medium,
             ),
           ),
         ),

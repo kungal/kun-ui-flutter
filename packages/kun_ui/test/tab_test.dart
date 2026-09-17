@@ -798,6 +798,23 @@ void main() {
     expect(find.byIcon(KunIcons.chevronRight), findsOneWidget);
     expect(find.byIcon(KunIcons.chevronLeft), findsNothing);
     expect(find.byType(ShaderMask), findsOneWidget);
+    final BoxDecoration chevron = tester
+        .widget<Container>(
+          find.descendant(
+            of: find.byKey(const ValueKey<String>('KunTab.chevron.right')),
+            matching: find.byType(Container),
+          ),
+        )
+        .decoration! as BoxDecoration;
+    expect(chevron.color!.a, closeTo(0.56, 1e-6));
+    expect(
+      chevron.color,
+      KunColors.light.background.withValues(alpha: 0.7 * 0.8),
+    );
+    expect(
+      (chevron.border! as Border).top.color,
+      KunColors.light.neutral.shade100,
+    );
 
     await tester
         .tap(find.byKey(const ValueKey<String>('KunTab.chevron.right')));

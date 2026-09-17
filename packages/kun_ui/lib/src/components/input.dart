@@ -358,7 +358,7 @@ class _KunInputState extends State<KunInput>
           decoration: BoxDecoration(
             color: scheme.content1,
             border: Border.all(
-              color: _invalid ? danger.shade300 : scheme.neutral.shade100,
+              color: _invalid ? danger.shade300 : scheme.border,
             ),
             borderRadius: radius,
             boxShadow: [
@@ -414,7 +414,7 @@ class _KunInputState extends State<KunInput>
                 ],
               ),
               style: KunText.sm.copyWith(
-                fontWeight: FontWeight.w500,
+                fontWeight: KunFontWeights.medium,
                 color: scheme.neutral.shade700,
               ),
             ),

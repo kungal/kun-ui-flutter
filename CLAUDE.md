@@ -171,8 +171,16 @@ when a real app needs it, and one consumer is not a component. Then:
    values, never re-derive by eye. A spacing class is `KunSpacing.unit`
    times its own step (`px-2.5` → `KunSpacing.unit * 2.5`; a value built
    from several classes writes the class steps out, not their sum), and
-   `text-<step>` is `KunText.<step>`. Only an arbitrary value
-   (`size-[26px]`) or a non-spacing width (`ring-2`) stays a literal.
+   `text-<step>` is `KunText.<step>`, `font-<weight>` is
+   `KunFontWeights.<weight>`, a bare `rounded-<step>` (no `kun-`) is
+   `KunRounded.<step>`, `border-kun` is `scheme.border`, and
+   `animate-pulse` / `animate-spin` are `KunPulse` / `KunSpin`. Only an
+   arbitrary value (`size-[26px]`) or a non-spacing width (`ring-2`) stays
+   a literal. The schemes store every color opaque, but the web draws
+   `background` and `default-100` at `KunColors.globalOpacity`, and an
+   opacity modifier multiplies it: `bg-background/80` is alpha 0.56, and
+   `ring-offset-background` paints its gap at 0.7 rather than leaving it
+   clear.
    `v-model` maps to `value` + `onChanged`; slots map to `Widget`
    parameters; `ariaLabel` maps to `semanticLabel`.
 3. Write the widget in `packages/kun_ui/lib/src/components/`, export it from

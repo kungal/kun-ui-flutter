@@ -236,7 +236,10 @@ void main() {
     expect(lightShadows.single.spreadRadius, 2);
     expect(lightShadows.single.blurRadius, 0);
     expect(lightShadows.single.offset, Offset.zero);
-    expect(lightShadows.single.color, KunColors.light.background);
+    expect(
+      lightShadows.single.color,
+      KunColors.light.background.withValues(alpha: KunColors.globalOpacity),
+    );
 
     await tester.pumpWidget(
       wrap(
@@ -252,7 +255,10 @@ void main() {
     expect(darkShadows.single.spreadRadius, 2);
     expect(darkShadows.single.blurRadius, 0);
     expect(darkShadows.single.offset, Offset.zero);
-    expect(darkShadows.single.color, KunColors.dark.background);
+    expect(
+      darkShadows.single.color,
+      KunColors.dark.background.withValues(alpha: KunColors.globalOpacity),
+    );
   });
 
   testWidgets('anchored geometry sits 4px outside each corner', (tester) async {

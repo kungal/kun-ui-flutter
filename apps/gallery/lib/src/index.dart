@@ -25,10 +25,10 @@ class GalleryIndex extends StatelessWidget {
         isDark ? (isEn ? 'Light' : '浅色') : (isEn ? 'Dark' : '深色');
     final String langLabel = isEn ? KunMessages.zhCN.name : KunMessages.en.name;
     final TextStyle titleStyle = KunText.lg.copyWith(
-      fontWeight: FontWeight.w600,
+      fontWeight: KunFontWeights.semibold,
     );
     final TextStyle headerStyle = KunText.base.copyWith(
-      fontWeight: FontWeight.w600,
+      fontWeight: KunFontWeights.semibold,
     );
 
     return ColoredBox(

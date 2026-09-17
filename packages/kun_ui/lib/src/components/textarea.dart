@@ -278,7 +278,7 @@ class _KunTextareaState extends State<KunTextarea>
           decoration: BoxDecoration(
             color: scheme.content1,
             border: Border.all(
-              color: _hasError ? danger.shade300 : scheme.neutral.shade100,
+              color: _hasError ? danger.shade300 : scheme.border,
             ),
             borderRadius: radius,
             boxShadow: [
@@ -357,7 +357,7 @@ class _KunTextareaState extends State<KunTextarea>
                 ],
               ),
               style: KunText.sm.copyWith(
-                fontWeight: FontWeight.w500,
+                fontWeight: KunFontWeights.medium,
                 color: scheme.neutral.shade700,
               ),
             ),

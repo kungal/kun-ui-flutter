@@ -88,6 +88,23 @@ void main() {
     );
   });
 
+  testWidgets('a neutral tint is thinned by the global opacity',
+      (tester) async {
+    await tester.pumpWidget(
+      wrap(const KunCard(color: KunUIColor.neutral, child: body)),
+    );
+    final decoration = decorationOf(tester);
+    expect(decoration.color!.a, closeTo(0.21, 1e-6));
+    expect(
+      decoration.color,
+      KunColors.light.neutral.shade100.withValues(alpha: 0.7 * 0.3),
+    );
+    expect(
+      (decoration.border! as Border).top.color,
+      KunColors.light.neutral.shade100,
+    );
+  });
+
   testWidgets('isTransparent drops the fill and the shadow', (tester) async {
     await tester.pumpWidget(
       wrap(const KunCard(isTransparent: true, child: body)),

@@ -213,7 +213,7 @@ class _KunSwitchState extends State<KunSwitch> {
                     Text(
                       widget.label!,
                       style: sizeRow.text.copyWith(
-                        fontWeight: FontWeight.w500,
+                        fontWeight: KunFontWeights.medium,
                         color: widget.disabled
                             ? scheme.neutral.shade400
                             : scheme.foreground,

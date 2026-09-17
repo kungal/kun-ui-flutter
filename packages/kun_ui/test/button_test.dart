@@ -199,4 +199,85 @@ void main() {
     await tester.sendKeyEvent(LogicalKeyboardKey.enter);
     expect(presses, 2);
   });
+
+  testWidgets('the focus ring paints its gap with the page background',
+      (tester) async {
+    final previous = FocusManager.instance.highlightStrategy;
+    FocusManager.instance.highlightStrategy =
+        FocusHighlightStrategy.alwaysTraditional;
+    addTearDown(() => FocusManager.instance.highlightStrategy = previous);
+    await tester.pumpWidget(
+      wrap(
+        KunButton(
+          color: KunUIColor.success,
+          onPressed: () {},
+          child: const Text('Save'),
+        ),
+      ),
+    );
+    Focus.of(tester.element(find.text('Save'))).requestFocus();
+    await tester.pump();
+    await tester.pump();
+
+    final Rect button = tester.getRect(find.byType(KunButton));
+    final Iterable<Element> bands = find
+        .descendant(
+          of: find.descendant(
+            of: find.byType(KunButton),
+            matching: find.byType(IgnorePointer),
+          ),
+          matching: find.byType(DecoratedBox),
+        )
+        .evaluate();
+    final Map<double, (Rect, BoxDecoration)> byWidth = {
+      for (final Element band in bands)
+        ((band.widget as DecoratedBox).decoration as BoxDecoration)
+            .border!
+            .top
+            .width: (
+          tester.getRect(find.byWidget(band.widget)),
+          (band.widget as DecoratedBox).decoration as BoxDecoration,
+        ),
+    };
+    expect(byWidth.keys, unorderedEquals(<double>[4, 2]));
+
+    final (Rect ringRect, BoxDecoration ring) = byWidth[4]!;
+    expect(ringRect, button.inflate(4));
+    expect(
+      ring.border!.top.color,
+      KunColors.light.success.solid.withValues(alpha: 0.5),
+    );
+    expect(
+        ring.borderRadius, BorderRadius.circular(KunUIRounded.md.radius + 4));
+
+    final (Rect gapRect, BoxDecoration gap) = byWidth[2]!;
+    expect(gapRect, button.inflate(2));
+    expect(
+      gap.border!.top.color,
+      KunColors.light.background.withValues(alpha: KunColors.globalOpacity),
+    );
+    expect(gap.borderRadius, BorderRadius.circular(KunUIRounded.md.radius + 2));
+
+    final List<Widget> layers = tester
+        .widget<Stack>(
+          find
+              .descendant(
+                of: find.byType(KunButton),
+                matching: find.byType(Stack),
+              )
+              .first,
+        )
+        .children;
+    expect(
+      layers.indexWhere(
+        (widget) => widget is Positioned && widget.left == -2,
+      ),
+      greaterThan(
+        layers.indexWhere(
+          (widget) => widget is Positioned && widget.left == -4,
+        ),
+      ),
+      reason: 'the gap is painted over the ring',
+    );
+  });
 }

@@ -82,7 +82,7 @@ class KunChip extends StatelessWidget {
           child: DefaultTextStyle(
             style: metrics.textStyle.copyWith(
               color: style.foreground,
-              fontWeight: FontWeight.w500,
+              fontWeight: KunFontWeights.medium,
             ),
             softWrap: false, // web whitespace-nowrap
             overflow: TextOverflow.fade,

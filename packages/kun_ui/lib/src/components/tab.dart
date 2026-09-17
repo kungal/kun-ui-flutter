@@ -755,7 +755,7 @@ class _KunTabState<T extends KunTabItem> extends State<KunTab<T>>
         padding: const EdgeInsets.all(KunSpacing.unit * 1),
         decoration: BoxDecoration(
           color: filled ? scheme.content2.withValues(alpha: 0.3) : null,
-          border: Border.all(color: scheme.neutral.shade100),
+          border: Border.all(color: scheme.border),
           borderRadius: BorderRadius.circular(KunRadius.lg),
         ),
         child: body,
@@ -1007,9 +1007,10 @@ class _KunTabState<T extends KunTabItem> extends State<KunTab<T>>
                             alignment: Alignment.center,
                             decoration: BoxDecoration(
                               shape: BoxShape.circle,
-                              color: scheme.background.withValues(alpha: 0.8),
-                              border:
-                                  Border.all(color: scheme.neutral.shade100),
+                              color: scheme.background.withValues(
+                                alpha: KunColors.globalOpacity * 0.8,
+                              ),
+                              border: Border.all(color: scheme.border),
                             ),
                             child: Icon(
                               left

@@ -123,10 +123,10 @@ class _KunCardState extends State<KunCard> {
       (widget.rounded ?? theme.rounded).radius,
     );
 
-    // `--color-kun-border` is the neutral 100 shade; a tinted card deepens it
-    // to its own 300 shade (web `border-{color}-300`).
+    // A tinted card deepens the border to its own 300 shade (web
+    // `border-{color}-300`).
     final border = widget.color == null || widget.color == KunUIColor.neutral
-        ? scheme.neutral.shade100
+        ? scheme.border
         : widget.color!.scaleOf(scheme).shade300;
 
     final Color? fill;
@@ -134,6 +134,12 @@ class _KunCardState extends State<KunCard> {
       fill = null;
     } else if (widget.color == null) {
       fill = scheme.content1;
+    } else if (widget.color == KunUIColor.neutral) {
+      // Web `bg-default-100/30`: the web's default-100 already carries the
+      // global opacity, so the tint is thinner than the other colors'.
+      fill = scheme.neutral.shade100.withValues(
+        alpha: KunColors.globalOpacity * 0.3,
+      );
     } else {
       fill = widget.color!.scaleOf(scheme).shade100.withValues(alpha: 0.3);
     }
