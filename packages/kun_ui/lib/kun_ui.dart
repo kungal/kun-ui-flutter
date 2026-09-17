@@ -11,6 +11,7 @@ export 'package:kun_ui_icons/kun_ui_icons.dart';
 export 'package:kun_ui_messages/kun_ui_messages.dart';
 export 'package:kun_ui_tokens/kun_ui_tokens.dart';
 
+export 'src/components/avatar.dart';
 export 'src/components/badge.dart';
 export 'src/components/button.dart';
 export 'src/components/card.dart';
@@ -21,8 +22,10 @@ export 'src/components/chip.dart';
 export 'src/components/spinner.dart';
 export 'src/components/textarea.dart';
 export 'src/components/null.dart';
+export 'src/components/skeleton.dart';
 export 'src/components/switch.dart';
 export 'src/components/tab.dart';
+export 'src/components/user_chip.dart';
 export 'src/config/config.dart';
 export 'src/foundation/control_metrics.dart';
 export 'src/foundation/design.dart';

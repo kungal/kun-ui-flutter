@@ -31,6 +31,41 @@
         }
       ]
     },
+    "KunAvatar": {
+      "source": "demos/avatar.dart",
+      "demos": [
+        {
+          "slug": "basic",
+          "title": "Basic",
+          "builder": "avatarBasic",
+          "shows": [
+            "props.user"
+          ]
+        },
+        {
+          "slug": "sizes",
+          "title": "Sizes",
+          "builder": "avatarSizes",
+          "shows": [
+            "props.size"
+          ]
+        },
+        {
+          "slug": "fallback",
+          "title": "Sticker fallback",
+          "builder": "avatarFallback",
+          "shows": []
+        },
+        {
+          "slug": "navigation",
+          "title": "Navigation",
+          "builder": "avatarNavigation",
+          "shows": [
+            "props.isNavigation"
+          ]
+        }
+      ]
+    },
     "KunBadge": {
       "source": "demos/badge.dart",
       "demos": [
@@ -495,6 +530,46 @@
         }
       ]
     },
+    "KunSkeleton": {
+      "source": "demos/skeleton.dart",
+      "demos": [
+        {
+          "slug": "basic",
+          "title": "Basic",
+          "builder": "skeletonBasic",
+          "shows": [
+            "props.width"
+          ]
+        },
+        {
+          "slug": "shapes",
+          "title": "Shapes",
+          "builder": "skeletonShapes",
+          "shows": [
+            "props.height"
+          ]
+        },
+        {
+          "slug": "loaded",
+          "title": "Loaded",
+          "builder": "skeletonLoaded",
+          "shows": [
+            "props.loaded",
+            "slots.default"
+          ]
+        },
+        {
+          "slug": "variants",
+          "title": "Variants",
+          "builder": "skeletonVariants",
+          "shows": [
+            "props.variant",
+            "props.rounded",
+            "props.animation"
+          ]
+        }
+      ]
+    },
     "KunSpinner": {
       "contract": false,
       "source": "demos/spinner.dart",
@@ -738,6 +813,42 @@
       "gaps": {
         "props.autofocus": "A demo page is the payload of an iframe, and a field that takes focus on mount steals the caret from the page hosting it. Showing this honestly needs a mount-on-demand control the gallery does not have."
       }
+    },
+    "KunUserChip": {
+      "source": "demos/user_chip.dart",
+      "demos": [
+        {
+          "slug": "basic",
+          "title": "Basic",
+          "builder": "userChipBasic",
+          "shows": [
+            "props.user"
+          ]
+        },
+        {
+          "slug": "description",
+          "title": "Description",
+          "builder": "userChipDescription",
+          "shows": [
+            "props.description",
+            "props.size"
+          ]
+        },
+        {
+          "slug": "truncate",
+          "title": "Truncate",
+          "builder": "userChipTruncate",
+          "shows": []
+        },
+        {
+          "slug": "navigation",
+          "title": "Navigation",
+          "builder": "userChipNavigation",
+          "shows": [
+            "props.isNavigation"
+          ]
+        }
+      ]
     }
   }
 }

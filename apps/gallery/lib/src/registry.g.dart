@@ -4,6 +4,7 @@
 
 import 'coverage.g.dart';
 import 'demos/alert.dart';
+import 'demos/avatar.dart';
 import 'demos/badge.dart';
 import 'demos/button.dart';
 import 'demos/card.dart';
@@ -12,10 +13,12 @@ import 'demos/input.dart';
 import 'demos/message.dart';
 import 'demos/modal.dart';
 import 'demos/null.dart';
+import 'demos/skeleton.dart';
 import 'demos/spinner.dart';
 import 'demos/switch.dart';
 import 'demos/tab.dart';
 import 'demos/textarea.dart';
+import 'demos/user_chip.dart';
 import 'registry.dart';
 
 /// Every component the gallery shows, in the order the index lists them.
@@ -28,6 +31,20 @@ const List<GalleryComponent> galleryComponents = <GalleryComponent>[
       GalleryDemo(slug: 'types', title: 'Types', builder: alertTypes),
       GalleryDemo(slug: 'options', title: 'Options', builder: alertOptions),
       GalleryDemo(slug: 'replace', title: 'Replaced', builder: alertReplace),
+    ],
+  ),
+  GalleryComponent(
+    slug: 'kunavatar',
+    name: 'KunAvatar',
+    demos: <GalleryDemo>[
+      GalleryDemo(slug: 'basic', title: 'Basic', builder: avatarBasic),
+      GalleryDemo(slug: 'sizes', title: 'Sizes', builder: avatarSizes),
+      GalleryDemo(
+          slug: 'fallback', title: 'Sticker fallback', builder: avatarFallback),
+      GalleryDemo(
+          slug: 'navigation', title: 'Navigation', builder: avatarNavigation),
+      GalleryDemo(
+          slug: 'contract', title: 'Contract', builder: kunAvatarContract),
     ],
   ),
   GalleryComponent(
@@ -155,6 +172,19 @@ const List<GalleryComponent> galleryComponents = <GalleryComponent>[
     ],
   ),
   GalleryComponent(
+    slug: 'kunskeleton',
+    name: 'KunSkeleton',
+    demos: <GalleryDemo>[
+      GalleryDemo(slug: 'basic', title: 'Basic', builder: skeletonBasic),
+      GalleryDemo(slug: 'shapes', title: 'Shapes', builder: skeletonShapes),
+      GalleryDemo(slug: 'loaded', title: 'Loaded', builder: skeletonLoaded),
+      GalleryDemo(
+          slug: 'variants', title: 'Variants', builder: skeletonVariants),
+      GalleryDemo(
+          slug: 'contract', title: 'Contract', builder: kunSkeletonContract),
+    ],
+  ),
+  GalleryComponent(
     slug: 'kunspinner',
     name: 'KunSpinner',
     demos: <GalleryDemo>[
@@ -211,6 +241,23 @@ const List<GalleryComponent> galleryComponents = <GalleryComponent>[
       GalleryDemo(slug: 'states', title: 'States', builder: textareaStates),
       GalleryDemo(
           slug: 'contract', title: 'Contract', builder: kunTextareaContract),
+    ],
+  ),
+  GalleryComponent(
+    slug: 'kunuserchip',
+    name: 'KunUserChip',
+    demos: <GalleryDemo>[
+      GalleryDemo(slug: 'basic', title: 'Basic', builder: userChipBasic),
+      GalleryDemo(
+          slug: 'description',
+          title: 'Description',
+          builder: userChipDescription),
+      GalleryDemo(
+          slug: 'truncate', title: 'Truncate', builder: userChipTruncate),
+      GalleryDemo(
+          slug: 'navigation', title: 'Navigation', builder: userChipNavigation),
+      GalleryDemo(
+          slug: 'contract', title: 'Contract', builder: kunUserChipContract),
     ],
   ),
 ];

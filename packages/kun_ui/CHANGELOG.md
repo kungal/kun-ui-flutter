@@ -1,5 +1,25 @@
 # Changelog
 
+## 0.5.0
+
+- `KunSkeleton` — the loading placeholder: `text` (one em tall), `circle`
+  and `rect`, with a `width` or a `widthFactor`, a `height` and `rounded`.
+  It pulses as the web's does, and stops under reduced motion. With
+  `loaded`, it shows its `child` instead. Screen readers skip it.
+- `KunAvatar` and `KunUser` — a user's picture at the web's seven sizes. A
+  user without a picture gets a pick from `avatarFallbackPool`, the same
+  pick the web makes for the same name. A debug build warns once when the
+  pool is empty. A picture that fails to load falls back to the bundled
+  image. While the picture loads, the avatar pulses, and then the picture
+  fades in. With a user and `isNavigation`, the avatar is a link that
+  opens the profile through `KunUIConfigScope`. It scales up on hover and
+  answers Space and Enter. Like the web's, it draws no focus indicator.
+- `KunUserChip` — an avatar with a name and an optional description, each
+  cut to one line. With a user and `isNavigation`, the whole chip is one
+  link. A missing name reads as the unknown-user string. The web's chip
+  is a block that fills its container, but this one is only as wide as its
+  content.
+
 ## 0.4.0
 
 - `KunBadge` — a count or a dot on the corner of any widget, or on its own

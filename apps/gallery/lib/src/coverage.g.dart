@@ -6,6 +6,53 @@ import 'package:flutter/widgets.dart';
 
 import 'coverage.dart';
 
+const ComponentCoverage _kunAvatar = ComponentCoverage(
+  name: 'KunAvatar',
+  entries: <CoverageEntry>[
+    CoverageEntry(
+      section: 'props',
+      contractName: 'disableFloating',
+      status: CoverageStatus.omitted,
+      dartName: null,
+      reason:
+          'Deprecated no-op on the web: KunAvatar renders no floating card. The port starts without it.',
+    ),
+    CoverageEntry(
+      section: 'props',
+      contractName: 'floatingPosition',
+      status: CoverageStatus.omitted,
+      dartName: null,
+      reason:
+          'Deprecated no-op on the web: KunAvatar renders no floating card. The port starts without it.',
+    ),
+    CoverageEntry(
+      section: 'props',
+      contractName: 'isNavigation',
+      status: CoverageStatus.shown,
+      dartName: 'isNavigation',
+      shownBy: 'Navigation',
+    ),
+    CoverageEntry(
+      section: 'props',
+      contractName: 'size',
+      status: CoverageStatus.shown,
+      dartName: 'size',
+      shownBy: 'Sizes',
+    ),
+    CoverageEntry(
+      section: 'props',
+      contractName: 'user',
+      status: CoverageStatus.shown,
+      dartName: 'user',
+      shownBy: 'Basic',
+    ),
+  ],
+);
+
+/// The contract coverage page for KunAvatar.
+Widget kunAvatarContract(BuildContext context) =>
+    const CoveragePage(coverage: _kunAvatar);
+
 const ComponentCoverage _kunBadge = ComponentCoverage(
   name: 'KunBadge',
   entries: <CoverageEntry>[
@@ -707,6 +754,65 @@ const ComponentCoverage _kunNull = ComponentCoverage(
 Widget kunNullContract(BuildContext context) =>
     const CoveragePage(coverage: _kunNull);
 
+const ComponentCoverage _kunSkeleton = ComponentCoverage(
+  name: 'KunSkeleton',
+  entries: <CoverageEntry>[
+    CoverageEntry(
+      section: 'props',
+      contractName: 'animation',
+      status: CoverageStatus.shown,
+      dartName: 'animation',
+      shownBy: 'Variants',
+    ),
+    CoverageEntry(
+      section: 'props',
+      contractName: 'height',
+      status: CoverageStatus.shown,
+      dartName: 'height',
+      shownBy: 'Shapes',
+    ),
+    CoverageEntry(
+      section: 'props',
+      contractName: 'loaded',
+      status: CoverageStatus.shown,
+      dartName: 'loaded',
+      shownBy: 'Loaded',
+    ),
+    CoverageEntry(
+      section: 'props',
+      contractName: 'rounded',
+      status: CoverageStatus.shown,
+      dartName: 'rounded',
+      shownBy: 'Variants',
+    ),
+    CoverageEntry(
+      section: 'props',
+      contractName: 'variant',
+      status: CoverageStatus.shown,
+      dartName: 'variant',
+      shownBy: 'Variants',
+    ),
+    CoverageEntry(
+      section: 'props',
+      contractName: 'width',
+      status: CoverageStatus.shown,
+      dartName: 'width',
+      shownBy: 'Basic',
+    ),
+    CoverageEntry(
+      section: 'slots',
+      contractName: 'default',
+      status: CoverageStatus.shown,
+      dartName: 'child',
+      shownBy: 'Loaded',
+    ),
+  ],
+);
+
+/// The contract coverage page for KunSkeleton.
+Widget kunSkeletonContract(BuildContext context) =>
+    const CoveragePage(coverage: _kunSkeleton);
+
 const ComponentCoverage _kunSwitch = ComponentCoverage(
   name: 'KunSwitch',
   entries: <CoverageEntry>[
@@ -1079,3 +1185,57 @@ const ComponentCoverage _kunTextarea = ComponentCoverage(
 /// The contract coverage page for KunTextarea.
 Widget kunTextareaContract(BuildContext context) =>
     const CoveragePage(coverage: _kunTextarea);
+
+const ComponentCoverage _kunUserChip = ComponentCoverage(
+  name: 'KunUserChip',
+  entries: <CoverageEntry>[
+    CoverageEntry(
+      section: 'props',
+      contractName: 'description',
+      status: CoverageStatus.shown,
+      dartName: 'description',
+      shownBy: 'Description',
+    ),
+    CoverageEntry(
+      section: 'props',
+      contractName: 'disableFloating',
+      status: CoverageStatus.omitted,
+      dartName: null,
+      reason:
+          'Deprecated no-op on the web: KunUserChip renders no floating card. The port starts without it.',
+    ),
+    CoverageEntry(
+      section: 'props',
+      contractName: 'floatingPosition',
+      status: CoverageStatus.omitted,
+      dartName: null,
+      reason:
+          'Deprecated no-op on the web: KunUserChip renders no floating card. The port starts without it.',
+    ),
+    CoverageEntry(
+      section: 'props',
+      contractName: 'isNavigation',
+      status: CoverageStatus.shown,
+      dartName: 'isNavigation',
+      shownBy: 'Navigation',
+    ),
+    CoverageEntry(
+      section: 'props',
+      contractName: 'size',
+      status: CoverageStatus.shown,
+      dartName: 'size',
+      shownBy: 'Description',
+    ),
+    CoverageEntry(
+      section: 'props',
+      contractName: 'user',
+      status: CoverageStatus.shown,
+      dartName: 'user',
+      shownBy: 'Basic',
+    ),
+  ],
+);
+
+/// The contract coverage page for KunUserChip.
+Widget kunUserChipContract(BuildContext context) =>
+    const CoveragePage(coverage: _kunUserChip);

@@ -1,6 +1,22 @@
 {
   "package": "kun_ui",
   "components": {
+    "KunAvatar": {
+      "widget": "KunAvatar",
+      "props": {
+        "disableFloating": {
+          "omit": "Deprecated no-op on the web: KunAvatar renders no floating card. The port starts without it."
+        },
+        "floatingPosition": {
+          "omit": "Deprecated no-op on the web: KunAvatar renders no floating card. The port starts without it."
+        },
+        "isNavigation": "isNavigation",
+        "size": "size",
+        "user": "user"
+      },
+      "events": {},
+      "slots": {}
+    },
     "KunBadge": {
       "widget": "KunBadge",
       "props": {
@@ -156,6 +172,21 @@
       "events": {},
       "slots": {}
     },
+    "KunSkeleton": {
+      "widget": "KunSkeleton",
+      "props": {
+        "animation": "animation",
+        "height": "height",
+        "loaded": "loaded",
+        "rounded": "rounded",
+        "variant": "variant",
+        "width": "width"
+      },
+      "events": {},
+      "slots": {
+        "default": "child"
+      }
+    },
     "KunSwitch": {
       "widget": "KunSwitch",
       "props": {
@@ -239,6 +270,23 @@
         },
         "update:modelValue": "onChanged"
       },
+      "slots": {}
+    },
+    "KunUserChip": {
+      "widget": "KunUserChip",
+      "props": {
+        "description": "description",
+        "disableFloating": {
+          "omit": "Deprecated no-op on the web: KunUserChip renders no floating card. The port starts without it."
+        },
+        "floatingPosition": {
+          "omit": "Deprecated no-op on the web: KunUserChip renders no floating card. The port starts without it."
+        },
+        "isNavigation": "isNavigation",
+        "size": "size",
+        "user": "user"
+      },
+      "events": {},
       "slots": {}
     }
   }
