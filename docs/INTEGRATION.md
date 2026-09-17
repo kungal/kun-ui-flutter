@@ -4,7 +4,7 @@
 
 ```yaml
 dependencies:
-  kun_ui: ^0.4.0
+  kun_ui: ^0.5.0
 ```
 
 `kun_ui_tokens`, `kun_ui_icons` and `kun_ui_messages` come with it from
@@ -12,7 +12,7 @@ pub.dev and are re-exported, so `import 'package:kun_ui/kun_ui.dart';` is the
 only import.
 
 While `kun_ui` is 0.x, a minor bump may break and the caret stops at it
-(`^0.4.0` never resolves 0.5.0): read the
+(`^0.5.0` never resolves 0.6.0): read the
 [CHANGELOG](../packages/kun_ui/CHANGELOG.md) before raising the floor.
 
 A fix that is on `main` but not yet released can be taken from the repo,
@@ -64,8 +64,8 @@ Two things `KunTheme` does *not* do:
 - It brings no navigation. KunUI widgets work inside
   `MaterialApp`, `CupertinoApp` or a bare `WidgetsApp`, so keep whatever app
   shell you have. They do need the `Navigator` that shell builds: text
-  fields use its `Overlay`, and `KunModal` opens as a route on the root
-  navigator. Under `*.router` the navigator is your router delegate's to
+  fields use its `Overlay`, `KunSelect` opens its list on the root
+  `Overlay`, and `KunModal` opens as a route on the root navigator. Under `*.router` the navigator is your router delegate's to
   build, and go_router's does.
 
 ## Toasts and dialogs

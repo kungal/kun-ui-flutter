@@ -1,5 +1,5 @@
 name: kun_ui
-version: 0.4.0
+version: 0.5.0
 description: >-
   KunUI for Flutter: the hand-written widget layer of the KunUI design
   system, built on the generated kun_ui_tokens and kun_ui_icons packages
