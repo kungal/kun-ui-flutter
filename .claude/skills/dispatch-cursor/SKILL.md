@@ -160,6 +160,11 @@ Cursor also keeps a transcript under `~/.cursor/projects/<cwd-slug>/agent-transc
 
 1. **No `result` event means the stream ended early.** Quota, auth and network failures
    look like this. `dispatch.sh` prints the tail of stderr, so read it before you retry.
+   Then look at how far the run got before resuming it. On 2026-09-17 a DNS failure
+   (`getaddrinfo ENOTFOUND agentn.global.api5.cursor.sh`) ended the KunTab/focus-ring run
+   after 41 minutes and no `result` event, but its report was already complete and its
+   last tool calls were cleanup. It needed acceptance, not a resumed run. Check the
+   report's timestamp against the stream's last events.
 2. **`result` is every assistant text block concatenated.** Never parse a report out of it.
    Require the report as a file, and keep the final message to a one-line pointer.
 3. **Verify the gates yourself.** An executor reporting green is a claim, not a result.
