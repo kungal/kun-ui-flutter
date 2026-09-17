@@ -57,8 +57,8 @@
   A route is built under the navigator, not where it was opened: without
   this, a dialog opened inside a dark or differently localised subtree came
   up in the app's defaults.
-- Built on kun-ui 2.40.1 (`kun_ui_tokens`, `kun_ui_icons` and
-  `kun_ui_messages` ^2.40.1). The contract is unchanged for every claimed
+- Built on kun-ui 2.40.2 (`kun_ui_tokens`, `kun_ui_icons` and
+  `kun_ui_messages` ^2.40.2). The contract is unchanged for every claimed
   component. Font weights and the `border-kun` hairline now come from its
   `KunFontWeights` and `KunColorScheme.border`; no value changed.
 - `KunCard` with `color: KunUIColor.neutral` is tinted at 21% instead of 30%.
