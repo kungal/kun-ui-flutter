@@ -105,6 +105,23 @@ mkdir -p "$GROK_OUT_ROOT/<slug>"
 **Run it in the background.** A dispatch that builds Flutter web takes minutes; a foreground
 call blocks the turn.
 
+**Detach it, and run at most two at once.** On 2026-09-17, three dispatches ran in parallel.
+Each one built Flutter web, ran the tests and drove Chromium, and together they filled RAM and
+swap. The harness then killed its own background tasks, and that included the two dispatches
+it was running directly. Only the one started with `&` inside its command survived. So start
+each dispatch outside the harness's task tree, and wait on its PID (with Monitor, not with
+a sleep loop, which is killed the same way):
+
+```bash
+GROK_OUT_ROOT="$SCRATCHPAD/grok" setsid nohup .claude/skills/dispatch-grok/dispatch.sh <slug> … \
+  >"$SCRATCHPAD/grok/<slug>/dispatch.out" 2>&1 </dev/null &
+disown
+```
+
+A killed run leaves its work in the tree. To resume it, put a "RESUMED RUN" note at the top
+of the same task book: say what already exists and what is left, and tell grok to re-run
+every gate. Move the old `debug.log` aside, then dispatch again in the same worktree.
+
 | Flag | When |
 |---|---|
 | `--effort low\|medium\|high\|xhigh` | config default is `xhigh`; `low` for mechanical sweeps and probes |
