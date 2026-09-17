@@ -156,6 +156,13 @@ drive the keyboard yourself, click the page before the first Tab — and know th
 click into a Flutter web view itself moves focus to the view's first focusable widget, ring
 included, so a "mouse click shows no ring" check needs a second click.
 
+The web reference is at hand: kun-ui's docs site is prebuilt in
+`../kun-ui/apps/docs/.output` and serves with `PORT=<port> node server/index.mjs`. Its
+component pages carry the same examples a gallery demo should mirror, so ask for paired
+screenshots and a list of every difference. Keep in mind that the docs canvas is a
+different surface from the gallery's page background. On the KunBadge dispatch, that alone
+turned a background-coloured ring from invisible into a visible halo.
+
 ## 5. The task book
 
 Template: `task-book-template.md` in this directory.

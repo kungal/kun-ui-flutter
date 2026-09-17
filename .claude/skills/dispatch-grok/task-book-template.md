@@ -100,9 +100,26 @@ cd build/web && python3 -m http.server 8731 &
 
 Then drive Playwright to `http://localhost:8731/#/<route>` and take a screenshot. Navigate
 to `about:blank` first and then to the real URL — going straight to a hash route on a fresh
-page lands on the app's start route instead. Kill the server when you are done
-(`pkill -f 'http.server 8731'`; note it can exit non-zero, so run it on its own line — a
-non-zero exit in a `&&` chain will abort the rest of your command).
+page lands on the app's start route instead. The gallery centres each demo in the viewport.
+Kill the server when you are done with `pkill -f 'http[.]server 8731'` on its own line: the
+brackets stop the pattern from matching the shell that runs it (a plain pattern kills that
+shell), and a non-zero exit in a `&&` chain would abort the rest of your command.
+
+For screenshots at device scale factor 2, use a node script, not the Playwright MCP, which
+cannot change its scale factor:
+
+```js
+import { chromium } from '/home/kun/.npm/_npx/9833c18b2d85bc59/node_modules/playwright/index.mjs';
+const browser = await chromium.launch({
+  headless: false,
+  executablePath: '/home/kun/.cache/ms-playwright/chromium-1243/chrome-linux64/chrome',
+  args: ['--ignore-gpu-blocklist', '--enable-webgl', '--disable-gpu-sandbox', '--no-sandbox'],
+});
+const context = await browser.newContext({ viewport: { width: 1000, height: 700 }, deviceScaleFactor: 2 });
+```
+
+Run it as `DISPLAY=:0 node <script>.mjs`, with the script in the report directory, and wait
+about 9 seconds after each navigation: the first frames are blank while fonts load.
 
 Put the screenshot paths in your report and say what you actually saw in each.
 

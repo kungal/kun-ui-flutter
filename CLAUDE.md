@@ -129,6 +129,11 @@ clones kungal/kun-ui at `kun_ui_tokens-v<version>`, runs its
   (`WidgetsApp` keeps a separate web shortcut map), so a pressable widget
   handles both — and a test proving it binds the web map itself, because
   the VM's defaults send Enter as `ActivateIntent` and hide the bug.
+- `Container(alignment: …)` fills a bounded parent: its `Align` has no size
+  factors. A web `inline-flex items-center justify-center` box that
+  shrink-wraps its text centres with `Align(widthFactor: 1, heightFactor: 1)`
+  instead. A task book that said `Container.alignment` produced a standalone
+  KunBadge 800px wide.
 - In `flutter test` the paragraph cache does not key on
   `leadingDistribution`: laying the same string out again with only that
   changed returns the first layout's metrics, which reads as "even and
