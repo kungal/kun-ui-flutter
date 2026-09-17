@@ -32,6 +32,11 @@
   scrolling jump instead of animating, as the web's base stylesheet makes
   them. Like the web's, the strip draws no focus indicator.
   `KunTabPanels` is not ported: switch content on `value`.
+- `KunTheme`, `KunMessagesScope` and `KunUIConfigScope` are
+  `InheritedTheme`s, so `InheritedTheme.capture` carries them into a route.
+  A route is built under the navigator, not where it was opened: without
+  this, a dialog opened inside a dark or differently localised subtree came
+  up in the app's defaults.
 
 ## 0.3.0
 

@@ -93,4 +93,77 @@ void main() {
     expect(breakpoints.resolve(1280), KunBreakpoint.xl);
     expect(breakpoints.resolve(1536), KunBreakpoint.xxl);
   });
+
+  for (final bool capture in [true, false]) {
+    testWidgets(
+      'a route ${capture ? 'sees' : 'misses'} the scopes where it was '
+      'opened ${capture ? 'with' : 'without'} InheritedTheme.capture',
+      (tester) async {
+        late BuildContext opener;
+        KunThemeData? theme;
+        KunMessages? messages;
+        KunUIConfig? config;
+        const inner = KunUIConfig(userLinkTemplate: '/u/{id}');
+
+        await tester.pumpWidget(
+          KunTheme(
+            data: KunThemeData.light(),
+            child: Directionality(
+              textDirection: TextDirection.ltr,
+              child: Navigator(
+                onGenerateRoute: (settings) => PageRouteBuilder<void>(
+                  pageBuilder: (context, _, __) => KunTheme(
+                    data: KunThemeData.dark(),
+                    child: KunMessagesScope(
+                      messages: KunMessages.en,
+                      child: KunUIConfigScope(
+                        config: inner,
+                        child: Builder(
+                          builder: (context) {
+                            opener = context;
+                            return const SizedBox.shrink();
+                          },
+                        ),
+                      ),
+                    ),
+                  ),
+                ),
+              ),
+            ),
+          ),
+        );
+
+        final NavigatorState navigator = Navigator.of(opener);
+        final CapturedThemes themes = InheritedTheme.capture(
+          from: opener,
+          to: navigator.context,
+        );
+        Widget probe(BuildContext context) {
+          theme = KunTheme.of(context);
+          messages = KunMessagesScope.of(context);
+          config = KunUIConfigScope.of(context);
+          return const SizedBox.shrink();
+        }
+
+        navigator.push(
+          PageRouteBuilder<void>(
+            pageBuilder: (context, _, __) => capture
+                ? themes.wrap(Builder(builder: probe))
+                : Builder(builder: probe),
+          ),
+        );
+        await tester.pumpAndSettle();
+
+        if (capture) {
+          expect(theme!.brightness, Brightness.dark);
+          expect(messages, same(KunMessages.en));
+          expect(config, same(inner));
+        } else {
+          expect(theme!.brightness, Brightness.light);
+          expect(messages, same(KunMessages.zhCN));
+          expect(config, same(KunUIConfig.fallback));
+        }
+      },
+    );
+  }
 }

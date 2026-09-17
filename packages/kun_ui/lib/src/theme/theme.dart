@@ -104,6 +104,9 @@ class KunThemeData {
 /// text in the subtree that sets a `height` sits in its line box where the
 /// browser would put it rather than lower. It paints no background: put
 /// `KunTheme.of(context).colors.background` behind your page yourself.
+///
+/// The theme is an [InheritedTheme], so [InheritedTheme.capture] carries it
+/// into a route or overlay opened from below it.
 class KunTheme extends StatelessWidget {
   /// Provides [data] to the subtree under [child].
   const KunTheme({required this.data, required this.child, super.key});
@@ -150,10 +153,14 @@ class KunTheme extends StatelessWidget {
       );
 }
 
-class _InheritedKunTheme extends InheritedWidget {
+class _InheritedKunTheme extends InheritedTheme {
   const _InheritedKunTheme({required this.data, required super.child});
 
   final KunThemeData data;
+
+  @override
+  Widget wrap(BuildContext context, Widget child) =>
+      _InheritedKunTheme(data: data, child: child);
 
   @override
   bool updateShouldNotify(_InheritedKunTheme oldWidget) =>

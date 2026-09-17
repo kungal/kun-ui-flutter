@@ -152,7 +152,9 @@ String? kunPickAvatarFallback(String seed, List<String> pool) {
 /// ```
 ///
 /// Like `KunMessagesScope`, and unlike `KunTheme`, this is never required.
-class KunUIConfigScope extends InheritedWidget {
+/// Like both, it is an [InheritedTheme], so [InheritedTheme.capture] carries
+/// it into a route or overlay opened from below it.
+class KunUIConfigScope extends InheritedTheme {
   /// Applies [config] to the subtree under [child].
   const KunUIConfigScope({
     required this.config,
@@ -168,6 +170,10 @@ class KunUIConfigScope extends InheritedWidget {
   static KunUIConfig of(BuildContext context) =>
       context.dependOnInheritedWidgetOfExactType<KunUIConfigScope>()?.config ??
       KunUIConfig.fallback;
+
+  @override
+  Widget wrap(BuildContext context, Widget child) =>
+      KunUIConfigScope(config: config, child: child);
 
   @override
   bool updateShouldNotify(KunUIConfigScope oldWidget) =>

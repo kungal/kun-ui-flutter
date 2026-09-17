@@ -24,7 +24,10 @@ import 'package:kun_ui_messages/kun_ui_messages.dart';
 /// There is no per-widget override, and the contract carries none: a string
 /// KunUI renders for itself belongs to KunUI. Scope a subtree that needs a
 /// different language in its own [KunMessagesScope].
-class KunMessagesScope extends InheritedWidget {
+///
+/// An [InheritedTheme], so [InheritedTheme.capture] carries it into a route
+/// or overlay opened from below it.
+class KunMessagesScope extends InheritedTheme {
   /// Applies [messages] to the subtree under [child].
   const KunMessagesScope({
     required this.messages,
@@ -42,6 +45,10 @@ class KunMessagesScope extends InheritedWidget {
           .dependOnInheritedWidgetOfExactType<KunMessagesScope>()
           ?.messages ??
       KunMessages.zhCN;
+
+  @override
+  Widget wrap(BuildContext context, Widget child) =>
+      KunMessagesScope(messages: messages, child: child);
 
   @override
   bool updateShouldNotify(KunMessagesScope oldWidget) =>
