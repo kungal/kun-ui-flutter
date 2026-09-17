@@ -2,6 +2,7 @@ import 'package:flutter/services.dart';
 import 'package:flutter/widgets.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:kun_ui/kun_ui.dart';
+import 'package:kun_ui/src/foundation/outer_shadow.dart';
 
 Widget wrap(Widget child) => KunTheme(
       data: KunThemeData.light(),
@@ -18,6 +19,19 @@ BoxDecoration decorationOf(WidgetTester tester) {
         .first,
   );
   return container.decoration! as BoxDecoration;
+}
+
+List<KunOuterShadowDecoration> outerShadowsOf(WidgetTester tester) {
+  return tester
+      .widgetList<DecoratedBox>(
+        find.descendant(
+          of: find.byType(KunCard),
+          matching: find.byType(DecoratedBox),
+        ),
+      )
+      .map((DecoratedBox box) => box.decoration)
+      .whereType<KunOuterShadowDecoration>()
+      .toList();
 }
 
 const body = SizedBox(width: 100, height: 40, key: ValueKey('body'));
@@ -66,6 +80,7 @@ void main() {
     final decoration = decorationOf(tester);
     expect(decoration.color, KunColors.light.content1);
     expect(decoration.boxShadow, KunShadows.sm);
+    expect(outerShadowsOf(tester), isEmpty);
     expect(
       (decoration.border! as Border).top.color,
       KunColors.light.neutral.shade100,
@@ -86,6 +101,25 @@ void main() {
       (decoration.border! as Border).top.color,
       KunColors.light.primary.shade300,
     );
+  });
+
+  testWidgets('a translucent card keeps its shadow outside the box',
+      (tester) async {
+    for (final KunUIColor color in <KunUIColor>[
+      KunUIColor.primary,
+      KunUIColor.neutral,
+    ]) {
+      await tester.pumpWidget(wrap(KunCard(color: color, child: body)));
+      expect(decorationOf(tester).boxShadow, isNull);
+      final List<KunOuterShadowDecoration> outer = outerShadowsOf(tester);
+      expect(outer, hasLength(1));
+      expect(outer.single.shadows, KunShadows.sm);
+      expect(outer.single.borderRadius, decorationOf(tester).borderRadius);
+      expect(
+        tester.getSize(find.byType(KunCard)),
+        tester.getSize(find.byType(Container).first),
+      );
+    }
   });
 
   testWidgets('a neutral tint is thinned by the global opacity',

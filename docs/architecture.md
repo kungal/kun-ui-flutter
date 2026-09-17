@@ -449,6 +449,25 @@ applies it globally, so each widget runs its durations through `kunMotion`
 KunUI 0.3.0 ignored the setting everywhere. It was found while accepting
 KunTab, whose web scroll code checks `prefers-reduced-motion` by hand.
 
+### Shadows are painted outside the box (decided 2026-09-17)
+
+CSS paints `box-shadow` only outside the border box. `BoxDecoration` also
+paints every shadow under the box. An opaque fill hides the difference,
+but a translucent fill shows the shadow through it. KunUI 0.3.0 drew a
+tinted `KunCard` about 6% darker than the web's, with a lighter rim where
+its inset shadow ended. The first toast port also drew its dark 90% fill
+greener than the web's, because its colored ring showed through.
+
+So a box with a translucent fill and a shadow splits its decoration.
+`KunOuterShadowDecoration` (`lib/src/foundation/outer_shadow.dart`, not
+exported) paints the shadows with `BoxDecoration`'s geometry, clipped to
+the outside of the shape. Inside it, a `BoxDecoration` paints the fill and
+no shadows. Opaque boxes keep `BoxDecoration.boxShadow`: there the two
+render identically, and the clip would add cost to a long list of cards.
+
+This was found by comparing toast pixels in headless Chromium: every light
+color matched, and only the dark fills did not.
+
 ### Deferred, deliberately
 
 - **Input modality and breakpoint theme dimensions** (forui models

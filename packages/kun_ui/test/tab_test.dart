@@ -7,6 +7,7 @@ import 'package:flutter/services.dart';
 import 'package:flutter/widgets.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:kun_ui/kun_ui.dart';
+import 'package:kun_ui/src/foundation/outer_shadow.dart';
 
 Widget wrap(Widget child) => KunTheme(
       data: KunThemeData.light(),
@@ -815,6 +816,19 @@ void main() {
       (chevron.border! as Border).top.color,
       KunColors.light.neutral.shade100,
     );
+    expect(chevron.boxShadow, isNull);
+    final KunOuterShadowDecoration chevronShadow = tester
+        .widgetList<DecoratedBox>(
+          find.descendant(
+            of: find.byKey(const ValueKey<String>('KunTab.chevron.right')),
+            matching: find.byType(DecoratedBox),
+          ),
+        )
+        .map((DecoratedBox box) => box.decoration)
+        .whereType<KunOuterShadowDecoration>()
+        .single;
+    expect(chevronShadow.shadows, KunShadows.sm);
+    expect(chevronShadow.shape, BoxShape.circle);
 
     await tester
         .tap(find.byKey(const ValueKey<String>('KunTab.chevron.right')));

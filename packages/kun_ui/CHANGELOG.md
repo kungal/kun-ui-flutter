@@ -65,6 +65,11 @@
   The web's `bg-default-100/30` starts from a `default-100` that already
   carries the global opacity (`KunColors.globalOpacity`, 0.7); the other
   colors' tints are unchanged.
+- A tinted `KunCard` and `KunTab`'s scroll chevrons no longer show their
+  shadow through their translucent fill. `BoxDecoration` paints a shadow
+  under the box as well as around it, and CSS does not. 0.3.0 drew a
+  tinted card about 6% darker than the web's, with a lighter rim inside
+  its edge.
 - `KunButton`'s focus ring fills its 2px gap as the web's
   `ring-offset-background` does: the page background at the global opacity,
   over the inner half of a 4px ring. 0.3.0 left the gap clear.

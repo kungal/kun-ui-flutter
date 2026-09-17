@@ -3,6 +3,7 @@ import 'package:kun_ui_tokens/kun_ui_tokens.dart';
 
 import '../foundation/design.dart';
 import '../foundation/motion.dart';
+import '../foundation/outer_shadow.dart';
 import '../theme/theme.dart';
 
 /// A card's inner padding (web type `KunCardPadding`).
@@ -164,16 +165,26 @@ class _KunCardState extends State<KunCard> {
           ClipRRect(borderRadius: radius, child: content); // overflow-hidden
     }
 
+    final bool tinted = fill != null && fill.a < 1;
     Widget card = Container(
       padding: EdgeInsets.all(widget.padding.value),
       decoration: BoxDecoration(
         color: fill,
         border: widget.bordered ? Border.all(color: border) : null,
         borderRadius: radius,
-        boxShadow: widget.isTransparent ? null : KunShadows.sm,
+        boxShadow: widget.isTransparent || tinted ? null : KunShadows.sm,
       ),
       child: content,
     );
+    if (tinted) {
+      card = DecoratedBox(
+        decoration: KunOuterShadowDecoration(
+          shadows: KunShadows.sm,
+          borderRadius: radius,
+        ),
+        child: card,
+      );
+    }
 
     if (_showsHoverLayer) {
       card = Stack(

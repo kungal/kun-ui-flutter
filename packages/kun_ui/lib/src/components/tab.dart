@@ -11,6 +11,7 @@ import 'package:kun_ui_tokens/kun_ui_tokens.dart';
 import '../config/config.dart';
 import '../foundation/design.dart';
 import '../foundation/motion.dart';
+import '../foundation/outer_shadow.dart';
 import '../theme/theme.dart';
 
 /// Visual style of a [KunTab] strip.
@@ -981,9 +982,9 @@ class _KunTabState<T extends KunTabItem> extends State<KunTab<T>>
                 duration: _motion(KunDefaultTransition.duration),
                 curve: KunDefaultTransition.curve,
                 child: DecoratedBox(
-                  decoration: const BoxDecoration(
+                  decoration: const KunOuterShadowDecoration(
+                    shadows: KunShadows.sm,
                     shape: BoxShape.circle,
-                    boxShadow: KunShadows.sm,
                   ),
                   child: ClipOval(
                     child: BackdropFilter(
