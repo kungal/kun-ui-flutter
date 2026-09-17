@@ -3,11 +3,13 @@
 // Regenerate: dart run tool/gen_gallery.dart
 
 import 'coverage.g.dart';
+import 'demos/alert.dart';
 import 'demos/badge.dart';
 import 'demos/button.dart';
 import 'demos/card.dart';
 import 'demos/chip.dart';
 import 'demos/input.dart';
+import 'demos/message.dart';
 import 'demos/modal.dart';
 import 'demos/null.dart';
 import 'demos/spinner.dart';
@@ -18,6 +20,16 @@ import 'registry.dart';
 
 /// Every component the gallery shows, in the order the index lists them.
 const List<GalleryComponent> galleryComponents = <GalleryComponent>[
+  GalleryComponent(
+    slug: 'kunalert',
+    name: 'KunAlert',
+    demos: <GalleryDemo>[
+      GalleryDemo(slug: 'basic', title: 'Basic', builder: alertBasic),
+      GalleryDemo(slug: 'types', title: 'Types', builder: alertTypes),
+      GalleryDemo(slug: 'options', title: 'Options', builder: alertOptions),
+      GalleryDemo(slug: 'replace', title: 'Replaced', builder: alertReplace),
+    ],
+  ),
   GalleryComponent(
     slug: 'kunbadge',
     name: 'KunBadge',
@@ -92,6 +104,21 @@ const List<GalleryComponent> galleryComponents = <GalleryComponent>[
       GalleryDemo(slug: 'states', title: 'States', builder: inputStates),
       GalleryDemo(
           slug: 'contract', title: 'Contract', builder: kunInputContract),
+    ],
+  ),
+  GalleryComponent(
+    slug: 'kunmessage',
+    name: 'KunMessage',
+    demos: <GalleryDemo>[
+      GalleryDemo(slug: 'types', title: 'Types', builder: messageTypes),
+      GalleryDemo(
+          slug: 'positions', title: 'Positions', builder: messagePositions),
+      GalleryDemo(
+          slug: 'persistent', title: 'Persistent', builder: messagePersistent),
+      GalleryDemo(slug: 'dedup', title: 'Repeated', builder: messageDedup),
+      GalleryDemo(slug: 'burst', title: 'Burst', builder: messageBurst),
+      GalleryDemo(
+          slug: 'over-modal', title: 'Over a modal', builder: messageOverModal),
     ],
   ),
   GalleryComponent(

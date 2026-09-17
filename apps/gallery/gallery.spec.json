@@ -1,6 +1,36 @@
 {
   "note": "How the gallery demonstrates each component. tool/gen_gallery.dart reads this together with ../../contracts/components.manifest.json and fails when the two disagree: every name the manifest claims must appear exactly once, in a demo's `shows`, in `undemoable`, or in `gaps`. The last two are different facts and the coverage page must not blur them -- `undemoable` is permanent and correct (the name has no visual form at all), `gaps` is work not done yet. A component the gallery has not reached needs no entry here (absence is not drift), but a claimed prop is never left silent.",
   "components": {
+    "KunAlert": {
+      "contract": false,
+      "source": "demos/alert.dart",
+      "demos": [
+        {
+          "slug": "basic",
+          "title": "Basic",
+          "builder": "alertBasic",
+          "shows": []
+        },
+        {
+          "slug": "types",
+          "title": "Types",
+          "builder": "alertTypes",
+          "shows": []
+        },
+        {
+          "slug": "options",
+          "title": "Options",
+          "builder": "alertOptions",
+          "shows": []
+        },
+        {
+          "slug": "replace",
+          "title": "Replaced",
+          "builder": "alertReplace",
+          "shows": []
+        }
+      ]
+    },
     "KunBadge": {
       "source": "demos/badge.dart",
       "demos": [
@@ -309,6 +339,48 @@
       "gaps": {
         "props.autofocus": "A demo page is the payload of an iframe, and a field that takes focus on mount steals the caret from the page hosting it. Showing this honestly needs a mount-on-demand control the gallery does not have."
       }
+    },
+    "KunMessage": {
+      "contract": false,
+      "source": "demos/message.dart",
+      "demos": [
+        {
+          "slug": "types",
+          "title": "Types",
+          "builder": "messageTypes",
+          "shows": []
+        },
+        {
+          "slug": "positions",
+          "title": "Positions",
+          "builder": "messagePositions",
+          "shows": []
+        },
+        {
+          "slug": "persistent",
+          "title": "Persistent",
+          "builder": "messagePersistent",
+          "shows": []
+        },
+        {
+          "slug": "dedup",
+          "title": "Repeated",
+          "builder": "messageDedup",
+          "shows": []
+        },
+        {
+          "slug": "burst",
+          "title": "Burst",
+          "builder": "messageBurst",
+          "shows": []
+        },
+        {
+          "slug": "over-modal",
+          "title": "Over a modal",
+          "builder": "messageOverModal",
+          "shows": []
+        }
+      ]
     },
     "KunModal": {
       "source": "demos/modal.dart",

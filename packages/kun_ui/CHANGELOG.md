@@ -52,6 +52,27 @@
   its content lays out, between the web's minimum and the size cap: a child
   that fills the width it is given, like a default `Row`, makes it as wide
   as the cap, where the browser would size it by its content.
+- `showKunMessage` and `KunMessageProvider` — toasts. `showKunMessage`
+  needs no `BuildContext`, so a repository or a notifier can raise one.
+  Mount `KunMessageProvider` once, around the app's navigator
+  (`WidgetsApp.builder`), and toasts render above every route, a `KunModal`
+  included. It has the web's four types and six positions. An identical
+  toast is counted instead of repeated, and each position shows at most
+  five. The timer pauses while a mouse is over the toast or a pointer is
+  pressed on it, and a progress bar shows the time left. A close button and
+  a horizontal swipe dismiss a toast, and `dismissKunMessage` removes one by
+  id. Toasts keep clear of the safe areas, and the bottom stacks rise above
+  the on-screen keyboard, which the web's containers do not do. Screen
+  readers hear `error` and `warn` toasts assertively and the others
+  politely. `richText` is not ported, because it is HTML.
+- `showKunAlert` — the confirm dialog, returning `Future<bool>`. It
+  resolves `true` on confirm and `false` on cancel, Escape, back or the
+  close button. A second call replaces the open dialog's content, and the
+  first call then resolves `false`. The web's three types set the confirm
+  color, and `confirmColor` overrides it. The backdrop does not dismiss it,
+  as the `alertdialog` role requires. It needs no provider widget: the web
+  has `KunAlertProvider` only because a Vue store cannot reach the component
+  tree.
 - `KunTheme`, `KunMessagesScope` and `KunUIConfigScope` are
   `InheritedTheme`s, so `InheritedTheme.capture` carries them into a route.
   A route is built under the navigator, not where it was opened: without

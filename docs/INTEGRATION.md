@@ -61,12 +61,48 @@ Two things `KunTheme` does *not* do:
 - It paints no background. Give your page
   `KunTheme.of(context).colors.background` (a `Scaffold.backgroundColor`,
   a `ColoredBox` — wherever your shell paints its ground).
-- It brings no navigation, snackbars or dialogs. KunUI widgets work inside
+- It brings no navigation. KunUI widgets work inside
   `MaterialApp`, `CupertinoApp` or a bare `WidgetsApp`, so keep whatever app
   shell you have. They do need the `Navigator` that shell builds: text
   fields use its `Overlay`, and `KunModal` opens as a route on the root
   navigator. Under `*.router` the navigator is your router delegate's to
   build, and go_router's does.
+
+## Toasts and dialogs
+
+Toasts need one host. Mount it around the app's navigator, under
+`KunTheme`:
+
+```dart
+MaterialApp.router(
+  routerConfig: router,
+  builder: (BuildContext context, Widget? child) =>
+      KunMessageProvider(child: child!),
+)
+```
+
+`WidgetsApp.builder` and `CupertinoApp.builder` are the same parameter. Then
+raise a toast from anywhere, with no `BuildContext`:
+
+```dart
+showKunMessage('Saved', KunMessageType.success);
+```
+
+The host sits above every route, so a toast shows over an open `KunModal`,
+in the theme and language in force where the host is mounted. A toast
+raised before the host mounts waits for it, and a debug build says once
+that no host is mounted.
+
+A confirm dialog needs no host. It opens on the root navigator:
+
+```dart
+final bool confirmed = await showKunAlert(
+  context,
+  title: 'Delete this post?',
+  message: 'This cannot be undone.',
+  type: KunAlertType.danger,
+);
+```
 
 ## App-wide rounding
 

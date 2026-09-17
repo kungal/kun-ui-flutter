@@ -19,6 +19,7 @@ import 'button.dart';
 
 part 'modal_route.dart';
 part 'modal_swipe.dart';
+part 'modal_alert.dart';
 
 /// How wide the [KunModal] panel may grow.
 enum KunModalSize {

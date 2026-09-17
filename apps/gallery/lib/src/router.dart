@@ -91,15 +91,17 @@ class GalleryRouterDelegate extends RouterDelegate<GalleryRoute>
             style: KunText.sm.copyWith(
               color: theme.colors.foreground,
             ),
-            child: Navigator(
-              key: navigatorKey,
-              pages: <Page<void>>[
-                _GalleryPage(
-                  key: ValueKey<String>(_route.path),
-                  child: page,
-                ),
-              ],
-              onDidRemovePage: (Page<Object?> page) {},
+            child: KunMessageProvider(
+              child: Navigator(
+                key: navigatorKey,
+                pages: <Page<void>>[
+                  _GalleryPage(
+                    key: ValueKey<String>(_route.path),
+                    child: page,
+                  ),
+                ],
+                onDidRemovePage: (Page<Object?> page) {},
+              ),
             ),
           ),
         ),
