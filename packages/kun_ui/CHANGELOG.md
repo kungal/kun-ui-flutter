@@ -11,25 +11,6 @@
   the counter count user-perceived characters, where the browser counts
   UTF-16 code units. The web's `resize` handle is browser chrome and is not
   ported.
-- `KunButton` and `KunChip`'s remove button answer Enter in a browser. Flutter
-  web sends Enter as `ButtonActivateIntent`, which neither handled, so only
-  Space pressed them there; other platforms were unaffected.
-- A `clickable` `KunCard` takes keyboard focus and is tapped by Space and
-  Enter, as the web's `<button>` card is. Like the web's, it draws no focus
-  indicator.
-- `KunInput`: a click or tap places the caret, and a drag, double-tap or
-  long-press selects. 0.2.0 moved the caret to the end on every tap and could
-  not select with the pointer at all. Touch selection handles and a copy/paste
-  toolbar are still absent.
-- `KunInput`: with Flutter web's accessibility turned on, the field could not
-  be typed into — its semantics node never said it was enabled, and the web
-  engine renders such a field as a disabled `<input>`. It now reports its
-  enabled state and answers the tap and focus actions.
-- `KunInput`: the focus ring fades in and out over `KunDurations.fast`, as the
-  web's `transition-[color,box-shadow]` does. The border colour still changes
-  at once; the web does not transition it either.
-- `KunInput`: a disabled field can no longer take focus, from the keyboard or
-  otherwise. Disabling a focused field blurs it and calls `onBlur`.
 - `KunNull` — the empty state: the bundled mascot (`KunImages.nullImage`, no
   network request) above the locale's "nothing here" line. `image` takes any
   `ImageProvider` in place of the web's `src` URL. The mascot is decorative to
@@ -52,6 +33,25 @@
   classes never name.
 - `KunBreakpoints` defaults come from `KunBreakpointWidths`. The values are
   unchanged.
+- `KunButton` and `KunChip`'s remove button answer Enter in a browser. Flutter
+  web sends Enter as `ButtonActivateIntent`, which neither handled, so only
+  Space pressed them there; other platforms were unaffected.
+- A `clickable` `KunCard` takes keyboard focus and is tapped by Space and
+  Enter, as the web's `<button>` card is. Like the web's, it draws no focus
+  indicator.
+- `KunInput`: a click or tap places the caret, and a drag, double-tap or
+  long-press selects. 0.2.0 moved the caret to the end on every tap and could
+  not select with the pointer at all. Touch selection handles and a copy/paste
+  toolbar are still absent.
+- `KunInput`: with Flutter web's accessibility turned on, the field could not
+  be typed into — its semantics node never said it was enabled, and the web
+  engine renders such a field as a disabled `<input>`. It now reports its
+  enabled state and answers the tap and focus actions.
+- `KunInput`: the focus ring fades in and out over `KunDurations.fast`, as the
+  web's `transition-[color,box-shadow]` does. The border colour still changes
+  at once; the web does not transition it either.
+- `KunInput`: a disabled field can no longer take focus, from the keyboard or
+  otherwise. Disabling a focused field blurs it and calls `onBlur`.
 - `KunInput` and `KunTextarea` need an `Overlay` ancestor, as every Flutter
   text field does. `WidgetsApp` — and so `MaterialApp` and `CupertinoApp` —
   provides one; a bare widget tree, such as a test, has to add it.

@@ -37,10 +37,12 @@
 5. **A push of a `kun_ui-v*` tag publishes to pub.dev.** Pushing `main` is
    routine and needs no permission — the repo is public, CI costs nothing,
    and a branch push is reversible. A *tag* is not: it publishes an immutable
-   version to pub.dev, so never tag, retag or publish on your own initiative
-   — only when the user asks. The first publish had to be run manually by
-   the user (0.1.0, 2026-09-15); from 0.2.0 on, the tag-triggered OIDC
-   workflow publishes. Never hand-edit a version to "fix" a release.
+   version to pub.dev, so a release is a decision, never a side effect of
+   other work. Since 2026-09-16 the maintainer has delegated that decision
+   to the orchestrating session; a dispatched executor never tags, retags or
+   publishes. The first publish had to be run manually by the user (0.1.0,
+   2026-09-15); from 0.2.0 on, the tag-triggered OIDC workflow publishes.
+   Never hand-edit a version to "fix" a release.
 6. **A new dependency needs a capability argument, never a convenience one**
    — inherited from kun-ui verbatim. The library depends on exactly the
    generated family — `kun_ui_tokens` + `kun_ui_icons` + `kun_ui_messages`,
@@ -133,7 +135,7 @@ clones kungal/kun-ui at `kun_ui_tokens-v<version>`, runs its
   proportional place glyphs identically". Assert on the resolved
   `TextStyle` instead, or use a different string per measurement.
 
-## Cutting a release (only when asked — iron rule 5)
+## Cutting a release (a decision, not a side effect — iron rule 5)
 
 1. The CHANGELOG already carries the version's heading. Bump
    `packages/kun_ui/pubspec.yaml` **and** the gallery's `kun_ui:` constraint:
