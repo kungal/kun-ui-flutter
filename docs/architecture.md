@@ -428,8 +428,26 @@ differ from the web's.
   widget. The web needs `KunAlertProvider` only because a Vue store cannot
   reach the component tree, and a Flutter caller that asks the user a
   question already has a context.
-- Anchored popups (Select, Popover, Tooltip, Dropdown) are decided with
-  `KunSelect`, their first consumer.
+- **Anchored popups are portals, not routes** (decided with `KunSelect`,
+  their first consumer, for Popover, Tooltip, Dropdown and Autocomplete to
+  follow). The popup is an `OverlayPortal.overlayChildLayoutBuilder` on the
+  root overlay whose child is the trigger. It paints above the page, like
+  the web's teleport to `<body>`, but it is built under the trigger: it
+  inherits the trigger's theme, language and config, and its focus nodes
+  sit in the trigger's focus scope. So the two bugs
+  `useKunFloatingLayer.ts` exists for cannot happen here: a modal's focus
+  trap already contains the popup, and an Escape the popup's own key
+  handler consumes never reaches the modal's `DismissIntent`.
+  - The layout builder runs on every frame while frames run, so the popup
+    follows its trigger through scrolling and resizing (floating-ui's
+    `autoUpdate`). It applies the web's recipe (offset, flip, an 8px shift
+    margin, the size caps) against the view's box less the view's padding
+    and keyboard, read from the view because a `SafeArea` above the
+    trigger may have removed them from the ambient `MediaQuery`.
+  - A tap outside closes it through one `TapRegion` group spanning the
+    trigger and the popup.
+  - A popup is not a route: back and a modal's focus trap treat it as part
+    of the page it was opened from.
 
 ### Reduced motion collapses every transition (decided 2026-09-17)
 
