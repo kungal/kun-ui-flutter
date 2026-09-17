@@ -8,6 +8,14 @@
   ring that separates an anchored badge from what it sits on. With a
   `semanticLabel` it is announced as a live region, so a changing unread count
   is read out.
+- `KunUIConfigScope` and `KunUIConfig` — the app-wide settings the web keeps
+  on its `KunUIConfig`: `navigate` (the app's router, for the components
+  that navigate), `userLinkTemplate`, `avatarFallbackPool` and
+  `imageProvider` (every image URL KunUI loads goes through it, so an app
+  brings its own cache). Optional, like `KunMessagesScope`. Without
+  `navigate`, a tap that would navigate does nothing, and a debug build
+  says so once. `kunPickAvatarFallback` is the web's fallback pick, hash
+  for hash.
 
 ## 0.3.0
 

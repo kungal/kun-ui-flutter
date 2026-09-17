@@ -74,6 +74,36 @@ KunThemeData.light(rounded: KunUIRounded.lg)
 Every component whose `rounded` parameter is left null follows this — one
 knob for the whole surface, matching the web's `config.rounded`.
 
+## Navigation, avatars and images
+
+Widgets that navigate (a tab with an `href`, an avatar that links to its
+user) or load images read a `KunUIConfigScope`. It is optional, but an app
+with a router or an image cache should provide one near the top:
+
+```dart
+KunUIConfigScope(
+  config: KunUIConfig(
+    navigate: (context, href) => GoRouter.of(context).go(href),
+    userLinkTemplate: '/user/{id}',
+    avatarFallbackPool: avatarPool,
+    imageProvider: CachedNetworkImageProvider.new,
+  ),
+  child: ...,
+)
+```
+
+- Without `navigate`, a tap that would navigate does nothing. A debug build
+  prints this once.
+- `userLinkTemplate` defaults to the web's `/user/{id}/info`.
+- `avatarFallbackPool` is the list of absolute image URLs the web's
+  `avatarFallbackPool` holds, and should be the same list. The pick is the
+  web's hash, so a user gets the same image in the app as on the site. Load
+  the list once, not per screen. While it is empty, every user without an
+  avatar shows the bundled image.
+- `imageProvider` turns every image URL KunUI loads into an
+  `ImageProvider`. It defaults to `NetworkImage`; pass your cache's provider
+  here instead of wrapping each widget.
+
 ## The rules (same as the websites)
 
 - **Never modify KunUI from an app** — report at

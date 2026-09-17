@@ -307,6 +307,40 @@ change that made them unnecessary, and they never reached a release. The
 general form: when a port wants a knob the contract lacks, the missing piece
 is almost always upstream.
 
+### Navigation and image loading are an app-level scope (decided 2026-09-16)
+
+The web's `KunUIConfig` is where the Vue library stops depending on Nuxt:
+the host hands KunUI its router (`navigate`), the path an avatar links to
+(`userLinkTemplate`), the images for users with no avatar
+(`avatarFallbackPool`) and its image component (`imageComponent`). KunTab,
+KunAvatar and KunUserChip read those keys, so this port needs the same seam
+before it can port them. `KunUIConfigScope` holds a `KunUIConfig` with four
+fields. The web type's other four keys have a home already or no Flutter
+meaning: `rounded` is `KunThemeData.rounded`, `locale` is
+`KunMessagesScope`, and a link component and an icon component have no
+counterpart when a link is a tap and an icon is `IconData`.
+
+- **Never a required ancestor**, for the reason `KunMessagesScope` gives:
+  every field has a working default.
+- **`navigate` defaults to nothing, with a debug message.** The web's
+  default is a full page load, and Flutter has no universal equivalent.
+  `Navigator.pushNamed` fails under `Router`-based apps. Replaying the
+  platform's route push (the path a deep link takes) works under both, but
+  only through `WidgetsBinding.handlePushRoute`, which is protected and
+  visible for testing. So a widget that navigates still looks like a link.
+  A tap on it does nothing, and a debug build says once that nothing is
+  configured. That is the web's own answer to a silent misconfiguration: it
+  warns once about an empty avatar pool.
+- **`imageProvider` replaces `imageComponent`.** A URL becomes an
+  `ImageProvider`, `NetworkImage` by default, so an app brings its own
+  caching (for example `CachedNetworkImageProvider.new`) without `kun_ui`
+  taking the dependency (iron rule 6).
+- **The avatar fallback pick is the web's hash, bit for bit**
+  (`kunPickAvatarFallback`), over the same UTF-16 code units. A user shows
+  the same fallback image in the app and on the site. The test vectors come
+  from ui-core's function, and the Dart hash was run compiled to JS as well
+  as on the VM, because integer arithmetic differs between the two.
+
 ### Deferred, deliberately
 
 - **Input modality and breakpoint theme dimensions** (forui models
