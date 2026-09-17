@@ -1,6 +1,24 @@
 {
   "package": "kun_ui",
   "components": {
+    "KunBadge": {
+      "widget": "KunBadge",
+      "props": {
+        "ariaLabel": "semanticLabel",
+        "color": "color",
+        "count": "count",
+        "max": "max",
+        "placement": "placement",
+        "show": "show",
+        "showZero": "showZero",
+        "size": "size",
+        "variant": "variant"
+      },
+      "events": {},
+      "slots": {
+        "default": "child"
+      }
+    },
     "KunButton": {
       "widget": "KunButton",
       "props": {

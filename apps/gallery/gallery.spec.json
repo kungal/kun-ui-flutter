@@ -1,6 +1,77 @@
 {
   "note": "How the gallery demonstrates each component. tool/gen_gallery.dart reads this together with ../../contracts/components.manifest.json and fails when the two disagree: every name the manifest claims must appear exactly once, in a demo's `shows`, in `undemoable`, or in `gaps`. The last two are different facts and the coverage page must not blur them -- `undemoable` is permanent and correct (the name has no visual form at all), `gaps` is work not done yet. A component the gallery has not reached needs no entry here (absence is not drift), but a claimed prop is never left silent.",
   "components": {
+    "KunBadge": {
+      "source": "demos/badge.dart",
+      "demos": [
+        {
+          "slug": "basic",
+          "title": "Basic",
+          "builder": "badgeBasic",
+          "shows": [
+            "props.count",
+            "slots.default"
+          ]
+        },
+        {
+          "slug": "dot",
+          "title": "Dot",
+          "builder": "badgeDot",
+          "shows": [
+            "props.variant"
+          ]
+        },
+        {
+          "slug": "max",
+          "title": "Max",
+          "builder": "badgeMax",
+          "shows": [
+            "props.max"
+          ]
+        },
+        {
+          "slug": "colors",
+          "title": "Colors",
+          "builder": "badgeColors",
+          "shows": [
+            "props.color"
+          ]
+        },
+        {
+          "slug": "standalone",
+          "title": "Standalone",
+          "builder": "badgeStandalone",
+          "shows": [
+            "props.ariaLabel"
+          ]
+        },
+        {
+          "slug": "sizes",
+          "title": "Sizes",
+          "builder": "badgeSizes",
+          "shows": [
+            "props.size"
+          ]
+        },
+        {
+          "slug": "placement",
+          "title": "Placement",
+          "builder": "badgePlacement",
+          "shows": [
+            "props.placement"
+          ]
+        },
+        {
+          "slug": "count",
+          "title": "Count",
+          "builder": "badgeCount",
+          "shows": [
+            "props.showZero",
+            "props.show"
+          ]
+        }
+      ]
+    },
     "KunButton": {
       "source": "demos/button.dart",
       "demos": [

@@ -15,7 +15,7 @@ import '../theme/theme.dart';
 /// a removable × via [closable] + [onClose]. The corner radius is always a
 /// pill; unlike a card or a button, a chip takes no `rounded`.
 ///
-/// For a dot or count overlay use `KunBadge` instead (not ported yet).
+/// For a dot or count overlay use `KunBadge` instead.
 class KunChip extends StatelessWidget {
   /// Creates a chip.
   const KunChip({

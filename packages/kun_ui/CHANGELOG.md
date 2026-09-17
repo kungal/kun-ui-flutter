@@ -1,5 +1,14 @@
 # Changelog
 
+## 0.4.0
+
+- `KunBadge` — a count or a dot on the corner of any widget, or on its own
+  inline: the web's three sizes, four corners, `max` (a count above it shows
+  as `99+`), `showZero`, `show`, any `KunUIColor`, and the background-coloured
+  ring that separates an anchored badge from what it sits on. With a
+  `semanticLabel` it is announced as a live region, so a changing unread count
+  is read out.
+
 ## 0.3.0
 
 - `KunTextarea` — the multi-line text field: the shared control scale

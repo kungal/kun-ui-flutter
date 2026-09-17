@@ -3,6 +3,7 @@
 // Regenerate: dart run tool/gen_gallery.dart
 
 import 'coverage.g.dart';
+import 'demos/badge.dart';
 import 'demos/button.dart';
 import 'demos/card.dart';
 import 'demos/chip.dart';
@@ -15,6 +16,24 @@ import 'registry.dart';
 
 /// Every component the gallery shows, in the order the index lists them.
 const List<GalleryComponent> galleryComponents = <GalleryComponent>[
+  GalleryComponent(
+    slug: 'kunbadge',
+    name: 'KunBadge',
+    demos: <GalleryDemo>[
+      GalleryDemo(slug: 'basic', title: 'Basic', builder: badgeBasic),
+      GalleryDemo(slug: 'dot', title: 'Dot', builder: badgeDot),
+      GalleryDemo(slug: 'max', title: 'Max', builder: badgeMax),
+      GalleryDemo(slug: 'colors', title: 'Colors', builder: badgeColors),
+      GalleryDemo(
+          slug: 'standalone', title: 'Standalone', builder: badgeStandalone),
+      GalleryDemo(slug: 'sizes', title: 'Sizes', builder: badgeSizes),
+      GalleryDemo(
+          slug: 'placement', title: 'Placement', builder: badgePlacement),
+      GalleryDemo(slug: 'count', title: 'Count', builder: badgeCount),
+      GalleryDemo(
+          slug: 'contract', title: 'Contract', builder: kunBadgeContract),
+    ],
+  ),
   GalleryComponent(
     slug: 'kunbutton',
     name: 'KunButton',

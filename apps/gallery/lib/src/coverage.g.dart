@@ -6,6 +6,86 @@ import 'package:flutter/widgets.dart';
 
 import 'coverage.dart';
 
+const ComponentCoverage _kunBadge = ComponentCoverage(
+  name: 'KunBadge',
+  entries: <CoverageEntry>[
+    CoverageEntry(
+      section: 'props',
+      contractName: 'ariaLabel',
+      status: CoverageStatus.shown,
+      dartName: 'semanticLabel',
+      shownBy: 'Standalone',
+    ),
+    CoverageEntry(
+      section: 'props',
+      contractName: 'color',
+      status: CoverageStatus.shown,
+      dartName: 'color',
+      shownBy: 'Colors',
+    ),
+    CoverageEntry(
+      section: 'props',
+      contractName: 'count',
+      status: CoverageStatus.shown,
+      dartName: 'count',
+      shownBy: 'Basic',
+    ),
+    CoverageEntry(
+      section: 'props',
+      contractName: 'max',
+      status: CoverageStatus.shown,
+      dartName: 'max',
+      shownBy: 'Max',
+    ),
+    CoverageEntry(
+      section: 'props',
+      contractName: 'placement',
+      status: CoverageStatus.shown,
+      dartName: 'placement',
+      shownBy: 'Placement',
+    ),
+    CoverageEntry(
+      section: 'props',
+      contractName: 'show',
+      status: CoverageStatus.shown,
+      dartName: 'show',
+      shownBy: 'Count',
+    ),
+    CoverageEntry(
+      section: 'props',
+      contractName: 'showZero',
+      status: CoverageStatus.shown,
+      dartName: 'showZero',
+      shownBy: 'Count',
+    ),
+    CoverageEntry(
+      section: 'props',
+      contractName: 'size',
+      status: CoverageStatus.shown,
+      dartName: 'size',
+      shownBy: 'Sizes',
+    ),
+    CoverageEntry(
+      section: 'props',
+      contractName: 'variant',
+      status: CoverageStatus.shown,
+      dartName: 'variant',
+      shownBy: 'Dot',
+    ),
+    CoverageEntry(
+      section: 'slots',
+      contractName: 'default',
+      status: CoverageStatus.shown,
+      dartName: 'child',
+      shownBy: 'Basic',
+    ),
+  ],
+);
+
+/// The contract coverage page for KunBadge.
+Widget kunBadgeContract(BuildContext context) =>
+    const CoveragePage(coverage: _kunBadge);
+
 const ComponentCoverage _kunButton = ComponentCoverage(
   name: 'KunButton',
   entries: <CoverageEntry>[

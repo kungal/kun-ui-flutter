@@ -11,6 +11,7 @@ export 'package:kun_ui_icons/kun_ui_icons.dart';
 export 'package:kun_ui_messages/kun_ui_messages.dart';
 export 'package:kun_ui_tokens/kun_ui_tokens.dart';
 
+export 'src/components/badge.dart';
 export 'src/components/button.dart';
 export 'src/components/card.dart';
 export 'src/components/input.dart';
