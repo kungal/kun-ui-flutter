@@ -37,6 +37,12 @@
   A route is built under the navigator, not where it was opened: without
   this, a dialog opened inside a dark or differently localised subtree came
   up in the app's defaults.
+- Docs: `KunInput` and `KunTextarea` need an `Overlay` above them, as every
+  Flutter text field does. 0.3.0 said every `WidgetsApp` provides one, which
+  is not true: under `WidgetsApp.router` the `Overlay` comes from the
+  `Navigator` the router delegate builds, and a delegate that builds none
+  leaves the fields without one. A touch tap then asserts in a debug build.
+  The dartdoc and `INTEGRATION.md` now say so.
 
 ## 0.3.0
 

@@ -18,8 +18,9 @@ import '../theme/theme.dart';
 /// [LengthLimitingTextInputFormatter] semantics) where the browser counts
 /// UTF-16 code units, so an emoji the web counts as 2 counts as 1 here.
 ///
-/// Like every Flutter text field, it needs an [Overlay] ancestor, which
-/// `WidgetsApp` — and so `MaterialApp` and `CupertinoApp` — provides.
+/// Like every Flutter text field, it needs an [Overlay] ancestor. The app's
+/// [Navigator] carries one: `WidgetsApp` builds the navigator, or under
+/// `WidgetsApp.router` the router delegate does.
 class KunTextarea extends StatefulWidget {
   /// Creates a multi-line text field.
   const KunTextarea({

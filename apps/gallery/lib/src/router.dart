@@ -30,9 +30,17 @@ class GalleryRouteInformationParser
 }
 
 /// Holds the current [GalleryRoute] and builds the wrapped tree.
+///
+/// The page sits in a [Navigator], as it does under any real router: KunUI's
+/// text fields need the navigator's `Overlay`, and its modals are pushed onto
+/// the navigator. Without one, a text field asserted on its first tap under
+/// `flutter run`.
 class GalleryRouterDelegate extends RouterDelegate<GalleryRoute>
-    with ChangeNotifier {
+    with ChangeNotifier, PopNavigatorRouterDelegateMixin<GalleryRoute> {
   GalleryRoute _route = const GalleryRoute();
+
+  @override
+  final GlobalKey<NavigatorState> navigatorKey = GlobalKey<NavigatorState>();
 
   @override
   GalleryRoute get currentConfiguration => _route;
@@ -53,9 +61,6 @@ class GalleryRouterDelegate extends RouterDelegate<GalleryRoute>
     notifyListeners();
     return SynchronousFuture<void>(null);
   }
-
-  @override
-  Future<bool> popRoute() => SynchronousFuture<bool>(false);
 
   @override
   Widget build(BuildContext context) {
@@ -86,10 +91,34 @@ class GalleryRouterDelegate extends RouterDelegate<GalleryRoute>
             style: KunText.sm.copyWith(
               color: theme.colors.foreground,
             ),
-            child: page,
+            child: Navigator(
+              key: navigatorKey,
+              pages: <Page<void>>[
+                _GalleryPage(
+                  key: ValueKey<String>(_route.path),
+                  child: page,
+                ),
+              ],
+              onDidRemovePage: (Page<Object?> page) {},
+            ),
           ),
         ),
       ),
     );
   }
+}
+
+class _GalleryPage extends Page<void> {
+  const _GalleryPage({required this.child, super.key});
+
+  final Widget child;
+
+  @override
+  Route<void> createRoute(BuildContext context) => PageRouteBuilder<void>(
+        settings: this,
+        transitionDuration: Duration.zero,
+        reverseTransitionDuration: Duration.zero,
+        pageBuilder: (context, animation, secondaryAnimation) =>
+            (ModalRoute.settingsOf(context)! as _GalleryPage).child,
+      );
 }

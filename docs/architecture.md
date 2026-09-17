@@ -257,8 +257,13 @@ now wraps too, all of it from `flutter/widgets`:
 - **`TextSelectionGestureDetectorBuilder`** — a tap places the caret; drag,
   double-tap and long-press select. It also makes `EditableText` create its
   selection overlay on a tap, which asserts an `Overlay` ancestor in debug
-  builds. Every `WidgetsApp` provides one, so this costs an app nothing, but
-  a bare widget tree (a test) has to add it.
+  builds. An app's `Navigator` provides one, so this costs an app nothing,
+  but a bare widget tree (a test) has to add it. So does a router delegate
+  that builds no `Navigator`, which is what this repo's gallery had until
+  2026-09-16. Its text fields worked in the release build and asserted
+  under `flutter run`. The earlier wording, "every `WidgetsApp` provides
+  one", was false for `WidgetsApp.router`: there the delegate builds the
+  `Navigator`, or nobody does.
 - **`Semantics(enabled: …, onTap: …, onFocus: …)`** — Flutter web renders a
   text field whose semantics node does not say it is enabled as a *disabled*
   `<input>`. With accessibility turned on, nothing could be typed into

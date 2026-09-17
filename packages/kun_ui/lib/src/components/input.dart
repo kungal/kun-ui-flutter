@@ -60,8 +60,9 @@ enum KunInputType {
 /// widget width. The geometry matches the web's for the 16px icons the ladder
 /// was sized around.
 ///
-/// Like every Flutter text field, it needs an [Overlay] ancestor, which
-/// `WidgetsApp` — and so `MaterialApp` and `CupertinoApp` — provides.
+/// Like every Flutter text field, it needs an [Overlay] ancestor. The app's
+/// [Navigator] carries one: `WidgetsApp` builds the navigator, or under
+/// `WidgetsApp.router` the router delegate does.
 class KunInput extends StatefulWidget {
   /// Creates a text field.
   const KunInput({

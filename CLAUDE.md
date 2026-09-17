@@ -27,8 +27,11 @@
    on-demand), so an unstarted component needs no manifest entry.
 4. **No Material coupling.** `KunTheme` (KunUI's own `InheritedWidget`) is the
    only KunUI ancestor a widget may require, and beyond it nothing an app
-   shell does not already build (a text field needs the `Overlay` every
-   `WidgetsApp` provides, as every Flutter text field does) — never
+   shell does not already build: a `Navigator` and the `Overlay` it carries
+   (a text field needs the `Overlay`, as every Flutter text field does, and a
+   modal is pushed onto the `Navigator`). `WidgetsApp` builds the `Navigator`
+   itself, or leaves it to the router delegate under `WidgetsApp.router`, and
+   every real delegate builds one. Never
    `Theme.of(context)`, no `MaterialApp` assumption, no Material widgets
    inside library code (forui
    and shadcn_ui made the same call: an independent design language is not a

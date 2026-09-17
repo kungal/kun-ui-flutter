@@ -62,8 +62,10 @@ Two things `KunTheme` does *not* do:
   `KunTheme.of(context).colors.background` (a `Scaffold.backgroundColor`,
   a `ColoredBox` — wherever your shell paints its ground).
 - It brings no navigation, snackbars or dialogs. KunUI widgets work inside
-  `MaterialApp`, `CupertinoApp` or a bare `WidgetsApp` — keep whatever app
-  shell you have.
+  `MaterialApp`, `CupertinoApp` or a bare `WidgetsApp`, so keep whatever app
+  shell you have. They do need the `Navigator` that shell builds: text
+  fields use its `Overlay`. Under `*.router` the navigator is your router
+  delegate's to build, and go_router's does.
 
 ## App-wide rounding
 
