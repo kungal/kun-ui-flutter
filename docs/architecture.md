@@ -341,6 +341,69 @@ counterpart when a link is a tap and an icon is `IconData`.
   from ui-core's function, and the Dart hash was run compiled to JS as well
   as on the VM, because integer arithmetic differs between the two.
 
+### Overlays: a modal is a route, a toast is a store (decided 2026-09-16)
+
+The web builds its overlays by hand: a Teleport to `<body>`, a focus trap, a
+refcounted scroll lock, a z-index stack, an `inert` background, a
+close-watcher for Android's back gesture. A Flutter `Navigator` route
+already does each of those jobs, and every `WidgetsApp` builds a
+`Navigator`, so iron rule 4 allows depending on it. The port is built on
+routes, and its own code covers only the places where Flutter's defaults
+differ from the web's.
+
+- **`KunModal` is declarative, over a route.** The contract is `v-model`, so
+  the widget takes `value` and `onChanged` and draws nothing where it sits.
+  When `value` becomes true it pushes a popup route onto the root navigator.
+  A dismissal by the user pops that route and reports `onChanged(false)`
+  and then `onClose()`, the web's `dismiss()`. When the parent sets `value`
+  to false, the route is popped with its exit animation if it is on top,
+  and removed otherwise. A parent-driven close reports nothing, as on the
+  web.
+- **The route supplies what the web assembles**:
+  - focus moves into the route and returns on close;
+  - `ModalBarrier`'s `BlockSemantics` does what `inert` does;
+  - the system back gesture pops the top route;
+  - only the top route receives Escape, the web's `isTopmost`.
+- **Escape is KunUI's own action.** Flutter's modal `DismissIntent` action is
+  enabled only when `barrierDismissible` is. The web keeps the two apart: an
+  `alertdialog` ignores the backdrop and still honours Escape. Back follows
+  Escape and `isCloseRequestDismissable`. A backdrop tap dismisses only when
+  the press began on the backdrop, and Flutter's tap recognizer already
+  requires that.
+- **Scopes are captured.** Route content is built under the navigator, not
+  where the `KunModal` sits. For that reason `KunTheme`, `KunMessagesScope`
+  and `KunUIConfigScope` are `InheritedTheme`s, and the route wraps its
+  content in `InheritedTheme.capture`, so a dark subtree opens a dark
+  dialog.
+- **`placement: auto` reads the width live** against
+  `KunThemeData.breakpoints.md`. The web uses breakpoint classes only
+  because of server rendering, which Flutter does not have. A sheet shows
+  its drag handle, and accepts the swipe, when the platform is touch-first
+  (Android, iOS, Fuchsia), the web's `(pointer: coarse)`.
+- **Swipe to dismiss** uses `KunSwipeDismissPhysics` for the release rule and
+  the overdrag. The web's own timers have no counterpart here, per the
+  token's own note that Flutter's gesture arena and scroll notifications
+  own them:
+  - "no drag while the enter animation runs" means the route animation
+    has not completed;
+  - "no drag right after a scroll" means a scroll activity is still
+    running;
+  - "content wins until scrolled to the top" means every `Scrollable`
+    between the touch and the panel is at its minimum extent.
+- **Toasts are a store plus one host**, as on the web. `showKunMessage`
+  needs no `BuildContext`, so a repository or a notifier can raise one. The
+  app mounts a `KunMessageProvider` once, around its navigator (in
+  `WidgetsApp.builder`), so toasts render above every route, a modal
+  included. A call with no host mounted reports it once in a debug build.
+  `richText` has no Flutter meaning, because it is HTML.
+- **A confirm dialog is `showKunAlert(context, …)`, returning
+  `Future<bool>`**, pushed as an `alertdialog` modal. It has no provider
+  widget. The web needs `KunAlertProvider` only because a Vue store cannot
+  reach the component tree, and a Flutter caller that asks the user a
+  question already has a context.
+- Anchored popups (Select, Popover, Tooltip, Dropdown) are decided with
+  `KunSelect`, their first consumer.
+
 ### Deferred, deliberately
 
 - **Input modality and breakpoint theme dimensions** (forui models
