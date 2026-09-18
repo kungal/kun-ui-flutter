@@ -71,26 +71,26 @@ packages:
     dependency: transitive
     description:
       name: kun_ui_icons
-      sha256: e599bdd7e1394189bb28ab9076b0249d9805c9a9c7c2653d36ebc06e74f762c3
+      sha256: "2c48d4471299e5ef5feb682c237cc2e8be00925d611482aadffb4fe7b27cdf51"
       url: "https://pub.dev"
     source: hosted
-    version: "2.42.0"
+    version: "2.42.1"
   kun_ui_messages:
     dependency: transitive
     description:
       name: kun_ui_messages
-      sha256: d303bccecc294cc6082495102e165ed47e9287c447820d4fadd3555616beca19
+      sha256: "761bc6ff01bd882b52b8853f28946664ce2c6c4b4724eb4a25355e361d4e80b2"
       url: "https://pub.dev"
     source: hosted
-    version: "2.42.0"
+    version: "2.42.1"
   kun_ui_tokens:
     dependency: transitive
     description:
       name: kun_ui_tokens
-      sha256: "3ed8524eef1d44f237e669c6728587bebadba7d40c83174f17b406c563f48d6c"
+      sha256: "283dd68fcbad78463ad9920234c925dfc92a7c5f18d70c3e2dfe2e477d8b28ed"
       url: "https://pub.dev"
     source: hosted
-    version: "2.42.0"
+    version: "2.42.1"
   leak_tracker:
     dependency: transitive
     description:
