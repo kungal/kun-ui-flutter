@@ -158,15 +158,50 @@ class _KunSelectTrigger<T, O extends KunSelectOption<T>>
             ),
           Flexible(
             fit: widget.fullWidth ? FlexFit.tight : FlexFit.loose,
-            child: content,
+            // The combobox is the value, not the box, as on the web since
+            // kun-ui 2.42.2: the clear button has to be its sibling, or its
+            // label is read into the value.
+            //
+            // Flutter 3.47.2's SemanticsRole.comboBox is `_unimplemented` and
+            // throws `Missing checks for role` when the node is sent, so the
+            // role is omitted; expanded / collapse / expand still match
+            // `:aria-expanded` and the general expandable-node rules.
+            child: Semantics(
+              container: true,
+              explicitChildNodes: true,
+              enabled: !widget.disabled,
+              expanded: state._isOpen,
+              focusable: !widget.disabled,
+              focused: state._triggerFocus.hasFocus,
+              label: state._triggerSemanticLabel(),
+              value: triggerText,
+              onTap: widget.disabled
+                  ? null
+                  : () {
+                      state._triggerFocus.requestFocus();
+                      state._toggle();
+                    },
+              // Mirrors what `Focus` does with `includeSemantics`, iOS
+              // exclusion included (flutter/flutter#150030).
+              onFocus:
+                  widget.disabled || defaultTargetPlatform == TargetPlatform.iOS
+                      ? null
+                      : state._triggerFocus.requestFocus,
+              onExpand: widget.disabled || state._isOpen ? null : state._open,
+              onCollapse: widget.disabled || !state._isOpen
+                  ? null
+                  : () => state._close(),
+              child: content,
+            ),
           ),
           if (widget.clearable && hasSelection && !widget.disabled)
             _KunSelectIconButton(
               icon: KunIcons.circleX,
               size: KunSpacing.unit * 4,
+              semanticLabel: KunMessagesScope.of(context).select.clear,
               color: scheme.neutral.shade400,
               hoverColor: scheme.neutral.shade600,
-              onPressed: state._clearAll,
+              onPressed: state._clearByButton,
               onAbsorbTap: () => state._absorbTriggerTap = true,
               onAbsorbTapDone: () => state._absorbTriggerTap = false,
             ),
@@ -198,6 +233,7 @@ class _KunSelectTrigger<T, O extends KunSelectOption<T>>
 
     box = GestureDetector(
       behavior: HitTestBehavior.opaque,
+      excludeFromSemantics: true,
       onTap: widget.disabled
           ? null
           : () {
@@ -229,38 +265,8 @@ class _KunSelectTrigger<T, O extends KunSelectOption<T>>
       child: box,
     );
 
-    box = Listener(
+    return Listener(
       onPointerDown: (_) => state._setRingSuppressed(true),
-      child: box,
-    );
-
-    // Flutter 3.47.2's SemanticsRole.comboBox is `_unimplemented` and throws
-    // `Missing checks for role` when the node is sent, so the role is omitted;
-    // expanded / collapse / expand still match `:aria-expanded` and the
-    // general expandable-node rules.
-    return Semantics(
-      container: true,
-      explicitChildNodes: true,
-      enabled: !widget.disabled,
-      expanded: state._isOpen,
-      focusable: !widget.disabled,
-      focused: state._triggerFocus.hasFocus,
-      label: state._triggerSemanticLabel(),
-      value: triggerText,
-      onTap: widget.disabled
-          ? null
-          : () {
-              state._triggerFocus.requestFocus();
-              state._toggle();
-            },
-      // Mirrors what `Focus` does with `includeSemantics`, iOS exclusion
-      // included (flutter/flutter#150030).
-      onFocus: widget.disabled || defaultTargetPlatform == TargetPlatform.iOS
-          ? null
-          : state._triggerFocus.requestFocus,
-      onExpand: widget.disabled || state._isOpen ? null : state._open,
-      onCollapse:
-          widget.disabled || !state._isOpen ? null : () => state._close(),
       child: box,
     );
   }
@@ -344,6 +350,7 @@ class _KunSelectIconButton extends StatefulWidget {
   const _KunSelectIconButton({
     required this.icon,
     required this.size,
+    this.semanticLabel,
     required this.color,
     required this.hoverColor,
     required this.onPressed,
@@ -353,6 +360,7 @@ class _KunSelectIconButton extends StatefulWidget {
 
   final IconData icon;
   final double size;
+  final String? semanticLabel;
   final Color color;
   final Color hoverColor;
   final VoidCallback onPressed;
@@ -368,34 +376,42 @@ class _KunSelectIconButtonState extends State<_KunSelectIconButton> {
 
   @override
   Widget build(BuildContext context) {
-    // Unlabelled on purpose: pointer-only, as the web's are since kun-ui
-    // 2.42.1, which found them read into the combobox's value and opening
-    // the popup on Enter. Backspace / Delete on the trigger is the keyboard
-    // path (`_removeByKey`).
-    return ExcludeSemantics(
-      child: MouseRegion(
-        cursor: SystemMouseCursors.click,
-        onEnter: (_) => setState(() => _hovered = true),
-        onExit: (_) => setState(() => _hovered = false),
-        child: Listener(
-          onPointerDown: (_) => widget.onAbsorbTap(),
-          onPointerUp: (_) {
-            SchedulerBinding.instance.addPostFrameCallback((_) {
-              widget.onAbsorbTapDone();
-            });
-          },
-          onPointerCancel: (_) => widget.onAbsorbTapDone(),
-          child: GestureDetector(
-            behavior: HitTestBehavior.opaque,
-            onTap: widget.onPressed,
-            child: Icon(
-              widget.icon,
-              size: widget.size,
-              color: _hovered ? widget.hoverColor : widget.color,
-            ),
+    final Widget button = MouseRegion(
+      cursor: SystemMouseCursors.click,
+      onEnter: (_) => setState(() => _hovered = true),
+      onExit: (_) => setState(() => _hovered = false),
+      child: Listener(
+        onPointerDown: (_) => widget.onAbsorbTap(),
+        onPointerUp: (_) {
+          SchedulerBinding.instance.addPostFrameCallback((_) {
+            widget.onAbsorbTapDone();
+          });
+        },
+        onPointerCancel: (_) => widget.onAbsorbTapDone(),
+        child: GestureDetector(
+          behavior: HitTestBehavior.opaque,
+          onTap: widget.onPressed,
+          child: Icon(
+            widget.icon,
+            size: widget.size,
+            color: _hovered ? widget.hoverColor : widget.color,
           ),
         ),
       ),
+    );
+    final String? label = widget.semanticLabel;
+    if (label == null) {
+      // A chip's × sits inside the combobox, where kun-ui 2.42.1 found its
+      // label read into the value, so it stays unlabelled: Backspace / Delete
+      // on the trigger is its keyboard path, unticking the option in the
+      // list its screen-reader one.
+      return ExcludeSemantics(child: button);
+    }
+    return Semantics(
+      container: true,
+      button: true,
+      label: label,
+      child: button,
     );
   }
 }

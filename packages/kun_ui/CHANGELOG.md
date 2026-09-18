@@ -1,5 +1,27 @@
 # Changelog
 
+## 0.6.2
+
+- Built on kun-ui 2.42.2 (`kun_ui_tokens`, `kun_ui_icons` and
+  `kun_ui_messages` ^2.42.2). The contract changed three descriptions and no
+  names.
+- **Screen readers find the clear button of a `KunSelect` again**, as on
+  the web since kun-ui 2.42.2. 0.6.1 hid it, so a touch screen-reader user
+  (TalkBack, VoiceOver) could not clear a `clearable` single-choice select.
+  It is now a labelled button (`select.clear`) beside the trigger's value,
+  not inside it, so its label is not read as part of the value. It is still
+  not a keyboard focus stop, and Backspace or Delete remains the keyboard
+  path.
+- **Pressing the clear button while the popup is closed moves focus to the
+  trigger.** The button disappears with the value, and a screen reader
+  that was on it would otherwise have nowhere to be. After a mouse press
+  the focus ring stays hidden until the next key press. With the popup
+  open, focus stays where it was.
+- The trigger's semantics node is now the value area, as the web's
+  `role="combobox"` element is, rather than the whole box. Its label,
+  value and actions are unchanged. The chip × is still hidden from screen
+  readers. To remove a value with a screen reader, untick it in the popup.
+
 ## 0.6.1
 
 - Built on kun-ui 2.42.1 (`kun_ui_tokens`, `kun_ui_icons` and

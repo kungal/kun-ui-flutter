@@ -148,7 +148,8 @@ class KunSelect<T, O extends KunSelectOption<T>> extends StatefulWidget {
   /// they were picked (web `multiple`).
   ///
   /// A chip's × is pointer-only. From the keyboard, Backspace or Delete on
-  /// the focused trigger removes the last value.
+  /// the focused trigger removes the last value, and a screen reader unticks
+  /// the option in the popup.
   const KunSelect.multiple({
     super.key,
     required this.options,
@@ -247,10 +248,12 @@ class KunSelect<T, O extends KunSelectOption<T>> extends StatefulWidget {
 
   /// Shows a button that clears the whole selection.
   ///
-  /// The button is pointer-only. From the keyboard, Backspace or Delete on
-  /// the focused trigger clears a single-choice select. A
-  /// [KunSelect.multiple] removes its last value that way whether or not it
-  /// is [clearable].
+  /// The button is out of the focus order, but a screen reader finds it as a
+  /// labelled button beside the trigger, so a touch screen-reader user can
+  /// clear. Pressed while the popup is closed, it moves focus to the trigger.
+  /// From the keyboard, Backspace or Delete on the focused trigger clears a
+  /// single-choice select. A [KunSelect.multiple] removes its last value that
+  /// way whether or not it is [clearable].
   final bool clearable;
 
   /// Stretch the control to its container. Turn it off so the trigger shrinks
@@ -766,6 +769,13 @@ class _KunSelectState<T, O extends KunSelectOption<T>>
       widget.onValuesChanged?.call(<T>[]);
     } else {
       widget.onChanged?.call(null);
+    }
+  }
+
+  void _clearByButton() {
+    _clearAll();
+    if (!_isOpen) {
+      _triggerFocus.requestFocus();
     }
   }
 

@@ -886,18 +886,21 @@ void main() {
     );
   });
 
-  testWidgets('chip × and clear are pointer-only: no semantics node',
+  testWidgets('clear is a labelled button beside the combobox; chip × is not',
       (WidgetTester tester) async {
     final SemanticsHandle semantics = tester.ensureSemantics();
+    final GlobalKey<_HostState> key = GlobalKey<_HostState>();
     await tester.pumpWidget(
       wrap(
-        const Center(
+        Center(
           child: SizedBox(
-            width: 320,
+            width: 360,
             child: _Host(
+              key: key,
+              label: 'Framework',
               multiple: true,
               clearable: true,
-              initialValues: <String>['vue', 'react'],
+              initialValues: const <String>['vue', 'react'],
             ),
           ),
         ),
@@ -907,28 +910,108 @@ void main() {
     expect(find.byIcon(KunIcons.circleX), findsOneWidget);
 
     final KunMessages messages = KunMessagesScope.of(tester.element(trigger));
-    final Set<String> hidden = <String>{
-      messages.select.clear,
-      messages.select.removeOption(label: 'Vue'),
-      messages.select.removeOption(label: 'React'),
-    };
-    final List<SemanticsData> buttons = <SemanticsData>[];
-    void walk(SemanticsNode node) {
-      final SemanticsData data = node.getSemanticsData();
-      expect(hidden, isNot(contains(data.label)));
-      if (data.flagsCollection.isButton) {
-        buttons.add(data);
-      }
+    final SemanticsOwner owner =
+        tester.binding.renderViews.first.owner!.semanticsOwner!;
+    void collect(SemanticsNode node, List<SemanticsNode> into) {
+      into.add(node);
       node.visitChildren((SemanticsNode child) {
-        walk(child);
+        collect(child, into);
         return true;
       });
     }
 
-    walk(tester
-        .binding.renderViews.first.owner!.semanticsOwner!.rootSemanticsNode!);
-    expect(buttons, isEmpty);
+    final List<SemanticsNode> nodes = <SemanticsNode>[];
+    collect(owner.rootSemanticsNode!, nodes);
+    final List<String> labels = <String>[
+      for (final SemanticsNode n in nodes) n.getSemanticsData().label,
+    ];
+    expect(labels, isNot(contains(messages.select.removeOption(label: 'Vue'))));
+    expect(
+      labels,
+      isNot(contains(messages.select.removeOption(label: 'React'))),
+    );
+    final SemanticsNode combo = nodes.singleWhere(
+      (SemanticsNode n) =>
+          n.getSemanticsData().label == 'Framework' &&
+          n.getSemanticsData().value == '2',
+    );
+    final SemanticsNode clear = nodes.singleWhere(
+      (SemanticsNode n) => n.getSemanticsData().label == messages.select.clear,
+    );
+    final SemanticsData clearData = clear.getSemanticsData();
+    expect(clearData.flagsCollection.isButton, isTrue);
+    expect(clearData.flagsCollection.isFocused, Tristate.none);
+    expect(clearData.hasAction(SemanticsAction.tap), isTrue);
+    final List<SemanticsNode> inCombo = <SemanticsNode>[];
+    collect(combo, inCombo);
+    expect(inCombo, isNot(contains(clear)));
+    expect(clear.parent, same(combo.parent));
+
+    final FocusNode node = Focus.of(tester.element(trigger));
+    expect(node.hasFocus, isFalse);
+    owner.performAction(clear.id, SemanticsAction.tap);
+    await tester.pump();
+    expect(key.currentState!.valuesChanged, <List<String>>[<String>[]]);
+    expect(find.byIcon(KunIcons.circleX), findsNothing);
+    expect(node.hasPrimaryFocus, isTrue);
     semantics.dispose();
+  });
+
+  testWidgets('clear by pointer: focus to the trigger only while closed',
+      (WidgetTester tester) async {
+    final FocusHighlightStrategy previous =
+        FocusManager.instance.highlightStrategy;
+    addTearDown(() {
+      FocusManager.instance.highlightStrategy = previous;
+    });
+    FocusManager.instance.highlightStrategy =
+        FocusHighlightStrategy.alwaysTraditional;
+
+    final GlobalKey<_HostState> closed = GlobalKey<_HostState>();
+    await tester.pumpWidget(
+      wrap(
+        Center(
+          child: SizedBox(
+            width: 320,
+            child: _Host(key: closed, initial: 'vue', clearable: true),
+          ),
+        ),
+      ),
+    );
+    final FocusNode node = Focus.of(tester.element(trigger));
+    expect(node.hasFocus, isFalse);
+    await tester.tap(find.byIcon(KunIcons.circleX));
+    await tester.pump();
+    await tester.pump(KunDefaultTransition.duration);
+    expect(closed.currentState!.changed, <String?>[null]);
+    expect(popup, findsNothing);
+    expect(node.hasPrimaryFocus, isTrue);
+    expect(triggerDecoration(tester).boxShadow!.first.spreadRadius, 0);
+
+    final GlobalKey<_HostState> open = GlobalKey<_HostState>();
+    await tester.pumpWidget(
+      wrap(
+        Center(
+          child: SizedBox(
+            width: 320,
+            child: _Host(
+              key: open,
+              initial: 'vue',
+              clearable: true,
+              searchable: true,
+            ),
+          ),
+        ),
+      ),
+    );
+    await openByTap(tester);
+    final FocusNode? search = FocusManager.instance.primaryFocus;
+    expect(search, isNot(same(Focus.of(tester.element(trigger)))));
+    await tester.tap(find.byIcon(KunIcons.circleX));
+    await tester.pump();
+    expect(open.currentState!.changed, <String?>[null]);
+    expect(popup, findsOneWidget);
+    expect(FocusManager.instance.primaryFocus, same(search));
   });
 
   testWidgets('search filtering, manualFilter, debounce, loading, noResult',
