@@ -146,6 +146,9 @@ class KunSelect<T, O extends KunSelectOption<T>> extends StatefulWidget {
 
   /// A multiple-choice select: [values] are the chosen values, in the order
   /// they were picked (web `multiple`).
+  ///
+  /// A chip's × is pointer-only. From the keyboard, Backspace or Delete on
+  /// the focused trigger removes the last value.
   const KunSelect.multiple({
     super.key,
     required this.options,
@@ -242,7 +245,12 @@ class KunSelect<T, O extends KunSelectOption<T>> extends StatefulWidget {
   /// Blocks opening and dims the trigger.
   final bool disabled;
 
-  /// Shows a button that clears the selection.
+  /// Shows a button that clears the whole selection.
+  ///
+  /// The button is pointer-only. From the keyboard, Backspace or Delete on
+  /// the focused trigger clears a single-choice select. A
+  /// [KunSelect.multiple] removes its last value that way whether or not it
+  /// is [clearable].
   final bool clearable;
 
   /// Stretch the control to its container. Turn it off so the trigger shrinks
@@ -761,6 +769,16 @@ class _KunSelectState<T, O extends KunSelectOption<T>>
     }
   }
 
+  void _removeByKey() {
+    if (widget.multiple) {
+      if (widget.values.isNotEmpty) {
+        _removeValue(widget.values.last);
+      }
+    } else if (widget.clearable) {
+      _clearAll();
+    }
+  }
+
   void _ensureActiveVisible() {
     if (_showSpinner || _activeIndex < 0 || _activeIndex >= _rowKeys.length) {
       return;
@@ -884,6 +902,12 @@ class _KunSelectState<T, O extends KunSelectOption<T>>
       return KeyEventResult.ignored;
     }
     final LogicalKeyboardKey key = event.logicalKey;
+    if ((key == LogicalKeyboardKey.backspace ||
+            key == LogicalKeyboardKey.delete) &&
+        _triggerFocus.hasPrimaryFocus) {
+      _removeByKey();
+      return KeyEventResult.handled;
+    }
     if (!_isOpen) {
       if (key == LogicalKeyboardKey.arrowDown ||
           key == LogicalKeyboardKey.arrowUp ||

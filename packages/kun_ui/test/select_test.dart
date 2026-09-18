@@ -810,6 +810,127 @@ void main() {
     expect(popup, findsNothing);
   });
 
+  testWidgets('Backspace and Delete on the trigger remove the last or clear',
+      (WidgetTester tester) async {
+    Future<GlobalKey<_HostState>> focused(_Host Function(Key key) host) async {
+      final GlobalKey<_HostState> key = GlobalKey<_HostState>();
+      await tester.pumpWidget(
+        wrap(Center(child: SizedBox(width: 320, child: host(key)))),
+      );
+      Focus.of(tester.element(trigger)).requestFocus();
+      await tester.pump();
+      return key;
+    }
+
+    final GlobalKey<_HostState> multi = await focused(
+      (Key key) => _Host(
+        key: key,
+        multiple: true,
+        initialValues: const <String>['vue', 'react', 'solid'],
+      ),
+    );
+    await tester.sendKeyEvent(LogicalKeyboardKey.backspace);
+    await tester.pump();
+    expect(multi.currentState!.values, <String>['vue', 'react']);
+    await tester.sendKeyEvent(LogicalKeyboardKey.delete);
+    await tester.pump();
+    expect(multi.currentState!.values, <String>['vue']);
+    expect(popup, findsNothing);
+
+    await tester.sendKeyEvent(LogicalKeyboardKey.arrowDown);
+    await tester.pumpAndSettle();
+    expect(popup, findsOneWidget);
+    await tester.sendKeyEvent(LogicalKeyboardKey.backspace);
+    await tester.pump();
+    expect(multi.currentState!.values, isEmpty);
+    expect(popup, findsOneWidget);
+    await tester.sendKeyEvent(LogicalKeyboardKey.backspace);
+    await tester.pump();
+    expect(multi.currentState!.valuesChanged, hasLength(3));
+
+    final GlobalKey<_HostState> clearable = await focused(
+      (Key key) => _Host(key: key, initial: 'vue', clearable: true),
+    );
+    await tester.sendKeyEvent(LogicalKeyboardKey.delete);
+    await tester.pump();
+    expect(clearable.currentState!.changed, <String?>[null]);
+    expect(clearable.currentState!.value, isNull);
+
+    final GlobalKey<_HostState> plain = await focused(
+      (Key key) => _Host(key: key, initial: 'vue'),
+    );
+    await tester.sendKeyEvent(LogicalKeyboardKey.backspace);
+    await tester.pump();
+    expect(plain.currentState!.changed, isEmpty);
+    expect(plain.currentState!.value, 'vue');
+
+    final GlobalKey<_HostState> searching = await focused(
+      (Key key) => _Host(
+        key: key,
+        multiple: true,
+        searchable: true,
+        initialValues: const <String>['vue', 'react'],
+      ),
+    );
+    await tester.sendKeyEvent(LogicalKeyboardKey.arrowDown);
+    await tester.pumpAndSettle();
+    expect(Focus.of(tester.element(trigger)).hasPrimaryFocus, isFalse);
+    await tester.enterText(find.byType(EditableText), 'so');
+    await tester.pump();
+    await tester.sendKeyEvent(LogicalKeyboardKey.backspace);
+    await tester.pump();
+    expect(searching.currentState!.values, <String>['vue', 'react']);
+    expect(
+      tester.widget<EditableText>(find.byType(EditableText)).controller.text,
+      's',
+    );
+  });
+
+  testWidgets('chip × and clear are pointer-only: no semantics node',
+      (WidgetTester tester) async {
+    final SemanticsHandle semantics = tester.ensureSemantics();
+    await tester.pumpWidget(
+      wrap(
+        const Center(
+          child: SizedBox(
+            width: 320,
+            child: _Host(
+              multiple: true,
+              clearable: true,
+              initialValues: <String>['vue', 'react'],
+            ),
+          ),
+        ),
+      ),
+    );
+    expect(find.byIcon(KunIcons.x), findsNWidgets(2));
+    expect(find.byIcon(KunIcons.circleX), findsOneWidget);
+
+    final KunMessages messages = KunMessagesScope.of(tester.element(trigger));
+    final Set<String> hidden = <String>{
+      messages.select.clear,
+      messages.select.removeOption(label: 'Vue'),
+      messages.select.removeOption(label: 'React'),
+    };
+    final List<SemanticsData> buttons = <SemanticsData>[];
+    void walk(SemanticsNode node) {
+      final SemanticsData data = node.getSemanticsData();
+      expect(hidden, isNot(contains(data.label)));
+      if (data.flagsCollection.isButton) {
+        buttons.add(data);
+      }
+      node.visitChildren((SemanticsNode child) {
+        walk(child);
+        return true;
+      });
+    }
+
+    walk(tester
+        .binding.renderViews.first.owner!.semanticsOwner!.rootSemanticsNode!);
+    expect(buttons, isEmpty);
+    semantics.dispose();
+  });
+
   testWidgets('search filtering, manualFilter, debounce, loading, noResult',
       (WidgetTester tester) async {
     final GlobalKey<_HostState> key = GlobalKey<_HostState>();

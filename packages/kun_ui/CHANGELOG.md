@@ -1,5 +1,25 @@
 # Changelog
 
+## 0.6.1
+
+- Built on kun-ui 2.42.1 (`kun_ui_tokens`, `kun_ui_icons` and
+  `kun_ui_messages` ^2.42.1). The contract changed three descriptions and no
+  names.
+- **Backspace or Delete on a focused `KunSelect` trigger removes a value**,
+  as on the web since kun-ui 2.42.1. A `KunSelect.multiple` loses its last
+  value, `clearable` or not. A `clearable` single-choice select clears. A
+  single-choice select that is not `clearable` ignores the key. The keys
+  work with the popup open too. While the search field has focus, they edit
+  the search text.
+- **The chip × and the clear button of a `KunSelect` are pointer-only.**
+  Screen readers no longer find them, and they were never keyboard focus
+  stops. The web made them `aria-hidden` in the same release. Keyboard
+  users now use Backspace or Delete. A screen reader user can deselect a
+  `KunSelect.multiple` value from its popup.
+- `KunTab` is unchanged: its keyboard focus ring was already in the tab's
+  text colour from the first frame. kun-ui 2.42.1 fixed the web's ring,
+  which used to fade in from primary.
+
 ## 0.6.0
 
 - Built on kun-ui 2.42.0 (`kun_ui_tokens`, `kun_ui_icons` and

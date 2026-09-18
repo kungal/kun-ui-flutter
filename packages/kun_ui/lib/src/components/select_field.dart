@@ -63,7 +63,6 @@ class _KunSelectTrigger<T, O extends KunSelectOption<T>>
     final KunColorScale ringScale =
         (invalid ? KunUIColor.danger : widget.color).scaleOf(scheme);
     final Color borderColor = invalid ? scheme.danger.shade300 : scheme.border;
-    final KunMessages messages = KunMessagesScope.of(context);
     final TextStyle textStyle = metrics.textStyle.copyWith(
       color: scheme.foreground,
     );
@@ -90,7 +89,6 @@ class _KunSelectTrigger<T, O extends KunSelectOption<T>>
                     label: chip.label,
                     disabled: widget.disabled,
                     scheme: scheme,
-                    messages: messages,
                     onRemove: () => state._removeValue(chip.value),
                     onAbsorbTap: () => state._absorbTriggerTap = true,
                     onAbsorbTapDone: () => state._absorbTriggerTap = false,
@@ -166,7 +164,6 @@ class _KunSelectTrigger<T, O extends KunSelectOption<T>>
             _KunSelectIconButton(
               icon: KunIcons.circleX,
               size: KunSpacing.unit * 4,
-              semanticLabel: messages.select.clear,
               color: scheme.neutral.shade400,
               hoverColor: scheme.neutral.shade600,
               onPressed: state._clearAll,
@@ -299,7 +296,6 @@ class _KunSelectChip<T> extends StatelessWidget {
     required this.label,
     required this.disabled,
     required this.scheme,
-    required this.messages,
     required this.onRemove,
     required this.onAbsorbTap,
     required this.onAbsorbTapDone,
@@ -308,7 +304,6 @@ class _KunSelectChip<T> extends StatelessWidget {
   final String label;
   final bool disabled;
   final KunColorScheme scheme;
-  final KunMessages messages;
   final VoidCallback onRemove;
   final VoidCallback onAbsorbTap;
   final VoidCallback onAbsorbTapDone;
@@ -333,7 +328,6 @@ class _KunSelectChip<T> extends StatelessWidget {
             _KunSelectIconButton(
               icon: KunIcons.x,
               size: KunSpacing.unit * 3,
-              semanticLabel: messages.select.removeOption(label: label),
               color: scheme.neutral.shade700,
               hoverColor: scheme.danger.solid,
               onPressed: onRemove,
@@ -350,7 +344,6 @@ class _KunSelectIconButton extends StatefulWidget {
   const _KunSelectIconButton({
     required this.icon,
     required this.size,
-    required this.semanticLabel,
     required this.color,
     required this.hoverColor,
     required this.onPressed,
@@ -360,7 +353,6 @@ class _KunSelectIconButton extends StatefulWidget {
 
   final IconData icon;
   final double size;
-  final String semanticLabel;
   final Color color;
   final Color hoverColor;
   final VoidCallback onPressed;
@@ -376,9 +368,11 @@ class _KunSelectIconButtonState extends State<_KunSelectIconButton> {
 
   @override
   Widget build(BuildContext context) {
-    return Semantics(
-      button: true,
-      label: widget.semanticLabel,
+    // Unlabelled on purpose: pointer-only, as the web's are since kun-ui
+    // 2.42.1, which found them read into the combobox's value and opening
+    // the popup on Enter. Backspace / Delete on the trigger is the keyboard
+    // path (`_removeByKey`).
+    return ExcludeSemantics(
       child: MouseRegion(
         cursor: SystemMouseCursors.click,
         onEnter: (_) => setState(() => _hovered = true),
