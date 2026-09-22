@@ -1,5 +1,35 @@
 # Changelog
 
+## 0.9.0
+
+- `KunAutocomplete` — the combobox the anchored-popup decision named as its
+  last follower. The value is the field's *text*, not a chosen option: the
+  user may type anything unless `allowCustomValue` is false, which empties a
+  field whose text matches nothing shortly after it loses focus, and
+  `onSelected` carries the whole option when one is committed. The keyboard
+  never leaves the field — the arrow keys move the highlight, Enter commits,
+  Escape and the Android back gesture close the list — because the list only
+  suggests. `manualFilter` hands filtering to `onSearch` for a remote source,
+  `debounce` holds that call until the user pauses, and the spinner covers
+  both the wait and the request so a pending fetch never reads as "no
+  matches". The field is a `KunInput`, so a label, helper text, an error and
+  the control scale all come with it.
+- `KunLoading` — the loading state, unblocked by kun-ui 2.43.0. With a child
+  it is a veil: the content stays in place, dimmed, under the mascot, so the
+  page does not jump when the request lands; without one it is the loader
+  alone. `spinner` swaps the mascot for a ring at the five sizes, for a
+  loading state beside a button. The mascot is the bundled
+  `KunImages.loadingImage` — the same bytes the web inlines, and no network
+  request. A veiled loader scales down rather than overflowing a block
+  shorter than the mascot; the web spills out of the overlay instead, which
+  CSS permits and a Flutter `Column` reports.
+- Built on kun-ui 2.43.0 (`kun_ui_tokens`, `kun_ui_icons` and
+  `kun_ui_messages` ^2.43.0), which emits that mascot and fixes
+  `KunProgress`'s reported range — `aria-valuemax` was `max` beside a
+  percentage `aria-valuenow`, so a bar of 60 out of 60 announced "100 out of
+  60". This port already reported 0..100, and now says so rather than
+  calling the web's range a bug.
+
 ## 0.8.1
 
 Three accessibility defects an Android node dump found, none of which the

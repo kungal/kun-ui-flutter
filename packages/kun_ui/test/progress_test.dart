@@ -57,8 +57,8 @@ void main() {
     expect(data.role, SemanticsRole.progressBar);
     expect(data.label, 'Upload progress');
     // The range is the percentage's, not `max`'s: Flutter asserts the value
-    // lies between the bounds, and the web reports a percentage beside an
-    // aria-valuemax of `max`.
+    // lies between the bounds, and the web reports the same range since
+    // 2.43.0.
     expect(data.value, '40');
     expect(data.minValue, '0');
     expect(data.maxValue, '100');

@@ -4,7 +4,7 @@
 
 ```yaml
 dependencies:
-  kun_ui: ^0.8.1
+  kun_ui: ^0.9.0
 ```
 
 `kun_ui_tokens`, `kun_ui_icons` and `kun_ui_messages` come with it from
@@ -12,7 +12,7 @@ pub.dev and are re-exported, so `import 'package:kun_ui/kun_ui.dart';` is the
 only import.
 
 While `kun_ui` is 0.x, a minor bump may break and the caret stops at it
-(`^0.8.1` never resolves 0.9.0): read the
+(`^0.9.0` never resolves 0.10.0): read the
 [CHANGELOG](../packages/kun_ui/CHANGELOG.md) before raising the floor.
 
 A fix that is on `main` but not yet released can be taken from the repo,

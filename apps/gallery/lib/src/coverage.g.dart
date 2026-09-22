@@ -6,6 +6,190 @@ import 'package:flutter/widgets.dart';
 
 import 'coverage.dart';
 
+const ComponentCoverage _kunAutocomplete = ComponentCoverage(
+  name: 'KunAutocomplete',
+  entries: <CoverageEntry>[
+    CoverageEntry(
+      section: 'props',
+      contractName: 'allowCustomValue',
+      status: CoverageStatus.shown,
+      dartName: 'allowCustomValue',
+      shownBy: 'Free text',
+    ),
+    CoverageEntry(
+      section: 'props',
+      contractName: 'ariaLabel',
+      status: CoverageStatus.noVisualForm,
+      dartName: 'semanticLabel',
+      reason:
+          'An accessible name has no visual form; every demo here has a visible label, and what is announced is asserted by the widget tests.',
+    ),
+    CoverageEntry(
+      section: 'props',
+      contractName: 'clearable',
+      status: CoverageStatus.shown,
+      dartName: 'clearable',
+      shownBy: 'Free text',
+    ),
+    CoverageEntry(
+      section: 'props',
+      contractName: 'color',
+      status: CoverageStatus.shown,
+      dartName: 'color',
+      shownBy: 'Sizes and states',
+    ),
+    CoverageEntry(
+      section: 'props',
+      contractName: 'darkBorder',
+      status: CoverageStatus.omitted,
+      dartName: null,
+      reason:
+          'No-op since 0.18.0. Every neutral border now resolves to the unified `--color-kun-border` token (the `border-kun` utility), which already flips light↔dark — so the old light-translucent / dark-solid split this prop toggled is gone. Safe to remove from call sites.',
+    ),
+    CoverageEntry(
+      section: 'props',
+      contractName: 'debounce',
+      status: CoverageStatus.shown,
+      dartName: 'debounce',
+      shownBy: 'A remote source',
+    ),
+    CoverageEntry(
+      section: 'props',
+      contractName: 'description',
+      status: CoverageStatus.shown,
+      dartName: 'description',
+      shownBy: 'Sizes and states',
+    ),
+    CoverageEntry(
+      section: 'props',
+      contractName: 'disabled',
+      status: CoverageStatus.shown,
+      dartName: 'disabled',
+      shownBy: 'Sizes and states',
+    ),
+    CoverageEntry(
+      section: 'props',
+      contractName: 'error',
+      status: CoverageStatus.shown,
+      dartName: 'error',
+      shownBy: 'Sizes and states',
+    ),
+    CoverageEntry(
+      section: 'props',
+      contractName: 'isInvalid',
+      status: CoverageStatus.noVisualForm,
+      dartName: 'isInvalid',
+      reason:
+          'The invalid styling with no message is what `error` already renders, minus the line — there is nothing a demo could show that the error demo does not.',
+    ),
+    CoverageEntry(
+      section: 'props',
+      contractName: 'label',
+      status: CoverageStatus.shown,
+      dartName: 'label',
+      shownBy: 'Basic',
+    ),
+    CoverageEntry(
+      section: 'props',
+      contractName: 'loading',
+      status: CoverageStatus.shown,
+      dartName: 'loading',
+      shownBy: 'A remote source',
+    ),
+    CoverageEntry(
+      section: 'props',
+      contractName: 'loadingText',
+      status: CoverageStatus.notYet,
+      dartName: 'loadingText',
+      reason:
+          'The remote demo leaves it at the locale default; a demo that only swaps the string shows the string, not the component.',
+    ),
+    CoverageEntry(
+      section: 'props',
+      contractName: 'manualFilter',
+      status: CoverageStatus.shown,
+      dartName: 'manualFilter',
+      shownBy: 'A remote source',
+    ),
+    CoverageEntry(
+      section: 'props',
+      contractName: 'modelValue',
+      status: CoverageStatus.shown,
+      dartName: 'value',
+      shownBy: 'Basic',
+    ),
+    CoverageEntry(
+      section: 'props',
+      contractName: 'noResultText',
+      status: CoverageStatus.notYet,
+      dartName: 'noResultText',
+      reason:
+          'The same: the basic demo shows the locale default when nothing matches.',
+    ),
+    CoverageEntry(
+      section: 'props',
+      contractName: 'options',
+      status: CoverageStatus.shown,
+      dartName: 'options',
+      shownBy: 'Basic',
+    ),
+    CoverageEntry(
+      section: 'props',
+      contractName: 'placeholder',
+      status: CoverageStatus.shown,
+      dartName: 'placeholder',
+      shownBy: 'Basic',
+    ),
+    CoverageEntry(
+      section: 'props',
+      contractName: 'rounded',
+      status: CoverageStatus.notYet,
+      dartName: 'rounded',
+      reason:
+          'The rounding steps belong on one demo across every field, which KunInput\'s does not have either.',
+    ),
+    CoverageEntry(
+      section: 'props',
+      contractName: 'size',
+      status: CoverageStatus.shown,
+      dartName: 'size',
+      shownBy: 'Sizes and states',
+    ),
+    CoverageEntry(
+      section: 'events',
+      contractName: 'search',
+      status: CoverageStatus.shown,
+      dartName: 'onSearch',
+      shownBy: 'A remote source',
+    ),
+    CoverageEntry(
+      section: 'events',
+      contractName: 'select',
+      status: CoverageStatus.shown,
+      dartName: 'onSelected',
+      shownBy: 'Basic',
+    ),
+    CoverageEntry(
+      section: 'events',
+      contractName: 'update:modelValue',
+      status: CoverageStatus.shown,
+      dartName: 'onChanged',
+      shownBy: 'Basic',
+    ),
+    CoverageEntry(
+      section: 'slots',
+      contractName: 'option',
+      status: CoverageStatus.shown,
+      dartName: 'optionBuilder',
+      shownBy: 'Custom rows',
+    ),
+  ],
+);
+
+/// The contract coverage page for KunAutocomplete.
+Widget kunAutocompleteContract(BuildContext context) =>
+    const CoveragePage(coverage: _kunAutocomplete);
+
 const ComponentCoverage _kunAvatar = ComponentCoverage(
   name: 'KunAvatar',
   entries: <CoverageEntry>[
@@ -940,6 +1124,58 @@ const ComponentCoverage _kunInput = ComponentCoverage(
 /// The contract coverage page for KunInput.
 Widget kunInputContract(BuildContext context) =>
     const CoveragePage(coverage: _kunInput);
+
+const ComponentCoverage _kunLoading = ComponentCoverage(
+  name: 'KunLoading',
+  entries: <CoverageEntry>[
+    CoverageEntry(
+      section: 'props',
+      contractName: 'description',
+      status: CoverageStatus.shown,
+      dartName: 'description',
+      shownBy: 'Its line',
+    ),
+    CoverageEntry(
+      section: 'props',
+      contractName: 'loading',
+      status: CoverageStatus.shown,
+      dartName: 'loading',
+      shownBy: 'Over content',
+    ),
+    CoverageEntry(
+      section: 'props',
+      contractName: 'size',
+      status: CoverageStatus.shown,
+      dartName: 'size',
+      shownBy: 'Compact',
+    ),
+    CoverageEntry(
+      section: 'props',
+      contractName: 'spinner',
+      status: CoverageStatus.shown,
+      dartName: 'spinner',
+      shownBy: 'Compact',
+    ),
+    CoverageEntry(
+      section: 'props',
+      contractName: 'src',
+      status: CoverageStatus.shown,
+      dartName: 'image',
+      shownBy: 'Basic',
+    ),
+    CoverageEntry(
+      section: 'slots',
+      contractName: 'default',
+      status: CoverageStatus.shown,
+      dartName: 'child',
+      shownBy: 'Over content',
+    ),
+  ],
+);
+
+/// The contract coverage page for KunLoading.
+Widget kunLoadingContract(BuildContext context) =>
+    const CoveragePage(coverage: _kunLoading);
 
 const ComponentCoverage _kunModal = ComponentCoverage(
   name: 'KunModal',

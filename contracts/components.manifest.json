@@ -1,6 +1,41 @@
 {
   "package": "kun_ui",
   "components": {
+    "KunAutocomplete": {
+      "widget": "KunAutocomplete",
+      "props": {
+        "allowCustomValue": "allowCustomValue",
+        "ariaLabel": "semanticLabel",
+        "clearable": "clearable",
+        "color": "color",
+        "darkBorder": {
+          "omit": "No-op since 0.18.0. Every neutral border now resolves to the unified `--color-kun-border` token (the `border-kun` utility), which already flips light↔dark — so the old light-translucent / dark-solid split this prop toggled is gone. Safe to remove from call sites."
+        },
+        "debounce": "debounce",
+        "description": "description",
+        "disabled": "disabled",
+        "error": "error",
+        "isInvalid": "isInvalid",
+        "label": "label",
+        "loading": "loading",
+        "loadingText": "loadingText",
+        "manualFilter": "manualFilter",
+        "modelValue": "value",
+        "noResultText": "noResultText",
+        "options": "options",
+        "placeholder": "placeholder",
+        "rounded": "rounded",
+        "size": "size"
+      },
+      "events": {
+        "search": "onSearch",
+        "select": "onSelected",
+        "update:modelValue": "onChanged"
+      },
+      "slots": {
+        "option": "optionBuilder"
+      }
+    },
     "KunAvatar": {
       "widget": "KunAvatar",
       "props": {
@@ -221,6 +256,20 @@
       "slots": {
         "prefix": "prefix",
         "suffix": "suffix"
+      }
+    },
+    "KunLoading": {
+      "widget": "KunLoading",
+      "props": {
+        "description": "description",
+        "loading": "loading",
+        "size": "size",
+        "spinner": "spinner",
+        "src": "image"
+      },
+      "events": {},
+      "slots": {
+        "default": "child"
       }
     },
     "KunModal": {

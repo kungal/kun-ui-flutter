@@ -11,6 +11,7 @@ export 'package:kun_ui_icons/kun_ui_icons.dart';
 export 'package:kun_ui_messages/kun_ui_messages.dart';
 export 'package:kun_ui_tokens/kun_ui_tokens.dart';
 
+export 'src/components/autocomplete.dart';
 export 'src/components/avatar.dart';
 export 'src/components/badge.dart';
 export 'src/components/button.dart';
@@ -21,6 +22,7 @@ export 'src/components/chip.dart';
 export 'src/components/divider.dart';
 export 'src/components/dropdown.dart';
 export 'src/components/input.dart';
+export 'src/components/loading.dart';
 export 'src/components/message.dart';
 export 'src/components/modal.dart';
 export 'src/components/null.dart';

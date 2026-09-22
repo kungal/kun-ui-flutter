@@ -4,6 +4,7 @@
 
 import 'coverage.g.dart';
 import 'demos/alert.dart';
+import 'demos/autocomplete.dart';
 import 'demos/avatar.dart';
 import 'demos/badge.dart';
 import 'demos/button.dart';
@@ -14,6 +15,7 @@ import 'demos/chip.dart';
 import 'demos/divider.dart';
 import 'demos/dropdown.dart';
 import 'demos/input.dart';
+import 'demos/loading.dart';
 import 'demos/message.dart';
 import 'demos/modal.dart';
 import 'demos/null.dart';
@@ -40,6 +42,29 @@ const List<GalleryComponent> galleryComponents = <GalleryComponent>[
       GalleryDemo(slug: 'types', title: 'Types', builder: alertTypes),
       GalleryDemo(slug: 'options', title: 'Options', builder: alertOptions),
       GalleryDemo(slug: 'replace', title: 'Replaced', builder: alertReplace),
+    ],
+  ),
+  GalleryComponent(
+    slug: 'kunautocomplete',
+    name: 'KunAutocomplete',
+    demos: <GalleryDemo>[
+      GalleryDemo(slug: 'basic', title: 'Basic', builder: autocompleteBasic),
+      GalleryDemo(
+          slug: 'free-text', title: 'Free text', builder: autocompleteFree),
+      GalleryDemo(
+          slug: 'states',
+          title: 'Sizes and states',
+          builder: autocompleteStates),
+      GalleryDemo(
+          slug: 'remote',
+          title: 'A remote source',
+          builder: autocompleteRemote),
+      GalleryDemo(
+          slug: 'option', title: 'Custom rows', builder: autocompleteOption),
+      GalleryDemo(
+          slug: 'contract',
+          title: 'Contract',
+          builder: kunAutocompleteContract),
     ],
   ),
   GalleryComponent(
@@ -200,6 +225,19 @@ const List<GalleryComponent> galleryComponents = <GalleryComponent>[
       GalleryDemo(slug: 'states', title: 'States', builder: inputStates),
       GalleryDemo(
           slug: 'contract', title: 'Contract', builder: kunInputContract),
+    ],
+  ),
+  GalleryComponent(
+    slug: 'kunloading',
+    name: 'KunLoading',
+    demos: <GalleryDemo>[
+      GalleryDemo(slug: 'basic', title: 'Basic', builder: loadingBasic),
+      GalleryDemo(slug: 'spinner', title: 'Compact', builder: loadingSpinner),
+      GalleryDemo(
+          slug: 'description', title: 'Its line', builder: loadingDescription),
+      GalleryDemo(slug: 'veil', title: 'Over content', builder: loadingVeil),
+      GalleryDemo(
+          slug: 'contract', title: 'Contract', builder: kunLoadingContract),
     ],
   ),
   GalleryComponent(

@@ -31,6 +31,73 @@
         }
       ]
     },
+    "KunAutocomplete": {
+      "source": "demos/autocomplete.dart",
+      "demos": [
+        {
+          "slug": "basic",
+          "title": "Basic",
+          "builder": "autocompleteBasic",
+          "shows": [
+            "props.options",
+            "props.modelValue",
+            "props.label",
+            "props.placeholder",
+            "events.update:modelValue",
+            "events.select"
+          ]
+        },
+        {
+          "slug": "free-text",
+          "title": "Free text",
+          "builder": "autocompleteFree",
+          "shows": [
+            "props.allowCustomValue",
+            "props.clearable"
+          ]
+        },
+        {
+          "slug": "states",
+          "title": "Sizes and states",
+          "builder": "autocompleteStates",
+          "shows": [
+            "props.size",
+            "props.color",
+            "props.description",
+            "props.error",
+            "props.disabled"
+          ]
+        },
+        {
+          "slug": "remote",
+          "title": "A remote source",
+          "builder": "autocompleteRemote",
+          "shows": [
+            "props.manualFilter",
+            "props.loading",
+            "props.debounce",
+            "events.search"
+          ]
+        },
+        {
+          "slug": "option",
+          "title": "Custom rows",
+          "builder": "autocompleteOption",
+          "shows": [
+            "slots.option"
+          ]
+        }
+      ],
+      "undemoable": {
+        "props.ariaLabel": "An accessible name has no visual form; every demo here has a visible label, and what is announced is asserted by the widget tests.",
+        "props.isInvalid": "The invalid styling with no message is what `error` already renders, minus the line — there is nothing a demo could show that the error demo does not."
+      },
+      "gaps": {
+        "props.rounded": "The rounding steps belong on one demo across every field, which KunInput's does not have either.",
+        "props.loadingText": "The remote demo leaves it at the locale default; a demo that only swaps the string shows the string, not the component.",
+        "props.noResultText": "The same: the basic demo shows the locale default when nothing matches."
+      }
+    },
     "KunAvatar": {
       "source": "demos/avatar.dart",
       "demos": [
@@ -574,6 +641,45 @@
       "gaps": {
         "props.autofocus": "A demo page is the payload of an iframe, and a field that takes focus on mount steals the caret from the page hosting it. Showing this honestly needs a mount-on-demand control the gallery does not have."
       }
+    },
+    "KunLoading": {
+      "source": "demos/loading.dart",
+      "demos": [
+        {
+          "slug": "basic",
+          "title": "Basic",
+          "builder": "loadingBasic",
+          "shows": [
+            "props.src"
+          ]
+        },
+        {
+          "slug": "spinner",
+          "title": "Compact",
+          "builder": "loadingSpinner",
+          "shows": [
+            "props.spinner",
+            "props.size"
+          ]
+        },
+        {
+          "slug": "description",
+          "title": "Its line",
+          "builder": "loadingDescription",
+          "shows": [
+            "props.description"
+          ]
+        },
+        {
+          "slug": "veil",
+          "title": "Over content",
+          "builder": "loadingVeil",
+          "shows": [
+            "props.loading",
+            "slots.default"
+          ]
+        }
+      ]
     },
     "KunMessage": {
       "contract": false,
