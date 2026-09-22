@@ -92,7 +92,9 @@ class KunTabItem {
   /// Dims this tab and blocks selecting or focusing it.
   final bool disabled;
 
-  /// Navigated to through [KunUIConfig] on every selection of this tab.
+  /// Navigated to through [KunUIConfig] on every selection of this tab. A
+  /// strip whose items all carry one is navigation rather than a tablist —
+  /// see [KunTab].
   final String? href;
 }
 
@@ -147,6 +149,14 @@ class _KunTabMetrics {
 /// the selection (focus follows); Home and End jump to the first and last
 /// enabled tab. A horizontal strip that outgrows its parent scrolls inside
 /// it. `KunTabPanels` is not ported — switch content on [value] yourself.
+///
+/// **When every item carries an [KunTabItem.href], the strip is navigation,
+/// not a tablist.** It goes to pages, so there is no panel for a tab to
+/// control: no [SemanticsRole.tabBar] or [SemanticsRole.tab] is reported,
+/// only the current item is marked selected, every enabled item is its own
+/// tab stop, and the arrow keys do nothing — each press would have been a
+/// page navigation. Enter and Space still activate the focused item. A
+/// mixed strip, where only some items link, stays a tablist.
 class KunTab<T extends KunTabItem> extends StatefulWidget {
   /// Creates a tab strip.
   const KunTab({
@@ -252,6 +262,10 @@ class _KunTabState<T extends KunTabItem> extends State<KunTab<T>>
   final Set<int> _chevronHovered = <int>{};
 
   bool get _isVertical => widget.orientation == KunTabOrientation.vertical;
+
+  bool get _isNav =>
+      widget.items.isNotEmpty &&
+      widget.items.every((T item) => item.href != null);
 
   KunTabAlign get _align =>
       widget.align ?? (_isVertical ? KunTabAlign.start : KunTabAlign.center);
@@ -602,6 +616,7 @@ class _KunTabState<T extends KunTabItem> extends State<KunTab<T>>
         return KeyEventResult.handled;
       }
     }
+    if (_isNav) return KeyEventResult.ignored;
     if (!_isVertical && key == LogicalKeyboardKey.arrowRight) {
       _moveSelection(1);
       return KeyEventResult.handled;
@@ -785,7 +800,7 @@ class _KunTabState<T extends KunTabItem> extends State<KunTab<T>>
       ],
     );
 
-    if (widget.items.isNotEmpty) {
+    if (widget.items.isNotEmpty && !_isNav) {
       body = Semantics(
         container: true,
         explicitChildNodes: true,
@@ -974,7 +989,7 @@ class _KunTabState<T extends KunTabItem> extends State<KunTab<T>>
     tab = Focus(
       focusNode: _focusNodes[index],
       canRequestFocus: itemEnabled,
-      skipTraversal: !itemEnabled || !selected,
+      skipTraversal: !itemEnabled || !(selected || _isNav),
       includeSemantics: false,
       onKeyEvent: (FocusNode node, KeyEvent event) => _onKey(event),
       child: tab,
@@ -982,8 +997,8 @@ class _KunTabState<T extends KunTabItem> extends State<KunTab<T>>
 
     tab = Semantics(
       container: true,
-      role: SemanticsRole.tab,
-      selected: selected,
+      role: _isNav ? null : SemanticsRole.tab,
+      selected: _isNav ? (selected ? true : null) : selected,
       enabled: itemEnabled,
       onTap: itemEnabled ? () => _select(item) : null,
       child: tab,

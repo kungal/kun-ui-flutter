@@ -215,6 +215,12 @@ the forum already hand-writes it once, so a second consumer is the demand
 signal that turns it into a component, and the design above is what it
 would be.
 
+A row of section links *inside* a page — a sub-navigation, not the shell —
+is `KunTab` with an `href` on every item. Such a strip goes to pages rather
+than switching panels, so it reports itself as navigation instead of a
+tablist: every link is its own tab stop and the arrow keys do not move
+between them. Give `KunUIConfig.navigate` to route them.
+
 ## The rules (same as the websites)
 
 - **Never modify KunUI from an app** — report at

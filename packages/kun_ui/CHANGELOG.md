@@ -1,5 +1,29 @@
 # Changelog
 
+## 0.6.4
+
+- Built on kun-ui 2.42.3 (`kun_ui_tokens`, `kun_ui_icons` and
+  `kun_ui_messages` ^2.42.3). The contract and the generated packages are
+  unchanged from 2.42.2; the release carries the web fix below.
+- **A `KunTab` whose items all carry an `href` is navigation, not a
+  tablist**, as on the web since kun-ui 2.42.3. Such a strip goes to pages,
+  so nothing there controls a tab panel: it no longer reports
+  `SemanticsRole.tabBar` or `SemanticsRole.tab`, and only the current item
+  is reported selected — the flag Flutter renders as the web's
+  `aria-current` — instead of every item carrying a selected-or-not tab
+  role. Every enabled item is now its own tab stop, where a roving tab stop
+  left only the current one reachable, and KunTab no longer handles the
+  arrow keys, Home or End, each of which used to be a page navigation.
+  Enter and Space still activate the focused item, which is what the web
+  gets from the anchor. A mixed strip, where only some items link, stays a
+  tablist. Measured on the gallery's release web build: `/kuntab/links`
+  reports `role="button"` per item with `aria-current="true"` on the current
+  one alone, while `/kuntab/basic` still reports `role="tablist"` and three
+  `role="tab"`. The item stays a tappable node rather than a Flutter link:
+  link semantics render an `<a>` whose `href` the browser may follow, and a
+  `KunTabItem.href` is whatever string the app's `KunUIConfig.navigate`
+  understands, not necessarily a URL.
+
 ## 0.6.3
 
 - **A `KunInput` or `KunTextarea` hides its placeholder while an IME is

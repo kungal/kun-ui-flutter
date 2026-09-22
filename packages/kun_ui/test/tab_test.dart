@@ -350,6 +350,142 @@ void main() {
     expect(log, isEmpty);
   });
 
+  testWidgets('a strip of links is navigation, not a tablist', (tester) async {
+    final SemanticsHandle semantics = tester.ensureSemantics();
+    const List<KunTabItem> links = <KunTabItem>[
+      KunTabItem(value: 'home', textValue: 'Home', href: '/'),
+      KunTabItem(value: 'docs', textValue: 'Docs', href: '/docs'),
+      KunTabItem(value: 'more', textValue: 'More', href: '/more'),
+    ];
+    await tester.pumpWidget(
+      wrap(
+        SizedBox(
+          width: 300,
+          child: KunTab(items: links, value: 'docs', onChanged: (_) {}),
+        ),
+      ),
+    );
+    await tester.pumpAndSettle();
+
+    List<SemanticsData> flatten(WidgetTester tester) {
+      final List<SemanticsData> data = <SemanticsData>[];
+      void walk(SemanticsNode node) {
+        data.add(node.getSemanticsData());
+        node.visitChildren((SemanticsNode child) {
+          walk(child);
+          return true;
+        });
+      }
+
+      walk(tester
+          .binding.renderViews.first.owner!.semanticsOwner!.rootSemanticsNode!);
+      return data;
+    }
+
+    List<SemanticsData> data = flatten(tester);
+    final Iterable<SemanticsRole> roles = data.map((SemanticsData d) => d.role);
+    expect(roles, isNot(contains(SemanticsRole.tabBar)));
+    expect(roles, isNot(contains(SemanticsRole.tab)));
+
+    SemanticsData labelled(List<SemanticsData> data, String label) =>
+        data.firstWhere((SemanticsData d) => d.label == label);
+    expect(labelled(data, 'Docs').flagsCollection.isSelected, Tristate.isTrue);
+    expect(labelled(data, 'Home').flagsCollection.isSelected, Tristate.none);
+    expect(labelled(data, 'More').flagsCollection.isSelected, Tristate.none);
+    expect(
+      labelled(data, 'Home').hasAction(SemanticsAction.tap),
+      isTrue,
+    );
+
+    await tester.pumpWidget(
+      wrap(
+        SizedBox(
+          width: 300,
+          child: KunTab(
+            items: const <KunTabItem>[
+              ...links,
+              KunTabItem(value: 'here', textValue: 'Here'),
+            ],
+            value: 'docs',
+            onChanged: (_) {},
+          ),
+        ),
+      ),
+    );
+    await tester.pumpAndSettle();
+    data = flatten(tester);
+    expect(data.map((SemanticsData d) => d.role), contains(SemanticsRole.tab));
+    expect(labelled(data, 'Home').flagsCollection.isSelected, Tristate.isFalse);
+    semantics.dispose();
+  });
+
+  testWidgets('every link is its own tab stop and the arrow keys stay put',
+      (tester) async {
+    final FocusNode before = FocusNode();
+    addTearDown(before.dispose);
+    final log = <String>[];
+    await tester.pumpWidget(
+      wrapTraversal(
+        KunUIConfigScope(
+          config: KunUIConfig(
+            navigate: (BuildContext context, String href) =>
+                log.add('nav:$href'),
+          ),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Focus(
+                focusNode: before,
+                child: const SizedBox(width: 10, height: 10),
+              ),
+              _Host(
+                items: const [
+                  KunTabItem(value: 'home', textValue: 'Home', href: '/'),
+                  KunTabItem(value: 'docs', textValue: 'Docs', href: '/docs'),
+                  KunTabItem(value: 'more', textValue: 'More', href: '/more'),
+                ],
+                onChanged: (String value) => log.add('change:$value'),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+    await tester.pumpAndSettle();
+    before.requestFocus();
+    await tester.pump();
+
+    bool focused(String value) => tester
+        .widget<Focus>(
+          find.descendant(of: tabOf(value), matching: find.byType(Focus)),
+        )
+        .focusNode!
+        .hasFocus;
+
+    await tester.sendKeyEvent(LogicalKeyboardKey.tab);
+    await tester.pump();
+    expect(focused('home'), isTrue);
+    await tester.sendKeyEvent(LogicalKeyboardKey.tab);
+    await tester.pump();
+    expect(focused('docs'), isTrue);
+
+    for (final LogicalKeyboardKey key in <LogicalKeyboardKey>[
+      LogicalKeyboardKey.arrowRight,
+      LogicalKeyboardKey.arrowLeft,
+      LogicalKeyboardKey.home,
+      LogicalKeyboardKey.end,
+    ]) {
+      await tester.sendKeyEvent(key);
+      await tester.pump();
+      expect(log, isEmpty, reason: '$key must not navigate');
+      expect(focused('docs'), isTrue, reason: '$key must not move focus');
+    }
+
+    await tester.sendKeyEvent(LogicalKeyboardKey.enter);
+    await tester.pump();
+    expect(log, ['change:docs', 'nav:/docs']);
+  });
+
   testWidgets('selected and hover text colours, including mid-transition',
       (tester) async {
     await tester.pumpWidget(

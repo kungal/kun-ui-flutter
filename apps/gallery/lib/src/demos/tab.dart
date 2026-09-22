@@ -644,7 +644,9 @@ class _TabLinksState extends State<_TabLinks> {
         children: [
           _caption(
             context,
-            'a click on the selected tab navigates again',
+            'every item links, so the strip is navigation, not a tablist: '
+            'each link is its own tab stop, the arrow keys stay put, and a '
+            'click on the current one navigates again',
           ),
           KunTab(
             items: _items,
