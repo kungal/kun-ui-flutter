@@ -143,6 +143,78 @@ KunUIConfigScope(
   `ImageProvider`. It defaults to `NetworkImage`; pass your cache's provider
   here instead of wrapping each widget.
 
+## The app shell's own navigation (there is no KunNavBar)
+
+KunUI owns no navigation component, on either side: the web contract's 69
+components have none, and `KunHeader` is a page title, not a nav. Every
+kungal website builds its own — the forum's collapsed rail and expanded
+sidebar are both a list of `KunButton`s, `flat` while current and `light`
+otherwise, with an icon over a small label. That *is* the design, and it
+translates directly, so a Flutter app shell writes the same thing rather
+than waiting for a widget:
+
+```dart
+class NavDestination extends StatelessWidget {
+  const NavDestination({
+    required this.icon,
+    required this.label,
+    required this.current,
+    required this.onTap,
+    this.stacked = true,
+    super.key,
+  });
+
+  final IconData icon;
+  final String label;
+  final bool current;
+  final VoidCallback onTap;
+
+  /// Icon over label, as a rail or a bottom bar draws it. False puts the
+  /// icon beside the label, as an expanded sidebar does.
+  final bool stacked;
+
+  @override
+  Widget build(BuildContext context) {
+    final Widget text = Text(label, style: KunText.xs);
+    return KunButton(
+      onPressed: onTap,
+      variant: current ? KunUIVariant.flat : KunUIVariant.light,
+      color: current ? KunUIColor.primary : KunUIColor.neutral,
+      fullWidth: true,
+      icon: stacked ? null : Icon(icon, size: KunSpacing.unit * 4),
+      child: stacked
+          ? Column(
+              mainAxisSize: MainAxisSize.min,
+              spacing: KunSpacing.unit,
+              children: <Widget>[Icon(icon, size: KunSpacing.unit * 5), text],
+            )
+          : text,
+    );
+  }
+}
+```
+
+A bottom bar is then a `Row` of those in `Expanded`s over
+`KunTheme.of(context).colors.content1`, inside a `SafeArea(top: false)` so
+the gesture inset is not painted over; a rail is a `Column` of them in a
+`SizedBox` of your width. The control scale is padding-driven, so a
+two-line destination grows the button instead of clipping it — the same
+thing the web's `h-auto` does.
+
+Two things this recipe does not solve:
+
+- **Icons.** `kun_ui_icons` carries only the glyphs the components
+  themselves use, so destination icons come from your app's own set. The
+  web has no such limit — its `KunIcon` renders any Iconify name.
+- **Which shape on which screen.** The websites answer a phone with a
+  drawer, not a bottom bar; an Android app usually answers it with a bottom
+  bar. That divergence is the app's call, not KunUI's.
+
+If you find yourself copying this into a second app, say so in an issue:
+the forum already hand-writes it once, so a second consumer is the demand
+signal that turns it into a component, and the design above is what it
+would be.
+
 ## The rules (same as the websites)
 
 - **Never modify KunUI from an app** — report at
