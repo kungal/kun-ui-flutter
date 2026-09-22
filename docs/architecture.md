@@ -464,7 +464,8 @@ differ from the web's.
   question already has a context.
 - **Anchored popups are portals, not routes** (decided with `KunSelect`,
   their first consumer, for Popover, Tooltip, Dropdown and Autocomplete to
-  follow). The popup is an `OverlayPortal.overlayChildLayoutBuilder` on the
+  follow — all four shipped by 0.9.0, so the decision is now carried by
+  five components and `src/foundation/anchored.dart` is where it lives). The popup is an `OverlayPortal.overlayChildLayoutBuilder` on the
   root overlay whose child is the trigger. It paints above the page, like
   the web's teleport to `<body>`, but it is built under the trigger: it
   inherits the trigger's theme, language and config, and its focus nodes
