@@ -2,9 +2,15 @@
 
 ## 0.8.1
 
-Two accessibility defects an Android node dump found in 0.8.0, neither of
-which the widget tests could see.
+Three accessibility defects an Android node dump found, none of which the
+widget tests could see.
 
+- **A `KunDropdown` trigger has a name again.** The wrapper excluded the
+  trigger's own semantics and supplied no replacement, so the node was
+  nameless — Android showed no node for it at all. The two are merged now,
+  as the web's wrapper carries `role="button"` while the slotted trigger
+  supplies the accessible name; it reads as `android.widget.Button` with the
+  trigger's label, over a menu of `MenuItem`s. Affects 0.7.0.
 - **`KunProgress` reports itself a progressbar.** It set a label and a value
   but no role, so Android rendered it as a plain `android.view.View` with
   the percentage as its text where the web has `role="progressbar"`. It now

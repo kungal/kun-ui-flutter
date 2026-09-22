@@ -532,13 +532,20 @@ class _KunDropdownState extends State<KunDropdown>
 
   @override
   Widget build(BuildContext context) {
-    final Widget trigger = Semantics(
-      button: true,
-      enabled: !widget.disabled,
-      expanded: _isOpen,
-      label: widget.semanticLabel,
-      onTap: widget.disabled ? null : _toggle,
-      child: ExcludeSemantics(child: widget.trigger),
+    // Merged, not excluded: the web's wrapper carries role="button" while the
+    // slotted trigger supplies the accessible name. Excluding the trigger's
+    // own semantics left the node nameless — an Android dump showed no node
+    // for it at all — and giving it a separate node would announce a button
+    // inside a button.
+    final Widget trigger = MergeSemantics(
+      child: Semantics(
+        button: true,
+        enabled: !widget.disabled,
+        expanded: _isOpen,
+        label: widget.semanticLabel,
+        onTap: widget.disabled ? null : _toggle,
+        child: widget.trigger,
+      ),
     );
 
     return PopScope(

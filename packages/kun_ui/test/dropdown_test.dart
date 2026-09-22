@@ -366,6 +366,9 @@ void main() {
 
     final SemanticsNode trigger = tester.getSemantics(find.text('actions'));
     expect(trigger.getSemanticsData().flagsCollection.isButton, isTrue);
+    // The trigger's own content is the accessible name. Excluding it left
+    // the node nameless, which an Android dump caught and no test did.
+    expect(trigger.getSemanticsData().label, 'actions');
     expect(
       trigger.getSemanticsData().flagsCollection.isExpanded,
       Tristate.isFalse,
