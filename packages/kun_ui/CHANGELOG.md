@@ -1,5 +1,16 @@
 # Changelog
 
+## 0.8.1
+
+- **`KunCheckBox` no longer tells a screen reader it is disabled when it
+  merely has no callback.** Its semantics node took `enabled` from the
+  callback as well as the `disabled` prop, so a box an app drives from
+  elsewhere announced itself disabled. `KunSwitch` and `KunButton` have
+  always taken it from the prop alone, and the checkbox now does too — the
+  callback still decides whether a tap does anything. Found in an Android
+  accessibility-node dump, where the states demo's boxes read
+  `enabled=false`.
+
 ## 0.8.0
 
 The form and layout primitives every app reaches for.

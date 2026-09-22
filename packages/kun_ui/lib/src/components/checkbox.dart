@@ -243,7 +243,11 @@ class _KunCheckBoxState extends State<KunCheckBox>
     return Semantics(
       checked: widget.value,
       mixed: widget.indeterminate,
-      enabled: _enabled,
+      // The prop, not the callback: a null callback leaves the checkbox
+      // inert without disabling it, as KunSwitch and KunButton do, so a
+      // screen reader must not hear "disabled" on a box the app is driving
+      // from somewhere else.
+      enabled: !widget.disabled,
       label: widget.label,
       hint: message,
       onTap: _enabled ? _toggle : null,

@@ -76,6 +76,37 @@ void main() {
     expect(tester.widget<Opacity>(find.byType(Opacity).first).opacity, 1);
   });
 
+  testWidgets('a null callback does not report the box disabled',
+      (tester) async {
+    final SemanticsHandle semantics = tester.ensureSemantics();
+    await tester.pumpWidget(wrap(const KunCheckBox(label: 'Remember me')));
+
+    // `disabled` disables; a missing callback only makes it inert. An
+    // Android dump caught this reporting enabled=false on a box the app was
+    // simply driving from elsewhere.
+    expect(
+      tester
+          .getSemantics(find.byType(KunCheckBox))
+          .getSemanticsData()
+          .flagsCollection
+          .isEnabled,
+      Tristate.isTrue,
+    );
+
+    await tester.pumpWidget(
+      wrap(const KunCheckBox(label: 'Remember me', disabled: true)),
+    );
+    expect(
+      tester
+          .getSemantics(find.byType(KunCheckBox))
+          .getSemanticsData()
+          .flagsCollection
+          .isEnabled,
+      Tristate.isFalse,
+    );
+    semantics.dispose();
+  });
+
   testWidgets('the size scale is the shared selection scale', (tester) async {
     for (final KunUISize size in KunUISize.values) {
       await tester.pumpWidget(wrap(KunCheckBox(size: size)));
