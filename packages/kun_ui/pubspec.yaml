@@ -23,9 +23,9 @@ dependencies:
   # The pinned MINOR of kun_ui_tokens is the contract version: CI checks this
   # repo's manifest against kungal/kun-ui checked out at the release tag
   # matching the version pubspec.lock resolves. See CLAUDE.md and scripts/parity.sh.
-  kun_ui_icons: ^2.42.2
-  kun_ui_messages: ^2.42.2
-  kun_ui_tokens: ^2.42.2
+  kun_ui_icons: ^2.42.3
+  kun_ui_messages: ^2.42.3
+  kun_ui_tokens: ^2.42.3
 
 dev_dependencies:
   flutter_lints: ^6.0.0
