@@ -5,6 +5,7 @@ import 'package:flutter/services.dart';
 import 'package:flutter/widgets.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:kun_ui/kun_ui.dart';
+import 'package:kun_ui/src/foundation/dismiss_layers.dart';
 
 Finder get panel => find.byKey(const ValueKey<String>('KunModal.panel'));
 Finder get layer => find.byKey(const ValueKey<String>('KunModal.layer'));
@@ -243,6 +244,26 @@ void main() {
     expect(find.text('Title'), findsNothing);
     expect(key.currentState!.events, isEmpty);
     expect(before, 0);
+  });
+
+  testWidgets('an open modal is one dismiss layer, and leaves none behind',
+      (WidgetTester tester) async {
+    expect(KunDismissLayers.debugLayers, isEmpty);
+    final GlobalKey<_HostState> key = GlobalKey<_HostState>();
+    await _pumpOpen(tester, key: key);
+    expect(KunDismissLayers.debugLayers, hasLength(1));
+
+    key.currentState!.close();
+    await tester.pumpAndSettle();
+    expect(KunDismissLayers.debugLayers, isEmpty);
+
+    // Torn down with the modal open: a layer left behind would swallow the
+    // next back gesture in the app, silently.
+    await _pumpOpen(tester);
+    expect(KunDismissLayers.debugLayers, hasLength(1));
+    await tester.pumpWidget(wrap(const SizedBox.shrink()));
+    await tester.pumpAndSettle();
+    expect(KunDismissLayers.debugLayers, isEmpty);
   });
 
   testWidgets('initial value true opens after the first frame',

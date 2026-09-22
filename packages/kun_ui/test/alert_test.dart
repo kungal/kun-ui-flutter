@@ -3,6 +3,7 @@ import 'package:flutter/services.dart';
 import 'package:flutter/widgets.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:kun_ui/kun_ui.dart';
+import 'package:kun_ui/src/foundation/dismiss_layers.dart';
 
 Finder get panel => find.byKey(const ValueKey<String>('KunModal.panel'));
 Finder get layer => find.byKey(const ValueKey<String>('KunModal.layer'));
@@ -154,6 +155,7 @@ void main() {
     await tester.pumpAndSettle();
     expect(await backed, isFalse);
     expect(panel, findsNothing);
+    expect(KunDismissLayers.debugLayers, isEmpty);
 
     context = await pumpHost(tester);
     final Future<bool> closed = showKunAlert(

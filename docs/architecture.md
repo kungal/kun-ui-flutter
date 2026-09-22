@@ -494,15 +494,21 @@ differ from the web's.
     that registers an `OnBackInvokedCallback`, which Flutter does as soon
     as a `PopScope` blocks the pop (logcat says
     `setTopOnBackInvokedCallback` the moment the popup opens).
-  - **Open gap: only the innermost layer should dismiss.** A popup open
-    inside a `KunModal` registers its `PopScope` with the modal's own
-    route, and a route invokes *every* entry registered with it, so one
-    back closes the popup and the modal together — what it did before the
-    scope existed, not a regression, but not the rule either. Dismissing
-    the innermost layer alone needs a scope the overlay owners share
-    (the modal session is not visible to descendants today), and that is a
-    decision to take once, for every portal that follows KunSelect, rather
-    than per component.
+  - **Only the innermost layer dismisses** (decided 2026-09-22, with
+    `KunSelect` inside a `KunModal`). A popup open inside a modal registers
+    its `PopScope` with the modal's own route — it has no route of its own
+    — and a route invokes *every* entry registered with it, so one back
+    closed the popup and the modal together. `KunDismissLayers` (in
+    `src/foundation`) is the shared stack that fixes it: every layer, a
+    modal route or an anchored popup, pushes itself while open, and a
+    `PopScope` acts only when it is on top. The stack is a library-private
+    global because the gesture is one for the whole application, and LIFO
+    is what the user sees — the last layer opened is the one in front.
+    `showKunAlert` builds its route without `KunModal`'s state, so it
+    registers on its own. A leaked layer would silently swallow the app's
+    next back, so the select, modal and alert suites all assert the stack
+    is empty after a close and after a teardown with the layer still
+    open.
 
 ### Reduced motion collapses every transition (decided 2026-09-17)
 

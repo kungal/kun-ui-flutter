@@ -12,6 +12,7 @@ import 'package:kun_ui_tokens/kun_ui_tokens.dart';
 
 import '../foundation/control_metrics.dart';
 import '../foundation/design.dart';
+import '../foundation/dismiss_layers.dart';
 import '../foundation/field_ring.dart';
 import '../foundation/focus_outline.dart';
 import '../foundation/motion.dart';
@@ -107,11 +108,11 @@ typedef KunSelectOptionBuilder<O> = Widget Function(
 ///
 /// The popup opens under the trigger and follows it through scrolling and
 /// resizing. It is a portal, not a route, so it works inside a [KunModal]:
-/// Escape closes the popup and leaves the modal open. The system back
-/// gesture closes the popup too, instead of popping the page it was opened
-/// from — though inside a [KunModal] back still closes the modal as well,
-/// because a route invokes every `PopScope` registered with it.
-/// A [fullWidth] `false` select is as wide as its content.
+/// Escape closes the popup and leaves the modal open, and the system back
+/// gesture does the same: it closes the popup rather than popping the page
+/// or the modal it was opened from, because the innermost open layer
+/// answers a back on its own. A [fullWidth] `false` select is as wide as
+/// its content.
 class KunSelect<T, O extends KunSelectOption<T>> extends StatefulWidget {
   /// A single-choice select: [value] is the chosen option's value, or null.
   const KunSelect({
@@ -402,6 +403,7 @@ class _KunSelectState<T, O extends KunSelectOption<T>>
 
   @override
   void dispose() {
+    KunDismissLayers.remove(this);
     _cancelPendingSearch();
     _typeTimer?.cancel();
     _openClose.removeStatusListener(_onOpenCloseStatus);
@@ -661,6 +663,7 @@ class _KunSelectState<T, O extends KunSelectOption<T>>
     if (widget.disabled || _isOpen) {
       return;
     }
+    KunDismissLayers.add(this);
     setState(() {
       _isOpen = true;
       _query = '';
@@ -696,6 +699,7 @@ class _KunSelectState<T, O extends KunSelectOption<T>>
     if (!_isOpen) {
       return;
     }
+    KunDismissLayers.remove(this);
     setState(() {
       _isOpen = false;
       _query = '';
@@ -1132,7 +1136,7 @@ class _KunSelectState<T, O extends KunSelectOption<T>>
     return PopScope(
       canPop: !_isOpen,
       onPopInvokedWithResult: (bool didPop, Object? result) {
-        if (!didPop) {
+        if (!didPop && KunDismissLayers.isTop(this)) {
           _close();
         }
       },

@@ -1,5 +1,24 @@
 # Changelog
 
+## 0.6.6
+
+- **A back gesture dismisses the innermost layer only.** 0.6.5 gave the
+  `KunSelect` trigger a `PopScope`, which closed the popup instead of the
+  page — but inside a `KunModal` it closed the popup *and* the modal,
+  because a portal has no route of its own, so its scope registers with the
+  route it was opened from and a route invokes every scope registered with
+  it. The layers now share a stack: a modal route and an anchored popup
+  each push themselves while open, and a scope acts only when it is on top.
+  One back on a select open inside a modal closes the popup and leaves the
+  modal; the next one closes the modal. A `showKunAlert` dialog registers
+  the same way, so back still resolves its future with `false`. Nothing
+  changes for a select or a modal on its own, and a closed one never blocks
+  a back. Measured on a Pixel 10 Pro with the navigation bar's Back button:
+  one press on a select open inside a modal left the modal standing, the
+  next closed it, and on a plain page one press closed the popup with the
+  app still in front. A *searchable* select takes two, because the first
+  press closes the soft keyboard — Android's own behaviour, not ours.
+
 ## 0.6.5
 
 - **A `KunSelect` trigger reads what it paints.** Its semantics value was

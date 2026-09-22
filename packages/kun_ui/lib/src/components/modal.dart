@@ -12,6 +12,7 @@ import 'package:kun_ui_tokens/kun_ui_tokens.dart';
 
 import '../config/config.dart';
 import '../foundation/design.dart';
+import '../foundation/dismiss_layers.dart';
 import '../foundation/motion.dart';
 import '../locale/messages.dart';
 import '../theme/theme.dart';
@@ -283,7 +284,11 @@ class _KunModalState extends State<KunModal> {
     final _KunModalRoute? route = _route;
     final NavigatorState? navigator = _navigator;
     _route = null;
-    _session?.dispose();
+    final _KunModalSession? session = _session;
+    if (session != null) {
+      KunDismissLayers.remove(session);
+    }
+    session?.dispose();
     _session = null;
     if (route != null && navigator != null && route.isActive) {
       navigator.removeRoute(route);
@@ -341,6 +346,7 @@ class _KunModalState extends State<KunModal> {
       reverseTransitionDuration: kunMotion(context, KunDurations.exit),
     );
     _route = route;
+    KunDismissLayers.add(_session!);
     if (kDebugMode &&
         !_hasText(widget.title) &&
         !_hasText(widget.semanticLabel)) {
@@ -418,6 +424,9 @@ class _KunModalState extends State<KunModal> {
     _route = null;
     final _KunModalSession? session = _session;
     _session = null;
+    if (session != null) {
+      KunDismissLayers.remove(session);
+    }
     session?.dispose();
     if (_disposed || !ours) {
       return;

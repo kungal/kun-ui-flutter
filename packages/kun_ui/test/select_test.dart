@@ -6,6 +6,7 @@ import 'package:flutter/services.dart';
 import 'package:flutter/widgets.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:kun_ui/kun_ui.dart';
+import 'package:kun_ui/src/foundation/dismiss_layers.dart';
 
 Finder get trigger => find.byKey(const ValueKey<String>('KunSelect.trigger'));
 Finder get popup => find.byKey(const ValueKey<String>('KunSelect.popup'));
@@ -1019,7 +1020,7 @@ void main() {
     await pushed;
   });
 
-  testWidgets('inside a modal, back closes both, as it did before the scope',
+  testWidgets('inside a modal, back closes the popup and leaves the modal',
       (WidgetTester tester) async {
     await tester.pumpWidget(wrap(const _ModalHost()));
     await tester.pump();
@@ -1028,13 +1029,43 @@ void main() {
     await openByTap(tester);
     expect(popup, findsOneWidget);
 
-    // Both PopScopes are registered with the modal's route, and a route
-    // invokes every one of them: the popup closes and so does the modal.
-    // Dismissing only the innermost layer needs a scope neither has.
+    // Both scopes are registered with the modal's route and a route invokes
+    // every one of them, so the innermost open layer answers and the rest
+    // stand down.
     await tester.binding.handlePopRoute();
     await tester.pumpAndSettle();
     expect(popup, findsNothing);
+    expect(find.text('Form'), findsOneWidget);
+
+    await tester.binding.handlePopRoute();
+    await tester.pumpAndSettle();
     expect(find.text('Form'), findsNothing);
+  });
+
+  testWidgets('an open popup leaves no dismiss layer behind',
+      (WidgetTester tester) async {
+    await tester.pumpWidget(
+      wrap(
+        const Center(
+          child: SizedBox(width: 320, child: _Host(label: 'Framework')),
+        ),
+      ),
+    );
+    expect(KunDismissLayers.debugLayers, isEmpty);
+
+    await openByTap(tester);
+    expect(KunDismissLayers.debugLayers, hasLength(1));
+    await tester.binding.handlePopRoute();
+    await tester.pumpAndSettle();
+    expect(KunDismissLayers.debugLayers, isEmpty);
+
+    // Torn down with the popup open: a layer left behind would swallow the
+    // next back gesture in the app, silently.
+    await openByTap(tester);
+    expect(KunDismissLayers.debugLayers, hasLength(1));
+    await tester.pumpWidget(wrap(const SizedBox.shrink()));
+    await tester.pumpAndSettle();
+    expect(KunDismissLayers.debugLayers, isEmpty);
   });
 
   testWidgets('the combobox value is what the trigger paints',

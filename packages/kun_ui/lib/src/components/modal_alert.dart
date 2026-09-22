@@ -108,8 +108,10 @@ Future<bool> showKunAlert(
   _alert.session = session;
   _alert.route = route;
   _alert.navigator = navigator;
+  KunDismissLayers.add(session);
   unawaited(
     navigator.push<void>(route).whenComplete(() {
+      KunDismissLayers.remove(session);
       session.dispose();
       if (_alert.route == route) {
         final Completer<bool>? pending = _alert.completer;

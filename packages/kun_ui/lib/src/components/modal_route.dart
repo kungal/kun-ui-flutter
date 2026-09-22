@@ -290,7 +290,7 @@ class _KunModalPageState extends State<_KunModalPage>
     return PopScope<void>(
       canPop: false,
       onPopInvokedWithResult: (bool didPop, void result) {
-        if (didPop) {
+        if (didPop || !KunDismissLayers.isTop(session)) {
           return;
         }
         session.onBack();
