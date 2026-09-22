@@ -63,6 +63,32 @@ void main() {
     expect(find.text('Copy'), findsOneWidget);
   });
 
+  testWidgets('a trigger with its own gestures still shows the tooltip',
+      (tester) async {
+    setView(tester, const Size(800, 600));
+    int pressed = 0;
+    await tester.pumpWidget(
+      wrap(
+        KunTooltip(
+          text: 'Copy',
+          child: KunButton(
+            onPressed: () => pressed++,
+            child: const Text('trigger'),
+          ),
+        ),
+      ),
+    );
+
+    await hover(tester, find.text('trigger'));
+    await tester.pump(const Duration(milliseconds: 100));
+    await tester.pumpAndSettle();
+    expect(panel, findsOneWidget);
+
+    await tester.tap(find.text('trigger'));
+    await tester.pumpAndSettle();
+    expect(pressed, 1);
+  });
+
   testWidgets('leaving the trigger closes it', (tester) async {
     setView(tester, const Size(800, 600));
     await tester.pumpWidget(

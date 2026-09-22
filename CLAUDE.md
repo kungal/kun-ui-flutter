@@ -238,6 +238,23 @@ node tree a screen reader reads. The web reference for any component is the
 kun-ui docs site or its playground; when in doubt about a value, read the web
 source, not the rendered pixels.
 
+Two rules the 0.7.0/0.8.0 round earned, where five of six defects came from
+the gallery or the device and none from a test:
+
+- **A widget that takes a slotted child is tested with a real one.**
+  `KunPopover` and `KunDropdown` could not be opened at all when their
+  trigger was a `KunButton` — a nested `GestureDetector` wins the gesture
+  arena outright, where a DOM click bubbles to the wrapper — and every test
+  passed, because they all slotted a bare `Text`. A `Text` or a `SizedBox`
+  exercises none of the interaction, focus or semantics a real KunUI widget
+  brings, so each such component gets at least one test that passes one.
+- **Dump the Android node tree after porting a component, not only before a
+  release.** `uiautomator dump` caught three accessibility defects in
+  0.8.0 that the semantics tree in `flutter test` renders perfectly well: a
+  trigger with no accessible name, a progress bar that was a plain `View`,
+  and a checkbox announcing itself disabled. What the widget test asserts is
+  the Flutter tree; what a screen reader reads is the platform one.
+
 ## Key docs
 
 `docs/architecture.md` (this repo's design decisions and their reasons),

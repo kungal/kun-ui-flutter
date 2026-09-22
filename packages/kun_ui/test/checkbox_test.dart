@@ -107,6 +107,26 @@ void main() {
     semantics.dispose();
   });
 
+  testWidgets('a widget in the slot sits between the box and the label',
+      (tester) async {
+    await tester.pumpWidget(
+      wrap(
+        KunCheckBox(
+          label: 'Starred',
+          onChanged: (_) {},
+          child: const KunBadge(child: Text('new')),
+        ),
+      ),
+    );
+    await tester.pumpAndSettle();
+
+    final double boxRight = tester.getRect(box).right;
+    final double slotLeft = tester.getRect(find.text('new')).left;
+    final double labelLeft = tester.getRect(find.text('Starred')).left;
+    expect(slotLeft, greaterThan(boxRight));
+    expect(labelLeft, greaterThan(slotLeft));
+  });
+
   testWidgets('the size scale is the shared selection scale', (tester) async {
     for (final KunUISize size in KunUISize.values) {
       await tester.pumpWidget(wrap(KunCheckBox(size: size)));
