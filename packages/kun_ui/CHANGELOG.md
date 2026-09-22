@@ -1,5 +1,32 @@
 # Changelog
 
+## 0.6.5
+
+- **A `KunSelect` trigger reads what it paints.** Its semantics value was
+  the trigger *text*, which for a `multiple` select is a count, so a
+  TalkBack user heard "2, Frameworks" while two named chips were on screen
+  and had to swipe through them — nodes of their own — to learn which two.
+  The web's `role="combobox"` has no value of its own: a screen reader
+  reads its content, and the chips are that content. The value is now the
+  painted chip labels (`Vue, Solid`, with `+N` when `maxVisibleTags`
+  collapses the rest), and the painted content is no longer a node beside
+  it. Measured on a Pixel 10 Pro: the node went from `2, Frameworks` with
+  `Vue` and `Solid` beside it to `Vue, Solid, Frameworks` with no chip
+  nodes. A single select reads as before, minus the duplicate child node
+  that repeated its value.
+- **The system back gesture closes an open popup instead of the page.**
+  The popup is a portal, not a route, so back went past it to the page:
+  with the popup open it popped the whole screen and dismissed nothing
+  (measured with `handlePopRoute`, the message the engine sends on a back
+  gesture). The trigger now carries a `PopScope` that blocks the pop while
+  the popup is open and closes the popup instead — what Escape does on the
+  web, and what Android's back means. A second back leaves the screen as
+  usual, and a closed select never blocks anything. Inside a `KunModal`,
+  back still closes the modal as well: both scopes are registered with the
+  modal's route and a route invokes every one of them. That is what
+  happened before this change too; dismissing only the innermost layer
+  needs a shared scope, noted as an open gap in `docs/architecture.md`.
+
 ## 0.6.4
 
 - Built on kun-ui 2.42.3 (`kun_ui_tokens`, `kun_ui_icons` and

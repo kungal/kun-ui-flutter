@@ -107,8 +107,11 @@ typedef KunSelectOptionBuilder<O> = Widget Function(
 ///
 /// The popup opens under the trigger and follows it through scrolling and
 /// resizing. It is a portal, not a route, so it works inside a [KunModal]:
-/// Escape closes the popup and leaves the modal open. A [fullWidth] `false`
-/// select is as wide as its content.
+/// Escape closes the popup and leaves the modal open. The system back
+/// gesture closes the popup too, instead of popping the page it was opened
+/// from — though inside a [KunModal] back still closes the modal as well,
+/// because a route invokes every `PopScope` registered with it.
+/// A [fullWidth] `false` select is as wide as its content.
 class KunSelect<T, O extends KunSelectOption<T>> extends StatefulWidget {
   /// A single-choice select: [value] is the chosen option's value, or null.
   const KunSelect({
@@ -542,6 +545,16 @@ class _KunSelectState<T, O extends KunSelectOption<T>>
       return '$placeholder · $n';
     }
     return '$n';
+  }
+
+  String _triggerSemanticValue() {
+    if (!_showsChips) {
+      return _triggerText;
+    }
+    return <String>[
+      for (final ({T value, String label}) chip in _visibleTags) chip.label,
+      if (_hiddenTagCount > 0) '+$_hiddenTagCount',
+    ].join(', ');
   }
 
   String _triggerSemanticLabel() {
@@ -1116,23 +1129,31 @@ class _KunSelectState<T, O extends KunSelectOption<T>>
   Widget build(BuildContext context) {
     _ensureRowKeys(_showSpinner ? 0 : _shown.length);
     final Widget trigger = _KunSelectTrigger<T, O>(state: this);
-    return Focus(
-      canRequestFocus: false,
-      skipTraversal: true,
-      includeSemantics: false,
-      onKeyEvent: (FocusNode node, KeyEvent event) => _onKey(event),
-      onFocusChange: (bool focused) {
-        if (!focused) {
-          _setRingSuppressed(false);
+    return PopScope(
+      canPop: !_isOpen,
+      onPopInvokedWithResult: (bool didPop, Object? result) {
+        if (!didPop) {
+          _close();
         }
       },
-      child: _KunSelectField<T, O>(
-        state: this,
-        trigger: OverlayPortal.overlayChildLayoutBuilder(
-          controller: _portal,
-          overlayLocation: OverlayChildLocation.rootOverlay,
-          overlayChildBuilder: _buildOverlay,
-          child: trigger,
+      child: Focus(
+        canRequestFocus: false,
+        skipTraversal: true,
+        includeSemantics: false,
+        onKeyEvent: (FocusNode node, KeyEvent event) => _onKey(event),
+        onFocusChange: (bool focused) {
+          if (!focused) {
+            _setRingSuppressed(false);
+          }
+        },
+        child: _KunSelectField<T, O>(
+          state: this,
+          trigger: OverlayPortal.overlayChildLayoutBuilder(
+            controller: _portal,
+            overlayLocation: OverlayChildLocation.rootOverlay,
+            overlayChildBuilder: _buildOverlay,
+            child: trigger,
+          ),
         ),
       ),
     );

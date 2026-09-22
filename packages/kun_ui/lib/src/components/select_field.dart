@@ -174,7 +174,7 @@ class _KunSelectTrigger<T, O extends KunSelectOption<T>>
               focusable: !widget.disabled,
               focused: state._triggerFocus.hasFocus,
               label: state._triggerSemanticLabel(),
-              value: triggerText,
+              value: state._triggerSemanticValue(),
               onTap: widget.disabled
                   ? null
                   : () {
@@ -191,7 +191,12 @@ class _KunSelectTrigger<T, O extends KunSelectOption<T>>
               onCollapse: widget.disabled || !state._isOpen
                   ? null
                   : () => state._close(),
-              child: content,
+              // The web's combobox has no value of its own: a screen reader
+              // reads the chips, or the text, painted inside it. Here the
+              // painted content is `value`, so leaving it in the tree as well
+              // read every chip twice — once in the value, once as a node of
+              // its own that the web never had.
+              child: ExcludeSemantics(child: content),
             ),
           ),
           if (widget.clearable && hasSelection && !widget.disabled)

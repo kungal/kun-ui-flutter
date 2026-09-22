@@ -95,6 +95,36 @@ Future<void> openByTap(WidgetTester tester) async {
   await tester.pump(KunDurations.base);
 }
 
+class _ModalHost extends StatefulWidget {
+  const _ModalHost();
+
+  @override
+  State<_ModalHost> createState() => _ModalHostState();
+}
+
+class _ModalHostState extends State<_ModalHost> {
+  bool _open = true;
+  String? _value = 'vue';
+
+  @override
+  Widget build(BuildContext context) {
+    return KunModal(
+      value: _open,
+      onChanged: (bool next) => setState(() => _open = next),
+      title: 'Form',
+      child: SizedBox(
+        width: 320,
+        child: KunSelect<String, KunSelectOption<String>>(
+          options: frameworks,
+          value: _value,
+          onChanged: (String? next) => setState(() => _value = next),
+          label: 'Framework',
+        ),
+      ),
+    );
+  }
+}
+
 class _Host extends StatefulWidget {
   const _Host({
     super.key,
@@ -933,8 +963,10 @@ void main() {
     final SemanticsNode combo = nodes.singleWhere(
       (SemanticsNode n) =>
           n.getSemanticsData().label == 'Framework' &&
-          n.getSemanticsData().value == '2',
+          n.getSemanticsData().value == 'Vue, React',
     );
+    expect(labels, isNot(contains('Vue')));
+    expect(labels, isNot(contains('React')));
     final SemanticsNode clear = nodes.singleWhere(
       (SemanticsNode n) => n.getSemanticsData().label == messages.select.clear,
     );
@@ -954,6 +986,101 @@ void main() {
     expect(key.currentState!.valuesChanged, <List<String>>[<String>[]]);
     expect(find.byIcon(KunIcons.circleX), findsNothing);
     expect(node.hasPrimaryFocus, isTrue);
+    semantics.dispose();
+  });
+
+  testWidgets('the system back closes the popup, not the page',
+      (WidgetTester tester) async {
+    await tester.pumpWidget(wrap(const Text('home')));
+    final Future<void> pushed = Navigator.of(tester.element(find.text('home')))
+        .push<void>(PageRouteBuilder<void>(
+      pageBuilder: (BuildContext context, Animation<double> animation,
+              Animation<double> secondary) =>
+          const Center(
+        child: SizedBox(width: 320, child: _Host(label: 'Framework')),
+      ),
+    ));
+    await tester.pumpAndSettle();
+    await openByTap(tester);
+    expect(popup, findsOneWidget);
+
+    // What Android's back gesture sends. The popup is not a route, so
+    // without the trigger's PopScope the page it was opened from popped
+    // while the popup stayed on screen.
+    await tester.binding.handlePopRoute();
+    await tester.pumpAndSettle();
+    expect(popup, findsNothing);
+    expect(trigger, findsOneWidget);
+
+    await tester.binding.handlePopRoute();
+    await tester.pumpAndSettle();
+    expect(trigger, findsNothing);
+    expect(find.text('home'), findsOneWidget);
+    await pushed;
+  });
+
+  testWidgets('inside a modal, back closes both, as it did before the scope',
+      (WidgetTester tester) async {
+    await tester.pumpWidget(wrap(const _ModalHost()));
+    await tester.pump();
+    await tester.pumpAndSettle();
+    expect(find.text('Form'), findsOneWidget);
+    await openByTap(tester);
+    expect(popup, findsOneWidget);
+
+    // Both PopScopes are registered with the modal's route, and a route
+    // invokes every one of them: the popup closes and so does the modal.
+    // Dismissing only the innermost layer needs a scope neither has.
+    await tester.binding.handlePopRoute();
+    await tester.pumpAndSettle();
+    expect(popup, findsNothing);
+    expect(find.text('Form'), findsNothing);
+  });
+
+  testWidgets('the combobox value is what the trigger paints',
+      (WidgetTester tester) async {
+    final SemanticsHandle semantics = tester.ensureSemantics();
+
+    Future<List<SemanticsData>> pumpHost(Widget host) async {
+      await tester.pumpWidget(
+        wrap(Center(child: SizedBox(width: 360, child: host))),
+      );
+      await tester.pumpAndSettle();
+      final List<SemanticsData> data = <SemanticsData>[];
+      void collect(SemanticsNode node) {
+        data.add(node.getSemanticsData());
+        node.visitChildren((SemanticsNode child) {
+          collect(child);
+          return true;
+        });
+      }
+
+      collect(tester
+          .binding.renderViews.first.owner!.semanticsOwner!.rootSemanticsNode!);
+      return data;
+    }
+
+    SemanticsData comboOf(List<SemanticsData> data) => data.singleWhere(
+          (SemanticsData d) => d.label == 'Framework' && d.value.isNotEmpty,
+        );
+
+    List<SemanticsData> data = await pumpHost(const _Host(
+      label: 'Framework',
+      multiple: true,
+      maxVisibleTags: 1,
+      initialValues: <String>['vue', 'react'],
+    ));
+    expect(comboOf(data).value, 'Vue, +1');
+    expect(data.where((SemanticsData d) => d.label == 'Vue'), isEmpty);
+
+    data = await pumpHost(const _Host(label: 'Framework', initial: 'vue'));
+    expect(comboOf(data).value, 'Vue');
+    expect(data.where((SemanticsData d) => d.label == 'Vue'), isEmpty);
+
+    data = await pumpHost(
+      const _Host(label: 'Framework', placeholder: 'Pick one'),
+    );
+    expect(comboOf(data).value, 'Pick one');
     semantics.dispose();
   });
 

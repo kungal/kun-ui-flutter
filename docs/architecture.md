@@ -480,8 +480,29 @@ differ from the web's.
     trigger may have removed them from the ambient `MediaQuery`.
   - A tap outside closes it through one `TapRegion` group spanning the
     trigger and the popup.
-  - A popup is not a route: back and a modal's focus trap treat it as part
-    of the page it was opened from.
+  - A popup is not a route, so a modal's focus trap treats it as part of
+    the page it was opened from — but **the system back gesture must not**.
+    Measured with `handlePopRoute`, the message the engine sends on a back
+    gesture: with the popup open, back popped the whole page, leaving the
+    user a screen back with nothing dismissed. The trigger
+    therefore carries a `PopScope` whose `canPop` is false while the popup
+    is open, and closes the popup instead — Android's back is the platform's
+    Escape, and Escape is what the web closes on. The popup being a portal
+    is why the `PopScope` sits on the trigger: the overlay child has no
+    route of its own to register with. On a device, measure this with a
+    real back gesture — an injected `KEYCODE_BACK` never reaches an app
+    that registers an `OnBackInvokedCallback`, which Flutter does as soon
+    as a `PopScope` blocks the pop (logcat says
+    `setTopOnBackInvokedCallback` the moment the popup opens).
+  - **Open gap: only the innermost layer should dismiss.** A popup open
+    inside a `KunModal` registers its `PopScope` with the modal's own
+    route, and a route invokes *every* entry registered with it, so one
+    back closes the popup and the modal together — what it did before the
+    scope existed, not a regression, but not the rule either. Dismissing
+    the innermost layer alone needs a scope the overlay owners share
+    (the modal session is not visible to descendants today), and that is a
+    decision to take once, for every portal that follows KunSelect, rather
+    than per component.
 
 ### Reduced motion collapses every transition (decided 2026-09-17)
 
