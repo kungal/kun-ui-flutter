@@ -2,6 +2,14 @@
 
 ## 0.8.1
 
+Two accessibility defects an Android node dump found in 0.8.0, neither of
+which the widget tests could see.
+
+- **`KunProgress` reports itself a progressbar.** It set a label and a value
+  but no role, so Android rendered it as a plain `android.view.View` with
+  the percentage as its text where the web has `role="progressbar"`. It now
+  carries `SemanticsRole.progressBar`, and an indeterminate one still
+  reports no value.
 - **`KunCheckBox` no longer tells a screen reader it is disabled when it
   merely has no callback.** Its semantics node took `enabled` from the
   callback as well as the `disabled` prop, so a box an app drives from

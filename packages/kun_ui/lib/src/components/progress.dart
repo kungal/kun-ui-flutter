@@ -1,6 +1,7 @@
 import 'dart:math' as math;
 import 'dart:ui' as ui;
 
+import 'package:flutter/rendering.dart';
 import 'package:flutter/widgets.dart';
 import 'package:kun_ui_tokens/kun_ui_tokens.dart';
 
@@ -169,8 +170,20 @@ class _KunProgressState extends State<KunProgress>
 
     return Semantics(
       container: true,
+      // Flutter asserts that a progressBar carries a value, a minValue and a
+      // maxValue, all of them parseable numbers between the bounds, so an
+      // indeterminate bar cannot take the role at all — ARIA allows
+      // `role=progressbar` with no `aria-valuenow`, and Flutter does not.
+      //
+      // The range is 0..100 against the percentage, not 0..max: the web
+      // reports `aria-valuenow` as a percentage beside an `aria-valuemax` of
+      // `max`, so a bar of 60/60 announces 100 out of 60. That is an upstream
+      // bug, and copying it here would trip the assertion.
+      role: widget.indeterminate ? null : SemanticsRole.progressBar,
       label: widget.semanticLabel,
-      value: widget.indeterminate ? null : '${percentage.toInt()}%',
+      value: widget.indeterminate ? null : '${percentage.toInt()}',
+      minValue: widget.indeterminate ? null : '0',
+      maxValue: widget.indeterminate ? null : '100',
       child: ExcludeSemantics(child: indicator),
     );
   }

@@ -1,3 +1,4 @@
+import 'package:flutter/rendering.dart';
 import 'package:flutter/widgets.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:kun_ui/kun_ui.dart';
@@ -27,7 +28,7 @@ void main() {
     );
     await tester.pumpAndSettle();
     expect(find.text('33%'), findsOneWidget);
-    expect(tester.getSemantics(bar).value, '33%');
+    expect(tester.getSemantics(bar).value, '33');
 
     await tester.pumpWidget(
       wrap(const KunProgress(value: 250, showLabel: true)),
@@ -40,6 +41,27 @@ void main() {
     );
     await tester.pumpAndSettle();
     expect(find.text('0%'), findsOneWidget);
+    semantics.dispose();
+  });
+
+  testWidgets('it reports itself a progressbar', (tester) async {
+    final SemanticsHandle semantics = tester.ensureSemantics();
+    await tester.pumpWidget(
+      wrap(const KunProgress(value: 40, semanticLabel: 'Upload progress')),
+    );
+    await tester.pumpAndSettle();
+
+    // Without the role an Android dump showed a plain android.view.View with
+    // the percentage as its text, where the web has role="progressbar".
+    final SemanticsData data = tester.getSemantics(bar).getSemanticsData();
+    expect(data.role, SemanticsRole.progressBar);
+    expect(data.label, 'Upload progress');
+    // The range is the percentage's, not `max`'s: Flutter asserts the value
+    // lies between the bounds, and the web reports a percentage beside an
+    // aria-valuemax of `max`.
+    expect(data.value, '40');
+    expect(data.minValue, '0');
+    expect(data.maxValue, '100');
     semantics.dispose();
   });
 
@@ -66,7 +88,10 @@ void main() {
     );
     await tester.pump();
 
-    expect(tester.getSemantics(bar).value, '');
+    final SemanticsData data = tester.getSemantics(bar).getSemanticsData();
+    expect(data.value, '');
+    // Flutter refuses a progressBar with no value, where ARIA allows one.
+    expect(data.role, SemanticsRole.none);
     expect(find.textContaining('%'), findsNothing);
     semantics.dispose();
   });
