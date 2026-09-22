@@ -395,6 +395,32 @@ void main() {
     expect(seen, ['你']);
   });
 
+  testWidgets('composing text hides the placeholder', (tester) async {
+    await tester.pumpWidget(wrap(const KunInput(placeholder: 'Search')));
+    expect(find.text('Search'), findsOneWidget);
+    await tester.tap(find.byType(EditableText));
+    await tester.pump();
+
+    tester.testTextInput.updateEditingValue(
+      const TextEditingValue(
+        text: 'ni',
+        selection: TextSelection.collapsed(offset: 2),
+        composing: TextRange(start: 0, end: 2),
+      ),
+    );
+    await tester.pump();
+    expect(find.text('Search'), findsNothing);
+
+    tester.testTextInput.updateEditingValue(
+      const TextEditingValue(
+        text: '',
+        selection: TextSelection.collapsed(offset: 0),
+      ),
+    );
+    await tester.pump();
+    expect(find.text('Search'), findsOneWidget);
+  });
+
   testWidgets('ending composition without a text change reports once',
       (tester) async {
     final seen = <String>[];

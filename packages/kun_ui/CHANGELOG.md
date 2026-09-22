@@ -1,5 +1,16 @@
 # Changelog
 
+## 0.6.3
+
+- **A `KunInput` or `KunTextarea` hides its placeholder while an IME is
+  composing.** The placeholder was painted under the composing text, because
+  it was shown while the *reported* `value` was empty and composing text is
+  deliberately not reported until it commits. It now follows what the field
+  paints. Measured with Gboard's Simplified Chinese keyboard on a Pixel 10
+  Pro: "Inline composing" ships off, and with it on, `ni hao` overlapped the
+  placeholder. The web never had this: its `<input>` carries the composing
+  text as its own value, so the browser drops the native placeholder.
+
 ## 0.6.2
 
 - Built on kun-ui 2.42.2 (`kun_ui_tokens`, `kun_ui_icons` and

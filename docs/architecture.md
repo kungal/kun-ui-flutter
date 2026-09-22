@@ -270,8 +270,14 @@ reaches the field as a composing region — it stays in Gboard's own candidate
 bar and only committed characters arrive. The composing underline
 `EditableText` draws is therefore invisible to a default-configured Gboard
 user, but not to the third-party IMEs (Sogou, Baidu) that do compose inline.
-That path is still unverified: the emulator's IME stopped presenting after its
-language config changed, so the real pinyin test belongs on hardware.
+Measured 2026-09-22 on a Pixel 10 Pro (Android 17, API 37), which closes that
+question. The setting still ships off; with it off, typing `nihao` on the
+9-key pinyin keyboard leaves the field untouched until a candidate is picked
+and 你好 then arrives in one piece. With it on, the letters arrive as a
+composing region and `EditableText` underlines them. That run is what found
+the placeholder bug fixed in 0.6.3: the placeholder was painted under the
+composing text, because it was gated on the reported `value`, which composing
+deliberately does not update.
 
 Corrected 2026-09-16. The first version of this section said mouse selection
 worked. That was reasoned, not measured, and wrong: `KunInput` 0.2.0 passed
@@ -304,8 +310,10 @@ A multi-line field needs one more: `EditableText` replaces the inherited
 an ancestor `ScrollConfiguration` hides nothing — `scrollbar-hide` is a
 `scrollBehavior` passed to the `EditableText` itself.
 
-Whether long-press now highlights a word on Android is unverified on a
-device. Drag handles and the toolbar are still absent, by the decision above.
+Measured 2026-09-22 on the Pixel 10 Pro: long-pressing `clear me` highlights
+exactly `clear`, so word selection does work. Drag handles and the toolbar are
+still absent, by the decision above, which leaves a touch user able to select
+a word but with nothing to copy it with.
 
 ### KunUI's own strings are a scope, not a theme field (decided 2026-09-15)
 

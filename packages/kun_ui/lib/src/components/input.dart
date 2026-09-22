@@ -341,18 +341,28 @@ class _KunInputState extends State<KunInput>
         Expanded(
           child: Stack(
             children: [
-              if (widget.value.isEmpty &&
-                  (widget.placeholder?.isNotEmpty ?? false))
+              // Emptiness is the controller's, not `widget.value`: composing
+              // text never reaches `onChanged`, so a field holding `ni hao`
+              // mid-pinyin still has an empty `value` and painted its
+              // placeholder under the composing text. Measured on a Pixel 10
+              // Pro with Gboard's inline composing on.
+              if (widget.placeholder?.isNotEmpty ?? false)
                 Positioned.fill(
                   child: IgnorePointer(
-                    child: Align(
-                      alignment: Alignment.centerLeft,
-                      child: Text(
-                        widget.placeholder!,
-                        style:
-                            textStyle.copyWith(color: scheme.neutral.shade400),
-                        maxLines: 1,
-                        overflow: TextOverflow.ellipsis,
+                    child: ValueListenableBuilder<TextEditingValue>(
+                      valueListenable: _controller,
+                      builder: (context, value, child) =>
+                          value.text.isEmpty ? child! : const SizedBox.shrink(),
+                      child: Align(
+                        alignment: Alignment.centerLeft,
+                        child: Text(
+                          widget.placeholder!,
+                          style: textStyle.copyWith(
+                            color: scheme.neutral.shade400,
+                          ),
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                        ),
                       ),
                     ),
                   ),

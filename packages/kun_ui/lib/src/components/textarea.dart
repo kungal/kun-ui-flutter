@@ -238,16 +238,24 @@ class _KunTextareaState extends State<KunTextarea>
         widget.disabled ? scheme.neutral.shade500 : scheme.foreground;
     final textStyle = metrics.textStyle.copyWith(color: textColor);
 
-    final placeholder = widget.value.isEmpty &&
-            (widget.placeholder?.isNotEmpty ?? false)
+    // Emptiness is the controller's, not `widget.value`: composing text never
+    // reaches `onChanged`, so a field holding `ni hao` mid-pinyin still has an
+    // empty `value` and painted its placeholder under the composing text.
+    // Measured on a Pixel 10 Pro with Gboard's inline composing on.
+    final placeholder = (widget.placeholder?.isNotEmpty ?? false)
         ? Positioned.fill(
             child: IgnorePointer(
               child: ClipRect(
-                child: Align(
-                  alignment: Alignment.topLeft,
-                  child: Text(
-                    widget.placeholder!,
-                    style: textStyle.copyWith(color: scheme.neutral.shade400),
+                child: ValueListenableBuilder<TextEditingValue>(
+                  valueListenable: _controller,
+                  builder: (context, value, child) =>
+                      value.text.isEmpty ? child! : const SizedBox.shrink(),
+                  child: Align(
+                    alignment: Alignment.topLeft,
+                    child: Text(
+                      widget.placeholder!,
+                      style: textStyle.copyWith(color: scheme.neutral.shade400),
+                    ),
                   ),
                 ),
               ),
