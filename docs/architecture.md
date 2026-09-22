@@ -551,6 +551,34 @@ menu shrink-wraps its widest row with `IntrinsicWidth` — the web's menu is
 absolutely positioned, so `minWidth` is a floor, not the width; a stretched
 `Column` first made it as wide as the whole view.
 
+### The selection controls share one scale (decided 2026-09-22)
+
+`KunCheckBox`, `KunCheckBoxGroup` and `KunRadioGroup` read
+`KunSelectionMetrics` (`src/foundation`), the translation of the web's
+`kunSelectionSizeClasses`, so a checkbox and a radio of one `KunUISize` are
+the same box with a different mark — which is the point of the upstream
+table. Two things the gallery caught that the tests did not:
+
+- **A column of cards stretches; a column of classic rows does not.** The
+  web's group container is `flex-col`, whose default `align-items: stretch`
+  fills the cross axis — but only the `card` option is a block. `classic`
+  and `pill` options are `inline-flex` and shrink-wrap. A Flutter `Column`
+  shrink-wraps everything, so every card came out the width of its own
+  label. Only the card variant takes `CrossAxisAlignment.stretch`.
+- **A dashed rule is measured, not derived.** CSS leaves a dashed border's
+  geometry to the browser. Chrome draws a dash of twice the line's
+  thickness and then stretches the gap so a whole number of dashes fills the
+  side: a 40px rule at 20x zoom came back as 14 dashes of 40 device pixels
+  with gaps of 18 and 19, which is exactly `(length - count * dash) /
+  (count - 1)`. `KunDivider` paints that arithmetic, and its test asserts
+  the dash count rather than a screenshot.
+
+`KunLoading` is deliberately absent from this family. Its default form
+renders the web's `KUN_LOADING_IMAGE`, and the generated `KunImages` carries
+only `nullImage` and `avatarFallback`. A missing asset is a kun-ui issue
+(iron rule 1), so the component waits for the generator rather than being
+shipped with a required `image` it does not have on the web.
+
 ### Reduced motion collapses every transition (decided 2026-09-17)
 
 kun-ui's base stylesheet sets every transition and animation to 0.01ms

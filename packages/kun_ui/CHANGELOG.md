@@ -1,5 +1,47 @@
 # Changelog
 
+## 0.8.0
+
+The form and layout primitives every app reaches for.
+
+- `KunCheckBox` — the box: the shared selection scale, a label that is part
+  of the tap target, helper text, an error that takes precedence over it, a
+  keyboard-only focus ring and the `single` circular shape. `indeterminate`
+  is the select-all parent's "some but not all": a dash in place of the
+  check, reported as a mixed check state, and visual only — the value only
+  changes when the user toggles it, exactly as on the web.
+- `KunCheckBoxGroup` — several choices out of many, in three presentations
+  (`classic`, `pill`, `card`), either stacked or wrapped in a row. `max`
+  caps the selection: past it an unchosen option dims and refuses, calling
+  `onInvalid`, while a chosen one still toggles off. `onChanged` carries the
+  new list rather than a read-back, so it is never a click behind. The
+  keyboard is the WAI-ARIA checkbox pattern — every box its own tab stop,
+  Space or Enter to toggle, and no arrow-key selection, which belongs to
+  radios.
+- `KunRadioGroup` — one choice out of several, in the same three
+  presentations. Its keyboard is the radio pattern instead: the group is one
+  tab stop, and the arrow keys move *and* choose in one step, skipping
+  disabled options and wrapping. Tab lands on the chosen option, or on the
+  first enabled one when nothing is chosen.
+- `KunSelectionMetrics` — the shared box/dot/check/gap scale the three read,
+  so a checkbox and a radio of one `KunUISize` draw identically. The
+  translation of `kunSelectionSizeClasses`.
+- `KunProgress` — the bar and the ring: `solid`, `gradient`, `striped` and
+  `circle`, five thicknesses, the rounding steps and an optional label on
+  the bar or inside the ring. `indeterminate` sweeps the bar and spins the
+  ring, and reports no value to assistive technology; every looping
+  animation stops under reduced motion.
+- `KunDivider` — the separator, with an optional label in the middle. Every
+  hue is drawn at 20% and `neutral` takes the shared border token, as the
+  web tints a separator down deliberately. A dashed rule is measured, not
+  guessed: Chrome draws a dash of twice the line's thickness and stretches
+  the gap so a whole number of dashes fills the rule, and so does this.
+
+`KunLoading` is not ported. Its default form renders `KUN_LOADING_IMAGE`,
+and `kun_ui_icons` carries only `nullImage` and `avatarFallback` — the
+mascot has to be generated upstream before the component can exist here, so
+it has been reported rather than hand-added.
+
 ## 0.7.0
 
 The anchored-popup family the `KunSelect` portal decision was made for.

@@ -8,13 +8,18 @@ import 'demos/avatar.dart';
 import 'demos/badge.dart';
 import 'demos/button.dart';
 import 'demos/card.dart';
+import 'demos/checkbox.dart';
+import 'demos/checkbox_group.dart';
 import 'demos/chip.dart';
+import 'demos/divider.dart';
 import 'demos/dropdown.dart';
 import 'demos/input.dart';
 import 'demos/message.dart';
 import 'demos/modal.dart';
 import 'demos/null.dart';
 import 'demos/popover.dart';
+import 'demos/progress.dart';
+import 'demos/radio_group.dart';
 import 'demos/select.dart';
 import 'demos/skeleton.dart';
 import 'demos/spinner.dart';
@@ -97,6 +102,45 @@ const List<GalleryComponent> galleryComponents = <GalleryComponent>[
     ],
   ),
   GalleryComponent(
+    slug: 'kuncheckbox',
+    name: 'KunCheckBox',
+    demos: <GalleryDemo>[
+      GalleryDemo(slug: 'basic', title: 'Basic', builder: checkboxBasic),
+      GalleryDemo(slug: 'sizes', title: 'Sizes', builder: checkboxSizes),
+      GalleryDemo(slug: 'colors', title: 'Colours', builder: checkboxColors),
+      GalleryDemo(slug: 'states', title: 'States', builder: checkboxStates),
+      GalleryDemo(slug: 'help', title: 'Help text', builder: checkboxHelp),
+      GalleryDemo(slug: 'slot', title: 'With a widget', builder: checkboxSlot),
+      GalleryDemo(
+          slug: 'contract', title: 'Contract', builder: kunCheckBoxContract),
+    ],
+  ),
+  GalleryComponent(
+    slug: 'kuncheckboxgroup',
+    name: 'KunCheckBoxGroup',
+    demos: <GalleryDemo>[
+      GalleryDemo(slug: 'basic', title: 'Basic', builder: checkboxGroupBasic),
+      GalleryDemo(
+          slug: 'variants', title: 'Variants', builder: checkboxGroupVariants),
+      GalleryDemo(
+          slug: 'orientation',
+          title: 'Orientation',
+          builder: checkboxGroupOrientation),
+      GalleryDemo(
+          slug: 'scale',
+          title: 'Sizes and colours',
+          builder: checkboxGroupScale),
+      GalleryDemo(
+          slug: 'states', title: 'States', builder: checkboxGroupStates),
+      GalleryDemo(
+          slug: 'max', title: 'A capped selection', builder: checkboxGroupMax),
+      GalleryDemo(
+          slug: 'contract',
+          title: 'Contract',
+          builder: kunCheckBoxGroupContract),
+    ],
+  ),
+  GalleryComponent(
     slug: 'kunchip',
     name: 'KunChip',
     demos: <GalleryDemo>[
@@ -106,6 +150,21 @@ const List<GalleryComponent> galleryComponents = <GalleryComponent>[
       GalleryDemo(slug: 'dismiss', title: 'Dismiss', builder: chipDismiss),
       GalleryDemo(
           slug: 'contract', title: 'Contract', builder: kunChipContract),
+    ],
+  ),
+  GalleryComponent(
+    slug: 'kundivider',
+    name: 'KunDivider',
+    demos: <GalleryDemo>[
+      GalleryDemo(slug: 'basic', title: 'Basic', builder: dividerBasic),
+      GalleryDemo(
+          slug: 'orientation',
+          title: 'Orientation',
+          builder: dividerOrientation),
+      GalleryDemo(
+          slug: 'styles', title: 'Colours and dashes', builder: dividerStyles),
+      GalleryDemo(
+          slug: 'contract', title: 'Contract', builder: kunDividerContract),
     ],
   ),
   GalleryComponent(
@@ -208,6 +267,44 @@ const List<GalleryComponent> galleryComponents = <GalleryComponent>[
           slug: 'controlled', title: 'Controlled', builder: popoverControlled),
       GalleryDemo(
           slug: 'contract', title: 'Contract', builder: kunPopoverContract),
+    ],
+  ),
+  GalleryComponent(
+    slug: 'kunprogress',
+    name: 'KunProgress',
+    demos: <GalleryDemo>[
+      GalleryDemo(slug: 'basic', title: 'Basic', builder: progressBasic),
+      GalleryDemo(
+          slug: 'variants', title: 'Variants', builder: progressVariants),
+      GalleryDemo(slug: 'sizes', title: 'Sizes', builder: progressSizes),
+      GalleryDemo(slug: 'colors', title: 'Colours', builder: progressColors),
+      GalleryDemo(slug: 'rounded', title: 'Rounding', builder: progressRounded),
+      GalleryDemo(
+          slug: 'indeterminate',
+          title: 'Indeterminate',
+          builder: progressIndeterminate),
+      GalleryDemo(
+          slug: 'contract', title: 'Contract', builder: kunProgressContract),
+    ],
+  ),
+  GalleryComponent(
+    slug: 'kunradiogroup',
+    name: 'KunRadioGroup',
+    demos: <GalleryDemo>[
+      GalleryDemo(slug: 'basic', title: 'Basic', builder: radioGroupBasic),
+      GalleryDemo(
+          slug: 'variants', title: 'Variants', builder: radioGroupVariants),
+      GalleryDemo(
+          slug: 'orientation',
+          title: 'Orientation',
+          builder: radioGroupOrientation),
+      GalleryDemo(slug: 'cards', title: 'Cards', builder: radioGroupCards),
+      GalleryDemo(
+          slug: 'scale', title: 'Sizes and colours', builder: radioGroupScale),
+      GalleryDemo(slug: 'states', title: 'States', builder: radioGroupStates),
+      GalleryDemo(slug: 'events', title: 'Events', builder: radioGroupEvents),
+      GalleryDemo(
+          slug: 'contract', title: 'Contract', builder: kunRadioGroupContract),
     ],
   ),
   GalleryComponent(

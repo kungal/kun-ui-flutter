@@ -82,6 +82,61 @@
         "header": "header"
       }
     },
+    "KunCheckBox": {
+      "widget": "KunCheckBox",
+      "props": {
+        "color": "color",
+        "description": "description",
+        "disabled": "disabled",
+        "error": "error",
+        "id": {
+          "omit": "The DOM id exists to wire `<label for>` and `aria-describedby` to the input. The label is inside the widget here and the description sits on its semantics node, so there is nothing for an id to address."
+        },
+        "indeterminate": "indeterminate",
+        "label": "label",
+        "modelValue": "value",
+        "size": "size",
+        "type": "type",
+        "value": {
+          "omit": "The native `<input value>`, which only a form submission or a native checkbox group reads. Flutter has neither; KunCheckBoxGroup carries each option's value on the option."
+        }
+      },
+      "events": {
+        "change": {
+          "omit": "Fires on exactly the toggles update:modelValue fires on, with the same boolean; onChanged answers both."
+        },
+        "update:modelValue": "onChanged"
+      },
+      "slots": {
+        "default": "child"
+      }
+    },
+    "KunCheckBoxGroup": {
+      "widget": "KunCheckBoxGroup",
+      "props": {
+        "ariaLabel": "semanticLabel",
+        "color": "color",
+        "disabled": "disabled",
+        "error": "error",
+        "hideIndicator": "hideIndicator",
+        "label": "label",
+        "max": "max",
+        "modelValue": "values",
+        "options": "options",
+        "orientation": "orientation",
+        "rounded": "rounded",
+        "size": "size",
+        "variant": "variant"
+      },
+      "events": {
+        "change": {
+          "omit": "Fires on exactly the toggles update:modelValue fires on, with the same list; onChanged answers both and carries the new list rather than a read-back."
+        },
+        "invalid": "onInvalid",
+        "update:modelValue": "onChanged"
+      },
+      "slots": {}
+    },
     "KunChip": {
       "widget": "KunChip",
       "props": {
@@ -98,6 +153,21 @@
         "default": "child",
         "end": "end",
         "start": "start"
+      }
+    },
+    "KunDivider": {
+      "widget": "KunDivider",
+      "props": {
+        "borderStyle": "borderStyle",
+        "color": "color",
+        "orientation": "orientation",
+        "withLabel": {
+          "omit": "Deprecated no-op on the web: the label renders whenever the slot has content, which in Dart is whenever `child` is not null."
+        }
+      },
+      "events": {},
+      "slots": {
+        "default": "child"
       }
     },
     "KunDropdown": {
@@ -211,6 +281,44 @@
         "default": "child",
         "trigger": "trigger"
       }
+    },
+    "KunProgress": {
+      "widget": "KunProgress",
+      "props": {
+        "ariaLabel": "semanticLabel",
+        "color": "color",
+        "indeterminate": "indeterminate",
+        "max": "max",
+        "rounded": "rounded",
+        "showLabel": "showLabel",
+        "size": "size",
+        "value": "value",
+        "variant": "variant"
+      },
+      "events": {},
+      "slots": {}
+    },
+    "KunRadioGroup": {
+      "widget": "KunRadioGroup",
+      "props": {
+        "ariaLabel": "semanticLabel",
+        "color": "color",
+        "disabled": "disabled",
+        "error": "error",
+        "hideIndicator": "hideIndicator",
+        "label": "label",
+        "modelValue": "value",
+        "options": "options",
+        "orientation": "orientation",
+        "rounded": "rounded",
+        "size": "size",
+        "variant": "variant"
+      },
+      "events": {
+        "change": "onSelected",
+        "update:modelValue": "onChanged"
+      },
+      "slots": {}
     },
     "KunSelect": {
       "widget": "KunSelect",

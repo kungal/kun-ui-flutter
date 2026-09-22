@@ -347,6 +347,241 @@ const ComponentCoverage _kunCard = ComponentCoverage(
 Widget kunCardContract(BuildContext context) =>
     const CoveragePage(coverage: _kunCard);
 
+const ComponentCoverage _kunCheckBox = ComponentCoverage(
+  name: 'KunCheckBox',
+  entries: <CoverageEntry>[
+    CoverageEntry(
+      section: 'props',
+      contractName: 'color',
+      status: CoverageStatus.shown,
+      dartName: 'color',
+      shownBy: 'Colours',
+    ),
+    CoverageEntry(
+      section: 'props',
+      contractName: 'description',
+      status: CoverageStatus.shown,
+      dartName: 'description',
+      shownBy: 'Help text',
+    ),
+    CoverageEntry(
+      section: 'props',
+      contractName: 'disabled',
+      status: CoverageStatus.shown,
+      dartName: 'disabled',
+      shownBy: 'States',
+    ),
+    CoverageEntry(
+      section: 'props',
+      contractName: 'error',
+      status: CoverageStatus.shown,
+      dartName: 'error',
+      shownBy: 'Help text',
+    ),
+    CoverageEntry(
+      section: 'props',
+      contractName: 'id',
+      status: CoverageStatus.omitted,
+      dartName: null,
+      reason:
+          'The DOM id exists to wire `<label for>` and `aria-describedby` to the input. The label is inside the widget here and the description sits on its semantics node, so there is nothing for an id to address.',
+    ),
+    CoverageEntry(
+      section: 'props',
+      contractName: 'indeterminate',
+      status: CoverageStatus.shown,
+      dartName: 'indeterminate',
+      shownBy: 'States',
+    ),
+    CoverageEntry(
+      section: 'props',
+      contractName: 'label',
+      status: CoverageStatus.shown,
+      dartName: 'label',
+      shownBy: 'Basic',
+    ),
+    CoverageEntry(
+      section: 'props',
+      contractName: 'modelValue',
+      status: CoverageStatus.shown,
+      dartName: 'value',
+      shownBy: 'Basic',
+    ),
+    CoverageEntry(
+      section: 'props',
+      contractName: 'size',
+      status: CoverageStatus.shown,
+      dartName: 'size',
+      shownBy: 'Sizes',
+    ),
+    CoverageEntry(
+      section: 'props',
+      contractName: 'type',
+      status: CoverageStatus.shown,
+      dartName: 'type',
+      shownBy: 'States',
+    ),
+    CoverageEntry(
+      section: 'props',
+      contractName: 'value',
+      status: CoverageStatus.omitted,
+      dartName: null,
+      reason:
+          'The native `<input value>`, which only a form submission or a native checkbox group reads. Flutter has neither; KunCheckBoxGroup carries each option\'s value on the option.',
+    ),
+    CoverageEntry(
+      section: 'events',
+      contractName: 'change',
+      status: CoverageStatus.omitted,
+      dartName: null,
+      reason:
+          'Fires on exactly the toggles update:modelValue fires on, with the same boolean; onChanged answers both.',
+    ),
+    CoverageEntry(
+      section: 'events',
+      contractName: 'update:modelValue',
+      status: CoverageStatus.shown,
+      dartName: 'onChanged',
+      shownBy: 'Basic',
+    ),
+    CoverageEntry(
+      section: 'slots',
+      contractName: 'default',
+      status: CoverageStatus.shown,
+      dartName: 'child',
+      shownBy: 'With a widget',
+    ),
+  ],
+);
+
+/// The contract coverage page for KunCheckBox.
+Widget kunCheckBoxContract(BuildContext context) =>
+    const CoveragePage(coverage: _kunCheckBox);
+
+const ComponentCoverage _kunCheckBoxGroup = ComponentCoverage(
+  name: 'KunCheckBoxGroup',
+  entries: <CoverageEntry>[
+    CoverageEntry(
+      section: 'props',
+      contractName: 'ariaLabel',
+      status: CoverageStatus.noVisualForm,
+      dartName: 'semanticLabel',
+      reason:
+          'An accessible name has no visual form. The states demo names a group with it where there is no visible label, and what is announced is asserted by the widget tests.',
+    ),
+    CoverageEntry(
+      section: 'props',
+      contractName: 'color',
+      status: CoverageStatus.shown,
+      dartName: 'color',
+      shownBy: 'Sizes and colours',
+    ),
+    CoverageEntry(
+      section: 'props',
+      contractName: 'disabled',
+      status: CoverageStatus.shown,
+      dartName: 'disabled',
+      shownBy: 'States',
+    ),
+    CoverageEntry(
+      section: 'props',
+      contractName: 'error',
+      status: CoverageStatus.shown,
+      dartName: 'error',
+      shownBy: 'States',
+    ),
+    CoverageEntry(
+      section: 'props',
+      contractName: 'hideIndicator',
+      status: CoverageStatus.shown,
+      dartName: 'hideIndicator',
+      shownBy: 'Orientation',
+    ),
+    CoverageEntry(
+      section: 'props',
+      contractName: 'label',
+      status: CoverageStatus.shown,
+      dartName: 'label',
+      shownBy: 'Basic',
+    ),
+    CoverageEntry(
+      section: 'props',
+      contractName: 'max',
+      status: CoverageStatus.shown,
+      dartName: 'max',
+      shownBy: 'A capped selection',
+    ),
+    CoverageEntry(
+      section: 'props',
+      contractName: 'modelValue',
+      status: CoverageStatus.shown,
+      dartName: 'values',
+      shownBy: 'Basic',
+    ),
+    CoverageEntry(
+      section: 'props',
+      contractName: 'options',
+      status: CoverageStatus.shown,
+      dartName: 'options',
+      shownBy: 'Basic',
+    ),
+    CoverageEntry(
+      section: 'props',
+      contractName: 'orientation',
+      status: CoverageStatus.shown,
+      dartName: 'orientation',
+      shownBy: 'Orientation',
+    ),
+    CoverageEntry(
+      section: 'props',
+      contractName: 'rounded',
+      status: CoverageStatus.shown,
+      dartName: 'rounded',
+      shownBy: 'Orientation',
+    ),
+    CoverageEntry(
+      section: 'props',
+      contractName: 'size',
+      status: CoverageStatus.shown,
+      dartName: 'size',
+      shownBy: 'Sizes and colours',
+    ),
+    CoverageEntry(
+      section: 'props',
+      contractName: 'variant',
+      status: CoverageStatus.shown,
+      dartName: 'variant',
+      shownBy: 'Variants',
+    ),
+    CoverageEntry(
+      section: 'events',
+      contractName: 'change',
+      status: CoverageStatus.omitted,
+      dartName: null,
+      reason:
+          'Fires on exactly the toggles update:modelValue fires on, with the same list; onChanged answers both and carries the new list rather than a read-back.',
+    ),
+    CoverageEntry(
+      section: 'events',
+      contractName: 'invalid',
+      status: CoverageStatus.shown,
+      dartName: 'onInvalid',
+      shownBy: 'A capped selection',
+    ),
+    CoverageEntry(
+      section: 'events',
+      contractName: 'update:modelValue',
+      status: CoverageStatus.shown,
+      dartName: 'onChanged',
+      shownBy: 'Basic',
+    ),
+  ],
+);
+
+/// The contract coverage page for KunCheckBoxGroup.
+Widget kunCheckBoxGroupContract(BuildContext context) =>
+    const CoveragePage(coverage: _kunCheckBoxGroup);
+
 const ComponentCoverage _kunChip = ComponentCoverage(
   name: 'KunChip',
   entries: <CoverageEntry>[
@@ -419,6 +654,52 @@ const ComponentCoverage _kunChip = ComponentCoverage(
 /// The contract coverage page for KunChip.
 Widget kunChipContract(BuildContext context) =>
     const CoveragePage(coverage: _kunChip);
+
+const ComponentCoverage _kunDivider = ComponentCoverage(
+  name: 'KunDivider',
+  entries: <CoverageEntry>[
+    CoverageEntry(
+      section: 'props',
+      contractName: 'borderStyle',
+      status: CoverageStatus.shown,
+      dartName: 'borderStyle',
+      shownBy: 'Colours and dashes',
+    ),
+    CoverageEntry(
+      section: 'props',
+      contractName: 'color',
+      status: CoverageStatus.shown,
+      dartName: 'color',
+      shownBy: 'Colours and dashes',
+    ),
+    CoverageEntry(
+      section: 'props',
+      contractName: 'orientation',
+      status: CoverageStatus.shown,
+      dartName: 'orientation',
+      shownBy: 'Orientation',
+    ),
+    CoverageEntry(
+      section: 'props',
+      contractName: 'withLabel',
+      status: CoverageStatus.omitted,
+      dartName: null,
+      reason:
+          'Deprecated no-op on the web: the label renders whenever the slot has content, which in Dart is whenever `child` is not null.',
+    ),
+    CoverageEntry(
+      section: 'slots',
+      contractName: 'default',
+      status: CoverageStatus.shown,
+      dartName: 'child',
+      shownBy: 'Basic',
+    ),
+  ],
+);
+
+/// The contract coverage page for KunDivider.
+Widget kunDividerContract(BuildContext context) =>
+    const CoveragePage(coverage: _kunDivider);
 
 const ComponentCoverage _kunDropdown = ComponentCoverage(
   name: 'KunDropdown',
@@ -922,6 +1203,189 @@ const ComponentCoverage _kunPopover = ComponentCoverage(
 /// The contract coverage page for KunPopover.
 Widget kunPopoverContract(BuildContext context) =>
     const CoveragePage(coverage: _kunPopover);
+
+const ComponentCoverage _kunProgress = ComponentCoverage(
+  name: 'KunProgress',
+  entries: <CoverageEntry>[
+    CoverageEntry(
+      section: 'props',
+      contractName: 'ariaLabel',
+      status: CoverageStatus.noVisualForm,
+      dartName: 'semanticLabel',
+      reason:
+          'An accessible name has no visual form; what a progressbar announces is asserted by the widget tests.',
+    ),
+    CoverageEntry(
+      section: 'props',
+      contractName: 'color',
+      status: CoverageStatus.shown,
+      dartName: 'color',
+      shownBy: 'Colours',
+    ),
+    CoverageEntry(
+      section: 'props',
+      contractName: 'indeterminate',
+      status: CoverageStatus.shown,
+      dartName: 'indeterminate',
+      shownBy: 'Indeterminate',
+    ),
+    CoverageEntry(
+      section: 'props',
+      contractName: 'max',
+      status: CoverageStatus.shown,
+      dartName: 'max',
+      shownBy: 'Basic',
+    ),
+    CoverageEntry(
+      section: 'props',
+      contractName: 'rounded',
+      status: CoverageStatus.shown,
+      dartName: 'rounded',
+      shownBy: 'Rounding',
+    ),
+    CoverageEntry(
+      section: 'props',
+      contractName: 'showLabel',
+      status: CoverageStatus.shown,
+      dartName: 'showLabel',
+      shownBy: 'Basic',
+    ),
+    CoverageEntry(
+      section: 'props',
+      contractName: 'size',
+      status: CoverageStatus.shown,
+      dartName: 'size',
+      shownBy: 'Sizes',
+    ),
+    CoverageEntry(
+      section: 'props',
+      contractName: 'value',
+      status: CoverageStatus.shown,
+      dartName: 'value',
+      shownBy: 'Basic',
+    ),
+    CoverageEntry(
+      section: 'props',
+      contractName: 'variant',
+      status: CoverageStatus.shown,
+      dartName: 'variant',
+      shownBy: 'Variants',
+    ),
+  ],
+);
+
+/// The contract coverage page for KunProgress.
+Widget kunProgressContract(BuildContext context) =>
+    const CoveragePage(coverage: _kunProgress);
+
+const ComponentCoverage _kunRadioGroup = ComponentCoverage(
+  name: 'KunRadioGroup',
+  entries: <CoverageEntry>[
+    CoverageEntry(
+      section: 'props',
+      contractName: 'ariaLabel',
+      status: CoverageStatus.noVisualForm,
+      dartName: 'semanticLabel',
+      reason:
+          'An accessible name has no visual form. The states demo names a group with it where there is no visible label, and what is announced is asserted by the widget tests.',
+    ),
+    CoverageEntry(
+      section: 'props',
+      contractName: 'color',
+      status: CoverageStatus.shown,
+      dartName: 'color',
+      shownBy: 'Sizes and colours',
+    ),
+    CoverageEntry(
+      section: 'props',
+      contractName: 'disabled',
+      status: CoverageStatus.shown,
+      dartName: 'disabled',
+      shownBy: 'States',
+    ),
+    CoverageEntry(
+      section: 'props',
+      contractName: 'error',
+      status: CoverageStatus.shown,
+      dartName: 'error',
+      shownBy: 'States',
+    ),
+    CoverageEntry(
+      section: 'props',
+      contractName: 'hideIndicator',
+      status: CoverageStatus.shown,
+      dartName: 'hideIndicator',
+      shownBy: 'Cards',
+    ),
+    CoverageEntry(
+      section: 'props',
+      contractName: 'label',
+      status: CoverageStatus.shown,
+      dartName: 'label',
+      shownBy: 'Basic',
+    ),
+    CoverageEntry(
+      section: 'props',
+      contractName: 'modelValue',
+      status: CoverageStatus.shown,
+      dartName: 'value',
+      shownBy: 'Basic',
+    ),
+    CoverageEntry(
+      section: 'props',
+      contractName: 'options',
+      status: CoverageStatus.shown,
+      dartName: 'options',
+      shownBy: 'Basic',
+    ),
+    CoverageEntry(
+      section: 'props',
+      contractName: 'orientation',
+      status: CoverageStatus.shown,
+      dartName: 'orientation',
+      shownBy: 'Orientation',
+    ),
+    CoverageEntry(
+      section: 'props',
+      contractName: 'rounded',
+      status: CoverageStatus.shown,
+      dartName: 'rounded',
+      shownBy: 'Cards',
+    ),
+    CoverageEntry(
+      section: 'props',
+      contractName: 'size',
+      status: CoverageStatus.shown,
+      dartName: 'size',
+      shownBy: 'Sizes and colours',
+    ),
+    CoverageEntry(
+      section: 'props',
+      contractName: 'variant',
+      status: CoverageStatus.shown,
+      dartName: 'variant',
+      shownBy: 'Variants',
+    ),
+    CoverageEntry(
+      section: 'events',
+      contractName: 'change',
+      status: CoverageStatus.shown,
+      dartName: 'onSelected',
+      shownBy: 'Events',
+    ),
+    CoverageEntry(
+      section: 'events',
+      contractName: 'update:modelValue',
+      status: CoverageStatus.shown,
+      dartName: 'onChanged',
+      shownBy: 'Basic',
+    ),
+  ],
+);
+
+/// The contract coverage page for KunRadioGroup.
+Widget kunRadioGroupContract(BuildContext context) =>
+    const CoveragePage(coverage: _kunRadioGroup);
 
 const ComponentCoverage _kunSelect = ComponentCoverage(
   name: 'KunSelect',
