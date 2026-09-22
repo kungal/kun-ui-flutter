@@ -510,6 +510,47 @@ differ from the web's.
     is empty after a close and after a teardown with the layer still
     open.
 
+### The anchored layer is shared (decided 2026-09-22)
+
+`KunSelect` proved the portal; `KunTooltip`, `KunPopover` and `KunDropdown`
+are the components the decision above was made for. What they share now
+lives in `src/foundation/anchored.dart`, and three things in it were each
+paid for once.
+
+- **The placement is decided in layout, not before it.** floating-ui runs a
+  middleware chain — `offset`, then `flip` against the measured panel, then
+  `size` against the side that won. One pass of Flutter layout cannot
+  measure, decide and re-constrain like that, so `KunAnchoredLayout`
+  constrains the panel to the *better* of the two candidate sides and picks
+  the side in `getPositionForChild`, where the measurement exists. A panel
+  that fits on either side lands exactly where the web puts it; one that
+  fits on neither is capped to the room the winning side has.
+- **The placement that layout chose reaches the widget a frame later.** The
+  delegate reports it through a callback that runs *inside* layout, where
+  notifying a listener would rebuild mid-layout. So the callback schedules a
+  post-frame update of a `ValueNotifier` and the caret and the scale origin
+  follow on the next frame. The first frame paints at opacity 0, so the
+  default placement is never seen — but only because the notifier exists: a
+  plain field assigned in layout left `KunPopover`'s caret parked at the
+  panel's left corner, where the rounded corner and the shadow hid it, and
+  the widget tests could not see it because they never looked at the caret.
+  They do now.
+- **A trigger that handles its own taps still opens the panel.** On the web
+  a click on the slotted trigger bubbles to the wrapper. In Flutter a nested
+  `GestureDetector` wins the arena outright, so a `KunButton` passed as the
+  trigger swallowed the tap and the panel never opened — while every test
+  passed, because they used a bare `Text`. `KunTriggerTap` stays out of the
+  arena and watches raw pointers instead, firing on a down and an up in the
+  same place: a DOM click, not a Flutter tap.
+
+Two component-level notes from the same work. `KunDropdown` is deliberately
+not built on `KunPopover`, exactly as the web keeps them apart: a menu owes
+assistive technology `menu`/`menuItem`, one tab stop, arrow keys, Home/End,
+type-ahead and Tab-to-close, none of which a `dialog` can carry. And its
+menu shrink-wraps its widest row with `IntrinsicWidth` — the web's menu is
+absolutely positioned, so `minWidth` is a floor, not the width; a stretched
+`Column` first made it as wide as the whole view.
+
 ### Reduced motion collapses every transition (decided 2026-09-17)
 
 kun-ui's base stylesheet sets every transition and animation to 0.01ms

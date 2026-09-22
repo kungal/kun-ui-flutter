@@ -291,6 +291,54 @@
         }
       ]
     },
+    "KunDropdown": {
+      "source": "demos/dropdown.dart",
+      "demos": [
+        {
+          "slug": "basic",
+          "title": "Basic",
+          "builder": "dropdownBasic",
+          "shows": [
+            "props.items",
+            "slots.trigger"
+          ]
+        },
+        {
+          "slug": "positions",
+          "title": "Positions",
+          "builder": "dropdownPositions",
+          "shows": [
+            "props.position"
+          ]
+        },
+        {
+          "slug": "width",
+          "title": "Minimum width",
+          "builder": "dropdownWidth",
+          "shows": [
+            "props.minWidth"
+          ]
+        },
+        {
+          "slug": "disabled",
+          "title": "Disabled",
+          "builder": "dropdownDisabled",
+          "shows": [
+            "props.disabled"
+          ]
+        },
+        {
+          "slug": "events",
+          "title": "Events",
+          "builder": "dropdownEvents",
+          "shows": [
+            "events.select",
+            "events.open",
+            "events.close"
+          ]
+        }
+      ]
+    },
     "KunInput": {
       "source": "demos/input.dart",
       "demos": [
@@ -529,6 +577,73 @@
           ]
         }
       ]
+    },
+    "KunPopover": {
+      "source": "demos/popover.dart",
+      "demos": [
+        {
+          "slug": "basic",
+          "title": "Basic",
+          "builder": "popoverBasic",
+          "shows": [
+            "slots.trigger",
+            "slots.default"
+          ]
+        },
+        {
+          "slug": "positions",
+          "title": "Positions",
+          "builder": "popoverPositions",
+          "shows": [
+            "props.position"
+          ]
+        },
+        {
+          "slug": "arrow",
+          "title": "Arrow",
+          "builder": "popoverArrow",
+          "shows": [
+            "props.showArrow",
+            "props.rounded"
+          ]
+        },
+        {
+          "slug": "hover",
+          "title": "Hover menus",
+          "builder": "popoverHover",
+          "shows": [
+            "props.trigger",
+            "props.openDelay",
+            "props.closeDelay",
+            "props.group"
+          ]
+        },
+        {
+          "slug": "fixed",
+          "title": "Collision handling",
+          "builder": "popoverFixed",
+          "shows": [
+            "props.autoPosition"
+          ]
+        },
+        {
+          "slug": "full-width",
+          "title": "Full width",
+          "builder": "popoverFullWidth",
+          "shows": [
+            "props.fullWidth"
+          ]
+        },
+        {
+          "slug": "controlled",
+          "title": "Controlled",
+          "builder": "popoverControlled",
+          "shows": []
+        }
+      ],
+      "undemoable": {
+        "props.ariaLabel": "An accessible name has no visual form. Every demo leaves it at the web's own fallback and what is announced is asserted by the widget tests."
+      }
     },
     "KunSelect": {
       "source": "demos/select.dart",
@@ -936,6 +1051,62 @@
       "gaps": {
         "props.autofocus": "A demo page is the payload of an iframe, and a field that takes focus on mount steals the caret from the page hosting it. Showing this honestly needs a mount-on-demand control the gallery does not have."
       }
+    },
+    "KunTooltip": {
+      "source": "demos/tooltip.dart",
+      "demos": [
+        {
+          "slug": "basic",
+          "title": "Basic",
+          "builder": "tooltipBasic",
+          "shows": [
+            "props.text",
+            "slots.default"
+          ]
+        },
+        {
+          "slug": "positions",
+          "title": "Positions",
+          "builder": "tooltipPositions",
+          "shows": [
+            "props.position"
+          ]
+        },
+        {
+          "slug": "arrow",
+          "title": "Arrow",
+          "builder": "tooltipArrow",
+          "shows": [
+            "props.showArrow",
+            "props.rounded"
+          ]
+        },
+        {
+          "slug": "delays",
+          "title": "Delays",
+          "builder": "tooltipDelays",
+          "shows": [
+            "props.delayShow",
+            "props.delayHide"
+          ]
+        },
+        {
+          "slug": "content",
+          "title": "Rich content",
+          "builder": "tooltipContent",
+          "shows": [
+            "slots.content"
+          ]
+        },
+        {
+          "slug": "mobile",
+          "title": "Narrow views",
+          "builder": "tooltipMobile",
+          "shows": [
+            "props.hideOnMobile"
+          ]
+        }
+      ]
     },
     "KunUserChip": {
       "source": "demos/user_chip.dart",

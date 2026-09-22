@@ -1,5 +1,39 @@
 # Changelog
 
+## 0.7.0
+
+The anchored-popup family the `KunSelect` portal decision was made for.
+
+- `KunTooltip` — the hint: it opens on hover and on focus after `delayShow`,
+  lingers for `delayHide`, closes on Escape, and flips to the opposite side
+  when there is no room. `hideOnMobile` suppresses it under the `sm`
+  breakpoint, as the web's `hidden sm:block` does. The trigger keeps its own
+  semantics and carries the text as its description, which is what a screen
+  reader reads; the panel itself is excluded, so nothing is announced twice.
+  `content` replaces the text with a widget in the panel only.
+- `KunPopover` — the anchored dialog: twelve placements, `autoPosition` to
+  flip, shift and cap it to the room available, a caret, `fullWidth`, and a
+  controller for opening it from application code. It behaves as a dialog
+  and not only reports itself as one: opening moves focus into the panel and
+  closing returns it. `openOn: KunPopoverTrigger.hover` is the navigation
+  menu — it opens without taking focus, a `group` makes a row of them behave
+  as a menu bar, and a coordinate safe triangle lets the pointer cut the
+  corner to reach the panel without it closing. A touch still opens it with
+  a tap.
+- `KunDropdown` — the action menu, with the WAI-ARIA menu-button keyboard:
+  one tab stop, Down or Enter opening on the first row and Up on the last,
+  arrow keys that skip disabled rows and wrap, Home and End, type-ahead, and
+  Escape or Tab to close with focus back on the trigger. Rows carry a
+  colour, an optional icon and an optional `href` that goes through
+  `KunUIConfig.navigate`. It is deliberately not built on `KunPopover`, as
+  the web keeps them apart: a `dialog` cannot carry `menu`/`menuItem`.
+- All three register with the dismiss-layer stack 0.6.6 introduced, so the
+  Android back gesture closes the innermost one and leaves the page alone.
+- `opaque` is not ported (`KunPopover`). It forces a panel opaque against a
+  globally lowered `--kun-surface-opacity`, a CSS variable a site sets to
+  frost every surface; this port has no such knob and paints `content1`
+  opaque already.
+
 ## 0.6.6
 
 - **A back gesture dismisses the innermost layer only.** 0.6.5 gave the

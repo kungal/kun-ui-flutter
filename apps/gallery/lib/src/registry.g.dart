@@ -9,16 +9,19 @@ import 'demos/badge.dart';
 import 'demos/button.dart';
 import 'demos/card.dart';
 import 'demos/chip.dart';
+import 'demos/dropdown.dart';
 import 'demos/input.dart';
 import 'demos/message.dart';
 import 'demos/modal.dart';
 import 'demos/null.dart';
+import 'demos/popover.dart';
 import 'demos/select.dart';
 import 'demos/skeleton.dart';
 import 'demos/spinner.dart';
 import 'demos/switch.dart';
 import 'demos/tab.dart';
 import 'demos/textarea.dart';
+import 'demos/tooltip.dart';
 import 'demos/user_chip.dart';
 import 'registry.dart';
 
@@ -106,6 +109,22 @@ const List<GalleryComponent> galleryComponents = <GalleryComponent>[
     ],
   ),
   GalleryComponent(
+    slug: 'kundropdown',
+    name: 'KunDropdown',
+    demos: <GalleryDemo>[
+      GalleryDemo(slug: 'basic', title: 'Basic', builder: dropdownBasic),
+      GalleryDemo(
+          slug: 'positions', title: 'Positions', builder: dropdownPositions),
+      GalleryDemo(
+          slug: 'width', title: 'Minimum width', builder: dropdownWidth),
+      GalleryDemo(
+          slug: 'disabled', title: 'Disabled', builder: dropdownDisabled),
+      GalleryDemo(slug: 'events', title: 'Events', builder: dropdownEvents),
+      GalleryDemo(
+          slug: 'contract', title: 'Contract', builder: kunDropdownContract),
+    ],
+  ),
+  GalleryComponent(
     slug: 'kuninput',
     name: 'KunInput',
     demos: <GalleryDemo>[
@@ -170,6 +189,25 @@ const List<GalleryComponent> galleryComponents = <GalleryComponent>[
       GalleryDemo(slug: 'custom', title: 'Custom', builder: nullCustom),
       GalleryDemo(
           slug: 'contract', title: 'Contract', builder: kunNullContract),
+    ],
+  ),
+  GalleryComponent(
+    slug: 'kunpopover',
+    name: 'KunPopover',
+    demos: <GalleryDemo>[
+      GalleryDemo(slug: 'basic', title: 'Basic', builder: popoverBasic),
+      GalleryDemo(
+          slug: 'positions', title: 'Positions', builder: popoverPositions),
+      GalleryDemo(slug: 'arrow', title: 'Arrow', builder: popoverArrow),
+      GalleryDemo(slug: 'hover', title: 'Hover menus', builder: popoverHover),
+      GalleryDemo(
+          slug: 'fixed', title: 'Collision handling', builder: popoverFixed),
+      GalleryDemo(
+          slug: 'full-width', title: 'Full width', builder: popoverFullWidth),
+      GalleryDemo(
+          slug: 'controlled', title: 'Controlled', builder: popoverControlled),
+      GalleryDemo(
+          slug: 'contract', title: 'Contract', builder: kunPopoverContract),
     ],
   ),
   GalleryComponent(
@@ -271,6 +309,23 @@ const List<GalleryComponent> galleryComponents = <GalleryComponent>[
       GalleryDemo(slug: 'states', title: 'States', builder: textareaStates),
       GalleryDemo(
           slug: 'contract', title: 'Contract', builder: kunTextareaContract),
+    ],
+  ),
+  GalleryComponent(
+    slug: 'kuntooltip',
+    name: 'KunTooltip',
+    demos: <GalleryDemo>[
+      GalleryDemo(slug: 'basic', title: 'Basic', builder: tooltipBasic),
+      GalleryDemo(
+          slug: 'positions', title: 'Positions', builder: tooltipPositions),
+      GalleryDemo(slug: 'arrow', title: 'Arrow', builder: tooltipArrow),
+      GalleryDemo(slug: 'delays', title: 'Delays', builder: tooltipDelays),
+      GalleryDemo(
+          slug: 'content', title: 'Rich content', builder: tooltipContent),
+      GalleryDemo(
+          slug: 'mobile', title: 'Narrow views', builder: tooltipMobile),
+      GalleryDemo(
+          slug: 'contract', title: 'Contract', builder: kunTooltipContract),
     ],
   ),
   GalleryComponent(

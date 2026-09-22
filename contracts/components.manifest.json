@@ -100,6 +100,23 @@
         "start": "start"
       }
     },
+    "KunDropdown": {
+      "widget": "KunDropdown",
+      "props": {
+        "disabled": "disabled",
+        "items": "items",
+        "minWidth": "minWidth",
+        "position": "position"
+      },
+      "events": {
+        "close": "onClose",
+        "open": "onOpen",
+        "select": "onSelected"
+      },
+      "slots": {
+        "trigger": "trigger"
+      }
+    },
     "KunInput": {
       "widget": "KunInput",
       "props": {
@@ -171,6 +188,29 @@
       },
       "events": {},
       "slots": {}
+    },
+    "KunPopover": {
+      "widget": "KunPopover",
+      "props": {
+        "ariaLabel": "semanticLabel",
+        "autoPosition": "autoPosition",
+        "closeDelay": "closeDelay",
+        "fullWidth": "fullWidth",
+        "group": "group",
+        "opaque": {
+          "omit": "The web's `--kun-surface-opacity` is a CSS variable a site lowers to frost every surface; this port has no such global knob and paints `content1` opaque, so there is no translucency for the prop to override."
+        },
+        "openDelay": "openDelay",
+        "position": "position",
+        "rounded": "rounded",
+        "showArrow": "showArrow",
+        "trigger": "openOn"
+      },
+      "events": {},
+      "slots": {
+        "default": "child",
+        "trigger": "trigger"
+      }
     },
     "KunSelect": {
       "widget": "KunSelect",
@@ -311,6 +351,23 @@
         "update:modelValue": "onChanged"
       },
       "slots": {}
+    },
+    "KunTooltip": {
+      "widget": "KunTooltip",
+      "props": {
+        "delayHide": "delayHide",
+        "delayShow": "delayShow",
+        "hideOnMobile": "hideOnMobile",
+        "position": "position",
+        "rounded": "rounded",
+        "showArrow": "showArrow",
+        "text": "text"
+      },
+      "events": {},
+      "slots": {
+        "content": "content",
+        "default": "child"
+      }
     },
     "KunUserChip": {
       "widget": "KunUserChip",
