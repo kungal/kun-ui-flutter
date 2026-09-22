@@ -212,6 +212,32 @@ recorded with that as its reason and rendered as a gap rather than left out.
 This also cuts the cost of the decision above. What a future gallery rewrite
 has to port is a registry shape and a set of demo functions, not a generator.
 
+### The gallery also builds for Android (decided 2026-09-22)
+
+`apps/gallery` carries an `android/` target beside `web/`. The web build is
+the docs site and stays the deployable one; CI still builds only it. The
+Android target exists because a class of this library's behaviour cannot be
+seen anywhere else: hover is suppressed on a touch device, an IME composes
+(see the `EditableText` decision), a screen reader walks the semantics tree,
+and text selection has no handles. Three claims in this document were carried
+for a week as "unverified on a device" for want of one, and the emulator that
+answered the first of them could not present an IME.
+
+The target is the `flutter create` template with the ecosystem's org
+(`com.kungal`), the template's own TODOs dropped, and nothing else: no
+signing config beyond the debug keys, no iOS, no store presence. It is a
+verification vehicle, and the `.metadata` and `README.md` the template also
+writes were deleted rather than carried, as they were for the web target.
+
+Two mechanics worth not rediscovering. `FlutterActivity` reads an initial
+route from an intent extra, so any demo opens directly:
+`adb shell am start -n com.kungal.kun_ui_gallery/.MainActivity --es route
+"/kunselect/clearable"` — the gallery's URL grammar, on a device with no URL
+bar. And with a screen reader running, `adb shell uiautomator dump` prints
+Flutter's semantics as the Android nodes a screen reader actually reads,
+which is how the `KunSelect` clear button of 0.6.2 was finally checked
+against upstream's shape instead of reasoned about.
+
 ### Text fields are `EditableText`, not Material's `TextField` (decided 2026-09-15)
 
 Iron rule 4 leaves no other option, and it is worth being explicit about the

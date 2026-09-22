@@ -113,6 +113,10 @@ flutter run -d chrome              # in apps/gallery — the live gallery
 flutter build web --release        # in apps/gallery — the docs build
 dart run tool/gen_gallery.dart     # in apps/gallery — regenerate the registry
 ./scripts/parity.sh                # contract parity (KUN_UI_DIR=... for a local checkout)
+
+# On a real Android device (touch, IME and screen-reader behaviour only shows there)
+flutter build apk --debug          # in apps/gallery, then: adb install -r build/app/outputs/flutter-apk/app-debug.apk
+adb shell am start -n com.kungal.kun_ui_gallery/.MainActivity --es route "/kunselect/clearable"
 ```
 
 ## The CI gate (`check.yml`)
@@ -225,9 +229,14 @@ when a real app needs it, and one consumer is not a component. Then:
 `flutter test` is the first line (unlike kun-ui, which has no test runner).
 For anything visual, run the gallery (`flutter run -d chrome` in
 `apps/gallery`) and look — state what was measured or seen, never report
-reasoned-about behaviour as observed. The web reference for any component is
-the kun-ui docs site or its playground; when in doubt about a value, read the
-web source, not the rendered pixels.
+reasoned-about behaviour as observed. Touch, IME and screen-reader behaviour
+is not visible in a browser or in `flutter test`: build the gallery's Android
+target and measure it on the device (`docs/architecture.md`, "The gallery also
+builds for Android"). A desktop browser hovers, a hardware keyboard commits
+text without composing, and a widget test's semantics tree is not the Android
+node tree a screen reader reads. The web reference for any component is the
+kun-ui docs site or its playground; when in doubt about a value, read the web
+source, not the rendered pixels.
 
 ## Key docs
 
