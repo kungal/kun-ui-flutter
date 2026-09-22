@@ -141,6 +141,12 @@ clones kungal/kun-ui at `kun_ui_tokens-v<version>`, runs its
   shrink-wraps its text centres with `Align(widthFactor: 1, heightFactor: 1)`
   instead. A task book that said `Container.alignment` produced a standalone
   KunBadge 800px wide.
+- A `SemanticsRole` can carry requirements the ARIA role does not.
+  `progressBar` asserts the node has a value, a minValue and a maxValue, all
+  parseable numbers with the value between the bounds — so an indeterminate
+  bar takes no role at all, where ARIA allows `role="progressbar"` with no
+  `aria-valuenow`. `status` refuses to be a live region as well, because it
+  already is one. Both fired at runtime, not at compile time.
 - In `flutter test` the paragraph cache does not key on
   `leadingDistribution`: laying the same string out again with only that
   changed returns the first layout's metrics, which reads as "even and
