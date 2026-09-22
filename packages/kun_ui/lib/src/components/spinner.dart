@@ -31,6 +31,12 @@ class KunSpinner extends StatefulWidget {
 
 class _KunSpinnerState extends State<KunSpinner>
     with SingleTickerProviderStateMixin {
+  // Keeps spinning under reduced motion, unlike KunPulseLayer, and the
+  // duration is the SVG's rather than KunSpin's. Both follow the web: the
+  // motion is SMIL (`<animateTransform dur="0.75s" repeatCount="indefinite">`)
+  // inside the icon, which no CSS `prefers-reduced-motion` rule reaches and
+  // Tailwind's `animate-spin` has nothing to do with. Measured on a Pixel 10
+  // Pro with "remove animations" on: the skeleton pulse froze, this did not.
   late final AnimationController _controller = AnimationController(
     vsync: this,
     duration: const Duration(milliseconds: 750),
