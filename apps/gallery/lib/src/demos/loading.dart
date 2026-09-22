@@ -29,6 +29,9 @@ Widget _content(BuildContext context) {
             'does not jump when the request lands.',
             style: KunText.sm.copyWith(color: scheme.neutral.shade600),
           ),
+          // Tall enough that the mascot shows at its own size: a block
+          // shorter than 320x213 scales the loader down instead.
+          const SizedBox(height: 180),
         ],
       ),
     ),
