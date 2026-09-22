@@ -1,5 +1,18 @@
 # Changelog
 
+## 0.9.1
+
+- **0.9.0 could not compile for a consumer pinned to an older token family.**
+  It called `KunImages.loadingImage`, new in `kun_ui_icons` 2.43.0, while
+  declaring `kun_ui_icons: ^2.42.3` — so an app whose lockfile already held
+  2.42.3 kept it, and `KunLoading` failed to build. The three generated
+  dependencies now floor at `^2.43.0`, which is what the code needs. Upgrade
+  straight to this version; 0.9.0 resolves correctly only from a clean
+  lockfile.
+- CI gained a third job that resolves the *lowest* version every constraint
+  allows and analyzes and tests against it. `pub get` takes the newest, so
+  nothing in the gate could see a floor that was too low.
+
 ## 0.9.0
 
 - `KunAutocomplete` — the combobox the anchored-popup decision named as its

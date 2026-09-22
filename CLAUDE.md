@@ -121,7 +121,14 @@ adb shell am start -n com.kungal.kun_ui_gallery/.MainActivity --es route "/kunse
 
 ## The CI gate (`check.yml`)
 
-Two jobs. **check**: format → analyze → test → gallery web build.
+Three jobs. **check**: format → analyze → test → gallery web build.
+**floors**: `flutter pub downgrade` → analyze → test. `pub get` resolves the
+*newest* version each constraint allows, so a dependency floor that is too
+low passes every other check and fails only in a consumer whose lockfile
+pins an older one — 0.9.0 shipped calling `KunImages.loadingImage` while
+declaring `kun_ui_icons: ^2.42.3`, which does not have it, and the kungal app
+could not compile. **Bumping the generated family means bumping the floor,
+not just the resolved version.**
 **parity**: reads the resolved `kun_ui_tokens` version from pubspec.lock,
 clones kungal/kun-ui at `kun_ui_tokens-v<version>`, runs its
 `scripts/flutter-parity.mjs` against our manifest. Traps already hit:

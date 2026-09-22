@@ -48,6 +48,30 @@ jobs:
       - run: flutter build web --release
         working-directory: apps/gallery
 
+  # `pub get` resolves the NEWEST version each constraint allows, so a floor
+  # that is too low never fails here — it fails in a consumer whose lockfile
+  # pins an older one. kun_ui 0.9.0 shipped calling KunImages.loadingImage
+  # while declaring kun_ui_icons ^2.42.3, which does not have it, and the
+  # downstream app could not compile. This job resolves the LOWEST version
+  # every constraint allows and analyzes against that.
+  floors:
+    name: Lowest allowed dependencies
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+
+      - uses: subosito/flutter-action@v2
+        with:
+          flutter-version: 3.47.2
+          cache: true
+
+      - run: flutter pub downgrade
+
+      - run: flutter analyze
+
+      - run: flutter test
+        working-directory: packages/kun_ui
+
   parity:
     name: Contract parity
     runs-on: ubuntu-latest
