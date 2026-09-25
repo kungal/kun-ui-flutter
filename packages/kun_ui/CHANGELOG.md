@@ -1,5 +1,20 @@
 # Changelog
 
+## 0.11.0
+
+Built on kun-ui 2.47.0. Both items are gaps the kungal app hit on a Pixel
+10 Pro. Nothing here is a breaking change.
+
+- **A `KunImage` with a skeleton or a `thumbhash` now fills a box its parent
+  sizes.** With no `width`, `height` or `aspectRatio`, the picture used to
+  lay out at its own ratio inside a tight parent and sit in the top-left
+  corner, with the placeholder showing in the rest of the box, so `fit` had
+  no visible effect. In a `SizedBox(width: 150, height: 214)`, a 792x1000
+  picture drew at 150x189. It now fills the box as `fit` says, as a bare
+  image and the web's `size-full` img always did. A loose parent still gets
+  the picture's own size. Affects 0.10.0. You can drop an `aspectRatio` you
+  added as a workaround.
+
 ## 0.10.0
 
 Built on kun-ui 2.45.0. Most items are gaps the kungal app hit on a Pixel

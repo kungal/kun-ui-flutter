@@ -114,15 +114,15 @@ class _SyncImageProvider extends ImageProvider<_SyncImageProvider> {
   }
 }
 
-Future<ui.Image> pixelImage(WidgetTester tester) async {
+Future<ui.Image> pixelImage(WidgetTester tester, [int w = 1, int h = 1]) async {
   late ui.Image image;
   await tester.runAsync(() async {
     final ui.PictureRecorder recorder = ui.PictureRecorder();
     Canvas(recorder).drawRect(
-      const Rect.fromLTWH(0, 0, 1, 1),
+      Rect.fromLTWH(0, 0, w.toDouble(), h.toDouble()),
       Paint()..color = const Color(0xFF000000),
     );
-    image = await recorder.endRecording().toImage(1, 1);
+    image = await recorder.endRecording().toImage(w, h);
   });
   return image;
 }
@@ -387,6 +387,79 @@ void main() {
       ),
     );
     expect(tester.getSize(find.byType(KunImage)), const Size(320, 180));
+  });
+
+  group('a parent that sizes the wrapper', () {
+    for (final (String name, KunImage image) in <(String, KunImage)>[
+      (
+        'skeleton',
+        const KunImage(src: 'https://x.test/a.png'),
+      ),
+      (
+        'thumbhash',
+        const KunImage(src: 'https://x.test/a.png', thumbhash: _docsHash),
+      ),
+      (
+        'contain',
+        const KunImage(src: 'https://x.test/a.png', fit: BoxFit.contain),
+      ),
+    ]) {
+      testWidgets('$name: the picture fills a tight box', (tester) async {
+        final ui.Image picture = await pixelImage(tester, 79, 100);
+        await tester.pumpWidget(
+          wrap(
+            SizedBox(width: 150, height: 214, child: image),
+            config: KunUIConfig(
+              imageProvider: (_) => _SyncImageProvider(picture),
+            ),
+          ),
+        );
+        final Finder raw = find
+            .descendant(
+              of: find.byType(KunImage),
+              matching: find.byType(RawImage),
+            )
+            .last;
+        expect(tester.getSize(raw), const Size(150, 214));
+        expect(
+          tester.getTopLeft(raw),
+          tester.getTopLeft(find.byType(KunImage)),
+        );
+        expect(tester.widget<RawImage>(raw).fit, image.fit);
+      });
+    }
+
+    testWidgets('a loose parent keeps the intrinsic size', (tester) async {
+      final ui.Image picture = await pixelImage(tester, 79, 100);
+      await tester.pumpWidget(
+        wrap(
+          const KunImage(src: 'https://x.test/a.png', thumbhash: _docsHash),
+          config: KunUIConfig(
+            imageProvider: (_) => _SyncImageProvider(picture),
+          ),
+        ),
+      );
+      expect(tester.getSize(find.byType(KunImage)), const Size(79, 100));
+    });
+
+    testWidgets('the placeholder fills a tight box while loading',
+        (tester) async {
+      final _GateImageProvider provider = _GateImageProvider();
+      await tester.pumpWidget(
+        wrap(
+          const SizedBox(
+            width: 150,
+            height: 214,
+            child: KunImage(src: 'https://x.test/a.png'),
+          ),
+          config: KunUIConfig(imageProvider: (_) => provider),
+        ),
+      );
+      expect(
+        tester.getSize(find.byKey(KunImage.placeholderKey)),
+        const Size(150, 214),
+      );
+    });
   });
 
   testWidgets('cacheWidth wraps the provider in ResizeImage', (tester) async {

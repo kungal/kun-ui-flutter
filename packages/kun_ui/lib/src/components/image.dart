@@ -461,7 +461,12 @@ class _KunImageState extends State<KunImage> {
         ),
       );
     } else {
+      // The web's img is `size-full` inside the wrapper, so a wrapper the
+      // parent sizes is filled per `objectFit`. The default loose fit let a
+      // 150x214 SizedBox lay a 792x1000 picture out at 150x189, top-left,
+      // with the placeholder showing below it; measured on a Pixel 10 Pro.
       body = Stack(
+        fit: StackFit.passthrough,
         children: <Widget>[
           if (showPlaceholder)
             Positioned.fill(child: _placeholder(shade200: shade200)),
