@@ -67,15 +67,51 @@ class KunScrollShadow extends StatefulWidget {
     this.spacing = KunSpacing.unit * 3,
     this.padding,
     this.controller,
-  });
+  })  : itemCount = null,
+        itemBuilder = null;
+
+  /// Creates a strip that builds its items lazily, as they scroll into view.
+  ///
+  /// Flutter-only. The web renders every item and defers each image with
+  /// `loading="lazy"`. Flutter fetches an image as soon as its widget is
+  /// built, so a strip with no upper bound on its items (a cast list, a
+  /// screenshot row) should build them lazily.
+  ///
+  /// The items are laid out by a [ListView], which needs a bounded extent
+  /// across the axis from the parent (for a horizontal strip, a height, for
+  /// example from a [SizedBox]) and stretches every item to it.
+  const KunScrollShadow.builder({
+    super.key,
+    required int this.itemCount,
+    required IndexedWidgetBuilder this.itemBuilder,
+    this.axis = Axis.horizontal,
+    this.shadowColor,
+    this.shadowSize = _kDefaultShadowSize,
+    this.semanticLabel,
+    this.wheel = KunScrollShadowWheel.off,
+    this.draggable = false,
+    this.scrollbar = KunScrollShadowScrollbar.hide,
+    this.spacing = KunSpacing.unit * 3,
+    this.padding,
+    this.controller,
+  }) : children = const <Widget>[];
 
   /// The contents of the strip (web default slot).
   ///
   /// Laid out in a [Row] or [Column], so on a horizontal strip each child
   /// needs a finite width of its own, as in any horizontally scrolling
   /// [Row]: give a card a width. Horizontal children are stretched to the
-  /// tallest one, as the web's `flex` row stretches them.
+  /// tallest one, as the web's `flex` row stretches them. Empty for
+  /// [KunScrollShadow.builder].
   final List<Widget> children;
+
+  /// How many items [KunScrollShadow.builder] builds. Null for the
+  /// [children] constructor.
+  final int? itemCount;
+
+  /// Builds item `index` of [KunScrollShadow.builder] when it scrolls into
+  /// view. Null for the [children] constructor.
+  final IndexedWidgetBuilder? itemBuilder;
 
   /// Scroll axis (web `axis`). Defaults to [Axis.horizontal].
   final Axis axis;
@@ -110,7 +146,7 @@ class KunScrollShadow extends StatefulWidget {
   /// Scrollbar style (web `scrollbar`).
   final KunScrollShadowScrollbar scrollbar;
 
-  /// Gap between [children]. Flutter-only: the web hard-codes `gap-3`.
+  /// Gap between items. Flutter-only: the web hard-codes `gap-3`.
   final double spacing;
 
   /// Padding inside the scroller. Flutter-only: the web uses `contentClass`.
@@ -300,27 +336,41 @@ class _KunScrollShadowState extends State<KunScrollShadow> {
   Widget build(BuildContext context) {
     final Color color =
         widget.shadowColor ?? KunTheme.of(context).colors.background;
-    final Widget content = widget.axis == Axis.horizontal
-        ? IntrinsicHeight(
-            child: Row(
-              mainAxisSize: MainAxisSize.min,
-              crossAxisAlignment: CrossAxisAlignment.stretch,
-              spacing: widget.spacing,
-              children: widget.children,
-            ),
-          )
-        : Column(
-            crossAxisAlignment: CrossAxisAlignment.stretch,
-            spacing: widget.spacing,
-            children: widget.children,
-          );
-
-    Widget scroller = SingleChildScrollView(
-      scrollDirection: widget.axis,
-      controller: _controller,
-      padding: widget.padding,
-      child: content,
-    );
+    final IndexedWidgetBuilder? itemBuilder = widget.itemBuilder;
+    Widget scroller;
+    if (itemBuilder != null) {
+      scroller = ListView.separated(
+        scrollDirection: widget.axis,
+        controller: _controller,
+        padding: widget.padding,
+        itemCount: widget.itemCount!,
+        itemBuilder: itemBuilder,
+        separatorBuilder: (BuildContext context, int index) =>
+            widget.axis == Axis.horizontal
+                ? SizedBox(width: widget.spacing)
+                : SizedBox(height: widget.spacing),
+      );
+    } else {
+      scroller = SingleChildScrollView(
+        scrollDirection: widget.axis,
+        controller: _controller,
+        padding: widget.padding,
+        child: widget.axis == Axis.horizontal
+            ? IntrinsicHeight(
+                child: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  crossAxisAlignment: CrossAxisAlignment.stretch,
+                  spacing: widget.spacing,
+                  children: widget.children,
+                ),
+              )
+            : Column(
+                crossAxisAlignment: CrossAxisAlignment.stretch,
+                spacing: widget.spacing,
+                children: widget.children,
+              ),
+      );
+    }
 
     scroller = NotificationListener<ScrollMetricsNotification>(
       onNotification: _onMetrics,

@@ -543,4 +543,87 @@ void main() {
     );
     expect(startFade.right, strip.right);
   });
+
+  group('builder', () {
+    Widget lazyStrip({
+      required int itemCount,
+      required Set<int> built,
+      ScrollController? controller,
+      KunScrollShadowWheel wheel = KunScrollShadowWheel.off,
+    }) {
+      return wrap(
+        SizedBox(
+          width: 300,
+          height: 96,
+          child: KunScrollShadow.builder(
+            controller: controller,
+            wheel: wheel,
+            itemCount: itemCount,
+            itemBuilder: (BuildContext context, int index) {
+              built.add(index);
+              return SizedBox(
+                key: ValueKey<int>(index),
+                width: 100,
+                child: KunCard(child: Text('$index')),
+              );
+            },
+          ),
+        ),
+      );
+    }
+
+    testWidgets('builds only the items near the viewport', (tester) async {
+      final Set<int> built = <int>{};
+      await tester.pumpWidget(lazyStrip(itemCount: 200, built: built));
+      await tester.pumpAndSettle();
+      expect(built, contains(0));
+      expect(built.length, lessThan(20));
+      expect(built, isNot(contains(199)));
+    });
+
+    testWidgets('fades, spacing and the stretched height', (tester) async {
+      final ScrollController controller = ScrollController();
+      addTearDown(controller.dispose);
+      await tester.pumpWidget(
+        lazyStrip(itemCount: 50, built: <int>{}, controller: controller),
+      );
+      await tester.pumpAndSettle();
+      expect(fadeOpacity(tester, startFade), 0);
+      expect(fadeOpacity(tester, endFade), 1);
+
+      final Rect first = tester.getRect(find.byKey(const ValueKey<int>(0)));
+      final Rect second = tester.getRect(find.byKey(const ValueKey<int>(1)));
+      expect(second.left - first.right, KunSpacing.unit * 3);
+      expect(first.height, 96);
+
+      // A lazy list's maxScrollExtent is an estimate until the far items are
+      // built, so the first jump lands short of the real end.
+      while (controller.offset < controller.position.maxScrollExtent) {
+        controller.jumpTo(controller.position.maxScrollExtent);
+        await tester.pumpAndSettle();
+      }
+      expect(fadeOpacity(tester, startFade), 1);
+      expect(fadeOpacity(tester, endFade), 0);
+    });
+
+    testWidgets('a vertical wheel scrolls a lazy horizontal strip',
+        (tester) async {
+      final ScrollController controller = ScrollController();
+      addTearDown(controller.dispose);
+      await tester.pumpWidget(
+        lazyStrip(
+          itemCount: 50,
+          built: <int>{},
+          controller: controller,
+          wheel: KunScrollShadowWheel.on,
+        ),
+      );
+      await tester.pumpAndSettle();
+      final TestPointer pointer = TestPointer(1, PointerDeviceKind.mouse);
+      await tester.sendEventToBinding(pointer.hover(const Offset(150, 48)));
+      await tester.sendEventToBinding(pointer.scroll(const Offset(0, 120)));
+      await tester.pumpAndSettle();
+      expect(controller.offset, 120);
+    });
+  });
 }
