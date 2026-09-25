@@ -206,7 +206,10 @@ class _KunRefreshIndicatorState extends State<KunRefreshIndicator>
     if (notification.depth != 0 || !notification.leading) {
       return false;
     }
-    if (_status == _RefreshStatus.drag) {
+    // Material refuses only while dragging. On a Pixel 10 Pro the glow then
+    // drew itself across the list top as soon as the pull armed, because
+    // every further overscroll asks again.
+    if (_status == _RefreshStatus.drag || _status == _RefreshStatus.armed) {
       notification.disallowIndicator();
       return true;
     }

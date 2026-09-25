@@ -1,5 +1,6 @@
 import 'dart:async';
 
+import 'package:flutter/foundation.dart';
 import 'package:flutter/widgets.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:kun_ui/kun_ui.dart';
@@ -358,6 +359,34 @@ void main() {
 
     await tester.tap(find.text('Go'));
     expect(presses, 2);
+  });
+
+  testWidgets('the overscroll glow stays hidden once the pull is armed',
+      (tester) async {
+    debugDefaultTargetPlatformOverride = TargetPlatform.android;
+    final List<bool> escaped = <bool>[];
+    await tester.pumpWidget(
+      wrap(
+        NotificationListener<OverscrollIndicatorNotification>(
+          onNotification: (OverscrollIndicatorNotification notification) {
+            escaped.add(notification.accepted);
+            return false;
+          },
+          child: refreshList(onRefresh: () async {}),
+        ),
+      ),
+    );
+    final TestGesture gesture = await tester.startGesture(
+      const Offset(400, 100),
+    );
+    for (int i = 0; i < 60; i++) {
+      await gesture.moveBy(const Offset(0, 6));
+      await tester.pump(const Duration(milliseconds: 16));
+    }
+    expect(escaped, isEmpty);
+    await gesture.up();
+    await tester.pumpAndSettle();
+    debugDefaultTargetPlatformOverride = null;
   });
 
   testWidgets('the tree has no Material or Cupertino chrome', (tester) async {
