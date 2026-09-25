@@ -21,6 +21,7 @@ export 'src/components/checkbox_group.dart';
 export 'src/components/chip.dart';
 export 'src/components/divider.dart';
 export 'src/components/dropdown.dart';
+export 'src/components/image.dart';
 export 'src/components/input.dart';
 export 'src/components/loading.dart';
 export 'src/components/message.dart';
@@ -37,6 +38,8 @@ export 'src/components/spinner.dart';
 export 'src/components/switch.dart';
 export 'src/components/tab.dart';
 export 'src/components/textarea.dart';
+export 'src/components/thumbhash_image.dart'
+    hide ThumbHashRgba, tryDecodeThumbHash;
 export 'src/components/tooltip.dart';
 export 'src/components/user_chip.dart';
 export 'src/config/config.dart';

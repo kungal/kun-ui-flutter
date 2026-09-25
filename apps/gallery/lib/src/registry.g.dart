@@ -14,6 +14,7 @@ import 'demos/checkbox_group.dart';
 import 'demos/chip.dart';
 import 'demos/divider.dart';
 import 'demos/dropdown.dart';
+import 'demos/image.dart';
 import 'demos/input.dart';
 import 'demos/loading.dart';
 import 'demos/message.dart';
@@ -210,6 +211,26 @@ const List<GalleryComponent> galleryComponents = <GalleryComponent>[
       GalleryDemo(slug: 'events', title: 'Events', builder: dropdownEvents),
       GalleryDemo(
           slug: 'contract', title: 'Contract', builder: kunDropdownContract),
+    ],
+  ),
+  GalleryComponent(
+    slug: 'kunimage',
+    name: 'KunImage',
+    demos: <GalleryDemo>[
+      GalleryDemo(slug: 'basic', title: 'Basic', builder: imageBasic),
+      GalleryDemo(
+          slug: 'aspect-ratio',
+          title: 'Aspect ratio',
+          builder: imageAspectRatio),
+      GalleryDemo(slug: 'blur-up', title: 'Blur-up', builder: imageBlurUp),
+      GalleryDemo(slug: 'skeleton', title: 'Skeleton', builder: imageSkeleton),
+      GalleryDemo(slug: 'fallback', title: 'Fallback', builder: imageFallback),
+      GalleryDemo(
+          slug: 'thumbhash-image',
+          title: 'ThumbHash image',
+          builder: imageThumbhashImage),
+      GalleryDemo(
+          slug: 'contract', title: 'Contract', builder: kunImageContract),
     ],
   ),
   GalleryComponent(

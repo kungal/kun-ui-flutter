@@ -566,6 +566,66 @@
         }
       ]
     },
+    "KunImage": {
+      "source": "demos/image.dart",
+      "demos": [
+        {
+          "slug": "basic",
+          "title": "Basic",
+          "builder": "imageBasic",
+          "shows": [
+            "props.src",
+            "props.alt",
+            "props.width",
+            "props.height"
+          ]
+        },
+        {
+          "slug": "aspect-ratio",
+          "title": "Aspect ratio",
+          "builder": "imageAspectRatio",
+          "shows": [
+            "props.aspectRatio",
+            "props.objectFit"
+          ]
+        },
+        {
+          "slug": "blur-up",
+          "title": "Blur-up",
+          "builder": "imageBlurUp",
+          "shows": [
+            "props.thumbhash"
+          ]
+        },
+        {
+          "slug": "skeleton",
+          "title": "Skeleton",
+          "builder": "imageSkeleton",
+          "shows": [
+            "props.skeleton"
+          ]
+        },
+        {
+          "slug": "fallback",
+          "title": "Fallback",
+          "builder": "imageFallback",
+          "shows": [
+            "props.fallbackSrc",
+            "events.error",
+            "events.load"
+          ]
+        },
+        {
+          "slug": "thumbhash-image",
+          "title": "ThumbHash image",
+          "builder": "imageThumbhashImage",
+          "shows": []
+        }
+      ],
+      "undemoable": {
+        "props.ariaLabel": "An accessible name has no visual form; every demo here has a visible alt, and what is announced is asserted by the widget tests."
+      }
+    },
     "KunInput": {
       "source": "demos/input.dart",
       "demos": [

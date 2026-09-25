@@ -223,6 +223,26 @@
         "trigger": "trigger"
       }
     },
+    "KunImage": {
+      "widget": "KunImage",
+      "props": {
+        "alt": "alt",
+        "ariaLabel": "semanticLabel",
+        "aspectRatio": "aspectRatio",
+        "fallbackSrc": "fallbackSrc",
+        "height": "height",
+        "objectFit": "fit",
+        "skeleton": "skeleton",
+        "src": "src",
+        "thumbhash": "thumbhash",
+        "width": "width"
+      },
+      "events": {
+        "error": "onError",
+        "load": "onLoad"
+      },
+      "slots": {}
+    },
     "KunInput": {
       "widget": "KunInput",
       "props": {

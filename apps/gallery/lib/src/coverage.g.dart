@@ -958,6 +958,101 @@ const ComponentCoverage _kunDropdown = ComponentCoverage(
 Widget kunDropdownContract(BuildContext context) =>
     const CoveragePage(coverage: _kunDropdown);
 
+const ComponentCoverage _kunImage = ComponentCoverage(
+  name: 'KunImage',
+  entries: <CoverageEntry>[
+    CoverageEntry(
+      section: 'props',
+      contractName: 'alt',
+      status: CoverageStatus.shown,
+      dartName: 'alt',
+      shownBy: 'Basic',
+    ),
+    CoverageEntry(
+      section: 'props',
+      contractName: 'ariaLabel',
+      status: CoverageStatus.noVisualForm,
+      dartName: 'semanticLabel',
+      reason:
+          'An accessible name has no visual form; every demo here has a visible alt, and what is announced is asserted by the widget tests.',
+    ),
+    CoverageEntry(
+      section: 'props',
+      contractName: 'aspectRatio',
+      status: CoverageStatus.shown,
+      dartName: 'aspectRatio',
+      shownBy: 'Aspect ratio',
+    ),
+    CoverageEntry(
+      section: 'props',
+      contractName: 'fallbackSrc',
+      status: CoverageStatus.shown,
+      dartName: 'fallbackSrc',
+      shownBy: 'Fallback',
+    ),
+    CoverageEntry(
+      section: 'props',
+      contractName: 'height',
+      status: CoverageStatus.shown,
+      dartName: 'height',
+      shownBy: 'Basic',
+    ),
+    CoverageEntry(
+      section: 'props',
+      contractName: 'objectFit',
+      status: CoverageStatus.shown,
+      dartName: 'fit',
+      shownBy: 'Aspect ratio',
+    ),
+    CoverageEntry(
+      section: 'props',
+      contractName: 'skeleton',
+      status: CoverageStatus.shown,
+      dartName: 'skeleton',
+      shownBy: 'Skeleton',
+    ),
+    CoverageEntry(
+      section: 'props',
+      contractName: 'src',
+      status: CoverageStatus.shown,
+      dartName: 'src',
+      shownBy: 'Basic',
+    ),
+    CoverageEntry(
+      section: 'props',
+      contractName: 'thumbhash',
+      status: CoverageStatus.shown,
+      dartName: 'thumbhash',
+      shownBy: 'Blur-up',
+    ),
+    CoverageEntry(
+      section: 'props',
+      contractName: 'width',
+      status: CoverageStatus.shown,
+      dartName: 'width',
+      shownBy: 'Basic',
+    ),
+    CoverageEntry(
+      section: 'events',
+      contractName: 'error',
+      status: CoverageStatus.shown,
+      dartName: 'onError',
+      shownBy: 'Fallback',
+    ),
+    CoverageEntry(
+      section: 'events',
+      contractName: 'load',
+      status: CoverageStatus.shown,
+      dartName: 'onLoad',
+      shownBy: 'Fallback',
+    ),
+  ],
+);
+
+/// The contract coverage page for KunImage.
+Widget kunImageContract(BuildContext context) =>
+    const CoveragePage(coverage: _kunImage);
+
 const ComponentCoverage _kunInput = ComponentCoverage(
   name: 'KunInput',
   entries: <CoverageEntry>[
