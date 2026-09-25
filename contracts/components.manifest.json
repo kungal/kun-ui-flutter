@@ -39,6 +39,7 @@
     "KunAvatar": {
       "widget": "KunAvatar",
       "props": {
+        "decoration": "decoration",
         "disableFloating": {
           "omit": "Deprecated no-op on the web: KunAvatar renders no floating card. The port starts without it."
         },
@@ -296,6 +297,24 @@
       },
       "slots": {
         "default": "child"
+      }
+    },
+    "KunNavItem": {
+      "widget": "KunNavItem",
+      "props": {
+        "color": "color",
+        "current": "current",
+        "disabled": "disabled",
+        "href": "href",
+        "icon": "icon",
+        "label": "label",
+        "stacked": "stacked"
+      },
+      "events": {
+        "click": "onPressed"
+      },
+      "slots": {
+        "icon": "icon"
       }
     },
     "KunNull": {

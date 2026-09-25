@@ -130,6 +130,14 @@
           "shows": [
             "props.isNavigation"
           ]
+        },
+        {
+          "slug": "decoration",
+          "title": "Decoration",
+          "builder": "avatarDecoration",
+          "shows": [
+            "props.decoration"
+          ]
         }
       ]
     },
@@ -819,6 +827,43 @@
           ]
         }
       ]
+    },
+    "KunNavItem": {
+      "source": "demos/nav_item.dart",
+      "demos": [
+        {
+          "slug": "rail",
+          "title": "Rail",
+          "builder": "navItemRail",
+          "shows": [
+            "props.label",
+            "props.icon",
+            "props.stacked",
+            "props.current",
+            "props.color",
+            "events.click"
+          ]
+        },
+        {
+          "slug": "sidebar",
+          "title": "Sidebar",
+          "builder": "navItemSidebar",
+          "shows": [
+            "props.disabled"
+          ]
+        },
+        {
+          "slug": "badge",
+          "title": "Badge",
+          "builder": "navItemBadge",
+          "shows": [
+            "slots.icon"
+          ]
+        }
+      ],
+      "undemoable": {
+        "props.href": "A href is a navigation token handed to KunUIConfig.navigate; it has no visual of its own. The widget tests fire navigate with it."
+      }
     },
     "KunNull": {
       "source": "demos/null.dart",

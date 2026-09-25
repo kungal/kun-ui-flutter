@@ -306,7 +306,7 @@ void main() {
     }
   });
 
-  testWidgets('loading fades the picture in and drops the layer',
+  testWidgets('loading fades the picture in and stops the pulse',
       (tester) async {
     final _GateImageProvider provider = _GateImageProvider();
     final ui.Image pixel = await pixelImage(tester);
@@ -686,4 +686,328 @@ void main() {
     );
     expect(find.byType(KunFocusOutline), findsNothing);
   });
+
+  const KunAvatarDecoration sakura = KunAvatarDecoration(
+    src: 'still.png',
+    animatedSrc: 'spin.webp',
+  );
+  const KunUser framed = KunUser(
+    id: 1,
+    name: 'Kun',
+    avatar: 'https://x.test/a.png',
+    avatarDecoration: sakura,
+  );
+
+  Image frameImageOf(WidgetTester tester) {
+    return tester.widget<Image>(
+      find.descendant(
+        of: find.byType(IgnorePointer),
+        matching: find.byType(Image),
+      ),
+    );
+  }
+
+  int frameImageCount(WidgetTester tester) {
+    return find
+        .descendant(
+          of: find.byType(IgnorePointer),
+          matching: find.byType(Image),
+        )
+        .evaluate()
+        .length;
+  }
+
+  testWidgets('a md frame is 1.2× at −10% and does not change layout size',
+      (tester) async {
+    final ui.Image pixel = await pixelImage(tester);
+    await tester.pumpWidget(
+      wrap(
+        const KunAvatar(user: framed, isNavigation: false),
+        config: KunUIConfig(
+          imageProvider: (_) => _SyncImageProvider(pixel),
+        ),
+      ),
+    );
+    expect(tester.getSize(find.byType(KunAvatar)), const Size.square(32));
+    final Rect avatar = tester.getRect(find.byType(KunAvatar));
+    final Rect frame = tester.getRect(
+      find.descendant(
+        of: find.byType(IgnorePointer),
+        matching: find.byType(Image),
+      ),
+    );
+    expect(frame.width, closeTo(32 * 1.2, 0.05));
+    expect(frame.height, closeTo(32 * 1.2, 0.05));
+    expect(frame.left, closeTo(avatar.left - 32 * 0.1, 0.05));
+    expect(frame.top, closeTo(avatar.top - 32 * 0.1, 0.05));
+  });
+
+  testWidgets('xs, sm, none, and no decoration draw no frame', (tester) async {
+    final ui.Image pixel = await pixelImage(tester);
+    final KunUIConfig config = KunUIConfig(
+      imageProvider: (_) => _SyncImageProvider(pixel),
+    );
+
+    await tester.pumpWidget(
+      wrap(
+        const KunAvatar(
+          user: framed,
+          size: KunAvatarSize.xs,
+          isNavigation: false,
+        ),
+        config: config,
+      ),
+    );
+    expect(frameImageCount(tester), 0);
+
+    await tester.pumpWidget(
+      wrap(
+        const KunAvatar(
+          user: framed,
+          size: KunAvatarSize.sm,
+          isNavigation: false,
+        ),
+        config: config,
+      ),
+    );
+    expect(frameImageCount(tester), 0);
+
+    await tester.pumpWidget(
+      wrap(
+        const KunAvatar(
+          user: framed,
+          decoration: KunAvatarDecorationMode.none,
+          isNavigation: false,
+        ),
+        config: config,
+      ),
+    );
+    expect(frameImageCount(tester), 0);
+
+    await tester.pumpWidget(
+      wrap(
+        const KunAvatar(user: kun, isNavigation: false),
+        config: config,
+      ),
+    );
+    expect(frameImageCount(tester), 0);
+  });
+
+  testWidgets('the frame asset follows decoration mode, hover, and motion',
+      (tester) async {
+    final ui.Image pixel = await pixelImage(tester);
+    final Map<String, ImageProvider> byUrl = <String, ImageProvider>{};
+    final KunUIConfig config = KunUIConfig(
+      imageProvider: (String url) => byUrl.putIfAbsent(
+        url,
+        () => _LabeledSyncProvider(url, pixel),
+      ),
+    );
+
+    await tester.pumpWidget(
+      wrap(
+        const KunAvatar(
+          user: framed,
+          decoration: KunAvatarDecorationMode.static,
+          isNavigation: false,
+        ),
+        config: config,
+      ),
+    );
+    expect(frameImageOf(tester).image, byUrl['still.png']);
+
+    await tester.pumpWidget(
+      wrap(
+        const KunAvatar(
+          user: framed,
+          decoration: KunAvatarDecorationMode.always,
+          isNavigation: false,
+        ),
+        config: config,
+      ),
+    );
+    expect(frameImageOf(tester).image, byUrl['spin.webp']);
+
+    await tester.pumpWidget(
+      wrap(
+        const KunAvatar(
+          user: framed,
+          decoration: KunAvatarDecorationMode.hover,
+          isNavigation: false,
+        ),
+        config: config,
+      ),
+    );
+    expect(frameImageOf(tester).image, byUrl['still.png']);
+
+    final TestGesture gesture =
+        await tester.createGesture(kind: PointerDeviceKind.mouse);
+    await gesture.addPointer(location: Offset.zero);
+    addTearDown(gesture.removePointer);
+    await gesture.moveTo(tester.getCenter(find.byType(KunAvatar)));
+    await tester.pump();
+    expect(frameImageOf(tester).image, byUrl['spin.webp']);
+
+    await gesture.moveTo(Offset.zero);
+    await tester.pump();
+    expect(frameImageOf(tester).image, byUrl['still.png']);
+
+    await tester.pumpWidget(
+      wrap(
+        const KunAvatar(
+          user: framed,
+          decoration: KunAvatarDecorationMode.always,
+          isNavigation: false,
+        ),
+        config: config,
+        disableAnimations: true,
+      ),
+    );
+    expect(frameImageOf(tester).image, byUrl['still.png']);
+  });
+
+  testWidgets('the frame is hidden from semantics and does not steal a tap',
+      (tester) async {
+    final SemanticsHandle handle = tester.ensureSemantics();
+    final List<String> hrefs = <String>[];
+    int behind = 0;
+    final ui.Image pixel = await pixelImage(tester);
+    await tester.pumpWidget(
+      wrap(
+        GestureDetector(
+          behavior: HitTestBehavior.opaque,
+          onTap: () => behind++,
+          child: const SizedBox(
+            width: 200,
+            height: 200,
+            child: Center(
+              child: KunAvatar(user: framed),
+            ),
+          ),
+        ),
+        config: KunUIConfig(
+          imageProvider: (_) => _SyncImageProvider(pixel),
+          navigate: (BuildContext context, String href) => hrefs.add(href),
+        ),
+      ),
+    );
+    expect(
+      tester.getSemantics(find.bySemanticsLabel('Kun')),
+      isSemantics(label: 'Kun', isLink: true, hasTapAction: true),
+    );
+    expect(
+      find.descendant(
+        of: find.byType(ExcludeSemantics),
+        matching: find.byType(Image),
+      ),
+      findsOneWidget,
+    );
+
+    await tester.tap(find.byType(KunAvatar));
+    expect(hrefs, <String>['/user/1/info']);
+    expect(behind, 0);
+
+    final Rect avatar = tester.getRect(find.byType(KunAvatar));
+    await tester.tapAt(avatar.topLeft.translate(-3.2, -3.2));
+    expect(hrefs, <String>['/user/1/info']);
+    expect(behind, 1);
+    handle.dispose();
+  });
+
+  testWidgets('the loading layer holds then fades after the picture arrives',
+      (tester) async {
+    final _GateImageProvider provider = _GateImageProvider();
+    final ui.Image pixel = await pixelImage(tester);
+    await tester.pumpWidget(
+      wrap(
+        const KunAvatar(user: kun, isNavigation: false),
+        config: KunUIConfig(imageProvider: (_) => provider),
+      ),
+    );
+    expect(find.byType(KunPulseLayer), findsOneWidget);
+    expect(placeholderOpacityOf(tester), closeTo(1, 0.001));
+
+    provider.gate.complete(ImageInfo(image: pixel.clone()));
+    await tester.pump();
+    expect(find.byType(KunPulseLayer), findsNothing);
+    expect(placeholderOpacityOf(tester), closeTo(1, 0.001));
+
+    await tester.pump(KunDurations.slow ~/ 2);
+    expect(placeholderOpacityOf(tester), closeTo(1, 0.001));
+
+    await tester.pump(KunDurations.slow * 2 - KunDurations.slow ~/ 2);
+    expect(placeholderOpacityOf(tester), closeTo(0, 0.001));
+  });
+
+  test('KunUser equality includes the decoration', () {
+    const KunUser withFrame = KunUser(
+      id: 1,
+      name: 'Kun',
+      avatar: 'a.png',
+      avatarDecoration: KunAvatarDecoration(src: 'still.png'),
+    );
+    const KunUser same = KunUser(
+      id: 1,
+      name: 'Kun',
+      avatar: 'a.png',
+      avatarDecoration: KunAvatarDecoration(src: 'still.png'),
+    );
+    const KunUser without = KunUser(id: 1, name: 'Kun', avatar: 'a.png');
+    const KunUser otherFrame = KunUser(
+      id: 1,
+      name: 'Kun',
+      avatar: 'a.png',
+      avatarDecoration: KunAvatarDecoration(
+        src: 'still.png',
+        animatedSrc: 'spin.webp',
+      ),
+    );
+    expect(withFrame, same);
+    expect(withFrame.hashCode, same.hashCode);
+    expect(withFrame, isNot(without));
+    expect(withFrame, isNot(otherFrame));
+  });
+}
+
+double placeholderOpacityOf(WidgetTester tester) {
+  return tester
+      .widget<FadeTransition>(
+        find
+            .descendant(
+              of: find.byKey(const ValueKey<String>('kunAvatarPlaceholder')),
+              matching: find.byType(FadeTransition),
+            )
+            .first,
+      )
+      .opacity
+      .value;
+}
+
+class _LabeledSyncProvider extends ImageProvider<_LabeledSyncProvider> {
+  _LabeledSyncProvider(this.url, this.image);
+
+  final String url;
+  final ui.Image image;
+
+  @override
+  Future<_LabeledSyncProvider> obtainKey(ImageConfiguration configuration) {
+    return SynchronousFuture<_LabeledSyncProvider>(this);
+  }
+
+  @override
+  ImageStreamCompleter loadImage(
+    _LabeledSyncProvider key,
+    ImageDecoderCallback decode,
+  ) {
+    return OneFrameImageStreamCompleter(
+      SynchronousFuture<ImageInfo>(ImageInfo(image: image.clone())),
+    );
+  }
+
+  @override
+  bool operator ==(Object other) =>
+      other is _LabeledSyncProvider && other.url == url;
+
+  @override
+  int get hashCode => url.hashCode;
 }

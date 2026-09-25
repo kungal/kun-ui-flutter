@@ -139,3 +139,82 @@ class _AvatarNavigationState extends State<_AvatarNavigation> {
     );
   }
 }
+
+const KunUser _decorated = KunUser(
+  id: 1,
+  name: 'Kun',
+  avatar: 'favicon.png',
+  avatarDecoration: KunAvatarDecoration(
+    src: 'demo/decorations/sakura.png',
+    animatedSrc: 'demo/decorations/sakura.webp',
+  ),
+);
+
+Widget avatarDecoration(BuildContext context) {
+  return Padding(
+    padding: const EdgeInsets.all(KunSpacing.unit * 6),
+    child: _scope(
+      child: const Row(
+        mainAxisSize: MainAxisSize.min,
+        crossAxisAlignment: CrossAxisAlignment.end,
+        spacing: KunSpacing.unit * 8,
+        children: [
+          _DecorationSample(
+            mode: KunAvatarDecorationMode.hover,
+            caption: 'hover',
+          ),
+          _DecorationSample(
+            mode: KunAvatarDecorationMode.always,
+            caption: 'always',
+          ),
+          _DecorationSample(
+            mode: KunAvatarDecorationMode.static,
+            caption: 'static',
+          ),
+          _DecorationSample(
+            mode: KunAvatarDecorationMode.none,
+            caption: 'none',
+          ),
+          _DecorationSample(
+            mode: KunAvatarDecorationMode.hover,
+            size: KunAvatarSize.sm,
+            caption: 'sm',
+          ),
+        ],
+      ),
+    ),
+  );
+}
+
+class _DecorationSample extends StatelessWidget {
+  const _DecorationSample({
+    required this.mode,
+    required this.caption,
+    this.size = KunAvatarSize.xl,
+  });
+
+  final KunAvatarDecorationMode mode;
+  final KunAvatarSize size;
+  final String caption;
+
+  @override
+  Widget build(BuildContext context) {
+    final KunColorScheme scheme = KunTheme.of(context).colors;
+    return Column(
+      mainAxisSize: MainAxisSize.min,
+      spacing: KunSpacing.unit * 3,
+      children: [
+        KunAvatar(
+          user: _decorated,
+          size: size,
+          decoration: mode,
+          isNavigation: false,
+        ),
+        Text(
+          caption,
+          style: KunText.xs.copyWith(color: scheme.neutral.shade500),
+        ),
+      ],
+    );
+  }
+}

@@ -18,6 +18,7 @@ import 'demos/input.dart';
 import 'demos/loading.dart';
 import 'demos/message.dart';
 import 'demos/modal.dart';
+import 'demos/nav_item.dart';
 import 'demos/null.dart';
 import 'demos/popover.dart';
 import 'demos/progress.dart';
@@ -78,6 +79,8 @@ const List<GalleryComponent> galleryComponents = <GalleryComponent>[
           slug: 'fallback', title: 'Sticker fallback', builder: avatarFallback),
       GalleryDemo(
           slug: 'navigation', title: 'Navigation', builder: avatarNavigation),
+      GalleryDemo(
+          slug: 'decoration', title: 'Decoration', builder: avatarDecoration),
       GalleryDemo(
           slug: 'contract', title: 'Contract', builder: kunAvatarContract),
     ],
@@ -278,6 +281,17 @@ const List<GalleryComponent> galleryComponents = <GalleryComponent>[
       GalleryDemo(slug: 'bare', title: 'Without container', builder: modalBare),
       GalleryDemo(
           slug: 'contract', title: 'Contract', builder: kunModalContract),
+    ],
+  ),
+  GalleryComponent(
+    slug: 'kunnavitem',
+    name: 'KunNavItem',
+    demos: <GalleryDemo>[
+      GalleryDemo(slug: 'rail', title: 'Rail', builder: navItemRail),
+      GalleryDemo(slug: 'sidebar', title: 'Sidebar', builder: navItemSidebar),
+      GalleryDemo(slug: 'badge', title: 'Badge', builder: navItemBadge),
+      GalleryDemo(
+          slug: 'contract', title: 'Contract', builder: kunNavItemContract),
     ],
   ),
   GalleryComponent(

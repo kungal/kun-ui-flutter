@@ -10,11 +10,40 @@ import '../locale/messages.dart';
 import '../theme/theme.dart';
 import 'pulse.dart';
 
+/// A frame asset on a square canvas 1.2× the avatar, the avatar circle
+/// centred in it. [src] is the still image; [animatedSrc], when present,
+/// is played on hover or always, depending on [KunAvatar.decoration].
+@immutable
+class KunAvatarDecoration {
+  /// Creates a frame asset.
+  const KunAvatarDecoration({required this.src, this.animatedSrc});
+
+  /// The still frame image URL.
+  final String src;
+
+  /// The animated frame image URL, when there is one.
+  final String? animatedSrc;
+
+  @override
+  bool operator ==(Object other) =>
+      other is KunAvatarDecoration &&
+      other.src == src &&
+      other.animatedSrc == animatedSrc;
+
+  @override
+  int get hashCode => Object.hash(src, animatedSrc);
+}
+
 /// Web type `KunUser`.
 @immutable
 class KunUser {
   /// Creates a user brief.
-  const KunUser({required this.id, required this.name, this.avatar = ''});
+  const KunUser({
+    required this.id,
+    required this.name,
+    this.avatar = '',
+    this.avatarDecoration,
+  });
 
   /// The user's id, used to build the profile path.
   ///
@@ -31,15 +60,20 @@ class KunUser {
   /// fallback is used.
   final String avatar;
 
+  /// An avatar frame drawn around the avatar (NextMoe
+  /// `cosmetics.avatar_frame`). Absent or null → no frame.
+  final KunAvatarDecoration? avatarDecoration;
+
   @override
   bool operator ==(Object other) =>
       other is KunUser &&
       other.id == id &&
       other.name == name &&
-      other.avatar == avatar;
+      other.avatar == avatar &&
+      other.avatarDecoration == avatarDecoration;
 
   @override
-  int get hashCode => Object.hash(id, name, avatar);
+  int get hashCode => Object.hash(id, name, avatar, avatarDecoration);
 }
 
 /// Web type `KunAvatarSize`: the shared scale plus the two profile sizes
@@ -67,6 +101,22 @@ enum KunAvatarSize {
   original,
 }
 
+/// How [KunUser.avatarDecoration] is drawn.
+enum KunAvatarDecorationMode {
+  /// Shows the still frame and plays the animated one while the avatar is
+  /// hovered or focused.
+  hover,
+
+  /// Plays the animated asset continuously.
+  always,
+
+  /// Never animates.
+  static,
+
+  /// Hides the frame.
+  none,
+}
+
 bool _warnedEmptyAvatarPool = false;
 
 /// Clears the empty-pool warning so a test can see it fire again.
@@ -88,6 +138,7 @@ class KunAvatar extends StatefulWidget {
     required this.user,
     this.size = KunAvatarSize.md,
     this.isNavigation = true,
+    this.decoration = KunAvatarDecorationMode.hover,
   });
 
   /// Null: the fallback picture, never a link.
@@ -99,6 +150,15 @@ class KunAvatar extends StatefulWidget {
   /// When true (the default) and [user] is non-null with a [KunUser.id] that
   /// is not 0, the avatar is a real link to the user's profile.
   final bool isNavigation;
+
+  /// How `user.avatarDecoration` is drawn. [KunAvatarDecorationMode.hover]
+  /// (default) shows the still frame and plays the animated one while the
+  /// avatar is hovered or focused; [KunAvatarDecorationMode.always] plays it
+  /// continuously; [KunAvatarDecorationMode.static] never animates;
+  /// [KunAvatarDecorationMode.none] hides the frame. Below the `md` size
+  /// the frame is never drawn, and a reader who asked for reduced motion
+  /// always gets the still image.
+  final KunAvatarDecorationMode decoration;
 
   @override
   State<KunAvatar> createState() => _KunAvatarState();
@@ -196,6 +256,46 @@ class _KunAvatarState extends State<KunAvatar> {
     );
   }
 
+  String? _frameUrl(BuildContext context) {
+    final KunAvatarDecoration? decoration = widget.user?.avatarDecoration;
+    if (decoration == null ||
+        decoration.src.isEmpty ||
+        widget.decoration == KunAvatarDecorationMode.none ||
+        widget.size == KunAvatarSize.xs ||
+        widget.size == KunAvatarSize.sm) {
+      return null;
+    }
+    if (kunReducedMotion(context)) {
+      return decoration.src;
+    }
+    final String? animated = decoration.animatedSrc;
+    final bool hasAnimated = animated != null && animated.isNotEmpty;
+    switch (widget.decoration) {
+      case KunAvatarDecorationMode.always:
+        return hasAnimated ? animated : decoration.src;
+      case KunAvatarDecorationMode.hover:
+        if (hasAnimated && (_hovered || _focused)) {
+          return animated;
+        }
+        return decoration.src;
+      case KunAvatarDecorationMode.static:
+        return decoration.src;
+      case KunAvatarDecorationMode.none:
+        return null;
+    }
+  }
+
+  bool _tracksDecorationHover() {
+    final KunAvatarDecoration? decoration = widget.user?.avatarDecoration;
+    return widget.decoration == KunAvatarDecorationMode.hover &&
+        decoration != null &&
+        decoration.src.isNotEmpty &&
+        decoration.animatedSrc != null &&
+        decoration.animatedSrc!.isNotEmpty &&
+        widget.size != KunAvatarSize.xs &&
+        widget.size != KunAvatarSize.sm;
+  }
+
   @override
   Widget build(BuildContext context) {
     final KunUIConfig config = KunUIConfigScope.of(context);
@@ -207,6 +307,7 @@ class _KunAvatarState extends State<KunAvatar> {
         ? KunMessagesScope.of(context).avatar.unknownUser
         : (widget.user!.name.isEmpty ? null : widget.user!.name);
     final double side = _side;
+    final String? frameUrl = _frameUrl(context);
 
     Widget picture = Image(
       // By value: an app's imageProvider returns a new provider per call,
@@ -227,16 +328,26 @@ class _KunAvatarState extends State<KunAvatar> {
         if (wasSynchronouslyLoaded) {
           return child;
         }
+        final bool loaded = frame != null;
+        final bool reduce = kunReducedMotion(context);
         return Stack(
           fit: StackFit.expand,
           children: [
             AnimatedOpacity(
-              opacity: frame != null ? 1 : 0,
+              opacity: loaded ? 1 : 0,
               duration: kunMotion(context, KunDurations.slow),
               curve: KunDefaultTransition.curve,
               child: child,
             ),
-            if (frame == null) _loadingLayer(loadingColor),
+            // The placeholder stays opaque for slow after the first frame,
+            // then fades — dropping it in the same frame the picture starts
+            // to fade in left the fade playing over the bare page
+            // (kun-ui 2.45.0).
+            if (!(loaded && reduce))
+              _KunAvatarPlaceholder(
+                loaded: loaded,
+                color: loadingColor,
+              ),
           ],
         );
       },
@@ -264,10 +375,40 @@ class _KunAvatarState extends State<KunAvatar> {
 
     Widget body = SizedBox.square(
       dimension: side,
-      child: ClipOval(child: picture),
+      child: Stack(
+        clipBehavior: Clip.none,
+        children: [
+          ClipOval(child: picture),
+          if (frameUrl != null)
+            Positioned(
+              left: side * -0.1,
+              top: side * -0.1,
+              width: side * 1.2,
+              height: side * 1.2,
+              child: IgnorePointer(
+                child: ExcludeSemantics(
+                  child: Image(
+                    image: config.imageProvider(frameUrl),
+                    width: side * 1.2,
+                    height: side * 1.2,
+                    fit: BoxFit.fill,
+                    excludeFromSemantics: true,
+                  ),
+                ),
+              ),
+            ),
+        ],
+      ),
     );
 
     if (!_isLink) {
+      if (_tracksDecorationHover()) {
+        return MouseRegion(
+          onEnter: (_) => setState(() => _hovered = true),
+          onExit: (_) => setState(() => _hovered = false),
+          child: body,
+        );
+      }
       return body;
     }
 
@@ -316,6 +457,33 @@ class _KunAvatarState extends State<KunAvatar> {
             ),
           ),
         ),
+      ),
+    );
+  }
+}
+
+class _KunAvatarPlaceholder extends StatelessWidget {
+  const _KunAvatarPlaceholder({
+    required this.loaded,
+    required this.color,
+  });
+
+  final bool loaded;
+  final Color color;
+
+  @override
+  Widget build(BuildContext context) {
+    return ExcludeSemantics(
+      child: AnimatedOpacity(
+        key: const ValueKey<String>('kunAvatarPlaceholder'),
+        opacity: loaded ? 0 : 1,
+        duration: kunMotion(context, KunDurations.slow) * (loaded ? 2 : 1),
+        curve: loaded
+            ? const Interval(0.5, 1.0, curve: KunDefaultTransition.curve)
+            : KunDefaultTransition.curve,
+        child: loaded
+            ? ColoredBox(color: color)
+            : KunPulseLayer(child: ColoredBox(color: color)),
       ),
     );
   }

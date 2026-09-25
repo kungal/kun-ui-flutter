@@ -195,6 +195,13 @@ const ComponentCoverage _kunAvatar = ComponentCoverage(
   entries: <CoverageEntry>[
     CoverageEntry(
       section: 'props',
+      contractName: 'decoration',
+      status: CoverageStatus.shown,
+      dartName: 'decoration',
+      shownBy: 'Decoration',
+    ),
+    CoverageEntry(
+      section: 'props',
       contractName: 'disableFloating',
       status: CoverageStatus.omitted,
       dartName: null,
@@ -1305,6 +1312,80 @@ const ComponentCoverage _kunModal = ComponentCoverage(
 /// The contract coverage page for KunModal.
 Widget kunModalContract(BuildContext context) =>
     const CoveragePage(coverage: _kunModal);
+
+const ComponentCoverage _kunNavItem = ComponentCoverage(
+  name: 'KunNavItem',
+  entries: <CoverageEntry>[
+    CoverageEntry(
+      section: 'props',
+      contractName: 'color',
+      status: CoverageStatus.shown,
+      dartName: 'color',
+      shownBy: 'Rail',
+    ),
+    CoverageEntry(
+      section: 'props',
+      contractName: 'current',
+      status: CoverageStatus.shown,
+      dartName: 'current',
+      shownBy: 'Rail',
+    ),
+    CoverageEntry(
+      section: 'props',
+      contractName: 'disabled',
+      status: CoverageStatus.shown,
+      dartName: 'disabled',
+      shownBy: 'Sidebar',
+    ),
+    CoverageEntry(
+      section: 'props',
+      contractName: 'href',
+      status: CoverageStatus.noVisualForm,
+      dartName: 'href',
+      reason:
+          'A href is a navigation token handed to KunUIConfig.navigate; it has no visual of its own. The widget tests fire navigate with it.',
+    ),
+    CoverageEntry(
+      section: 'props',
+      contractName: 'icon',
+      status: CoverageStatus.shown,
+      dartName: 'icon',
+      shownBy: 'Rail',
+    ),
+    CoverageEntry(
+      section: 'props',
+      contractName: 'label',
+      status: CoverageStatus.shown,
+      dartName: 'label',
+      shownBy: 'Rail',
+    ),
+    CoverageEntry(
+      section: 'props',
+      contractName: 'stacked',
+      status: CoverageStatus.shown,
+      dartName: 'stacked',
+      shownBy: 'Rail',
+    ),
+    CoverageEntry(
+      section: 'events',
+      contractName: 'click',
+      status: CoverageStatus.shown,
+      dartName: 'onPressed',
+      shownBy: 'Rail',
+    ),
+    CoverageEntry(
+      section: 'slots',
+      contractName: 'icon',
+      status: CoverageStatus.shown,
+      dartName: 'icon',
+      shownBy: 'Badge',
+    ),
+  ],
+);
+
+/// The contract coverage page for KunNavItem.
+Widget kunNavItemContract(BuildContext context) =>
+    const CoveragePage(coverage: _kunNavItem);
 
 const ComponentCoverage _kunNull = ComponentCoverage(
   name: 'KunNull',

@@ -25,6 +25,7 @@ export 'src/components/input.dart';
 export 'src/components/loading.dart';
 export 'src/components/message.dart';
 export 'src/components/modal.dart';
+export 'src/components/nav_item.dart';
 export 'src/components/null.dart';
 export 'src/components/popover.dart';
 export 'src/components/progress.dart';
