@@ -1178,6 +1178,42 @@
         }
       ]
     },
+    "KunScrollShadow": {
+      "source": "demos/scroll_shadow.dart",
+      "demos": [
+        {
+          "slug": "basic",
+          "title": "Basic",
+          "builder": "scrollShadowBasic",
+          "shows": [
+            "slots.default",
+            "props.shadowColor",
+            "props.shadowSize"
+          ]
+        },
+        {
+          "slug": "interactive",
+          "title": "Interactive",
+          "builder": "scrollShadowInteractive",
+          "shows": [
+            "props.wheel",
+            "props.draggable",
+            "props.scrollbar"
+          ]
+        },
+        {
+          "slug": "vertical",
+          "title": "Vertical",
+          "builder": "scrollShadowVertical",
+          "shows": [
+            "props.axis"
+          ]
+        }
+      ],
+      "undemoable": {
+        "props.ariaLabel": "An accessible name has no visual form. The basic demo names the strip with it, and what is announced is asserted by the widget tests."
+      }
+    },
     "KunSelect": {
       "source": "demos/select.dart",
       "demos": [
