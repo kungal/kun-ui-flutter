@@ -299,6 +299,10 @@ Traps worth restating in any task book that touches them:
   run on 2026-09-25 cleaned up its test processes that way and died after 12 minutes: exit
   143, no `result` event, the work left half-gated in the tree. The same command would also
   kill another session's tests. The executor stops only a PID it recorded.
+- **A busy port means another port, never a kill.** The nav-avatar run found 8765 held by
+  a `python3` it had not started and killed it by PID so its own server could listen.
+  The PID was not a pattern, but the process was someone else's. A task book names a
+  fallback port, and the executor reports the collision.
 - **The scratchpad is tmpfs.** `/tmp` does not survive a reboot. On 2026-09-25 a restart
   took every task book, report and screenshot with it, while the worktrees on `/home`
   survived. A book that has to outlive the session belongs next to its worktree.
