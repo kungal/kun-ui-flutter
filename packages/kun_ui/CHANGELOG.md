@@ -1,5 +1,52 @@
 # Changelog
 
+## 0.12.0
+
+Built on kun-ui 2.47.1. An app can now drop Material entirely: kun_ui has
+the app, the pages, the page frame and the scroll behaviour, as well as the
+widgets. Nothing here is a breaking change.
+
+- **`KunApp` / `KunApp.router`** wrap `WidgetsApp`. `theme`, `darkTheme` and
+  `themeMode` (`KunThemeMode.system` follows the platform) install
+  `KunTheme`. `messages` and `config` install `KunMessagesScope` and
+  `KunUIConfigScope`. The default text style is `KunText.base` in
+  `foreground`, the scroll behaviour is `KunScrollBehavior`, and named routes
+  are `KunPageRoute`s. Add `KunMessageProvider` through `builder` if you use
+  toasts.
+- **`KunPage` / `KunPageRoute`**, for `GoRoute.pageBuilder`
+  (`KunPage(key: state.pageKey, child: …)`) and Navigator 1.
+  `transition: platform | fade | slide | none`:
+  - `fade` is KunUI's surface-enter motion: fade plus a 0.95 scale,
+    `kun-base` in and `kun-exit` out.
+  - `slide` is the iOS slide with the covered page's parallax, on `kun-slow`
+    and the emphasized ease. Its edge swipe goes back.
+  - `platform` is `slide` on iOS and macOS and `fade` elsewhere.
+  - `none` has no motion, for full-screen viewers.
+  - Android predictive back scrubs the page's own transition (measured on a
+    Pixel 10 Pro).
+  - Reduced motion makes all of them instant.
+- **`KunScaffold`** replaces `Scaffold` for a page frame: `body`,
+  `bottomBar`, `extendBody`, `backgroundColor` (the theme background by
+  default) and `resizeToAvoidBottomInset`. The insets follow Scaffold's
+  rules. With `extendBody`, the body's `MediaQuery.padding.bottom` is the
+  bar's height, so pad the last item with it. The bar sees the `MediaQuery`
+  without its top padding, so a `SafeArea` around it pads only the bottom.
+- **`KunScrollBehavior`** gives stretch overscroll on Android, bounce on iOS
+  and macOS, and a `KunScrollbar` on desktop. The mouse does not
+  drag-scroll, as on the web; opt in per strip with `KunScrollShadow`.
+- **`KunScrollbar`**, the web's thin KunUI scrollbar: an 8px rounded thumb in
+  neutral 300, 400 when hovered or dragged, and no track.
+- **`KunScrollShadow`**, newly portable in kun-ui 2.47.1.
+  - Edge fades show only while there is more content on that side.
+  - `wheel: on` lets a vertical mouse wheel scroll a horizontal strip, and
+    `contain` also keeps the page still at the ends.
+  - `draggable` gives mouse grab-to-scroll, and a card inside doesn't click
+    after a drag.
+  - `scrollbar: hide | thin | auto`, `shadowColor`, `shadowSize` and
+    `semanticLabel` (no English default).
+  - Flutter-only: `spacing`, `padding` and `controller`. Give horizontal
+    children a width.
+
 ## 0.11.0
 
 Built on kun-ui 2.47.0. Both items are gaps the kungal app hit on a Pixel

@@ -721,6 +721,71 @@ web-only.
   `blur-xl` on covers; the app's blur, label and tap-to-reveal have no
   upstream design, so they stay in the app until kun-ui draws one.
 
+### The app shell is KunUI-drawn (decided 2026-09-25)
+
+The kungal app dropped Material. Once kun_ui covered the widgets, Material
+was left deciding only the structure: `MaterialApp`, `MaterialPage` and
+`Scaffold`. It still drew four things a user could see: page transitions,
+the back gestures, the Android overscroll and desktop scrollbars. kun-ui has
+none of these on the web. A browser navigates instantly, draws its own back
+gestures (Safari's edge swipe, Chrome's predictive back) and scrollbars, and
+the document is the frame. So they follow the pull-to-refresh and
+selection-menu split: the mechanics are Flutter's, and the visuals are
+KunUI's own pieces.
+
+- **`KunPage` / `KunPageRoute`**, `transition: platform | fade | slide |
+  none`.
+  - `fade` is the motion every KunUI surface already enters with (KunDropdown,
+    the selection menu, the web modal): fade plus a 0.95 scale, `kun-base` in
+    and `kun-exit` out.
+  - `slide` is the iOS convention on `kun-slow` and the emphasized ease. The
+    covered page's parallax goes through Flutter's `delegatedTransition`. The
+    leading edge casts `KunShadows.md` instead of Cupertino's gradient.
+  - `platform` is `slide` on Apple platforms and `fade` elsewhere. `none` is
+    for full-screen viewers.
+  - The iOS edge swipe is Cupertino's detector, transcribed.
+  - Android predictive back is Material's observer, transcribed without its
+    shrink visuals: the gesture scrubs the page's own transition, through the
+    `PredictiveBackRoute` calls `TransitionRoute` already implements.
+  - Measured on the Pixel 10 Pro (Android 17, target SDK 36, no manifest
+    opt-in): mid-swipe the pushed `fade` page is half faded and scaled over
+    the page beneath, beside the system's back chevron, and letting go pops
+    it.
+  - Reduced motion makes every transition and every settle instant.
+- **`KunScaffold`** is the part of `Scaffold` an app still uses: `body`,
+  `bottomBar`, `extendBody`, `backgroundColor` (the web's `body` background)
+  and `resizeToAvoidBottomInset`. Its insets are Scaffold's exactly.
+  - The bar gets the `MediaQuery` without its top padding, and keeps its
+    bottom view padding while not resizing. The first draft passed the bar
+    the unmodified `MediaQuery`. A bar that wraps itself in a `SafeArea` then
+    grew by the status bar's height, and a test now measures that.
+  - With `extendBody`, the body's bottom padding is the bar's height.
+- **`KunScrollBehavior`** gives stretch on Android (measured on the Pixel)
+  and bounce on iOS and macOS. On desktop it draws `KunScrollbar`, which is
+  the web's `kun-scroll-thin` scrollbar (`default-300`, `default-400` on
+  hover, 8px, fully rounded, no track), the only scrollbar kun-ui has drawn.
+  It does not add the mouse to the drag devices, because the web never
+  drag-scrolls with a mouse. `KunScrollShadow(draggable: true)` is the
+  opt-in.
+- **`KunApp` / `KunApp.router`** wrap `WidgetsApp`. They take `theme`,
+  `darkTheme` and `themeMode` (`system` follows the platform brightness),
+  plus `messages`, `config` and the scroll behaviour. The default text style
+  is `KunText.base` in `foreground`, which is the web's `body`. No font
+  family is set, because the web's stack resolves to the platform font on
+  Apple and Android. On Windows the web lands on Arial and Flutter on Segoe
+  UI; a `sans` family token would be kun-ui's to generate if that ever
+  matters. Named routes use `KunPageRoute`. `KunMessageProvider` is left to
+  the app's `builder`. The gallery runs on `KunApp.router`.
+
+**KunScrollShadow is portable (kun-ui 2.47.1).** Upstream had listed it as
+web-only, "a pure-CSS answer to web scrollbars". The kungal app then needed
+exactly what it adds on top of a scroller: edge fades, a vertical wheel that
+scrolls a horizontal shelf (`wheel: on | contain`, through the pointer-signal
+resolver), and mouse drag (`draggable` adds the mouse to that strip's drag
+devices, and the gesture arena suppresses a card's tap after a drag, as the
+web does by hand). None of these is Flutter's default. The contract changed
+upstream first, and the port then claimed it.
+
 ### Reduced motion collapses every transition (decided 2026-09-17)
 
 kun-ui's base stylesheet sets every transition and animation to 0.01ms

@@ -29,11 +29,41 @@ dependencies:
 
 ## Setup
 
-Wrap the app once:
+The shortest path is `KunApp`, which needs no Material at all:
 
 ```dart
 import 'package:kun_ui/kun_ui.dart';
 
+void main() {
+  runApp(
+    KunApp.router(
+      routerConfig: router,           // go_router: pageBuilder → KunPage
+      themeMode: KunThemeMode.system, // follows the platform brightness
+      messages: KunMessages.zhCN,
+      builder: (BuildContext context, Widget? child) =>
+          KunMessageProvider(child: child!),
+    ),
+  );
+}
+
+GoRoute(
+  path: '/topic/:id',
+  pageBuilder: (context, state) =>
+      KunPage(key: state.pageKey, child: TopicScreen(id: state.pathParameters['id']!)),
+);
+```
+
+`KunApp` installs `KunTheme`, the messages, `KunScrollBehavior` (stretch on
+Android, bounce on iOS, the thin KunUI scrollbar on desktop) and the default
+text style. `KunPage` gives KunUI's page transitions and the platform back
+gestures. `KunScaffold` replaces `Scaffold` as the page frame (`body`,
+`bottomBar`, `extendBody`, keyboard insets). Set `pageBuilder` on every
+route, because go_router falls back to its own page type under a bare
+`WidgetsApp`.
+
+To keep another shell instead, wrap the app once:
+
+```dart
 void main() {
   runApp(
     KunTheme(
@@ -54,13 +84,13 @@ KunTheme(
 ```
 
 Following the platform is `MediaQuery.platformBrightnessOf(context)` at the
-top of the app; KunUI does not decide this for you.
+top of the app (`KunApp`'s `themeMode: KunThemeMode.system` does exactly that).
 
 Two things `KunTheme` does *not* do:
 
-- It paints no background. Give your page
-  `KunTheme.of(context).colors.background` (a `Scaffold.backgroundColor`,
-  a `ColoredBox` — wherever your shell paints its ground).
+- It paints no background. `KunScaffold` paints
+  `KunTheme.of(context).colors.background`; in another shell, paint it
+  wherever the shell paints its ground.
 - It brings no navigation. KunUI widgets work inside
   `MaterialApp`, `CupertinoApp` or a bare `WidgetsApp`, so keep whatever app
   shell you have. They do need the `Navigator` that shell builds: text
