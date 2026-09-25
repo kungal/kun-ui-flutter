@@ -416,7 +416,7 @@ void main() {
     expect(burst, findsNothing);
   });
 
-  testWidgets('semantics: button, toggled only in toggle mode, label,count',
+  testWidgets('semantics: button, selected only in toggle mode, label,count',
       (tester) async {
     final SemanticsHandle semantics = tester.ensureSemantics();
     await tester.pumpWidget(
@@ -426,8 +426,8 @@ void main() {
       tester.getSemantics(find.byType(KunReaction)),
       isSemantics(
         isButton: true,
-        hasToggledState: true,
-        isToggled: false,
+        hasSelectedState: true,
+        isSelected: false,
         label: 'Like,128',
         hasTapAction: true,
       ),
@@ -448,6 +448,7 @@ void main() {
       tester.getSemantics(find.byType(KunReaction)),
       isSemantics(
         isButton: true,
+        hasSelectedState: false,
         hasToggledState: false,
         label: 'Share,12',
       ),

@@ -1,4 +1,5 @@
 import 'package:flutter/gestures.dart';
+import 'package:flutter/rendering.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter/widgets.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -317,5 +318,46 @@ void main() {
       ),
       reason: 'the gap is painted over the ring',
     );
+  });
+
+  testWidgets('a button beside a node of its own keeps a node of its own',
+      (tester) async {
+    final SemanticsHandle handle = tester.ensureSemantics();
+    await tester.pumpWidget(
+      KunTheme(
+        data: KunThemeData.light(),
+        child: Directionality(
+          textDirection: TextDirection.ltr,
+          child: Align(
+            alignment: Alignment.topLeft,
+            // The app's row sat inside a node (a list item); a button
+            // without a node of its own merged into that one.
+            child: Semantics(
+              container: true,
+              child: SizedBox(
+                width: 600,
+                child: Wrap(
+                  children: <Widget>[
+                    KunReaction(count: 3, label: '点赞', onChanged: (_) {}),
+                    KunButton(onPressed: () {}, child: const Text('链接失效')),
+                  ],
+                ),
+              ),
+            ),
+          ),
+        ),
+      ),
+    );
+    final SemanticsNode button = tester.getSemantics(find.byType(KunButton));
+    expect(button, isSemantics(isButton: true, label: '链接失效'));
+    expect(
+      button.rect.size,
+      tester.getSize(find.byType(KunButton)),
+    );
+    final SemanticsNode reaction =
+        tester.getSemantics(find.byType(KunReaction));
+    expect(identical(reaction, button), isFalse);
+    expect(reaction.getSemanticsData().label, '点赞,3');
+    handle.dispose();
   });
 }

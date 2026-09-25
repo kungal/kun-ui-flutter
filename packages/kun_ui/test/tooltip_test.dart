@@ -1,5 +1,6 @@
 import 'package:flutter/gestures.dart';
 import 'package:flutter/services.dart';
+import 'package:flutter/rendering.dart';
 import 'package:flutter/widgets.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:kun_ui/kun_ui.dart';
@@ -272,5 +273,33 @@ void main() {
       'Copy',
     );
     semantics.dispose();
+  });
+
+  testWidgets('a KunButton child inside a node carries the tooltip itself',
+      (tester) async {
+    final SemanticsHandle handle = tester.ensureSemantics();
+    await tester.pumpWidget(
+      wrap(
+        Semantics(
+          container: true,
+          child: SizedBox(
+            width: 400,
+            child: Row(
+              children: <Widget>[
+                KunReaction(count: 1, label: 'Like', onChanged: (_) {}),
+                KunTooltip(
+                  text: 'Copy',
+                  child: KunButton(onPressed: () {}, child: const Text('c')),
+                ),
+              ],
+            ),
+          ),
+        ),
+      ),
+    );
+    final SemanticsNode node = tester.getSemantics(find.byType(KunButton));
+    expect(node.rect.size, tester.getSize(find.byType(KunButton)));
+    expect(node, isSemantics(isButton: true, tooltip: 'Copy'));
+    handle.dispose();
   });
 }

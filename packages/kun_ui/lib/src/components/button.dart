@@ -240,7 +240,12 @@ class _KunButtonState extends State<KunButton> {
       ],
     );
 
+    // Without its own node, a button whose only sibling had one (a
+    // KunReaction beside it in a Wrap) lent its role and tap action to the
+    // parent: TalkBack read the whole row as this button, measured on a
+    // Pixel 10 Pro.
     return Semantics(
+      container: true,
       button: true,
       enabled: !_inactive,
       label: widget.semanticLabel,

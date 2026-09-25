@@ -227,8 +227,10 @@ void main() {
         ),
       ),
     );
-    final String label =
-        tester.getSemantics(find.bySemanticsLabel('Search')).label;
+    final String label = tester
+        .getSemantics(find.bySemanticsLabel('Search'))
+        .getSemanticsData()
+        .label;
     expect(label, 'Search');
     expect(RegExp('Search').allMatches(label).length, 1);
     handle.dispose();
@@ -257,7 +259,8 @@ void main() {
     expect(presses, 1);
     final Finder named = find.bySemanticsLabel(RegExp('Uploads'));
     expect(named, findsOneWidget);
-    final String nodeLabel = tester.getSemantics(named).label;
+    final String nodeLabel =
+        tester.getSemantics(named).getSemanticsData().label;
     expect(RegExp('Uploads').allMatches(nodeLabel).length, 1);
     handle.dispose();
   });

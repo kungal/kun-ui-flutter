@@ -442,4 +442,36 @@ void main() {
     expect(dialog.role, SemanticsRole.dialog);
     semantics.dispose();
   });
+
+  testWidgets('a KunButton trigger inside a node carries expanded itself',
+      (tester) async {
+    final SemanticsHandle handle = tester.ensureSemantics();
+    await tester.pumpWidget(
+      wrap(
+        Semantics(
+          container: true,
+          child: SizedBox(
+            width: 400,
+            child: Row(
+              children: <Widget>[
+                KunReaction(count: 1, label: 'Like', onChanged: (_) {}),
+                KunPopover(
+                  trigger: KunButton(
+                    onPressed: () {},
+                    child: const Text('open'),
+                  ),
+                  child: const Text('panel'),
+                ),
+              ],
+            ),
+          ),
+        ),
+      ),
+    );
+    final SemanticsNode node = tester.getSemantics(find.byType(KunButton));
+    expect(node.rect.size, tester.getSize(find.byType(KunButton)));
+    expect(node,
+        isSemantics(isButton: true, label: 'open', hasExpandedState: true));
+    handle.dispose();
+  });
 }

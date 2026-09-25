@@ -300,7 +300,9 @@ class _KunTooltipState extends State<KunTooltip>
   Widget build(BuildContext context) {
     final Widget trigger = widget.text.isEmpty
         ? widget.child
-        : Semantics(tooltip: widget.text, child: widget.child);
+        : MergeSemantics(
+            child: Semantics(tooltip: widget.text, child: widget.child),
+          );
     return PopScope(
       canPop: !_visible,
       onPopInvokedWithResult: (bool didPop, Object? result) {

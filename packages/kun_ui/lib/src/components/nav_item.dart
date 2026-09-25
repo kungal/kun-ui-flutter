@@ -111,15 +111,17 @@ class KunNavItem extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Semantics(
-      selected: current ? true : null,
-      child: KunButton(
-        fullWidth: true,
-        variant: current ? KunUIVariant.flat : KunUIVariant.light,
-        color: current ? color : KunUIColor.neutral,
-        disabled: disabled,
-        onPressed: () => _handlePressed(context),
-        child: stacked ? _stackedBody() : _inlineBody(),
+    return MergeSemantics(
+      child: Semantics(
+        selected: current ? true : null,
+        child: KunButton(
+          fullWidth: true,
+          variant: current ? KunUIVariant.flat : KunUIVariant.light,
+          color: current ? color : KunUIColor.neutral,
+          disabled: disabled,
+          onPressed: () => _handlePressed(context),
+          child: stacked ? _stackedBody() : _inlineBody(),
+        ),
       ),
     );
   }

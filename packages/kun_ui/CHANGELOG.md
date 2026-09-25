@@ -1,5 +1,29 @@
 # Changelog
 
+## 0.13.1
+
+Accessibility fixes from the kungal app's Android node tree. There are no
+API changes.
+
+- **A `KunButton` always has a semantics node of its own.** Without one, a
+  button whose only sibling had its own node (a `KunReaction` beside it in a
+  `Wrap`) lent its role, label and tap action to the enclosing node. On a
+  Pixel 10 Pro the whole row came out as that button: exploring anywhere in
+  the row read its label, and a double tap there pressed it. Affects every
+  release before this one.
+  - `KunNavItem`, `KunPopover` and `KunTooltip` now merge their own
+    annotations into the slotted control's node, as `KunDropdown` already
+    did, so a nav item stays selected, a popover trigger keeps its
+    expanded state, and a tooltip keeps its text.
+  - If a test read one of those labels with `getSemantics(...).label`,
+    read `getSemanticsData().label` instead, because the node is now a merge
+    boundary.
+- **`KunReaction` reports its pressed state as selected**, as Flutter's own
+  toggle icon button does, not as toggled. Flutter maps toggled to a
+  switch, so TalkBack called a like button a switch ("开关"). It is now a
+  button that is selected while on, which is the closest Flutter comes to
+  the web's `aria-pressed`. Measured on the Pixel.
+
 ## 0.13.0
 
 Built on kun-ui 2.47.2. Nothing here is a breaking change.

@@ -506,7 +506,9 @@ class _KunPopoverState extends State<KunPopover>
   Widget build(BuildContext context) {
     Widget trigger = KunTriggerTap(
       onTap: _toggle,
-      child: Semantics(expanded: _isOpen, child: widget.trigger),
+      child: MergeSemantics(
+        child: Semantics(expanded: _isOpen, child: widget.trigger),
+      ),
     );
     if (_pointer != null) {
       trigger = MouseRegion(

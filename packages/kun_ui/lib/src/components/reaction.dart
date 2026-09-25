@@ -486,7 +486,7 @@ class _KunReactionState extends State<KunReaction>
       child: Semantics(
         button: true,
         enabled: !widget.disabled,
-        toggled: widget.toggle ? widget.value : null,
+        selected: widget.toggle ? widget.value : null,
         label: widget.child == null ? accessibleName : null,
         onTap: widget.disabled ? null : _press,
         child: FocusableActionDetector(
