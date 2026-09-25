@@ -31,7 +31,7 @@ class _GalleryAppState extends State<GalleryApp> {
 
   @override
   Widget build(BuildContext context) {
-    return WidgetsApp.router(
+    return KunApp.router(
       color: KunColors.light.primary.solid,
       title: 'KunUI',
       routeInformationParser: _parser,

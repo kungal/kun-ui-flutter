@@ -947,6 +947,18 @@
         }
       ]
     },
+    "KunPage": {
+      "contract": false,
+      "source": "demos/page.dart",
+      "demos": [
+        {
+          "slug": "transitions",
+          "title": "Transitions",
+          "builder": "pageTransitions",
+          "shows": []
+        }
+      ]
+    },
     "KunPopover": {
       "source": "demos/popover.dart",
       "demos": [
@@ -1150,6 +1162,18 @@
           "slug": "list",
           "title": "Pull to refresh",
           "builder": "refreshIndicatorList",
+          "shows": []
+        }
+      ]
+    },
+    "KunScaffold": {
+      "contract": false,
+      "source": "demos/scaffold.dart",
+      "demos": [
+        {
+          "slug": "bottom-bar",
+          "title": "Bottom bar",
+          "builder": "scaffoldBottomBar",
           "shows": []
         }
       ]

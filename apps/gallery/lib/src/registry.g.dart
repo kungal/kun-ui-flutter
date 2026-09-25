@@ -21,10 +21,12 @@ import 'demos/message.dart';
 import 'demos/modal.dart';
 import 'demos/nav_item.dart';
 import 'demos/null.dart';
+import 'demos/page.dart';
 import 'demos/popover.dart';
 import 'demos/progress.dart';
 import 'demos/radio_group.dart';
 import 'demos/refresh_indicator.dart';
+import 'demos/scaffold.dart';
 import 'demos/select.dart';
 import 'demos/skeleton.dart';
 import 'demos/spinner.dart';
@@ -326,6 +328,14 @@ const List<GalleryComponent> galleryComponents = <GalleryComponent>[
     ],
   ),
   GalleryComponent(
+    slug: 'kunpage',
+    name: 'KunPage',
+    demos: <GalleryDemo>[
+      GalleryDemo(
+          slug: 'transitions', title: 'Transitions', builder: pageTransitions),
+    ],
+  ),
+  GalleryComponent(
     slug: 'kunpopover',
     name: 'KunPopover',
     demos: <GalleryDemo>[
@@ -390,6 +400,14 @@ const List<GalleryComponent> galleryComponents = <GalleryComponent>[
           slug: 'list',
           title: 'Pull to refresh',
           builder: refreshIndicatorList),
+    ],
+  ),
+  GalleryComponent(
+    slug: 'kunscaffold',
+    name: 'KunScaffold',
+    demos: <GalleryDemo>[
+      GalleryDemo(
+          slug: 'bottom-bar', title: 'Bottom bar', builder: scaffoldBottomBar),
     ],
   ),
   GalleryComponent(
