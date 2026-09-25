@@ -223,6 +223,7 @@ const List<GalleryComponent> galleryComponents = <GalleryComponent>[
       GalleryDemo(slug: 'rounded', title: 'Rounded', builder: inputRounded),
       GalleryDemo(slug: 'events', title: 'Events', builder: inputEvents),
       GalleryDemo(slug: 'states', title: 'States', builder: inputStates),
+      GalleryDemo(slug: 'submit', title: 'Submit', builder: inputSubmit),
       GalleryDemo(
           slug: 'contract', title: 'Contract', builder: kunInputContract),
     ],
@@ -442,6 +443,10 @@ const List<GalleryComponent> galleryComponents = <GalleryComponent>[
       GalleryDemo(slug: 'rounded', title: 'Rounded', builder: textareaRounded),
       GalleryDemo(slug: 'events', title: 'Events', builder: textareaEvents),
       GalleryDemo(slug: 'states', title: 'States', builder: textareaStates),
+      GalleryDemo(
+          slug: 'insert-at-caret',
+          title: 'Insert at caret',
+          builder: textareaInsertAtCaret),
       GalleryDemo(
           slug: 'contract', title: 'Contract', builder: kunTextareaContract),
     ],

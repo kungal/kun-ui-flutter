@@ -636,6 +636,12 @@
           "shows": [
             "props.disabled"
           ]
+        },
+        {
+          "slug": "submit",
+          "title": "Submit",
+          "builder": "inputSubmit",
+          "shows": []
         }
       ],
       "gaps": {
@@ -1432,6 +1438,12 @@
             "props.disabled",
             "props.readonly"
           ]
+        },
+        {
+          "slug": "insert-at-caret",
+          "title": "Insert at caret",
+          "builder": "textareaInsertAtCaret",
+          "shows": []
         }
       ],
       "gaps": {

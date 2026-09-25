@@ -1,3 +1,4 @@
+import 'package:flutter/services.dart' show TextInputAction;
 import 'package:flutter/widgets.dart';
 import 'package:kun_ui_icons/kun_ui_icons.dart';
 import 'package:kun_ui_tokens/kun_ui_tokens.dart';
@@ -53,7 +54,8 @@ enum KunInputType {
 /// a password reveal toggle.
 ///
 /// The value is controlled: pass [value] and rebuild with what [onChanged]
-/// gives you (the web's `v-model`).
+/// gives you (the web's `v-model`). A [controller] is the alternative when
+/// the caller needs the selection, for example to insert at the caret.
 ///
 /// The web positions [prefix] and [suffix] absolutely and pads the text away
 /// from them with a fixed ladder (`pl-10`, `pr-10`/`pr-[4.5rem]`/`pr-28`);
@@ -89,7 +91,14 @@ class KunInput extends StatefulWidget {
     this.isClearable = false,
     this.revealPassword = false,
     this.autofocus = false,
-  });
+    this.controller,
+    this.focusNode,
+    this.textInputAction,
+    this.onSubmitted,
+  }) : assert(
+          controller == null || value == '',
+          'Pass the text through the controller instead of [value].',
+        );
 
   /// The current text (web `modelValue`).
   final String value;
@@ -156,20 +165,50 @@ class KunInput extends StatefulWidget {
   /// Takes focus on mount.
   final bool autofocus;
 
+  /// Holds the text in place of [value], for a caller that edits it
+  /// programmatically, for example to insert at the selection. With a
+  /// controller, its text is the field's text and [value] is ignored. Leave
+  /// [value] at its default. [onChanged] still reports every edit the user
+  /// commits, but not changes made through the controller, as with Flutter's
+  /// own text fields. The clear button empties the controller. The caller
+  /// owns the controller and disposes it.
+  final TextEditingController? controller;
+
+  /// Lets the caller move focus to the field or read whether it has it. The
+  /// caller owns the node and disposes it. [disabled] still decides whether
+  /// the field can take focus. The field sets [FocusNode.canRequestFocus] on
+  /// the node, as Flutter's own text fields do.
+  final FocusNode? focusNode;
+
+  /// The action key the soft keyboard shows, for example
+  /// [TextInputAction.search] on a search field. Left null, the platform
+  /// default for a single-line field.
+  final TextInputAction? textInputAction;
+
+  /// Called with the field's text when the user submits from the keyboard:
+  /// the soft keyboard's action key, or Enter on a hardware keyboard.
+  final ValueChanged<String>? onSubmitted;
+
   @override
   State<KunInput> createState() => _KunInputState();
 }
 
 class _KunInputState extends State<KunInput>
     implements TextSelectionGestureDetectorBuilderDelegate {
-  late final TextEditingController _controller;
-  late final FocusNode _focusNode;
+  TextEditingController? _controller;
+  FocusNode? _focusNode;
   late final TextSelectionGestureDetectorBuilder
       _selectionGestureDetectorBuilder;
   bool _focused = false;
   bool _revealed = false;
   late String _reported;
   bool _wasComposing = false;
+
+  TextEditingController get _effectiveController =>
+      widget.controller ?? _controller!;
+
+  FocusNode get _effectiveFocusNode =>
+      widget.focusNode ?? (_focusNode ??= FocusNode());
 
   @override
   final GlobalKey<EditableTextState> editableTextKey =
@@ -183,47 +222,92 @@ class _KunInputState extends State<KunInput>
 
   bool get _invalid => (widget.error?.isNotEmpty ?? false) || widget.isInvalid;
   bool get _isPassword => widget.type == KunInputType.password;
-  bool get _showClear =>
-      widget.isClearable && !widget.disabled && widget.value.isNotEmpty;
+  bool get _showClear {
+    if (!widget.isClearable || widget.disabled) {
+      return false;
+    }
+    if (widget.controller != null) {
+      return _effectiveController.text.isNotEmpty;
+    }
+    return widget.value.isNotEmpty;
+  }
+
   bool get _showReveal =>
       _isPassword && widget.revealPassword && !widget.disabled;
 
   @override
   void initState() {
     super.initState();
-    _reported = widget.value;
-    _controller = TextEditingController(text: widget.value);
-    _controller.addListener(_handleControllerChanged);
-    _focusNode = FocusNode()..addListener(_handleFocusChange);
-    _focusNode.canRequestFocus = !widget.disabled;
+    if (widget.controller == null) {
+      _reported = widget.value;
+      _createLocalController();
+    } else {
+      _reported = widget.controller!.text;
+      widget.controller!.addListener(_handleControllerChanged);
+    }
+    _effectiveFocusNode.canRequestFocus = !widget.disabled;
+    _effectiveFocusNode.addListener(_handleFocusChange);
     _selectionGestureDetectorBuilder =
         TextSelectionGestureDetectorBuilder(delegate: this);
+  }
+
+  void _createLocalController([TextEditingValue? value]) {
+    assert(_controller == null);
+    _controller = value == null
+        ? TextEditingController(text: widget.value)
+        : TextEditingController.fromValue(value);
+    _controller!.addListener(_handleControllerChanged);
   }
 
   @override
   void didUpdateWidget(KunInput oldWidget) {
     super.didUpdateWidget(oldWidget);
-    _focusNode.canRequestFocus = !widget.disabled;
-    _reported = widget.value;
-    if (!_isComposing && widget.value != _controller.text) {
-      _controller.value = TextEditingValue(
-        text: widget.value,
-        selection: TextSelection.collapsed(offset: widget.value.length),
-      );
+    if (widget.controller == null && oldWidget.controller != null) {
+      oldWidget.controller!.removeListener(_handleControllerChanged);
+      _createLocalController(oldWidget.controller!.value);
+    } else if (widget.controller != null && oldWidget.controller == null) {
+      _controller!.removeListener(_handleControllerChanged);
+      _controller!.dispose();
+      _controller = null;
+      widget.controller!.addListener(_handleControllerChanged);
+    } else if (widget.controller != oldWidget.controller) {
+      oldWidget.controller!.removeListener(_handleControllerChanged);
+      widget.controller!.addListener(_handleControllerChanged);
+    }
+
+    if (widget.controller != oldWidget.controller) {
+      _reported = _effectiveController.text;
+    }
+
+    if (widget.focusNode != oldWidget.focusNode) {
+      (oldWidget.focusNode ?? _focusNode)?.removeListener(_handleFocusChange);
+      _effectiveFocusNode.addListener(_handleFocusChange);
+      _focused = _effectiveFocusNode.hasFocus;
+    }
+    _effectiveFocusNode.canRequestFocus = !widget.disabled;
+
+    if (widget.controller == null && oldWidget.controller == null) {
+      _reported = widget.value;
+      if (!_isComposing && widget.value != _effectiveController.text) {
+        _effectiveController.value = TextEditingValue(
+          text: widget.value,
+          selection: TextSelection.collapsed(offset: widget.value.length),
+        );
+      }
     }
   }
 
   @override
   void dispose() {
-    _focusNode.removeListener(_handleFocusChange);
-    _focusNode.dispose();
-    _controller.removeListener(_handleControllerChanged);
-    _controller.dispose();
+    _effectiveFocusNode.removeListener(_handleFocusChange);
+    _focusNode?.dispose();
+    _effectiveController.removeListener(_handleControllerChanged);
+    _controller?.dispose();
     super.dispose();
   }
 
   bool get _isComposing {
-    final TextRange composing = _controller.value.composing;
+    final TextRange composing = _effectiveController.value.composing;
     return composing.isValid && !composing.isCollapsed;
   }
 
@@ -245,37 +329,44 @@ class _KunInputState extends State<KunInput>
   void _handleControllerChanged() {
     final bool composing = _isComposing;
     if (_wasComposing && !composing) {
-      _commit(_controller.text);
+      _commit(_effectiveController.text);
     }
     _wasComposing = composing;
+    if (widget.controller != null && widget.isClearable) {
+      setState(() {});
+    }
   }
 
   void _handleFocusChange() {
-    if (_focusNode.hasFocus == _focused) return;
-    setState(() => _focused = _focusNode.hasFocus);
+    if (_effectiveFocusNode.hasFocus == _focused) return;
+    setState(() => _focused = _effectiveFocusNode.hasFocus);
     (_focused ? widget.onFocus : widget.onBlur)?.call();
   }
 
   void _handleSemanticsTap() {
-    if (!_controller.selection.isValid) {
-      _controller.selection =
-          TextSelection.collapsed(offset: _controller.text.length);
+    if (!_effectiveController.selection.isValid) {
+      _effectiveController.selection =
+          TextSelection.collapsed(offset: _effectiveController.text.length);
     }
     editableTextKey.currentState?.requestKeyboard();
   }
 
   void _handleSemanticsFocus() {
-    if (!_focusNode.hasFocus) {
-      _focusNode.requestFocus();
+    if (!_effectiveFocusNode.hasFocus) {
+      _effectiveFocusNode.requestFocus();
     } else {
       editableTextKey.currentState?.requestKeyboard();
     }
   }
 
   void _clear() {
-    _commit('');
+    if (widget.controller != null) {
+      _effectiveController.clear();
+    }
+    _reported = '';
+    widget.onChanged?.call('');
     widget.onClear?.call();
-    _focusNode.requestFocus();
+    _effectiveFocusNode.requestFocus();
   }
 
   @override
@@ -313,8 +404,8 @@ class _KunInputState extends State<KunInput>
 
     final editable = EditableText(
       key: editableTextKey,
-      controller: _controller,
-      focusNode: _focusNode,
+      controller: _effectiveController,
+      focusNode: _effectiveFocusNode,
       style: textStyle,
       cursorColor: scheme.foreground,
       backgroundCursorColor: scheme.neutral.shade300,
@@ -323,11 +414,13 @@ class _KunInputState extends State<KunInput>
       // there is no upstream token to translate.
       selectionColor: widget.color.scaleOf(scheme).solid.withValues(alpha: 0.2),
       keyboardType: widget.type.keyboardType,
+      textInputAction: widget.textInputAction,
       obscureText: _isPassword && !_revealed,
       readOnly: widget.disabled,
       autofocus: widget.autofocus,
       maxLines: 1,
       onChanged: _handleChanged,
+      onSubmitted: widget.onSubmitted,
       rendererIgnoresPointer: true,
     );
 
@@ -350,7 +443,7 @@ class _KunInputState extends State<KunInput>
                 Positioned.fill(
                   child: IgnorePointer(
                     child: ValueListenableBuilder<TextEditingValue>(
-                      valueListenable: _controller,
+                      valueListenable: _effectiveController,
                       builder: (context, value, child) =>
                           value.text.isEmpty ? child! : const SizedBox.shrink(),
                       child: Align(

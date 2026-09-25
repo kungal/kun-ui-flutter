@@ -309,6 +309,13 @@ Widget textareaEvents(BuildContext context) {
   );
 }
 
+Widget textareaInsertAtCaret(BuildContext context) {
+  return const Padding(
+    padding: EdgeInsets.all(KunSpacing.unit * 6),
+    child: _TextareaInsertAtCaret(),
+  );
+}
+
 Widget textareaStates(BuildContext context) {
   return Padding(
     padding: const EdgeInsets.all(KunSpacing.unit * 6),
@@ -355,6 +362,62 @@ Widget textareaStates(BuildContext context) {
       ),
     ),
   );
+}
+
+class _TextareaInsertAtCaret extends StatefulWidget {
+  const _TextareaInsertAtCaret();
+
+  @override
+  State<_TextareaInsertAtCaret> createState() => _TextareaInsertAtCaretState();
+}
+
+class _TextareaInsertAtCaretState extends State<_TextareaInsertAtCaret> {
+  static const String _markdown = '![image](https://example.com/a.png)';
+
+  late final TextEditingController _controller = TextEditingController(
+    text: 'before after',
+  );
+  final FocusNode _focusNode = FocusNode();
+
+  @override
+  void dispose() {
+    _controller.dispose();
+    _focusNode.dispose();
+    super.dispose();
+  }
+
+  void _insert() {
+    TextEditingValue value = _controller.value;
+    if (!value.selection.isValid) {
+      value = value.copyWith(
+        selection: TextSelection.collapsed(offset: value.text.length),
+      );
+    }
+    _controller.value = value.replaced(value.selection, _markdown);
+    _focusNode.requestFocus();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return SizedBox(
+      width: 360,
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        crossAxisAlignment: CrossAxisAlignment.start,
+        spacing: KunSpacing.unit * 5,
+        children: [
+          KunTextarea(
+            controller: _controller,
+            focusNode: _focusNode,
+          ),
+          KunButton(
+            onPressed: _insert,
+            child: const Text('Insert image'),
+          ),
+        ],
+      ),
+    );
+  }
 }
 
 class _Field extends StatefulWidget {

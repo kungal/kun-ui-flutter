@@ -1,3 +1,4 @@
+import 'package:flutter/services.dart';
 import 'package:flutter/widgets.dart';
 import 'package:kun_ui/kun_ui.dart';
 
@@ -267,6 +268,13 @@ Widget inputEvents(BuildContext context) {
   );
 }
 
+Widget inputSubmit(BuildContext context) {
+  return const Padding(
+    padding: EdgeInsets.all(KunSpacing.unit * 6),
+    child: _InputSubmit(),
+  );
+}
+
 Widget inputStates(BuildContext context) {
   return Padding(
     padding: const EdgeInsets.all(KunSpacing.unit * 6),
@@ -392,6 +400,40 @@ class _FieldState extends State<_Field> {
     return widget.builder(
       _value,
       (String value) => setState(() => _value = value),
+    );
+  }
+}
+
+class _InputSubmit extends StatefulWidget {
+  const _InputSubmit();
+
+  @override
+  State<_InputSubmit> createState() => _InputSubmitState();
+}
+
+class _InputSubmitState extends State<_InputSubmit> {
+  String _value = '';
+  String? _submitted;
+
+  @override
+  Widget build(BuildContext context) {
+    return SizedBox(
+      width: 360,
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        crossAxisAlignment: CrossAxisAlignment.start,
+        spacing: KunSpacing.unit * 5,
+        children: [
+          KunInput(
+            value: _value,
+            onChanged: (String value) => setState(() => _value = value),
+            placeholder: 'Search',
+            textInputAction: TextInputAction.search,
+            onSubmitted: (String value) => setState(() => _submitted = value),
+          ),
+          if (_submitted != null) Text(_submitted!),
+        ],
+      ),
     );
   }
 }

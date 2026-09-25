@@ -1,4 +1,5 @@
 import 'package:flutter/gestures.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter/widgets.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:kun_ui/kun_ui.dart';
@@ -497,6 +498,168 @@ void main() {
     );
     await tester.tap(find.byIcon(KunIcons.circleX));
     expect(seen, ['']);
+  });
+
+  testWidgets('a controller holds the text and insert skips onChanged',
+      (tester) async {
+    final controller = TextEditingController(text: 'hello');
+    controller.selection = const TextSelection.collapsed(offset: 2);
+    final seen = <String>[];
+    await tester.pumpWidget(
+      wrap(KunInput(controller: controller, onChanged: seen.add)),
+    );
+    expect(find.text('hello'), findsOneWidget);
+
+    controller.value =
+        controller.value.replaced(controller.selection, '![img](u)');
+    await tester.pump();
+    expect(find.text('he![img](u)llo'), findsOneWidget);
+    expect(seen, isEmpty);
+
+    await tester.enterText(find.byType(EditableText), 'typed');
+    expect(seen, ['typed']);
+    controller.dispose();
+  });
+
+  testWidgets('a non-empty value beside a controller asserts', (tester) async {
+    final controller = TextEditingController();
+    expect(
+      () => KunInput(controller: controller, value: 'x'),
+      throwsAssertionError,
+    );
+    controller.dispose();
+  });
+
+  testWidgets(
+      'setting a controller shows the clear button and tapping empties it',
+      (tester) async {
+    final controller = TextEditingController();
+    final events = <String>[];
+    await tester.pumpWidget(
+      wrap(
+        KunInput(
+          controller: controller,
+          isClearable: true,
+          onChanged: (value) => events.add('changed:$value'),
+          onClear: () => events.add('clear'),
+        ),
+      ),
+    );
+    expect(find.byIcon(KunIcons.circleX), findsNothing);
+
+    controller.text = 'x';
+    await tester.pump();
+    expect(find.byIcon(KunIcons.circleX), findsOneWidget);
+
+    await tester.tap(find.byIcon(KunIcons.circleX));
+    await tester.pump();
+    expect(controller.text, isEmpty);
+    expect(events, ['changed:', 'clear']);
+    controller.dispose();
+  });
+
+  testWidgets('a caller-owned controller and focus node survive unmount',
+      (tester) async {
+    final controller = TextEditingController(text: 'held');
+    final focusNode = FocusNode();
+    await tester.pumpWidget(
+      wrap(KunInput(controller: controller, focusNode: focusNode)),
+    );
+    await tester.pumpWidget(wrap(const SizedBox.shrink()));
+    controller.text = 'after';
+    expect(controller.text, 'after');
+    controller.dispose();
+    focusNode.dispose();
+  });
+
+  testWidgets(
+      'swapping controller internal to external and back keeps the text',
+      (tester) async {
+    String value = 'alpha';
+    TextEditingController? controller;
+    late StateSetter setHost;
+    await tester.pumpWidget(
+      wrap(
+        StatefulBuilder(
+          builder: (context, setState) {
+            setHost = setState;
+            return KunInput(value: value, controller: controller);
+          },
+        ),
+      ),
+    );
+    expect(find.text('alpha'), findsOneWidget);
+
+    final external = TextEditingController(text: 'beta');
+    setHost(() {
+      value = '';
+      controller = external;
+    });
+    await tester.pump();
+    expect(find.text('beta'), findsOneWidget);
+
+    setHost(() => controller = null);
+    await tester.pump();
+    expect(find.text('beta'), findsOneWidget);
+
+    final other = TextEditingController(text: 'gamma');
+    setHost(() => controller = other);
+    await tester.pump();
+    expect(find.text('gamma'), findsOneWidget);
+
+    external.dispose();
+    other.dispose();
+  });
+
+  testWidgets('a caller focus node focuses the field and respects disabled',
+      (tester) async {
+    final focusNode = FocusNode();
+    var focuses = 0;
+    await tester.pumpWidget(
+      wrap(
+        KunInput(
+          focusNode: focusNode,
+          onFocus: () => focuses++,
+        ),
+      ),
+    );
+    focusNode.requestFocus();
+    await tester.pump();
+    expect(focusNode.hasFocus, isTrue);
+    expect(focuses, 1);
+
+    await tester.pumpWidget(
+      wrap(
+        KunInput(
+          focusNode: focusNode,
+          disabled: true,
+          onFocus: () => focuses++,
+        ),
+      ),
+    );
+    expect(focusNode.canRequestFocus, isFalse);
+    focusNode.dispose();
+  });
+
+  testWidgets(
+      'textInputAction reaches EditableText and submit reports the text',
+      (tester) async {
+    final submitted = <String>[];
+    await tester.pumpWidget(
+      wrap(
+        KunInput(
+          textInputAction: TextInputAction.search,
+          onSubmitted: submitted.add,
+        ),
+      ),
+    );
+    expect(
+      tester.widget<EditableText>(find.byType(EditableText)).textInputAction,
+      TextInputAction.search,
+    );
+    await tester.enterText(find.byType(EditableText), 'galgame');
+    await tester.testTextInput.receiveAction(TextInputAction.search);
+    expect(submitted, ['galgame']);
   });
 }
 

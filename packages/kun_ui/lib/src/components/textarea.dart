@@ -12,7 +12,9 @@ import '../theme/theme.dart';
 /// A multi-line text field implementing the web `KunTextarea` contract.
 ///
 /// The value is controlled like [KunInput]'s: pass [value] and rebuild with
-/// what [onChanged] gives you (the web's `v-model`).
+/// what [onChanged] gives you (the web's `v-model`). A [controller] is the
+/// alternative when the caller needs the selection, for example to insert at
+/// the caret.
 ///
 /// [maxHeight] is a pixel count because the web reads it with `parseInt`.
 /// [maxLength] and the counter count user-perceived characters (Flutter's
@@ -46,8 +48,14 @@ class KunTextarea extends StatefulWidget {
     this.readOnly = false,
     this.required = false,
     this.autofocus = false,
+    this.controller,
+    this.focusNode,
   })  : assert(rows > 0),
-        assert(maxLength == null || maxLength > 0);
+        assert(maxLength == null || maxLength > 0),
+        assert(
+          controller == null || value == '',
+          'Pass the text through the controller instead of [value].',
+        );
 
   /// The current text (web `modelValue`).
   final String value;
@@ -113,19 +121,39 @@ class KunTextarea extends StatefulWidget {
   /// Takes focus on mount.
   final bool autofocus;
 
+  /// Holds the text in place of [value], for a caller that edits it
+  /// programmatically, for example to insert at the selection. With a
+  /// controller, its text is the field's text and [value] is ignored. Leave
+  /// [value] at its default. [onChanged] still reports every edit the user
+  /// commits, but not changes made through the controller, as with Flutter's
+  /// own text fields. The caller owns the controller and disposes it.
+  final TextEditingController? controller;
+
+  /// Lets the caller move focus to the field or read whether it has it. The
+  /// caller owns the node and disposes it. [disabled] still decides whether
+  /// the field can take focus. The field sets [FocusNode.canRequestFocus] on
+  /// the node, as Flutter's own text fields do.
+  final FocusNode? focusNode;
+
   @override
   State<KunTextarea> createState() => _KunTextareaState();
 }
 
 class _KunTextareaState extends State<KunTextarea>
     implements TextSelectionGestureDetectorBuilderDelegate {
-  late final TextEditingController _controller;
-  late final FocusNode _focusNode;
+  TextEditingController? _controller;
+  FocusNode? _focusNode;
   late final TextSelectionGestureDetectorBuilder
       _selectionGestureDetectorBuilder;
   bool _focused = false;
   late String _reported;
   bool _wasComposing = false;
+
+  TextEditingController get _effectiveController =>
+      widget.controller ?? _controller!;
+
+  FocusNode get _effectiveFocusNode =>
+      widget.focusNode ?? (_focusNode ??= FocusNode());
 
   @override
   final GlobalKey<EditableTextState> editableTextKey =
@@ -142,40 +170,89 @@ class _KunTextareaState extends State<KunTextarea>
   @override
   void initState() {
     super.initState();
-    _reported = widget.value;
-    _controller = TextEditingController(text: widget.value);
-    _controller.addListener(_handleControllerChanged);
-    _focusNode = FocusNode()..addListener(_handleFocusChange);
-    _focusNode.canRequestFocus = !widget.disabled;
+    if (widget.controller == null) {
+      _reported = widget.value;
+      _createLocalController();
+    } else {
+      _reported = widget.controller!.text;
+      widget.controller!.addListener(_handleControllerChanged);
+    }
+    _effectiveFocusNode.canRequestFocus = !widget.disabled;
+    _effectiveFocusNode.addListener(_handleFocusChange);
     _selectionGestureDetectorBuilder =
         TextSelectionGestureDetectorBuilder(delegate: this);
+  }
+
+  void _createLocalController([TextEditingValue? value]) {
+    assert(_controller == null);
+    _controller = value == null
+        ? TextEditingController(text: widget.value)
+        : TextEditingController.fromValue(value);
+    _controller!.addListener(_handleControllerChanged);
   }
 
   @override
   void didUpdateWidget(KunTextarea oldWidget) {
     super.didUpdateWidget(oldWidget);
-    _focusNode.canRequestFocus = !widget.disabled;
-    _reported = widget.value;
-    if (!_isComposing && widget.value != _controller.text) {
-      _controller.value = TextEditingValue(
-        text: widget.value,
-        selection: TextSelection.collapsed(offset: widget.value.length),
-      );
+    if (widget.controller == null && oldWidget.controller != null) {
+      oldWidget.controller!.removeListener(_handleControllerChanged);
+      _createLocalController(oldWidget.controller!.value);
+    } else if (widget.controller != null && oldWidget.controller == null) {
+      _controller!.removeListener(_handleControllerChanged);
+      _controller!.dispose();
+      _controller = null;
+      widget.controller!.addListener(_handleControllerChanged);
+    } else if (widget.controller != oldWidget.controller) {
+      oldWidget.controller!.removeListener(_handleControllerChanged);
+      widget.controller!.addListener(_handleControllerChanged);
+    }
+
+    if (widget.controller != oldWidget.controller) {
+      _reported = _effectiveController.text;
+    }
+
+    if (widget.focusNode != oldWidget.focusNode) {
+      (oldWidget.focusNode ?? _focusNode)?.removeListener(_handleFocusChange);
+      _effectiveFocusNode.addListener(_handleFocusChange);
+      _focused = _effectiveFocusNode.hasFocus;
+    }
+    _effectiveFocusNode.canRequestFocus = !widget.disabled;
+
+    if (widget.controller == null && oldWidget.controller == null) {
+      _reported = widget.value;
+      if (!_isComposing && widget.value != _effectiveController.text) {
+        _effectiveController.value = TextEditingValue(
+          text: widget.value,
+          selection: TextSelection.collapsed(offset: widget.value.length),
+        );
+      }
     }
   }
 
   @override
   void dispose() {
-    _focusNode.removeListener(_handleFocusChange);
-    _focusNode.dispose();
-    _controller.removeListener(_handleControllerChanged);
-    _controller.dispose();
+    _effectiveFocusNode.removeListener(_handleFocusChange);
+    _focusNode?.dispose();
+    _effectiveController.removeListener(_handleControllerChanged);
+    _controller?.dispose();
     super.dispose();
   }
 
   bool get _isComposing {
-    final TextRange composing = _controller.value.composing;
+    final TextRange composing = _effectiveController.value.composing;
     return composing.isValid && !composing.isCollapsed;
+  }
+
+  String get _countText {
+    if (widget.controller == null) {
+      return widget.value;
+    }
+    final TextEditingValue value = _effectiveController.value;
+    final TextRange composing = value.composing;
+    if (composing.isValid && !composing.isCollapsed) {
+      return composing.textBefore(value.text) + composing.textAfter(value.text);
+    }
+    return value.text;
   }
 
   void _commit(String text) {
@@ -196,28 +273,31 @@ class _KunTextareaState extends State<KunTextarea>
   void _handleControllerChanged() {
     final bool composing = _isComposing;
     if (_wasComposing && !composing) {
-      _commit(_controller.text);
+      _commit(_effectiveController.text);
     }
     _wasComposing = composing;
+    if (widget.controller != null && widget.showCharCount) {
+      setState(() {});
+    }
   }
 
   void _handleFocusChange() {
-    if (_focusNode.hasFocus == _focused) return;
-    setState(() => _focused = _focusNode.hasFocus);
+    if (_effectiveFocusNode.hasFocus == _focused) return;
+    setState(() => _focused = _effectiveFocusNode.hasFocus);
     (_focused ? widget.onFocus : widget.onBlur)?.call();
   }
 
   void _handleSemanticsTap() {
-    if (!_controller.selection.isValid) {
-      _controller.selection =
-          TextSelection.collapsed(offset: _controller.text.length);
+    if (!_effectiveController.selection.isValid) {
+      _effectiveController.selection =
+          TextSelection.collapsed(offset: _effectiveController.text.length);
     }
     editableTextKey.currentState?.requestKeyboard();
   }
 
   void _handleSemanticsFocus() {
-    if (!_focusNode.hasFocus) {
-      _focusNode.requestFocus();
+    if (!_effectiveFocusNode.hasFocus) {
+      _effectiveFocusNode.requestFocus();
     } else if (!widget.readOnly) {
       editableTextKey.currentState?.requestKeyboard();
     }
@@ -247,7 +327,7 @@ class _KunTextareaState extends State<KunTextarea>
             child: IgnorePointer(
               child: ClipRect(
                 child: ValueListenableBuilder<TextEditingValue>(
-                  valueListenable: _controller,
+                  valueListenable: _effectiveController,
                   builder: (context, value, child) =>
                       value.text.isEmpty ? child! : const SizedBox.shrink(),
                   child: Align(
@@ -273,8 +353,8 @@ class _KunTextareaState extends State<KunTextarea>
           builder: (context, color, child) {
             return EditableText(
               key: editableTextKey,
-              controller: _controller,
-              focusNode: _focusNode,
+              controller: _effectiveController,
+              focusNode: _effectiveFocusNode,
               style: metrics.textStyle.copyWith(color: color),
               cursorColor: scheme.foreground,
               backgroundCursorColor: scheme.neutral.shade300,
@@ -348,8 +428,8 @@ class _KunTextareaState extends State<KunTextarea>
             child: IgnorePointer(
               child: Text(
                 widget.maxLength == null
-                    ? '${widget.value.characters.length}'
-                    : '${widget.value.characters.length}/${widget.maxLength}',
+                    ? '${_countText.characters.length}'
+                    : '${_countText.characters.length}/${widget.maxLength}',
                 style: KunText.xs.copyWith(color: scheme.neutral.shade500),
               ),
             ),

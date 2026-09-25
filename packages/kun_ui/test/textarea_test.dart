@@ -553,6 +553,148 @@ void main() {
     await tester.enterText(find.byType(EditableText), 'ku');
     expect(seen, ['k', 'ku']);
   });
+
+  testWidgets('a controller holds the text and insert skips onChanged',
+      (tester) async {
+    final controller = TextEditingController(text: 'hello');
+    controller.selection = const TextSelection.collapsed(offset: 2);
+    final seen = <String>[];
+    await tester.pumpWidget(
+      wrap(KunTextarea(controller: controller, onChanged: seen.add)),
+    );
+    expect(find.text('hello'), findsOneWidget);
+
+    controller.value =
+        controller.value.replaced(controller.selection, '![img](u)');
+    await tester.pump();
+    expect(find.text('he![img](u)llo'), findsOneWidget);
+    expect(seen, isEmpty);
+
+    await tester.enterText(find.byType(EditableText), 'typed');
+    expect(seen, ['typed']);
+    controller.dispose();
+  });
+
+  testWidgets('a non-empty value beside a controller asserts', (tester) async {
+    final controller = TextEditingController();
+    expect(
+      () => KunTextarea(controller: controller, value: 'x'),
+      throwsAssertionError,
+    );
+    controller.dispose();
+  });
+
+  testWidgets('a caller-owned controller and focus node survive unmount',
+      (tester) async {
+    final controller = TextEditingController(text: 'held');
+    final focusNode = FocusNode();
+    await tester.pumpWidget(
+      wrap(KunTextarea(controller: controller, focusNode: focusNode)),
+    );
+    await tester.pumpWidget(wrap(const SizedBox.shrink()));
+    controller.text = 'after';
+    expect(controller.text, 'after');
+    controller.dispose();
+    focusNode.dispose();
+  });
+
+  testWidgets(
+      'swapping controller internal to external and back keeps the text',
+      (tester) async {
+    String value = 'alpha';
+    TextEditingController? controller;
+    late StateSetter setHost;
+    await tester.pumpWidget(
+      wrap(
+        StatefulBuilder(
+          builder: (context, setState) {
+            setHost = setState;
+            return KunTextarea(value: value, controller: controller);
+          },
+        ),
+      ),
+    );
+    expect(find.text('alpha'), findsOneWidget);
+
+    final external = TextEditingController(text: 'beta');
+    setHost(() {
+      value = '';
+      controller = external;
+    });
+    await tester.pump();
+    expect(find.text('beta'), findsOneWidget);
+
+    setHost(() => controller = null);
+    await tester.pump();
+    expect(find.text('beta'), findsOneWidget);
+
+    final other = TextEditingController(text: 'gamma');
+    setHost(() => controller = other);
+    await tester.pump();
+    expect(find.text('gamma'), findsOneWidget);
+
+    external.dispose();
+    other.dispose();
+  });
+
+  testWidgets('a caller focus node focuses the field and respects disabled',
+      (tester) async {
+    final focusNode = FocusNode();
+    var focuses = 0;
+    await tester.pumpWidget(
+      wrap(
+        KunTextarea(
+          focusNode: focusNode,
+          onFocus: () => focuses++,
+        ),
+      ),
+    );
+    focusNode.requestFocus();
+    await tester.pump();
+    expect(focusNode.hasFocus, isTrue);
+    expect(focuses, 1);
+
+    await tester.pumpWidget(
+      wrap(
+        KunTextarea(
+          focusNode: focusNode,
+          disabled: true,
+          onFocus: () => focuses++,
+        ),
+      ),
+    );
+    expect(focusNode.canRequestFocus, isFalse);
+    focusNode.dispose();
+  });
+
+  testWidgets(
+      'a controller char count follows programmatic edits and skips composing',
+      (tester) async {
+    final controller = TextEditingController(text: 'abcd');
+    await tester.pumpWidget(
+      wrap(
+        KunTextarea(
+          controller: controller,
+          showCharCount: true,
+          maxLength: 10,
+        ),
+      ),
+    );
+    expect(find.text('4/10'), findsOneWidget);
+
+    controller.text = 'abcdef';
+    await tester.pump();
+    expect(find.text('6/10'), findsOneWidget);
+
+    controller.value = const TextEditingValue(
+      text: 'abcdef',
+      selection: TextSelection.collapsed(offset: 6),
+      composing: TextRange(start: 2, end: 6),
+    );
+    await tester.pump();
+    expect(find.text('2/10'), findsOneWidget);
+    controller.dispose();
+  });
 }
 
 class _ComposeHost extends StatefulWidget {
