@@ -154,6 +154,44 @@ void main() {
     expect(tester.getSize(find.byType(KunButton)).width, 300);
   });
 
+  testWidgets('fullWidth keeps its height under a bounded parent',
+      (tester) async {
+    await tester.pumpWidget(
+      wrap(
+        SizedBox(
+          width: 300,
+          child: KunButton(
+            fullWidth: true,
+            onPressed: () {},
+            child: const Text('Save'),
+          ),
+        ),
+      ),
+    );
+    expect(tester.getSize(find.byType(KunButton)), const Size(300, 38));
+
+    await tester.pumpWidget(
+      wrap(
+        Row(
+          children: [
+            for (final label in ['Discover', 'Community'])
+              Expanded(
+                child: KunButton(
+                  fullWidth: true,
+                  onPressed: () {},
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [const Icon(KunIcons.x), Text(label)],
+                  ),
+                ),
+              ),
+          ],
+        ),
+      ),
+    );
+    expect(tester.getSize(find.byType(KunButton).first).height, lessThan(100));
+  });
+
   testWidgets('hover swaps the light variant to its tint', (tester) async {
     await tester.pumpWidget(
       wrap(

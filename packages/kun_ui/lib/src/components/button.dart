@@ -184,8 +184,7 @@ class _KunButtonState extends State<KunButton> {
           ? metrics.square
           : (widget.fullWidth ? double.infinity : null),
       height: widget.isIconOnly ? metrics.square : null,
-      alignment:
-          widget.isIconOnly || widget.fullWidth ? Alignment.center : null,
+      alignment: widget.isIconOnly ? Alignment.center : null,
       // Every variant carries the 1px border (transparent on filled ones) so
       // switching variants never shifts the box — Container folds the border
       // into the content padding, matching the web's border-box heights.
@@ -196,7 +195,11 @@ class _KunButtonState extends State<KunButton> {
         borderRadius: radius,
         boxShadow: style.shadows,
       ),
-      child: content,
+      // Container.alignment would fill a bounded height too: four fullWidth
+      // buttons in a bottom bar took the whole screen on a Pixel 10 Pro.
+      child: widget.fullWidth && !widget.isIconOnly
+          ? Align(heightFactor: 1, child: content)
+          : content,
     );
 
     // The keyboard-focus ring, in a Stack overlay so it never shifts layout.
