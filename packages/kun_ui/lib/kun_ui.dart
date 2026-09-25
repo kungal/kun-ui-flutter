@@ -33,6 +33,7 @@ export 'src/components/progress.dart';
 export 'src/components/radio_group.dart';
 export 'src/components/refresh_indicator.dart';
 export 'src/components/scrollbar.dart';
+export 'src/components/scroll_shadow.dart';
 export 'src/components/select.dart';
 export 'src/components/skeleton.dart';
 export 'src/components/spinner.dart';

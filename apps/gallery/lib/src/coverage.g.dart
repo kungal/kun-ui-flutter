@@ -1799,6 +1799,73 @@ const ComponentCoverage _kunRadioGroup = ComponentCoverage(
 Widget kunRadioGroupContract(BuildContext context) =>
     const CoveragePage(coverage: _kunRadioGroup);
 
+const ComponentCoverage _kunScrollShadow = ComponentCoverage(
+  name: 'KunScrollShadow',
+  entries: <CoverageEntry>[
+    CoverageEntry(
+      section: 'props',
+      contractName: 'ariaLabel',
+      status: CoverageStatus.noVisualForm,
+      dartName: 'semanticLabel',
+      reason:
+          'An accessible name has no visual form. The basic demo names the strip with it, and what is announced is asserted by the widget tests.',
+    ),
+    CoverageEntry(
+      section: 'props',
+      contractName: 'axis',
+      status: CoverageStatus.shown,
+      dartName: 'axis',
+      shownBy: 'Vertical',
+    ),
+    CoverageEntry(
+      section: 'props',
+      contractName: 'draggable',
+      status: CoverageStatus.shown,
+      dartName: 'draggable',
+      shownBy: 'Interactive',
+    ),
+    CoverageEntry(
+      section: 'props',
+      contractName: 'scrollbar',
+      status: CoverageStatus.shown,
+      dartName: 'scrollbar',
+      shownBy: 'Interactive',
+    ),
+    CoverageEntry(
+      section: 'props',
+      contractName: 'shadowColor',
+      status: CoverageStatus.shown,
+      dartName: 'shadowColor',
+      shownBy: 'Basic',
+    ),
+    CoverageEntry(
+      section: 'props',
+      contractName: 'shadowSize',
+      status: CoverageStatus.shown,
+      dartName: 'shadowSize',
+      shownBy: 'Basic',
+    ),
+    CoverageEntry(
+      section: 'props',
+      contractName: 'wheel',
+      status: CoverageStatus.shown,
+      dartName: 'wheel',
+      shownBy: 'Interactive',
+    ),
+    CoverageEntry(
+      section: 'slots',
+      contractName: 'default',
+      status: CoverageStatus.shown,
+      dartName: 'children',
+      shownBy: 'Basic',
+    ),
+  ],
+);
+
+/// The contract coverage page for KunScrollShadow.
+Widget kunScrollShadowContract(BuildContext context) =>
+    const CoveragePage(coverage: _kunScrollShadow);
+
 const ComponentCoverage _kunSelect = ComponentCoverage(
   name: 'KunSelect',
   entries: <CoverageEntry>[

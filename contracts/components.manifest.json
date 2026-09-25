@@ -408,6 +408,20 @@
       },
       "slots": {}
     },
+    "KunScrollShadow": {
+      "widget": "KunScrollShadow",
+      "props": {
+        "ariaLabel": "semanticLabel",
+        "axis": "axis",
+        "draggable": "draggable",
+        "scrollbar": "scrollbar",
+        "shadowColor": "shadowColor",
+        "shadowSize": "shadowSize",
+        "wheel": "wheel"
+      },
+      "events": {},
+      "slots": { "default": "children" }
+    },
     "KunSelect": {
       "widget": "KunSelect",
       "props": {

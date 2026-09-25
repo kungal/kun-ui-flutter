@@ -25,6 +25,7 @@ import 'demos/popover.dart';
 import 'demos/progress.dart';
 import 'demos/radio_group.dart';
 import 'demos/refresh_indicator.dart';
+import 'demos/scroll_shadow.dart';
 import 'demos/select.dart';
 import 'demos/skeleton.dart';
 import 'demos/spinner.dart';
@@ -390,6 +391,23 @@ const List<GalleryComponent> galleryComponents = <GalleryComponent>[
           slug: 'list',
           title: 'Pull to refresh',
           builder: refreshIndicatorList),
+    ],
+  ),
+  GalleryComponent(
+    slug: 'kunscrollshadow',
+    name: 'KunScrollShadow',
+    demos: <GalleryDemo>[
+      GalleryDemo(slug: 'basic', title: 'Basic', builder: scrollShadowBasic),
+      GalleryDemo(
+          slug: 'interactive',
+          title: 'Interactive',
+          builder: scrollShadowInteractive),
+      GalleryDemo(
+          slug: 'vertical', title: 'Vertical', builder: scrollShadowVertical),
+      GalleryDemo(
+          slug: 'contract',
+          title: 'Contract',
+          builder: kunScrollShadowContract),
     ],
   ),
   GalleryComponent(
