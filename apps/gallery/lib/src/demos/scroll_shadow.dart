@@ -127,3 +127,39 @@ Widget scrollShadowVertical(BuildContext context) {
     ),
   );
 }
+
+Widget scrollShadowLazy(BuildContext context) {
+  final KunColorScheme scheme = KunTheme.of(context).colors;
+  return _page(
+    ConstrainedBox(
+      constraints: const BoxConstraints(maxWidth: KunContainerWidths.md),
+      child: SizedBox(
+        height: KunSpacing.unit * 24,
+        child: KunScrollShadow.builder(
+          semanticLabel: '角色列表',
+          wheel: KunScrollShadowWheel.on,
+          draggable: true,
+          itemCount: 200,
+          itemBuilder: (BuildContext context, int index) {
+            return SizedBox(
+              width: KunSpacing.unit * 28,
+              child: DecoratedBox(
+                decoration: BoxDecoration(
+                  color: scheme.content1,
+                  border: Border.all(color: scheme.border),
+                  borderRadius: BorderRadius.circular(KunRadius.lg),
+                ),
+                child: Center(
+                  child: Text(
+                    '角色 ${index + 1}',
+                    style: KunText.sm.copyWith(color: scheme.foreground),
+                  ),
+                ),
+              ),
+            );
+          },
+        ),
+      ),
+    ),
+  );
+}

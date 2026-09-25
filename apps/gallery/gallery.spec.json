@@ -1208,6 +1208,12 @@
           "shows": [
             "props.axis"
           ]
+        },
+        {
+          "slug": "lazy",
+          "title": "Lazy (builder)",
+          "builder": "scrollShadowLazy",
+          "shows": []
         }
       ],
       "undemoable": {

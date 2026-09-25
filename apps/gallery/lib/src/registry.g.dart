@@ -423,6 +423,8 @@ const List<GalleryComponent> galleryComponents = <GalleryComponent>[
       GalleryDemo(
           slug: 'vertical', title: 'Vertical', builder: scrollShadowVertical),
       GalleryDemo(
+          slug: 'lazy', title: 'Lazy (builder)', builder: scrollShadowLazy),
+      GalleryDemo(
           slug: 'contract',
           title: 'Contract',
           builder: kunScrollShadowContract),
