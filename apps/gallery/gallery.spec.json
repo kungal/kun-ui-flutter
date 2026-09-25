@@ -1037,6 +1037,18 @@
         "props.ariaLabel": "An accessible name has no visual form. The states demo names a group with it where there is no visible label, and what is announced is asserted by the widget tests."
       }
     },
+    "KunRefreshIndicator": {
+      "contract": false,
+      "source": "demos/refresh_indicator.dart",
+      "demos": [
+        {
+          "slug": "list",
+          "title": "Pull to refresh",
+          "builder": "refreshIndicatorList",
+          "shows": []
+        }
+      ]
+    },
     "KunSelect": {
       "source": "demos/select.dart",
       "demos": [

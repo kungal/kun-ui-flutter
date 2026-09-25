@@ -22,6 +22,7 @@ import 'demos/null.dart';
 import 'demos/popover.dart';
 import 'demos/progress.dart';
 import 'demos/radio_group.dart';
+import 'demos/refresh_indicator.dart';
 import 'demos/select.dart';
 import 'demos/skeleton.dart';
 import 'demos/spinner.dart';
@@ -344,6 +345,16 @@ const List<GalleryComponent> galleryComponents = <GalleryComponent>[
       GalleryDemo(slug: 'events', title: 'Events', builder: radioGroupEvents),
       GalleryDemo(
           slug: 'contract', title: 'Contract', builder: kunRadioGroupContract),
+    ],
+  ),
+  GalleryComponent(
+    slug: 'kunrefreshindicator',
+    name: 'KunRefreshIndicator',
+    demos: <GalleryDemo>[
+      GalleryDemo(
+          slug: 'list',
+          title: 'Pull to refresh',
+          builder: refreshIndicatorList),
     ],
   ),
   GalleryComponent(
