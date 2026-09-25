@@ -3,7 +3,39 @@
 ## 0.11.0
 
 Built on kun-ui 2.47.0. Both items are gaps the kungal app hit on a Pixel
-10 Pro. Nothing here is a breaking change.
+10 Pro. There are no API changes. Two things can still surface in your code,
+and both are listed under the first item.
+
+- **`KunInput` and `KunTextarea` have selection handles and a selection
+  menu.** A long press on a touch device used to select a word with no way
+  to copy it, and paste worked only through the keyboard's clipboard key.
+  - **Handles.** KunUI now draws them in the field's `color`: a teardrop,
+    or a lollipop on iOS and macOS. You can drag them to extend the
+    selection.
+  - **Touch menu.** A bar above the selection, or below it when there is no
+    room. It offers Cut, Copy, Paste, Share and Select all as the platform
+    allows, followed by any actions the system adds, such as Android's
+    Translate. A tap on the caret's handle brings up Paste.
+  - **iOS 16+** gets the native edit menu.
+  - **Desktop.** A right-click opens a vertical menu at the pointer.
+  - **Design.** The visuals are the web's `KunContextMenu`: the `content1`
+    panel, `light` rows, a minimum width of 192, and 12px from the viewport
+    edges.
+  - **Labels** come from kun_ui_messages' new `textSelection` group, so
+    they follow `KunMessagesScope`. The menu reaches a `KunTheme` or
+    `KunMessagesScope` you put inside a route.
+  - **Accessibility.** Each item is a labelled button to a screen reader,
+    in the order it is drawn.
+  - **Not affected.** On Flutter web the browser's own context menu still
+    shows, as it does for every `EditableText`. KunSelect's search field is
+    not wired yet.
+  - **Tests.** A plain tap on these fields now needs an `Overlay` ancestor.
+    An app's `Navigator` already provides one, but a widget test that
+    builds a bare tree has to add one.
+  - **Custom catalogs.** kun_ui_messages 2.47.0 adds a required
+    `textSelection` group to `KunMessages`, so a `KunMessages` you build
+    yourself needs it too.
+
 
 - **A `KunImage` with a skeleton or a `thumbhash` now fills a box its parent
   sizes.** With no `width`, `height` or `aspectRatio`, the picture used to

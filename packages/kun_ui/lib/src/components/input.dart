@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart' show defaultTargetPlatform;
 import 'package:flutter/services.dart' show TextInputAction;
 import 'package:flutter/widgets.dart';
 import 'package:kun_ui_icons/kun_ui_icons.dart';
@@ -7,6 +8,7 @@ import '../foundation/control_metrics.dart';
 import '../foundation/design.dart';
 import '../foundation/field_ring.dart';
 import '../foundation/motion.dart';
+import '../foundation/text_selection.dart';
 import '../locale/messages.dart';
 import '../theme/theme.dart';
 
@@ -203,6 +205,7 @@ class _KunInputState extends State<KunInput>
   bool _revealed = false;
   late String _reported;
   bool _wasComposing = false;
+  bool _showSelectionHandles = false;
 
   TextEditingController get _effectiveController =>
       widget.controller ?? _controller!;
@@ -286,6 +289,10 @@ class _KunInputState extends State<KunInput>
     }
     _effectiveFocusNode.canRequestFocus = !widget.disabled;
 
+    if (widget.disabled && !oldWidget.disabled) {
+      _showSelectionHandles = false;
+    }
+
     if (widget.controller == null && oldWidget.controller == null) {
       _reported = widget.value;
       if (!_isComposing && widget.value != _effectiveController.text) {
@@ -341,6 +348,67 @@ class _KunInputState extends State<KunInput>
     if (_effectiveFocusNode.hasFocus == _focused) return;
     setState(() => _focused = _effectiveFocusNode.hasFocus);
     (_focused ? widget.onFocus : widget.onBlur)?.call();
+  }
+
+  bool _shouldShowSelectionHandles(SelectionChangedCause? cause) {
+    if (!_selectionGestureDetectorBuilder.shouldShowSelectionToolbar ||
+        !_selectionGestureDetectorBuilder.shouldShowSelectionHandles) {
+      return false;
+    }
+
+    if (cause == SelectionChangedCause.keyboard) {
+      return false;
+    }
+
+    if (widget.disabled) {
+      return false;
+    }
+
+    if (cause == SelectionChangedCause.longPress ||
+        cause == SelectionChangedCause.stylusHandwriting) {
+      return true;
+    }
+
+    if (_effectiveController.text.isNotEmpty) {
+      return true;
+    }
+
+    return false;
+  }
+
+  void _handleSelectionChanged(
+    TextSelection selection,
+    SelectionChangedCause? cause,
+  ) {
+    final bool willShowSelectionHandles = _shouldShowSelectionHandles(cause);
+    if (willShowSelectionHandles != _showSelectionHandles) {
+      setState(() {
+        _showSelectionHandles = willShowSelectionHandles;
+      });
+    }
+
+    if (cause == SelectionChangedCause.longPress) {
+      editableTextKey.currentState?.bringIntoView(selection.extent);
+    }
+    final bool desktop = switch (defaultTargetPlatform) {
+      TargetPlatform.macOS ||
+      TargetPlatform.linux ||
+      TargetPlatform.windows =>
+        true,
+      TargetPlatform.iOS ||
+      TargetPlatform.fuchsia ||
+      TargetPlatform.android =>
+        false,
+    };
+    if (desktop && cause == SelectionChangedCause.drag) {
+      editableTextKey.currentState?.hideToolbar();
+    }
+  }
+
+  void _handleSelectionHandleTapped() {
+    if (_effectiveController.selection.isCollapsed) {
+      editableTextKey.currentState?.toggleToolbar();
+    }
   }
 
   void _handleSemanticsTap() {
@@ -419,6 +487,15 @@ class _KunInputState extends State<KunInput>
       readOnly: widget.disabled,
       autofocus: widget.autofocus,
       maxLines: 1,
+      showSelectionHandles: _showSelectionHandles,
+      selectionControls: widget.disabled
+          ? null
+          : KunTextSelectionControls(
+              handleColor: widget.color.scaleOf(scheme).solid,
+            ),
+      contextMenuBuilder: kunTextSelectionContextMenu,
+      onSelectionChanged: _handleSelectionChanged,
+      onSelectionHandleTapped: _handleSelectionHandleTapped,
       onChanged: _handleChanged,
       onSubmitted: widget.onSubmitted,
       rendererIgnoresPointer: true,

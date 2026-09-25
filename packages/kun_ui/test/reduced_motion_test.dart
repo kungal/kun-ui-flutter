@@ -4,16 +4,28 @@ import 'package:flutter/widgets.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:kun_ui/kun_ui.dart';
 
-Widget wrap(Widget child, {required bool reduce}) => MediaQuery(
-      data: MediaQueryData(disableAnimations: reduce),
-      child: KunTheme(
-        data: KunThemeData.light(),
-        child: Directionality(
-          textDirection: TextDirection.ltr,
-          child: Center(child: child),
+Widget wrap(Widget child, {required bool reduce, bool overlay = false}) {
+  Widget inner = Center(child: child);
+  if (overlay) {
+    inner = Overlay(
+      initialEntries: [
+        OverlayEntry(
+          builder: (BuildContext context) => Center(child: child),
         ),
-      ),
+      ],
     );
+  }
+  return MediaQuery(
+    data: MediaQueryData(disableAnimations: reduce),
+    child: KunTheme(
+      data: KunThemeData.light(),
+      child: Directionality(
+        textDirection: TextDirection.ltr,
+        child: inner,
+      ),
+    ),
+  );
+}
 
 double opacityOf(WidgetTester tester, Finder of) => tester
     .renderObject<RenderAnimatedOpacity>(
@@ -129,6 +141,7 @@ void main() {
           wrap(
             field == KunInput ? const KunInput() : const KunTextarea(),
             reduce: reduce,
+            overlay: true,
           ),
         );
         await tester.tap(find.byType(field));

@@ -255,7 +255,8 @@ line — shadcn_ui and forui both reach for Material's text field internals
 here. KunUI takes the honest version instead: no Material, and a gap that is
 named. When a real app needs touch selection, the answer is a KunUI-drawn
 toolbar and handles, which is the design-system-correct answer anyway — not a
-Material import.
+Material import. (The app arrived on 2026-09-25; see "Touch selection is
+KunUI-drawn" below. The fields now pass KunUI's own controls.)
 
 Observed 2026-09-15 on an Android 16 emulator (Pixel 9 profile, API 36,
 Impeller): long-pressing text in a `KunInput` produces no selection highlight,
@@ -313,7 +314,7 @@ an ancestor `ScrollConfiguration` hides nothing — `scrollbar-hide` is a
 Measured 2026-09-22 on the Pixel 10 Pro: long-pressing `clear me` highlights
 exactly `clear`, so word selection does work. Drag handles and the toolbar are
 still absent, by the decision above, which leaves a touch user able to select
-a word but with nothing to copy it with.
+a word but with nothing to copy it with. Closed in 0.11.0.
 
 ### KunUI's own strings are a scope, not a theme field (decided 2026-09-15)
 
@@ -613,6 +614,84 @@ It has no contract entry, and the gallery lists it as `contract: false`, as
 it does KunMessage. If the web ever grows a pull-to-refresh, the design moves
 to kun-ui and this becomes its port.
 
+### Touch selection is KunUI-drawn (decided 2026-09-25)
+
+The kungal app measured the gap named in the `EditableText` decision on a
+Pixel 10 Pro: a long press selected a word, and a user could paste only
+through the keyboard's clipboard key. That was the trigger the decision
+waited for. `KunInput` and `KunTextarea` now pass `KunTextSelectionControls`
+and `kunTextSelectionContextMenu` (`src/foundation/text_selection.dart`,
+not exported). The split is pull-to-refresh's:
+
+- **The mechanics are Flutter's.** When the handles show is `TextField`'s
+  logic transcribed. So are the handle geometry (Material's 22px teardrop,
+  or Cupertino's lollipop on iOS and macOS) and the placement arithmetic
+  (8px above the selection, 20px below it to clear the handles). Material's
+  adaptive toolbar decides which platform gets the touch bar and which gets
+  the desktop menu: Android and iOS get the bar, fuchsia, Linux, Windows and
+  macOS get the menu. These literals keep their Material and Cupertino
+  names.
+- **The visuals are the web's `KunContextMenu`.** That is the only
+  right-click menu kun-ui has drawn: the `content1` panel, `rounded-kun-lg`,
+  `p-1`, `shadow-kun-md`, and `light` neutral rows at `px-3 py-1.5 text-sm
+  font-medium`. It has a 192px minimum width, stays 12px inside the
+  viewport by the web's own clamp formula, and enters with KunDropdown's
+  fade and scale. On a touch device the same rows sit in a wrapping row
+  above the selection. A pressed row lights up the way a hovered one does,
+  because a finger has no hover. KunContextMenu itself is not claimed: the
+  design is borrowed, the component is not ported.
+- **The labels are KunUI's own strings.** kun-ui 2.47.0 added
+  `textSelection` to the shared catalogs for this. On the web the browser
+  draws the menu and no component renders these strings, but a string that
+  exists on one platform only is exactly what that pipeline prevents. Items
+  the platform adds itself, such as Android's text-processing actions
+  (Translate, Read aloud), keep the platform's labels.
+- **iOS 16+ gets the native edit menu** through `SystemContextMenu`, which
+  is what Safari shows on the web. Look Up, Search Web and Share take their
+  titles from the same catalog. Unverified on a device: no iPhone is
+  attached.
+- **Flutter web is unchanged.** `EditableText` suppresses a Flutter menu
+  while the browser's context menu is enabled, so the gallery in Chrome
+  still shows the browser's menu, as the web port does.
+
+Four details are not visible from the code:
+
+- **The controls compare by value.** A field builds a new
+  `KunTextSelectionControls` on every build, and `EditableText` disposes and
+  recreates its whole selection overlay whenever the instance is `!=` the
+  last one. A textarea rebuilds on every tick of its colour tween. Without
+  `==`, an open bar would close on the first rebuild.
+- **The menu captures themes from the field, not from the overlay.**
+  `ContextMenuController` builds the menu in the root overlay and captures
+  themes only between that entry and the navigator. A `KunTheme` or
+  `KunMessagesScope` placed inside a route would therefore never reach it.
+- **The bar is its own semantics group, ordered by the list.** Without a
+  group, the rows were siblings of the page's nodes. A `uiautomator` dump on
+  the Pixel listed a wrapped bar's last first-line item (Translate) after the
+  whole second line. With a container and `OrdinalSortKey`s, the dump lists
+  them in order. Every row is an `android.widget.Button` with its label,
+  which is what Android's native selection toolbar exposes.
+- **A plain tap on a text field now asserts an `Overlay` ancestor.** With no
+  controls and no menu builder, `EditableText` built no selection overlay on
+  a tap, and `reduced_motion_test.dart` passed without an `Overlay`. An
+  app's `Navigator` provides one, as iron rule 4 already assumes. A bare
+  test tree has to add one.
+
+Measured on the Pixel 10 Pro (Android 17), in the gallery's debug build:
+
+- A long press shows both handles and the bar above the field.
+- Copy reaches the system clipboard: Android shows its clipboard chip.
+- A tap on the collapsed handle offers Paste and Select all, and Paste
+  inserts the text.
+- Dragging an end handle extends the selection. The copy then held exactly
+  the dragged range, "hello world agai".
+- A read-only textarea offers Copy, Share and Select all, with no Cut or
+  Paste.
+
+Still missing: the magnifier Android shows while a handle is dragged, and
+keyboard navigation inside the desktop menu. KunSelect's search field (its
+own `EditableText` in `select_popup.dart`) is not wired yet.
+
 ### KunImage ports the web's own layer (decided 2026-09-25)
 
 Until kun-ui 2.45.0 the contract called KunImage web-only, for the
@@ -690,9 +769,9 @@ color matched, and only the dark fills did not.
   real app needs one; premature now.
 - **Ripple**: the web button's ripple is not contract surface; press
   feedback is the web's `active:scale-[0.97]`. Revisit if an app asks.
-- **Touch text-selection handles and toolbar**: see the `EditableText`
-  decision above. The trigger is the first app that edits text on a
-  touchscreen.
+- **The selection magnifier, and touch selection in KunSelect's search
+  field**: see "Touch selection is KunUI-drawn" above. Each waits for an
+  app to need it.
 - **Golden tests**: behaviour is widget-tested; visuals are verified by eye
   in the gallery. Goldens enter when the first visual regression actually
   bites (they are platform-brittle and each one is a maintenance contract).
