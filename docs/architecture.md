@@ -786,6 +786,34 @@ devices, and the gesture arena suppresses a card's tap after a drag, as the
 web does by hand). None of these is Flutter's default. The contract changed
 upstream first, and the port then claimed it.
 
+### A filled icon is a glyph of its own (decided 2026-09-25)
+
+The web fills a stroke icon by putting `fill-current` on the SVG, which is
+how `KunReaction`'s heart turns solid while on. A font glyph is the traced
+outline of a stroke, and nothing can fill it afterwards. The kungal app's
+`lucide_icons_flutter` has the same limit. So a filled state needs a glyph
+of its own, and in kun_ui every glyph comes from `kun_ui_icons` (iron
+rule 1).
+
+kun-ui 2.47.2 added a `FILLED` list to its icon manifest.
+`gen-icons-flutter` traces each listed icon a second time from the same SVG
+with its paths filled, and emits it as `<name>Filled`. The web bundle is
+unchanged: it keeps filling with CSS. The first run traced an empty glyph,
+because iconify writes `fill="none"` on each path, where a root fill never
+reaches it. A render of the font caught that, and the generator comment
+records it.
+
+`KunReaction.activeIcon` is the Flutter-only half. The default heart
+switches to `heartFilled`. Any other icon keeps its glyph and is recoloured
+unless the app passes the filled glyph. The same release bundled `heart`
+itself, KunReaction's default on the web as well, where an unbundled name
+renders nothing.
+
+`KunScrollShadow.builder` is Flutter-only for a related reason. The web
+renders every item and defers each image with `loading="lazy"`, and the
+contract already says that Flutter's counterpart to that hint is a lazily
+built list.
+
 ### Reduced motion collapses every transition (decided 2026-09-17)
 
 kun-ui's base stylesheet sets every transition and animation to 0.01ms

@@ -1,5 +1,33 @@
 # Changelog
 
+## 0.13.0
+
+Built on kun-ui 2.47.2. Nothing here is a breaking change.
+
+- **`KunReaction`**, the compact like / reaction pill: an icon, an optional
+  `count` and an optional label (`child`).
+  - As a toggle (`value`/`onChanged`, `count`/`onCountChanged`) it is
+    announced as toggled. With `toggle: false` it is an action (share,
+    more) that only calls `onPressed`, and its skin still follows `value`.
+  - The web's motion comes with it: a pop on press, a ring and six sparks
+    when it turns on, and a count that rolls in the direction it changed.
+    All of it is off under reduced motion or `disableAnimation`.
+  - The glyph defaults to the web's heart, which is filled while on.
+  - For any other icon, `activeIcon` names the filled glyph. A font glyph
+    cannot be filled the way the web's `fill-current` fills a stroke icon.
+  - `iconBuilder` is the web's `#icon` slot, for emoji or images.
+  - `color` takes a palette colour; `activeColor` takes any colour.
+  - Sizes are `KunReactionSize.sm/md/lg`.
+  - Like `KunSwitch`, it is controlled: write `value` and `count` back from
+    the callbacks.
+- **`KunScrollShadow.builder(itemCount:, itemBuilder:)`** builds a strip's
+  items lazily, so a strip with no upper bound (a cast list, a screenshot
+  row) no longer loads every image at once. It needs a bounded extent
+  across its axis from the parent (a `SizedBox` height for a horizontal
+  strip) and stretches items to it. Everything else is the same as the
+  children constructor.
+- `KunIcons.heart` and `KunIcons.heartFilled`, from kun_ui_icons 2.47.2.
+
 ## 0.12.0
 
 Built on kun-ui 2.47.1. An app can now drop Material entirely: kun_ui has
