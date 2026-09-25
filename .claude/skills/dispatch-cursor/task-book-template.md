@@ -41,6 +41,9 @@ quote the clauses this task turns on rather than pointing at the file.>
 - **You cannot run git writes, `gh`, `pub publish`, or `fvm use`.** They are denied at the
   permission layer, and your environment holds no GitHub or pub.dev credentials. The
   orchestrator owns all of them. Do not try, and do not look for a way around; report instead.
+- **Never use `pkill`, `killall` or `kill` with a pattern.** This task book is passed on your
+  own command line, so a pattern like `flutter test` matches and kills *you*; other sessions
+  on this machine run their own tests and servers too. Stop only a PID you recorded.
 - Do not write outside the paths named in Discipline, and never write a sibling repository.
   `../kun-ui` is the read-only upstream: read it freely, change nothing in it.
   Read it at a tag with `cd /home/kun/Desktop/code/website/kun-ui && git show <tag>:<path>`;

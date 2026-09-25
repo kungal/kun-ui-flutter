@@ -580,6 +580,33 @@ only `nullImage` and `avatarFallback`. A missing asset is a kun-ui issue
 (iron rule 1), so the component waits for the generator rather than being
 shipped with a required `image` it does not have on the web.
 
+### Pull-to-refresh is KunUI-drawn (decided 2026-09-25)
+
+On the mobile web the browser draws pull-to-refresh, so kun-ui has no
+component to port. The kungal app wrapped three screens in Material's
+`RefreshIndicator` with KunUI colours. It is the same situation as the touch
+selection toolbar above, and it gets the same answer: KunUI draws the
+browser-owned chrome itself instead of importing a foreign design language.
+
+Drawing it did not mean designing it. `KunRefreshIndicator` splits the job
+along the line between platform behaviour and design:
+
+- **The mechanics are Flutter's.** The status machine, the notification
+  handling, the 25% drag extent and the 1.5 size-factor limit mirror
+  Material's `RefreshIndicator`, top edge only. These are gesture
+  conventions an Android user's thumb already knows, not design values, so
+  they stay literals beside their Material names.
+- **The visuals are KunUI's existing pieces.** The disc is the floating
+  surface `KunPopover` paints (`content1`, `KunShadows.md`) at the md control
+  square. The ring is `KunSpinner`'s geometry: static while dragging, rotated
+  by the drag, then turning at the SVG's period from the angle it already has.
+  The snap, the dismissal and the cancel use `KunDurations` and `KunEasing`,
+  not Material's 150ms and 200ms.
+
+It has no contract entry, and the gallery lists it as `contract: false`, as
+it does KunMessage. If the web ever grows a pull-to-refresh, the design moves
+to kun-ui and this becomes its port.
+
 ### Reduced motion collapses every transition (decided 2026-09-17)
 
 kun-ui's base stylesheet sets every transition and animation to 0.01ms

@@ -294,6 +294,14 @@ Traps worth restating in any task book that touches them:
   asserts hover through the former fails for a reason that reads like a bug in the widget.
 - **The gallery web build is part of CI.** A gallery that does not compile is a broken docs
   site, so `flutter analyze` passing is not enough.
+- **Forbid pattern kills in every task book.** The book travels on the executor's own
+  command line, so `pkill -f "flutter test"` matches `cursor-agent` itself. The KunRefreshIndicator
+  run on 2026-09-25 cleaned up its test processes that way and died after 12 minutes: exit
+  143, no `result` event, the work left half-gated in the tree. The same command would also
+  kill another session's tests. The executor stops only a PID it recorded.
+- **The scratchpad is tmpfs.** `/tmp` does not survive a reboot. On 2026-09-25 a restart
+  took every task book, report and screenshot with it, while the worktrees on `/home`
+  survived. A book that has to outlive the session belongs next to its worktree.
 
 ## 8. What is worth dispatching
 
