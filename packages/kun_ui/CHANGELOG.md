@@ -1,5 +1,82 @@
 # Changelog
 
+## 0.10.0
+
+Built on kun-ui 2.45.0. Most items are gaps the kungal app hit on a Pixel
+10 Pro. The avatar frames come with the 2.45.0 contract. Nothing here is a
+breaking change.
+
+- **A `fullWidth` `KunButton` no longer fills a bounded height.** It
+  centred its label through `Container.alignment`, whose `Align` fills every
+  bounded axis, so four full-width buttons in a bottom bar took the whole
+  screen. The button now stretches to the full width and keeps its own
+  height, which is what the web's `w-full` does. Affects every release
+  before this one. Remove any `IntrinsicHeight` you added as a workaround.
+- `KunInput` takes `controller`, `focusNode`, `textInputAction` and
+  `onSubmitted`, and `KunTextarea` takes `controller` and `focusNode`. These
+  are Flutter-only: the web's caret and Enter key are native `<input>`
+  behaviour. With a controller, its text is the field's text and `value` is
+  ignored; leave `value` unset, or a debug assert fires. The controller is
+  how you insert at the selection, for example an uploaded image's markdown
+  in a composer. `onChanged` still reports user edits and not the
+  controller's, as Flutter's own fields do. The clear button and the char
+  count follow the controller, including changes you make to it, and the
+  count leaves out an open IME composition. A search field can now run on
+  the keyboard's action key:
+  `textInputAction: TextInputAction.search, onSubmitted: ...`.
+- `KunRefreshIndicator`, KunUI's own pull-to-refresh, with no Material
+  import. The web has no counterpart because the browser draws pull-to-refresh
+  there, so KunUI draws it itself, as it does all browser-owned touch chrome.
+  The gesture is Flutter's `RefreshIndicator` gesture, top edge only. The
+  drawing is KunUI's: the spinner on the floating surface popovers use, in
+  `color` (`primary` by default). `edgeOffset` and `displacement` work as
+  they do in Material's widget. The spinner keeps turning under reduced
+  motion, as `KunSpinner` does.
+  Unlike Material's, it keeps the Android overscroll glow away for the
+  whole pull: measured on the device, Material's condition let the glow draw
+  across the list as soon as the pull armed.
+- `KunImage`, now portable in the 2.45.0 contract. The URL goes through
+  `KunUIConfig.imageProvider`, so your cache applies. It has the ThumbHash
+  blur-up (`thumbhash`), the pulse `skeleton`, `aspectRatio`, `fit` (the
+  web's `objectFit`), `width`/`height`, `fallbackSrc`, and
+  `onLoad`/`onError`, each reported once per URL tried. `cacheWidth` and
+  `cacheHeight` decode at thumbnail size. The placeholder stays until the
+  image has faded in and only then fades itself, as kun-ui 2.45.0 fixed it on
+  the web. `alt` has no English default: an unlabelled image is announced as
+  an image, and `alt: ''` makes it decorative. Round it with a `ClipRRect`.
+- `KunThumbHashImage(hash)`, the blur-up placeholder as an `ImageProvider`
+  of its own, for a screen that holds the real image back. The decoder is a
+  hand port of the reference ThumbHash (MIT), byte-exact against it, with no
+  package. It builds the image from raw RGBA, not a PNG, and the blur was
+  measured painting on a Pixel 10 Pro, where a package's PNG output fails to
+  decode.
+- `KunNavItem`, one destination of an app shell's navigation (kun-ui 2.45.0),
+  replacing the recipe `docs/INTEGRATION.md` gave. A full-width `KunButton`,
+  `flat` in `color` and announced as selected while `current`, `light`
+  otherwise. `stacked` puts a 20px icon over the label for a rail or a bottom
+  bar; otherwise the item is a left-aligned sidebar row. The `icon` takes any
+  widget, so `KunBadge(count: n, child: Icon(...))` shows an unread count.
+  `href` goes through `KunUIConfig.navigate`. The bar and the rail stay
+  yours.
+- **Avatar frames** (kun-ui 2.44.0). `KunUser` gains an optional
+  `avatarDecoration: KunAvatarDecoration(src:, animatedSrc:)`. A `KunAvatar`
+  at `md` or larger draws the frame 1.2 times its size around it, so
+  `KunUserChip` gets frames with no change at the call site. The frame
+  changes no layout and takes no taps. `decoration: KunAvatarDecorationMode`
+  picks when the animated asset plays: `hover` (the default, while hovered or
+  keyboard-focused), `always`, `static` or `none`. Reduced motion always
+  shows the still image. Users without a decoration look exactly as before.
+- `KunAvatar`'s loading pulse now holds as a flat fill until the picture has
+  faded in, then fades itself, like `KunImage`. Before, it vanished the
+  moment the picture started to fade in.
+- `KunFontFamilies` from `kun_ui_tokens` 2.45.0 is re-exported: the web's
+  code face, `--kun-font-mono`, as `mono` plus a `monoFallback` list. Merge
+  `KunFontFamilies.monoStyle` onto a `KunText` step to set code in it:
+  `KunText.sm.merge(KunFontFamilies.monoStyle)`. The fallback ends in
+  `monospace`, which Android resolves to its own fixed-width face.
+- The generated family now floors at `^2.45.0` (`kun_ui_tokens`,
+  `kun_ui_icons`, `kun_ui_messages`).
+
 ## 0.9.1
 
 - **0.9.0 could not compile for a consumer pinned to an older token family.**

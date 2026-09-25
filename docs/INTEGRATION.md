@@ -4,7 +4,7 @@
 
 ```yaml
 dependencies:
-  kun_ui: ^0.9.1
+  kun_ui: ^0.10.0
 ```
 
 `kun_ui_tokens`, `kun_ui_icons` and `kun_ui_messages` come with it from
@@ -12,7 +12,7 @@ pub.dev and are re-exported, so `import 'package:kun_ui/kun_ui.dart';` is the
 only import.
 
 While `kun_ui` is 0.x, a minor bump may break and the caret stops at it
-(`^0.9.1` never resolves 0.10.0): read the
+(`^0.10.0` never resolves 0.11.0): read the
 [CHANGELOG](../packages/kun_ui/CHANGELOG.md) before raising the floor.
 
 A fix that is on `main` but not yet released can be taken from the repo,
@@ -144,77 +144,74 @@ KunUIConfigScope(
   `ImageProvider`. It defaults to `NetworkImage`; pass your cache's provider
   here instead of wrapping each widget.
 
-## The app shell's own navigation (there is no KunNavBar)
+## Images
 
-KunUI owns no navigation component, on either side: the web contract's 69
-components have none, and `KunHeader` is a page title, not a nav. Every
-kungal website builds its own — the forum's collapsed rail and expanded
-sidebar are both a list of `KunButton`s, `flat` while current and `light`
-otherwise, with an icon over a small label. That *is* the design, and it
-translates directly, so a Flutter app shell writes the same thing rather
-than waiting for a widget:
+`KunImage` is the web's `KunImage`: a URL through `KunUIConfig.imageProvider`
+(so your cache applies), with the ThumbHash blur-up, the pulse skeleton, an
+aspect-ratio box, `fit`, `fallbackSrc` and `onLoad`/`onError`.
 
 ```dart
-class NavDestination extends StatelessWidget {
-  const NavDestination({
-    required this.icon,
-    required this.label,
-    required this.current,
-    required this.onTap,
-    this.stacked = true,
-    super.key,
-  });
-
-  final IconData icon;
-  final String label;
-  final bool current;
-  final VoidCallback onTap;
-
-  /// Icon over label, as a rail or a bottom bar draws it. False puts the
-  /// icon beside the label, as an expanded sidebar does.
-  final bool stacked;
-
-  @override
-  Widget build(BuildContext context) {
-    final Widget text = Text(label, style: KunText.xs);
-    return KunButton(
-      onPressed: onTap,
-      variant: current ? KunUIVariant.flat : KunUIVariant.light,
-      color: current ? KunUIColor.primary : KunUIColor.neutral,
-      fullWidth: true,
-      icon: stacked ? null : Icon(icon, size: KunSpacing.unit * 4),
-      child: stacked
-          ? Column(
-              mainAxisSize: MainAxisSize.min,
-              spacing: KunSpacing.unit,
-              children: <Widget>[Icon(icon, size: KunSpacing.unit * 5), text],
-            )
-          : text,
-    );
-  }
-}
+ClipRRect(
+  borderRadius: BorderRadius.circular(KunRadius.md),
+  child: KunImage(
+    src: cover.url,
+    thumbhash: cover.thumbhash,
+    aspectRatio: 3 / 4,
+    cacheWidth: (width * MediaQuery.devicePixelRatioOf(context)).round(),
+  ),
+)
 ```
 
-A bottom bar is then a `Row` of those in `Expanded`s over
-`KunTheme.of(context).colors.content1`, inside a `SafeArea(top: false)` so
-the gesture inset is not painted over; a rail is a `Column` of them in a
-`SizedBox` of your width. The control scale is padding-driven, so a
-two-line destination grows the button instead of clipping it — the same
-thing the web's `h-auto` does.
+- Rounding is a `ClipRRect` around it, as the web rounds the wrapper with a
+  class.
+- The placeholder stays until the image has faded in, then fades itself, so
+  an image never fades in over the bare page.
+- `KunThumbHashImage(hash)` paints the placeholder on its own, for a screen
+  that holds the image back (a sensitive cover, for example). It decodes to
+  raw RGBA, with no PNG step and no package.
+- A sensitive-content veil is app policy and has no KunUI design yet. Build
+  it over `KunImage` or `KunThumbHashImage`.
 
-Two things this recipe does not solve:
+## Pull to refresh
 
-- **Icons.** `kun_ui_icons` carries only the glyphs the components
-  themselves use, so destination icons come from your app's own set. The
-  web has no such limit — its `KunIcon` renders any Iconify name.
-- **Which shape on which screen.** The websites answer a phone with a
-  drawer, not a bottom bar; an Android app usually answers it with a bottom
-  bar. That divergence is the app's call, not KunUI's.
+`KunRefreshIndicator(onRefresh: ..., child: listView)` in place of
+Material's `RefreshIndicator`. The gesture is the same, the spinner and the
+surface are KunUI's, and `edgeOffset` and `displacement` work the same.
 
-If you find yourself copying this into a second app, say so in an issue:
-the forum already hand-writes it once, so a second consumer is the demand
-signal that turns it into a component, and the design above is what it
-would be.
+## Code
+
+Code and `kbd` set in the web's code face: merge
+`KunFontFamilies.monoStyle` onto a `KunText` step, e.g.
+`KunText.sm.merge(KunFontFamilies.monoStyle)`. The stack ends in
+`monospace`, which Android resolves to its own fixed-width face.
+
+## The app shell's own navigation
+
+`KunNavItem` is one destination: a full-width `KunButton`, `flat` in
+`color` and announced as selected while `current`, `light` otherwise. It is
+what the forum's rail and sidebar hand-write, and what this document used to
+give as a recipe.
+
+```dart
+KunNavItem(
+  label: '消息',
+  icon: KunBadge(count: unread, child: const Icon(LucideIcons.bell)),
+  current: index == 2,
+  stacked: true, // icon over label: a rail or a bottom bar
+  onPressed: () => onSelect(2),
+)
+```
+
+- KunUI does not read the route: you decide which item is `current`. With
+  `href` the item goes through `KunUIConfig.navigate` instead of
+  `onPressed`.
+- A bare `Icon` takes 20px stacked and 16px inline. Destination icons come
+  from your app's own set: `kun_ui_icons` carries only the glyphs the
+  components use.
+- The containers are yours. A bottom bar is a `Row` of `Expanded` items in
+  a `SafeArea(top: false)`; a rail is a `Column` in a `SizedBox`. The
+  websites answer a phone with a drawer, not a bottom bar, so there is no
+  shared design for the bar itself.
 
 A row of section links *inside* a page — a sub-navigation, not the shell —
 is `KunTab` with an `href` on every item. Such a strip goes to pages rather

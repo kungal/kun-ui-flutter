@@ -603,9 +603,44 @@ along the line between platform behaviour and design:
   The snap, the dismissal and the cancel use `KunDurations` and `KunEasing`,
   not Material's 150ms and 200ms.
 
+One deliberate difference from Material, measured on the Pixel 10 Pro:
+Material refuses the overscroll indicator only while dragging, and once the
+pull armed the glow drew itself across the top of the list, because every
+further overscroll asks it again. KunRefreshIndicator refuses it while armed
+as well.
+
 It has no contract entry, and the gallery lists it as `contract: false`, as
 it does KunMessage. If the web ever grows a pull-to-refresh, the design moves
 to kun-ui and this becomes its port.
+
+### KunImage ports the web's own layer (decided 2026-09-25)
+
+Until kun-ui 2.45.0 the contract called KunImage web-only, for the
+`@nuxt/image` pipeline it wraps. That was true of the pipeline and not of
+the component: the blur-up, the skeleton, the aspect-ratio box and the
+fallback are KunImage's own, and an app needed all of them. 2.45.0 moved the
+line so that only the `<NuxtImg>` props and the native `<img>` hints stay
+web-only.
+
+- **The URL goes through `KunUIConfig.imageProvider`,** as the avatar's
+  does, so the app's cache applies. `cacheWidth`/`cacheHeight` stand in for
+  the web-only `sizes`/`densities`.
+- **The placeholder holds until the image is in.** Porting it exposed a web
+  bug: the placeholder was removed the frame the image started to fade in,
+  so the fade ran over the bare page. Upstream fixed that first (2.45.0, iron
+  rule 2), and both KunImage and KunAvatar port the fixed timing.
+- **No English `alt` default.** The web defaults `alt` to `'image'`, which a
+  screen reader would read as the name in a Chinese app. Here the node is
+  an image with no label until one is given, and `alt: ''` makes it
+  decorative, as on the web.
+- **ThumbHash is decoded here, to raw RGBA.** The decoder is a hand port of
+  the reference (MIT) with byte-exact vectors, not a dependency (iron rule 6).
+  The kungal app found a package's PNG output undecodable on a Pixel 10 Pro,
+  so pixels reach the engine through `ImageDescriptor.raw`. Measured on the
+  same device, the blur paints.
+- **The sensitive-content veil is not KunImage's.** The forum only puts
+  `blur-xl` on covers; the app's blur, label and tap-to-reveal have no
+  upstream design, so they stay in the app until kun-ui draws one.
 
 ### Reduced motion collapses every transition (decided 2026-09-17)
 
