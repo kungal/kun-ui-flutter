@@ -1154,6 +1154,76 @@
         "props.ariaLabel": "An accessible name has no visual form. The states demo names a group with it where there is no visible label, and what is announced is asserted by the widget tests."
       }
     },
+    "KunReaction": {
+      "source": "demos/reaction.dart",
+      "demos": [
+        {
+          "slug": "basic",
+          "title": "Basic",
+          "builder": "reactionBasic",
+          "shows": [
+            "props.modelValue",
+            "props.count",
+            "events.update:modelValue",
+            "events.update:count",
+            "events.change"
+          ]
+        },
+        {
+          "slug": "sizes",
+          "title": "Sizes",
+          "builder": "reactionSizes",
+          "shows": [
+            "props.size"
+          ]
+        },
+        {
+          "slug": "variants",
+          "title": "Variants",
+          "builder": "reactionVariants",
+          "shows": [
+            "props.color",
+            "props.icon",
+            "props.label"
+          ]
+        },
+        {
+          "slug": "toggle-only",
+          "title": "Toggle only",
+          "builder": "reactionToggleOnly",
+          "shows": [
+            "props.disabled"
+          ]
+        },
+        {
+          "slug": "action-row",
+          "title": "Action row",
+          "builder": "reactionActionRow",
+          "shows": [
+            "props.toggle"
+          ]
+        },
+        {
+          "slug": "labeled",
+          "title": "Labeled",
+          "builder": "reactionLabeled",
+          "shows": [
+            "slots.default"
+          ]
+        },
+        {
+          "slug": "custom",
+          "title": "Custom",
+          "builder": "reactionCustom",
+          "shows": [
+            "slots.icon"
+          ]
+        }
+      ],
+      "undemoable": {
+        "props.disableAnimation": "A still screenshot cannot show a skipped pop, burst or count-roll; widget tests assert that disableAnimation and reduced motion skip them."
+      }
+    },
     "KunRefreshIndicator": {
       "contract": false,
       "source": "demos/refresh_indicator.dart",

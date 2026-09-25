@@ -1799,6 +1799,115 @@ const ComponentCoverage _kunRadioGroup = ComponentCoverage(
 Widget kunRadioGroupContract(BuildContext context) =>
     const CoveragePage(coverage: _kunRadioGroup);
 
+const ComponentCoverage _kunReaction = ComponentCoverage(
+  name: 'KunReaction',
+  entries: <CoverageEntry>[
+    CoverageEntry(
+      section: 'props',
+      contractName: 'color',
+      status: CoverageStatus.shown,
+      dartName: 'color',
+      shownBy: 'Variants',
+    ),
+    CoverageEntry(
+      section: 'props',
+      contractName: 'count',
+      status: CoverageStatus.shown,
+      dartName: 'count',
+      shownBy: 'Basic',
+    ),
+    CoverageEntry(
+      section: 'props',
+      contractName: 'disableAnimation',
+      status: CoverageStatus.noVisualForm,
+      dartName: 'disableAnimation',
+      reason:
+          'A still screenshot cannot show a skipped pop, burst or count-roll; widget tests assert that disableAnimation and reduced motion skip them.',
+    ),
+    CoverageEntry(
+      section: 'props',
+      contractName: 'disabled',
+      status: CoverageStatus.shown,
+      dartName: 'disabled',
+      shownBy: 'Toggle only',
+    ),
+    CoverageEntry(
+      section: 'props',
+      contractName: 'icon',
+      status: CoverageStatus.shown,
+      dartName: 'icon',
+      shownBy: 'Variants',
+    ),
+    CoverageEntry(
+      section: 'props',
+      contractName: 'label',
+      status: CoverageStatus.shown,
+      dartName: 'label',
+      shownBy: 'Variants',
+    ),
+    CoverageEntry(
+      section: 'props',
+      contractName: 'modelValue',
+      status: CoverageStatus.shown,
+      dartName: 'value',
+      shownBy: 'Basic',
+    ),
+    CoverageEntry(
+      section: 'props',
+      contractName: 'size',
+      status: CoverageStatus.shown,
+      dartName: 'size',
+      shownBy: 'Sizes',
+    ),
+    CoverageEntry(
+      section: 'props',
+      contractName: 'toggle',
+      status: CoverageStatus.shown,
+      dartName: 'toggle',
+      shownBy: 'Action row',
+    ),
+    CoverageEntry(
+      section: 'events',
+      contractName: 'change',
+      status: CoverageStatus.shown,
+      dartName: 'onChanged',
+      shownBy: 'Basic',
+    ),
+    CoverageEntry(
+      section: 'events',
+      contractName: 'update:count',
+      status: CoverageStatus.shown,
+      dartName: 'onCountChanged',
+      shownBy: 'Basic',
+    ),
+    CoverageEntry(
+      section: 'events',
+      contractName: 'update:modelValue',
+      status: CoverageStatus.shown,
+      dartName: 'onChanged',
+      shownBy: 'Basic',
+    ),
+    CoverageEntry(
+      section: 'slots',
+      contractName: 'default',
+      status: CoverageStatus.shown,
+      dartName: 'child',
+      shownBy: 'Labeled',
+    ),
+    CoverageEntry(
+      section: 'slots',
+      contractName: 'icon',
+      status: CoverageStatus.shown,
+      dartName: 'iconBuilder',
+      shownBy: 'Custom',
+    ),
+  ],
+);
+
+/// The contract coverage page for KunReaction.
+Widget kunReactionContract(BuildContext context) =>
+    const CoveragePage(coverage: _kunReaction);
+
 const ComponentCoverage _kunScrollShadow = ComponentCoverage(
   name: 'KunScrollShadow',
   entries: <CoverageEntry>[

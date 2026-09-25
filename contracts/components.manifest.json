@@ -408,6 +408,26 @@
       },
       "slots": {}
     },
+    "KunReaction": {
+      "widget": "KunReaction",
+      "props": {
+        "color": "color",
+        "count": "count",
+        "disableAnimation": "disableAnimation",
+        "disabled": "disabled",
+        "icon": "icon",
+        "label": "label",
+        "modelValue": "value",
+        "size": "size",
+        "toggle": "toggle"
+      },
+      "events": {
+        "change": "onChanged",
+        "update:count": "onCountChanged",
+        "update:modelValue": "onChanged"
+      },
+      "slots": { "default": "child", "icon": "iconBuilder" }
+    },
     "KunScrollShadow": {
       "widget": "KunScrollShadow",
       "props": {

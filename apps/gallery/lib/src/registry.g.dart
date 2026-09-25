@@ -25,6 +25,7 @@ import 'demos/page.dart';
 import 'demos/popover.dart';
 import 'demos/progress.dart';
 import 'demos/radio_group.dart';
+import 'demos/reaction.dart';
 import 'demos/refresh_indicator.dart';
 import 'demos/scaffold.dart';
 import 'demos/scroll_shadow.dart';
@@ -391,6 +392,26 @@ const List<GalleryComponent> galleryComponents = <GalleryComponent>[
       GalleryDemo(slug: 'events', title: 'Events', builder: radioGroupEvents),
       GalleryDemo(
           slug: 'contract', title: 'Contract', builder: kunRadioGroupContract),
+    ],
+  ),
+  GalleryComponent(
+    slug: 'kunreaction',
+    name: 'KunReaction',
+    demos: <GalleryDemo>[
+      GalleryDemo(slug: 'basic', title: 'Basic', builder: reactionBasic),
+      GalleryDemo(slug: 'sizes', title: 'Sizes', builder: reactionSizes),
+      GalleryDemo(
+          slug: 'variants', title: 'Variants', builder: reactionVariants),
+      GalleryDemo(
+          slug: 'toggle-only',
+          title: 'Toggle only',
+          builder: reactionToggleOnly),
+      GalleryDemo(
+          slug: 'action-row', title: 'Action row', builder: reactionActionRow),
+      GalleryDemo(slug: 'labeled', title: 'Labeled', builder: reactionLabeled),
+      GalleryDemo(slug: 'custom', title: 'Custom', builder: reactionCustom),
+      GalleryDemo(
+          slug: 'contract', title: 'Contract', builder: kunReactionContract),
     ],
   ),
   GalleryComponent(
