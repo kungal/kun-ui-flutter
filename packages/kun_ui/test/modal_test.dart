@@ -1227,6 +1227,58 @@ void main() {
     expect(trigger.hasFocus, isTrue);
   });
 
+  group('a field that autofocuses', () {
+    Widget body(FocusNode field) {
+      return Column(
+        mainAxisSize: MainAxisSize.min,
+        children: <Widget>[
+          const KunButton(onPressed: _noop, child: Text('first')),
+          KunTextarea(autofocus: true, focusNode: field),
+        ],
+      );
+    }
+
+    testWidgets('keeps the focus when a pointer opens the dialog',
+        (WidgetTester tester) async {
+      setView(tester, const Size(1024, 768));
+      final FocusNode field = FocusNode();
+      addTearDown(field.dispose);
+      await tester.pumpWidget(wrap(_Host(child: body(field))));
+      await tester.tap(find.text('Open'));
+      await tester.pumpAndSettle();
+      expect(field.hasPrimaryFocus, isTrue);
+    });
+
+    testWidgets('keeps the focus when the keyboard opens the dialog',
+        (WidgetTester tester) async {
+      final FocusHighlightStrategy previous =
+          FocusManager.instance.highlightStrategy;
+      FocusManager.instance.highlightStrategy =
+          FocusHighlightStrategy.alwaysTraditional;
+      addTearDown(() {
+        FocusManager.instance.highlightStrategy = previous;
+      });
+      setView(tester, const Size(1024, 768));
+      final FocusNode field = FocusNode();
+      addTearDown(field.dispose);
+      await tester.pumpWidget(wrap(_Host(child: body(field))));
+      Focus.of(tester.element(find.text('Open'))).requestFocus();
+      await tester.pump();
+      await tester.sendKeyEvent(LogicalKeyboardKey.enter);
+      await tester.pumpAndSettle();
+      expect(field.hasPrimaryFocus, isTrue);
+      expect(Focus.of(tester.element(find.text('first'))).hasFocus, isFalse);
+    });
+
+    testWidgets('keeps the focus in a dialog mounted open',
+        (WidgetTester tester) async {
+      final FocusNode field = FocusNode();
+      addTearDown(field.dispose);
+      await _pumpOpen(tester, child: body(field));
+      expect(field.hasPrimaryFocus, isTrue);
+    });
+  });
+
   testWidgets('content without intrinsic sizes lays out in the panel',
       (WidgetTester tester) async {
     await _pumpOpen(

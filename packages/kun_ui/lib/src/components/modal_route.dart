@@ -127,6 +127,13 @@ class _KunModalPageState extends State<_KunModalPage>
       WidgetsBinding.instance.addPostFrameCallback((_) => _focusInitial());
       return;
     }
+    // An autofocused field inside the panel has already taken the focus by
+    // now. Pulling it back to the panel closed the keyboard of every comment
+    // dialog in the kungal app on a Pixel 10 Pro; the web's focus-trap keeps
+    // an active element that is already inside the trap.
+    if (_panelFocus.hasFocus) {
+      return;
+    }
     if (session.openedFromKeyboard) {
       final FocusTraversalPolicy policy =
           FocusTraversalGroup.maybeOf(panelContext) ??
