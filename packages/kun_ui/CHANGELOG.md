@@ -1,5 +1,20 @@
 # Changelog
 
+## 0.13.2
+
+A focus fix from the kungal app. There are no API changes.
+
+- **`KunModal` no longer takes the focus from a field that autofocuses.**
+  Opened by a pointer, the dialog moved the focus to its panel two frames
+  after it opened, and a `KunInput` or `KunTextarea` with `autofocus: true`
+  inside it had already taken the focus by then. On a Pixel 10 Pro the field
+  lost it and the keyboard never opened, so every comment dialog needed a
+  second tap. The dialog now leaves the focus where it is when it is already
+  inside the panel, as the web's focus trap does. Without an autofocused
+  field nothing changes: a pointer still focuses the panel, and the keyboard
+  still focuses its first control. Affects every release since 0.4.0, where
+  `KunModal` shipped.
+
 ## 0.13.1
 
 Accessibility fixes from the kungal app's Android node tree. There are no
