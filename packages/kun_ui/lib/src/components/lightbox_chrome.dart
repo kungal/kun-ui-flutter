@@ -234,6 +234,7 @@ class _LightboxChrome extends StatelessWidget {
                     fit: BoxFit.cover,
                     excludeFromSemantics: true,
                     gaplessPlayback: true,
+                    errorBuilder: _emptyOnError,
                   ),
                 ),
               ),
@@ -419,3 +420,8 @@ Widget _glass({required BorderRadius radius, required Widget child}) {
     ),
   );
 }
+
+// excludeFromSemantics does not cover Image's debug error box: Image.build
+// returns it in place of the image, exception text and all.
+Widget _emptyOnError(BuildContext context, Object error, StackTrace? stack) =>
+    const SizedBox.shrink();

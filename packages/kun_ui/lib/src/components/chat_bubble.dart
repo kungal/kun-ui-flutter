@@ -333,6 +333,14 @@ String? _statusLabel(KunChatSendStatus? status, KunMessages messages) {
   };
 }
 
+Widget _withSenderPrefix(String? prefix, Widget child) {
+  if (prefix == null) {
+    return child;
+  }
+  // A zero-size semantics node is dropped by Android.
+  return Semantics(label: prefix, child: child);
+}
+
 BorderRadius _corners({
   required KunChatBubblePosition position,
   required bool own,
@@ -527,14 +535,16 @@ class _KunChatBubbleState extends State<KunChatBubble> {
           boxWidth = math.min(_kAlbumWidth, cap);
         }
 
-        final List<Widget> bodyChildren = <Widget>[
-          if (!widget.showSender)
-            Semantics(
-              label: messages.chat.senderPrefix(
+        final String? senderPrefix = widget.showSender
+            ? null
+            : messages.chat.senderPrefix(
                 name: widget.own ? messages.chat.you : sender.name,
-              ),
-              child: const SizedBox.shrink(),
-            ),
+              );
+        final String? mediaPrefix = hasText ? null : senderPrefix;
+        final String? photoPrefix = reply == null ? mediaPrefix : null;
+        final String? contextPrefix = photos.isEmpty ? photoPrefix : null;
+
+        final List<Widget> bodyChildren = <Widget>[
           if (showName)
             _SenderName(
               sender: sender,
@@ -545,90 +555,103 @@ class _KunChatBubbleState extends State<KunChatBubble> {
               onTap: () => _onUserTap(context, sender),
             ),
           if (reply != null)
-            _ReplyPreview(
-              reply: reply,
-              quote: widget.message.replyQuote,
-              users: users,
-              messages: messages,
-              scheme: scheme,
-              own: widget.own,
-              mediaOnly: mediaOnly,
-              disabled: widget.disabled,
-              hovered: _isHovered('reply'),
-              onHover: (bool v) => _setHovered('reply', v),
-              onTap: () => widget.onReplyTap?.call(reply.seq),
-              duration: kunMotion(context, KunDefaultTransition.duration),
+            _withSenderPrefix(
+              mediaPrefix,
+              _ReplyPreview(
+                reply: reply,
+                quote: widget.message.replyQuote,
+                users: users,
+                messages: messages,
+                scheme: scheme,
+                own: widget.own,
+                mediaOnly: mediaOnly,
+                disabled: widget.disabled,
+                hovered: _isHovered('reply'),
+                onHover: (bool v) => _setHovered('reply', v),
+                onTap: () => widget.onReplyTap?.call(reply.seq),
+                duration: kunMotion(context, KunDefaultTransition.duration),
+              ),
             ),
           if (single != null)
-            _SinglePhoto(
-              photo: photos.first,
-              size: Size(
-                boxWidth!,
-                boxWidth / (single.width / single.height),
+            _withSenderPrefix(
+              photoPrefix,
+              _SinglePhoto(
+                photo: photos.first,
+                size: Size(
+                  boxWidth!,
+                  boxWidth / (single.width / single.height),
+                ),
+                src: _src(photos.first, KunChatMediaVariant.preview),
+                radius: insetMedia
+                    ? BorderRadius.circular(KunRadius.md)
+                    : (hasText
+                        ? corners.copyWith(
+                            bottomLeft: Radius.zero,
+                            bottomRight: Radius.zero,
+                          )
+                        : corners),
+                inset: insetMedia,
+                label: messages.chat.photoFrom(name: sender.name),
+                onTap: () => _openPhoto(context, 0, photos, sender.name),
+                overlay: mediaOnly && !hasReactions
+                    ? _MediaMeta(
+                        edited: widget.message.editedAt != null
+                            ? messages.chat.edited
+                            : null,
+                        time: time,
+                        fullTime: fullTime,
+                        icon: widget.own ? statusIcon : null,
+                        scheme: scheme,
+                      )
+                    : null,
               ),
-              src: _src(photos.first, KunChatMediaVariant.preview),
-              radius: insetMedia
-                  ? BorderRadius.circular(KunRadius.md)
-                  : (hasText
-                      ? corners.copyWith(
-                          bottomLeft: Radius.zero,
-                          bottomRight: Radius.zero,
-                        )
-                      : corners),
-              inset: insetMedia,
-              label: messages.chat.photoFrom(name: sender.name),
-              onTap: () => _openPhoto(context, 0, photos, sender.name),
-              overlay: mediaOnly && !hasReactions
-                  ? _MediaMeta(
-                      edited: widget.message.editedAt != null
-                          ? messages.chat.edited
-                          : null,
-                      time: time,
-                      fullTime: fullTime,
-                      icon: widget.own ? statusIcon : null,
-                      scheme: scheme,
-                    )
-                  : null,
             ),
           if (albumLayout != null)
-            _AlbumMosaic(
-              photos: photos,
-              layout: albumLayout,
-              width: boxWidth!,
-              srcOf: (KunChatPhoto photo) =>
-                  _src(photo, KunChatMediaVariant.preview),
-              radius: insetMedia
-                  ? BorderRadius.circular(KunRadius.md)
-                  : (hasText
-                      ? corners.copyWith(
-                          bottomLeft: Radius.zero,
-                          bottomRight: Radius.zero,
-                        )
-                      : corners),
-              inset: insetMedia,
-              label: messages.chat.photoFrom(name: sender.name),
-              onTap: (int i) => _openPhoto(context, i, photos, sender.name),
-              overlay: mediaOnly && !hasReactions
-                  ? _MediaMeta(
-                      time: time,
-                      fullTime: fullTime,
-                      icon: widget.own ? statusIcon : null,
-                      scheme: scheme,
-                    )
-                  : null,
+            _withSenderPrefix(
+              photoPrefix,
+              _AlbumMosaic(
+                photos: photos,
+                layout: albumLayout,
+                width: boxWidth!,
+                srcOf: (KunChatPhoto photo) =>
+                    _src(photo, KunChatMediaVariant.preview),
+                radius: insetMedia
+                    ? BorderRadius.circular(KunRadius.md)
+                    : (hasText
+                        ? corners.copyWith(
+                            bottomLeft: Radius.zero,
+                            bottomRight: Radius.zero,
+                          )
+                        : corners),
+                inset: insetMedia,
+                label: messages.chat.photoFrom(name: sender.name),
+                onTap: (int i) => _openPhoto(context, i, photos, sender.name),
+                overlay: mediaOnly && !hasReactions
+                    ? _MediaMeta(
+                        time: time,
+                        fullTime: fullTime,
+                        icon: widget.own ? statusIcon : null,
+                        scheme: scheme,
+                      )
+                    : null,
+              ),
             ),
           if (rawContext != null)
-            _ContextCard(
-              raw: rawContext,
-              scheme: scheme,
-              hovered: _isHovered('context'),
-              onHover: (bool v) => _setHovered('context', v),
-              onTap: (String href) => _onContextTap(context, href),
-              duration: kunMotion(context, KunDefaultTransition.duration),
+            _withSenderPrefix(
+              contextPrefix,
+              _ContextCard(
+                raw: rawContext,
+                scheme: scheme,
+                hovered: _isHovered('context'),
+                onHover: (bool v) => _setHovered('context', v),
+                onTap: (String href) => _onContextTap(context, href),
+                duration: kunMotion(context, KunDefaultTransition.duration),
+              ),
             ),
           if (hasText)
             _TextBlock(
               message: widget.message,
+              senderPrefix: senderPrefix,
               onLink: widget.onLink,
               onMention: widget.onMention,
               showCornerMeta: !hasReactions,
@@ -1293,6 +1316,7 @@ class _ContextCard extends StatelessWidget {
 class _TextBlock extends StatelessWidget {
   const _TextBlock({
     required this.message,
+    this.senderPrefix,
     required this.onLink,
     required this.onMention,
     required this.showCornerMeta,
@@ -1301,6 +1325,7 @@ class _TextBlock extends StatelessWidget {
   });
 
   final KunChatMessage message;
+  final String? senderPrefix;
   final KunChatLinkCallback? onLink;
   final KunChatUserCallback? onMention;
   final bool showCornerMeta;
@@ -1309,6 +1334,35 @@ class _TextBlock extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    // A wrapping Semantics(label) joins with the paragraph; link spans keep
+    // their own nodes when the recognizer sits on the text-bearing span.
+    final Widget text = _withSenderPrefix(
+      senderPrefix,
+      KunChatText(
+        text: message.text,
+        entities: message.entities,
+        trailing: twin == null
+            ? null
+            : _TwinSeat(
+                child: ExcludeSemantics(
+                  child: Visibility(
+                    visible: false,
+                    maintainSize: true,
+                    maintainAnimation: true,
+                    maintainState: true,
+                    child: Padding(
+                      padding: const EdgeInsets.only(
+                        left: KunSpacing.unit * 2,
+                      ),
+                      child: twin,
+                    ),
+                  ),
+                ),
+              ),
+        onLink: onLink,
+        onMention: onMention,
+      ),
+    );
     return Stack(
       clipBehavior: Clip.none,
       children: <Widget>[
@@ -1319,30 +1373,7 @@ class _TextBlock extends StatelessWidget {
             KunSpacing.unit * 3,
             KunSpacing.unit * 1.5,
           ),
-          child: KunChatText(
-            text: message.text,
-            entities: message.entities,
-            trailing: twin == null
-                ? null
-                : _TwinSeat(
-                    child: ExcludeSemantics(
-                      child: Visibility(
-                        visible: false,
-                        maintainSize: true,
-                        maintainAnimation: true,
-                        maintainState: true,
-                        child: Padding(
-                          padding: const EdgeInsets.only(
-                            left: KunSpacing.unit * 2,
-                          ),
-                          child: twin,
-                        ),
-                      ),
-                    ),
-                  ),
-            onLink: onLink,
-            onMention: onMention,
-          ),
+          child: text,
         ),
         if (showCornerMeta && meta != null)
           Positioned(
@@ -1478,26 +1509,16 @@ class _ReactionChip extends StatelessWidget {
       background = scheme.primary.solid.withValues(alpha: hovered ? 0.2 : 0.1);
       foreground = scheme.primary.shade700;
     }
-    final String? imageUrl = option?.imageUrl;
-    final Widget art = imageUrl != null && imageUrl.isNotEmpty
-        ? Image(
-            image: KunUIConfigScope.of(context).imageProvider(imageUrl),
-            width: _kChipArt,
-            height: _kChipArt,
-            fit: BoxFit.contain,
-            excludeFromSemantics: true,
-            filterQuality: FilterQuality.medium,
-            gaplessPlayback: true,
-          )
-        : Text(
-            option?.emoji ?? reaction.reaction,
-            style: TextStyle(
-              fontSize: KunText.base.fontSize,
-              height: 1,
-              leadingDistribution: TextLeadingDistribution.even,
-              color: foreground,
-            ),
-          );
+    final Widget art = kunChatReactionArt(
+      context: context,
+      size: _kChipArt,
+      emoji: option?.emoji ?? reaction.reaction,
+      imageUrl: option?.imageUrl,
+      style: TextStyle(
+        fontSize: KunText.base.fontSize,
+        color: foreground,
+      ),
+    );
 
     return MouseRegion(
       cursor: disabled ? MouseCursor.defer : SystemMouseCursors.click,

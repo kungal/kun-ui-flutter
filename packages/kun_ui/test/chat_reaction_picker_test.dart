@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter/widgets.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -7,6 +8,7 @@ Widget wrap(
   Widget child, {
   bool reducedMotion = false,
   KunMessages messages = KunMessages.en,
+  KunUIConfig? config,
 }) {
   return MediaQuery(
     data: MediaQueryData(
@@ -15,19 +17,41 @@ Widget wrap(
     ),
     child: KunMessagesScope(
       messages: messages,
-      child: KunTheme(
-        data: KunThemeData.light(),
-        child: Directionality(
-          textDirection: TextDirection.ltr,
-          child: FocusScope(
-            child: Center(
-              child: SizedBox(width: 320, height: 320, child: child),
+      child: KunUIConfigScope(
+        config: config ?? const KunUIConfig(),
+        child: KunTheme(
+          data: KunThemeData.light(),
+          child: Directionality(
+            textDirection: TextDirection.ltr,
+            child: FocusScope(
+              child: Center(
+                child: SizedBox(width: 320, height: 320, child: child),
+              ),
             ),
           ),
         ),
       ),
     ),
   );
+}
+
+class _FailingImageProvider extends ImageProvider<_FailingImageProvider> {
+  const _FailingImageProvider();
+
+  @override
+  Future<_FailingImageProvider> obtainKey(ImageConfiguration configuration) {
+    return SynchronousFuture<_FailingImageProvider>(this);
+  }
+
+  @override
+  ImageStreamCompleter loadImage(
+    _FailingImageProvider key,
+    ImageDecoderCallback decode,
+  ) {
+    return OneFrameImageStreamCompleter(
+      Future<ImageInfo>.error(Exception('load failed')),
+    );
+  }
 }
 
 const List<KunChatReactionOption> options = <KunChatReactionOption>[
@@ -164,5 +188,47 @@ void main() {
     );
     await tester.pump();
     expect(focused(tester, 'Love'), isTrue);
+  });
+
+  testWidgets('a failed reaction image falls back to the emoji', (
+    tester,
+  ) async {
+    final SemanticsHandle handle = tester.ensureSemantics();
+    const List<KunChatReactionOption> art = <KunChatReactionOption>[
+      KunChatReactionOption(
+        key: 'heart',
+        emoji: '❤️',
+        label: 'Love',
+        imageUrl: 'https://example.test/heart.webp',
+      ),
+      KunChatReactionOption(key: 'fire', emoji: '🔥', label: 'Fire'),
+    ];
+    await tester.pumpWidget(
+      wrap(
+        const KunChatReactionPicker(options: art, columns: 2),
+        config: KunUIConfig(
+          imageProvider: (_) => const _FailingImageProvider(),
+        ),
+      ),
+    );
+    await tester.pump();
+    await tester.pump();
+    tester.takeException();
+    expect(find.text('❤️'), findsOneWidget);
+    expect(find.textContaining('load failed'), findsNothing);
+    expect(
+      tester.getSemantics(find.bySemanticsLabel('Love')),
+      isSemantics(
+        label: 'Love',
+        isButton: true,
+        hasToggledState: true,
+        isToggled: false,
+      ),
+    );
+    expect(
+      tester.getSize(find.byType(Image)),
+      Size.square(KunSpacing.unit * 8),
+    );
+    handle.dispose();
   });
 }

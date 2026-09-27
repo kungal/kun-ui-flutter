@@ -279,6 +279,27 @@ int _spoilerMaskSize(String text, KunChatEntity entity) {
   return slice.runes.length.clamp(3, 12);
 }
 
+String _hiddenSpoilerLabel(List<KunChatTextNode> nodes, String reveal) {
+  final StringBuffer buffer = StringBuffer();
+  void write(List<KunChatTextNode> nodes) {
+    for (final KunChatTextNode node in nodes) {
+      switch (node) {
+        case KunChatTextLeaf(:final text):
+          buffer.write(text);
+        case KunChatEntityNode(:final entity, :final children):
+          if (entity.type == KunChatEntityType.spoiler) {
+            buffer.write(reveal);
+          } else {
+            write(children);
+          }
+      }
+    }
+  }
+
+  write(nodes);
+  return buffer.toString();
+}
+
 /// Message text plus entities, rendered from [buildKunChatEntityTree].
 class KunChatText extends StatefulWidget {
   /// Creates chat text.
@@ -560,7 +581,7 @@ class _KunChatTextState extends State<KunChatText> {
         },
         child: Semantics(
           button: true,
-          label: revealLabel,
+          label: _hiddenSpoilerLabel(tree, revealLabel),
           onTap: _reveal,
           child: ExcludeSemantics(child: body),
         ),
@@ -1383,24 +1404,20 @@ class _ChatInlineState extends State<_ChatInline>
         cursorValue: cursorValue,
       );
     }
-    return <InlineSpan>[
-      TextSpan(
-        style: linkStyle,
-        recognizer: _tap(() => widget.onLink(context, href)),
-        mouseCursor: SystemMouseCursors.click,
-        onEnter: (_) => setState(() => _hovered.add(node.entity.offset)),
-        onExit: (_) => setState(() => _hovered.remove(node.entity.offset)),
-        children: _buildNodes(
-          context,
-          node.children,
-          linkStyle,
-          scheme,
-          inSpoiler: inSpoiler,
-          cursor: cursor,
-          cursorValue: cursorValue,
-        ),
+    final GestureRecognizer tap = _tap(() => widget.onLink(context, href));
+    return _withTap(
+      _buildNodes(
+        context,
+        node.children,
+        linkStyle,
+        scheme,
+        inSpoiler: inSpoiler,
+        cursor: cursor,
+        cursorValue: cursorValue,
       ),
-    ];
+      tap,
+      hoverKey: node.entity.offset,
+    );
   }
 
   List<InlineSpan> _mentionSpans(
@@ -1436,24 +1453,56 @@ class _ChatInlineState extends State<_ChatInline>
         cursorValue: cursorValue,
       );
     }
-    return <InlineSpan>[
-      TextSpan(
-        style: mentionStyle,
-        recognizer: _tap(() => widget.onMention(context, id)),
-        mouseCursor: SystemMouseCursors.click,
-        onEnter: (_) => setState(() => _hovered.add(node.entity.offset)),
-        onExit: (_) => setState(() => _hovered.remove(node.entity.offset)),
-        children: _buildNodes(
-          context,
-          node.children,
-          mentionStyle,
-          scheme,
-          inSpoiler: inSpoiler,
-          cursor: cursor,
-          cursorValue: cursorValue,
-        ),
+    final GestureRecognizer tap = _tap(() => widget.onMention(context, id));
+    return _withTap(
+      _buildNodes(
+        context,
+        node.children,
+        mentionStyle,
+        scheme,
+        inSpoiler: inSpoiler,
+        cursor: cursor,
+        cursorValue: cursorValue,
       ),
-    ];
+      tap,
+      hoverKey: node.entity.offset,
+    );
+  }
+
+  List<InlineSpan> _withTap(
+    List<InlineSpan> spans,
+    GestureRecognizer tap, {
+    required int hoverKey,
+  }) {
+    // A recognizer on a textless wrapper has empty boxes, so
+    // RenderParagraph skips the link node in assembleSemanticsNode.
+    void onEnter(PointerEnterEvent _) {
+      setState(() => _hovered.add(hoverKey));
+    }
+
+    void onExit(PointerExitEvent _) {
+      setState(() => _hovered.remove(hoverKey));
+    }
+
+    List<InlineSpan> apply(List<InlineSpan> spans) {
+      return <InlineSpan>[
+        for (final InlineSpan span in spans)
+          if (span is TextSpan)
+            TextSpan(
+              text: span.text,
+              style: span.style,
+              recognizer: span.recognizer ?? tap,
+              mouseCursor: SystemMouseCursors.click,
+              onEnter: span.onEnter ?? onEnter,
+              onExit: span.onExit ?? onExit,
+              children: span.children == null ? null : apply(span.children!),
+            )
+          else
+            span,
+      ];
+    }
+
+    return apply(spans);
   }
 }
 

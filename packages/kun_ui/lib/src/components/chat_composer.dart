@@ -1067,6 +1067,7 @@ class _AttachmentChipState extends State<_AttachmentChip> {
                   image: attachment.image!,
                   fit: BoxFit.cover,
                   semanticLabel: attachment.name ?? '',
+                  errorBuilder: _emptyOnError,
                 ),
               if (progress != null && progress < 1 && !attachment.error)
                 Positioned(
@@ -1141,3 +1142,8 @@ class _AttachmentChipState extends State<_AttachmentChip> {
     );
   }
 }
+
+// Without an errorBuilder a failed image paints Flutter's debug error box,
+// exception text included, and that text reaches the semantics tree.
+Widget _emptyOnError(BuildContext context, Object error, StackTrace? stack) =>
+    const SizedBox.shrink();

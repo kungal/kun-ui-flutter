@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter/gestures.dart';
 import 'package:flutter/rendering.dart';
 import 'package:flutter/services.dart';
@@ -100,7 +101,11 @@ class _HostState extends State<_Host> {
   }
 }
 
-Widget wrap(Widget child, {bool webEnter = false}) {
+Widget wrap(
+  Widget child, {
+  bool webEnter = false,
+  KunUIConfig? config,
+}) {
   Widget home = child;
   if (webEnter) {
     home = Shortcuts(
@@ -113,34 +118,56 @@ Widget wrap(Widget child, {bool webEnter = false}) {
   }
   return KunMessagesScope(
     messages: KunMessages.en,
-    child: KunTheme(
-      data: KunThemeData.light(),
-      child: WidgetsApp(
-        color: KunColors.black,
-        debugShowCheckedModeBanner: false,
-        builder: (BuildContext context, Widget? navigator) {
-          final MediaQueryData data = MediaQuery.of(context);
-          return MediaQuery(
-            data: data.copyWith(disableAnimations: true),
-            child: navigator!,
-          );
-        },
-        home: home,
-        pageRouteBuilder: <T>(RouteSettings settings, WidgetBuilder builder) {
-          return PageRouteBuilder<T>(
-            settings: settings,
-            pageBuilder: (
-              BuildContext context,
-              Animation<double> animation,
-              Animation<double> secondaryAnimation,
-            ) {
-              return builder(context);
-            },
-          );
-        },
+    child: KunUIConfigScope(
+      config: config ?? const KunUIConfig(),
+      child: KunTheme(
+        data: KunThemeData.light(),
+        child: WidgetsApp(
+          color: KunColors.black,
+          debugShowCheckedModeBanner: false,
+          builder: (BuildContext context, Widget? navigator) {
+            final MediaQueryData data = MediaQuery.of(context);
+            return MediaQuery(
+              data: data.copyWith(disableAnimations: true),
+              child: navigator!,
+            );
+          },
+          home: home,
+          pageRouteBuilder: <T>(RouteSettings settings, WidgetBuilder builder) {
+            return PageRouteBuilder<T>(
+              settings: settings,
+              pageBuilder: (
+                BuildContext context,
+                Animation<double> animation,
+                Animation<double> secondaryAnimation,
+              ) {
+                return builder(context);
+              },
+            );
+          },
+        ),
       ),
     ),
   );
+}
+
+class _FailingImageProvider extends ImageProvider<_FailingImageProvider> {
+  const _FailingImageProvider();
+
+  @override
+  Future<_FailingImageProvider> obtainKey(ImageConfiguration configuration) {
+    return SynchronousFuture<_FailingImageProvider>(this);
+  }
+
+  @override
+  ImageStreamCompleter loadImage(
+    _FailingImageProvider key,
+    ImageDecoderCallback decode,
+  ) {
+    return OneFrameImageStreamCompleter(
+      Future<ImageInfo>.error(Exception('load failed')),
+    );
+  }
 }
 
 void setView(
@@ -159,9 +186,14 @@ Future<void> pumpHost(
   WidgetTester tester,
   Widget host, {
   bool webEnter = false,
+  KunUIConfig? config,
 }) async {
   await tester.pumpWidget(
-    wrap(KeyedSubtree(key: UniqueKey(), child: host), webEnter: webEnter),
+    wrap(
+      KeyedSubtree(key: UniqueKey(), child: host),
+      webEnter: webEnter,
+      config: config,
+    ),
   );
   await tester.pump();
   await tester.pump();
@@ -749,5 +781,44 @@ void main() {
     await tester.pumpWidget(wrap(const SizedBox.shrink()));
     await tester.pump();
     expect(KunDismissLayers.debugLayers, isEmpty);
+  });
+
+  testWidgets('a failed reaction image falls back to the emoji', (
+    tester,
+  ) async {
+    final SemanticsHandle handle = tester.ensureSemantics();
+    const List<KunChatReactionOption> art = <KunChatReactionOption>[
+      KunChatReactionOption(
+        key: 'heart',
+        emoji: '❤️',
+        label: 'Love',
+        imageUrl: 'https://example.test/heart.webp',
+      ),
+    ];
+    setView(tester, const Size(800, 600));
+    await pumpHost(
+      tester,
+      const _Host(reactions: art, quickReactions: 1),
+      config: KunUIConfig(
+        imageProvider: (_) => const _FailingImageProvider(),
+      ),
+    );
+    tester.takeException();
+    expect(find.text('❤️'), findsOneWidget);
+    expect(find.textContaining('load failed'), findsNothing);
+    expect(
+      tester.getSize(find.byType(Image)),
+      Size.square(KunSpacing.unit * 7),
+    );
+    expect(
+      tester.getSemantics(quick('heart')),
+      isSemantics(
+        label: 'Love',
+        isButton: true,
+        hasToggledState: true,
+        isToggled: false,
+      ),
+    );
+    handle.dispose();
   });
 }

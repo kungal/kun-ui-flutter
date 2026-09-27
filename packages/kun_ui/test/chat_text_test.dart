@@ -293,9 +293,11 @@ void main() {
     );
     await tester.pump();
     expect(recognizerCount(tester), 0);
+    final Finder text = find.byType(KunChatText);
+    expect(tester.getSemantics(text), isSemantics(isButton: true));
     expect(
-      tester.getSemantics(find.byType(KunChatText)),
-      isSemantics(label: KunMessages.en.spoiler.reveal, isButton: true),
+      tester.getSemantics(text).getSemanticsData().label,
+      contains(KunMessages.en.spoiler.reveal),
     );
 
     tapRecognizers(tester);
@@ -313,6 +315,38 @@ void main() {
       ),
       findsNothing,
     );
+  });
+
+  testWidgets('hidden spoilers keep visible words in the label', (
+    tester,
+  ) async {
+    final SemanticsHandle handle = tester.ensureSemantics();
+    final KunChatFormattedText parsed = parseKunChatMarkdown(
+      'Beat it! The twist is ||she did it||, and ||level one|| hinted it.',
+    );
+    await tester.pumpWidget(
+      wrap(KunChatText(text: parsed.text, entities: parsed.entities)),
+    );
+    await tester.pump();
+    final Finder text = find.byType(KunChatText);
+    String labelOf() => tester.getSemantics(text).getSemanticsData().label;
+    final String reveal = KunMessages.en.spoiler.reveal;
+    final String label = labelOf();
+    expect(tester.getSemantics(text), isSemantics(isButton: true));
+    expect(label, contains('Beat it!'));
+    expect(label, contains('The twist is'));
+    expect(label, contains('hinted it.'));
+    expect(reveal.allMatches(label), hasLength(2));
+    expect(label, isNot(contains('she did it')));
+    expect(label, isNot(contains('level one')));
+
+    await tester.tap(text);
+    await tester.pump();
+    final String revealed = labelOf();
+    expect(revealed, contains('she did it'));
+    expect(revealed, contains('level one'));
+    expect(revealed, isNot(contains(reveal)));
+    handle.dispose();
   });
 
   testWidgets('reduced motion still reveals on tap', (tester) async {

@@ -10,7 +10,6 @@ import 'package:kun_ui_messages/kun_ui_messages.dart';
 import 'package:kun_ui_tokens/kun_ui_tokens.dart';
 
 import '../chat/types.dart';
-import '../config/config.dart';
 import '../foundation/anchored.dart';
 import '../foundation/design.dart';
 import '../foundation/dismiss_layers.dart';
@@ -19,6 +18,7 @@ import '../foundation/variant_style.dart';
 import '../locale/messages.dart';
 import '../theme/theme.dart';
 import 'chat_reaction_picker.dart';
+import 'chat_shared.dart';
 
 /// Web `pad = 8` in `ChatMessageMenu.vue:78`.
 const double _kClamp = 8;
@@ -1147,26 +1147,13 @@ class _KunChatQuickReactionState extends State<_KunChatQuickReaction> {
     final Color? fill = widget.selected
         ? widget.primary.withValues(alpha: 0.2)
         : ((_hovered || _focused) ? widget.idle.withValues(alpha: 0.2) : null);
-    final String? imageUrl = widget.option.imageUrl;
-    final Widget glyph = imageUrl != null && imageUrl.isNotEmpty
-        ? Image(
-            image: KunUIConfigScope.of(context).imageProvider(imageUrl),
-            width: _kQuickArt,
-            height: _kQuickArt,
-            fit: BoxFit.contain,
-            excludeFromSemantics: true,
-            filterQuality: FilterQuality.medium,
-            gaplessPlayback: true,
-          )
-        : ExcludeSemantics(
-            child: Text(
-              widget.option.emoji,
-              style: KunText.xl.copyWith(
-                height: 1,
-                leadingDistribution: TextLeadingDistribution.even,
-              ),
-            ),
-          );
+    final Widget glyph = kunChatReactionArt(
+      context: context,
+      size: _kQuickArt,
+      emoji: widget.option.emoji,
+      imageUrl: widget.option.imageUrl,
+      style: KunText.xl,
+    );
 
     return Semantics(
       container: true,

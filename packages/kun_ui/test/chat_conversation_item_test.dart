@@ -211,6 +211,41 @@ void main() {
     expect(find.byIcon(KunIcons.pin), findsOneWidget);
   });
 
+  testWidgets('unread badge digit is not read after the unread label', (
+    WidgetTester tester,
+  ) async {
+    final SemanticsHandle semantics = tester.ensureSemantics();
+    final DateTime at = DateTime(2026, 9, 27, 9, 14);
+    await tester.pumpWidget(
+      wrap(
+        KunChatConversationItem(
+          user: haru,
+          lastMessage: message(createdAt: at, text: 'hello'),
+          unreadCount: 1,
+        ),
+      ),
+    );
+    final String unread = KunMessages.en.chat.unreadCount(count: 1);
+    final List<String> parts = <String>[];
+    void walk(SemanticsNode node) {
+      final String part = node.getSemanticsData().label;
+      if (part.isNotEmpty) {
+        parts.add(part);
+      }
+      node.visitChildren((SemanticsNode child) {
+        walk(child);
+        return true;
+      });
+    }
+
+    walk(tester.getSemantics(find.byType(KunChatConversationItem)));
+    final String label = parts.join(' | ');
+    expect(unread.allMatches(label), hasLength(1));
+    final String after = label.substring(label.indexOf(unread) + unread.length);
+    expect(RegExp(r'(^|[\s|])1(\s|$|\|)').hasMatch(after), isFalse);
+    semantics.dispose();
+  });
+
   testWidgets('status icons', (WidgetTester tester) async {
     await tester.pumpWidget(
       wrap(

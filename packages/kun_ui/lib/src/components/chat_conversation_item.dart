@@ -409,6 +409,14 @@ class _KunChatConversationItemState extends State<KunChatConversationItem>
     };
   }
 
+  Widget _labelledVisual(String? label, Widget child) {
+    return Semantics(
+      label: label,
+      excludeSemantics: true,
+      child: child,
+    );
+  }
+
   Map<CustomSemanticsAction, VoidCallback> _semanticActions() {
     return <CustomSemanticsAction, VoidCallback>{
       for (final KunChatSwipeAction action in <KunChatSwipeAction>[
@@ -574,9 +582,9 @@ class _KunChatConversationItemState extends State<KunChatConversationItem>
       mainAxisSize: MainAxisSize.min,
       children: <Widget>[
         if (widget.mentionCount > 0)
-          Semantics(
-            label: messages.chat.mentioned,
-            child: Container(
+          _labelledVisual(
+            messages.chat.mentioned,
+            Container(
               width: KunSpacing.unit * 5,
               height: KunSpacing.unit * 5,
               decoration: BoxDecoration(
@@ -599,11 +607,11 @@ class _KunChatConversationItemState extends State<KunChatConversationItem>
             (widget.unreadCount > 0 || widget.markedUnread))
           const SizedBox(width: KunSpacing.unit * 1.5),
         if (widget.unreadCount > 0 || widget.markedUnread)
-          Semantics(
-            label: widget.unreadCount > 0
+          _labelledVisual(
+            widget.unreadCount > 0
                 ? messages.chat.unreadCount(count: widget.unreadCount)
                 : null,
-            child: Container(
+            Container(
               constraints: const BoxConstraints(
                 minWidth: KunSpacing.unit * 5,
                 minHeight: KunSpacing.unit * 5,
@@ -640,9 +648,9 @@ class _KunChatConversationItemState extends State<KunChatConversationItem>
             ),
           )
         else if (widget.pinned)
-          Semantics(
-            label: messages.chat.pinned,
-            child: Transform.rotate(
+          _labelledVisual(
+            messages.chat.pinned,
+            Transform.rotate(
               angle: math.pi / 4,
               child: Icon(
                 KunIcons.pin,
@@ -699,9 +707,9 @@ class _KunChatConversationItemState extends State<KunChatConversationItem>
                         ),
                         if (widget.muted) ...<Widget>[
                           const SizedBox(width: KunSpacing.unit * 1.5),
-                          Semantics(
-                            label: messages.chat.muted,
-                            child: Icon(
+                          _labelledVisual(
+                            messages.chat.muted,
+                            Icon(
                               KunIcons.bellOff,
                               size: KunText.xs.fontSize,
                               color: widget.selected
@@ -715,9 +723,9 @@ class _KunChatConversationItemState extends State<KunChatConversationItem>
                           mainAxisSize: MainAxisSize.min,
                           children: <Widget>[
                             if (widget.status != null) ...<Widget>[
-                              Semantics(
-                                label: _statusLabel(messages, widget.status!),
-                                child: Icon(
+                              _labelledVisual(
+                                _statusLabel(messages, widget.status!),
+                                Icon(
                                   _statusIcon(widget.status!),
                                   size: KunText.sm.fontSize,
                                   color:

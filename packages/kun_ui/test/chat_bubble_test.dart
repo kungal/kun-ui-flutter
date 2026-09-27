@@ -1,5 +1,6 @@
 import 'dart:typed_data';
 
+import 'package:flutter/foundation.dart';
 import 'package:flutter/gestures.dart';
 import 'package:flutter/rendering.dart';
 import 'package:flutter/widgets.dart';
@@ -95,6 +96,25 @@ Uint8List _solidPng({int width = 16, int height = 16}) {
 final MemoryImage _memory = MemoryImage(_solidPng());
 
 ImageProvider _resolveImage(String url) => _memory;
+
+class _FailingImageProvider extends ImageProvider<_FailingImageProvider> {
+  const _FailingImageProvider();
+
+  @override
+  Future<_FailingImageProvider> obtainKey(ImageConfiguration configuration) {
+    return SynchronousFuture<_FailingImageProvider>(this);
+  }
+
+  @override
+  ImageStreamCompleter loadImage(
+    _FailingImageProvider key,
+    ImageDecoderCallback decode,
+  ) {
+    return OneFrameImageStreamCompleter(
+      Future<ImageInfo>.error(Exception('load failed')),
+    );
+  }
+}
 
 final DateTime _when = DateTime(2026, 9, 27, 14, 5);
 
@@ -1255,5 +1275,124 @@ void main() {
     );
     final KunImage image = tester.widget(find.byType(KunImage));
     expect(image.src, isEmpty);
+  });
+
+  testWidgets('a failed reaction image falls back to the emoji', (
+    WidgetTester tester,
+  ) async {
+    final SemanticsHandle handle = tester.ensureSemantics();
+    const List<KunChatReactionOption> options = <KunChatReactionOption>[
+      KunChatReactionOption(
+        key: 'heart',
+        emoji: '❤️',
+        label: 'Love',
+        imageUrl: 'https://example.test/heart.webp',
+      ),
+    ];
+    final KunChatMessage message = _msg(
+      text: 'hi',
+      reactions: const <KunChatReaction>[
+        KunChatReaction(reaction: 'heart', count: 3, reacted: true),
+      ],
+    );
+    final String chipLabel = KunMessages.en.chat.reactionCount(
+      label: 'Love',
+      count: 3,
+    );
+    final Finder chip = find.byWidgetPredicate((Widget w) {
+      return w is Semantics && w.properties.label == chipLabel;
+    });
+
+    Future<Size> pumpChip(ImageProvider Function(String) resolver) async {
+      await tester.pumpWidget(
+        wrap(
+          KunChatBubble(
+            message: message,
+            users: _users,
+            reactionOptions: options,
+          ),
+          config: KunUIConfig(
+            imageProvider: resolver,
+            navigate: (_, __) {},
+          ),
+        ),
+      );
+      await tester.pump();
+      await tester.pump();
+      return tester.getSize(chip);
+    }
+
+    final Size ok = await pumpChip((_) => _memory);
+    final Size failed = await pumpChip((_) => const _FailingImageProvider());
+    tester.takeException();
+    expect(find.text('❤️'), findsOneWidget);
+    expect(find.textContaining('load failed'), findsNothing);
+    expect(failed, ok);
+    expect(
+      tester.getSemantics(chip).getSemanticsData().label,
+      allOf(contains(chipLabel), isNot(contains('load failed'))),
+    );
+    handle.dispose();
+  });
+
+  testWidgets('sender prefix lands on the message text node', (
+    WidgetTester tester,
+  ) async {
+    final SemanticsHandle handle = tester.ensureSemantics();
+    const String text = 'see x here';
+    await tester.pumpWidget(
+      wrap(
+        KunChatBubble(
+          message: _msg(
+            text: text,
+            entities: const <KunChatEntity>[
+              KunChatEntity(
+                type: KunChatEntityType.textLink,
+                offset: 4,
+                length: 1,
+                url: 'https://www.kungal.com/topic/1',
+              ),
+            ],
+          ),
+          users: _users,
+        ),
+      ),
+    );
+    final String prefix = KunMessages.en.chat.senderPrefix(name: 'Haru');
+    SemanticsNode? prefixNode;
+    SemanticsNode? textNode;
+    SemanticsNode? linkNode;
+    void walk(SemanticsNode node) {
+      final SemanticsData data = node.getSemanticsData();
+      if (data.label.isNotEmpty) {
+        expect(
+          node.rect.size,
+          isNot(Size.zero),
+          reason: 'labelled zero-size node "${data.label}"',
+        );
+      }
+      if (data.label.startsWith(prefix)) {
+        prefixNode = node;
+      }
+      if (data.label.contains('see')) {
+        textNode = node;
+      }
+      if (data.hasAction(SemanticsAction.tap) && data.label.contains('x')) {
+        linkNode = node;
+      }
+      node.visitChildren((SemanticsNode child) {
+        walk(child);
+        return true;
+      });
+    }
+
+    walk(tester.getSemantics(find.byType(KunChatBubble)));
+    expect(prefixNode, isNotNull);
+    expect(prefixNode!.rect.size, isNot(Size.zero));
+    expect(prefixNode!.getSemanticsData().label, startsWith(prefix));
+    expect(textNode, isNotNull);
+    expect(linkNode, isNotNull);
+    expect(linkNode!.getSemanticsData().hasAction(SemanticsAction.tap), isTrue);
+    handle.dispose();
   });
 }

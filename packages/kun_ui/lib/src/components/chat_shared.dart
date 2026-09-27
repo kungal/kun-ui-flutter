@@ -1,3 +1,8 @@
+import 'package:flutter/widgets.dart';
+import 'package:kun_ui_tokens/kun_ui_tokens.dart';
+
+import '../config/config.dart';
+
 /// Direct or group conversation, the web's `KunChatKind`.
 enum KunChatKind {
   /// A one-to-one chat. Typing says "typing…" without a name.
@@ -48,3 +53,59 @@ typedef KunChatLinkCallback = void Function(KunChatLinkEvent event);
 
 /// Called when a chat user is tapped: a mention, or a sender name.
 typedef KunChatUserCallback = void Function(KunChatUserEvent event);
+
+/// Reaction art at [size]. Empty or failed [imageUrl] draws [emoji] in the
+/// same box so Flutter's error box never reaches the screen or the
+/// semantics tree.
+Widget kunChatReactionArt({
+  required BuildContext context,
+  required double size,
+  required String emoji,
+  String? imageUrl,
+  TextStyle? style,
+}) {
+  final Widget fallback = ExcludeSemantics(
+    child: SizedBox(
+      width: size,
+      height: size,
+      child: Center(
+        child: Text(
+          emoji,
+          style: (style ?? KunText.xl2).copyWith(
+            height: 1,
+            leadingDistribution: TextLeadingDistribution.even,
+          ),
+        ),
+      ),
+    ),
+  );
+  if (imageUrl == null || imageUrl.isEmpty) {
+    return fallback;
+  }
+  return Image(
+    image: KunUIConfigScope.of(context).imageProvider(imageUrl),
+    width: size,
+    height: size,
+    fit: BoxFit.contain,
+    excludeFromSemantics: true,
+    filterQuality: FilterQuality.medium,
+    gaplessPlayback: true,
+    frameBuilder: (
+      BuildContext context,
+      Widget child,
+      int? frame,
+      bool wasSynchronouslyLoaded,
+    ) {
+      return wasSynchronouslyLoaded || frame != null ? child : fallback;
+    },
+    errorBuilder: (
+      BuildContext context,
+      Object error,
+      StackTrace? stackTrace,
+    ) {
+      // A missing errorBuilder paints Flutter's debug error box and puts
+      // the exception in the semantics tree.
+      return fallback;
+    },
+  );
+}

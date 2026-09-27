@@ -3,11 +3,11 @@ import 'package:flutter/widgets.dart';
 import 'package:kun_ui_tokens/kun_ui_tokens.dart';
 
 import '../chat/types.dart';
-import '../config/config.dart';
 import '../foundation/focus_outline.dart';
 import '../foundation/motion.dart';
 import '../locale/messages.dart';
 import '../theme/theme.dart';
+import 'chat_shared.dart';
 
 /// Web `size-8` reaction art.
 const double _kArtSize = 32;
@@ -259,26 +259,13 @@ class _ReactionCellState extends State<_ReactionCell> {
     final Color? fill = widget.selected
         ? widget.primary.withValues(alpha: 0.2)
         : (_hovered ? widget.idle.withValues(alpha: 0.2) : null);
-    final String? imageUrl = widget.option.imageUrl;
-    final Widget glyph = imageUrl != null && imageUrl.isNotEmpty
-        ? Image(
-            image: KunUIConfigScope.of(context).imageProvider(imageUrl),
-            width: _kArtSize,
-            height: _kArtSize,
-            fit: BoxFit.contain,
-            excludeFromSemantics: true,
-            filterQuality: FilterQuality.medium,
-            gaplessPlayback: true,
-          )
-        : ExcludeSemantics(
-            child: Text(
-              widget.option.emoji,
-              style: KunText.xl2.copyWith(
-                height: 1,
-                leadingDistribution: TextLeadingDistribution.even,
-              ),
-            ),
-          );
+    final Widget glyph = kunChatReactionArt(
+      context: context,
+      size: _kArtSize,
+      emoji: widget.option.emoji,
+      imageUrl: widget.option.imageUrl,
+      style: KunText.xl2,
+    );
 
     widget.focusNode.skipTraversal = widget.skipTraversal;
 

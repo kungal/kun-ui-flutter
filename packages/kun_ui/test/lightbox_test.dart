@@ -1,5 +1,6 @@
 import 'dart:typed_data';
 
+import 'package:flutter/foundation.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter/widgets.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -290,6 +291,25 @@ Transform _imageTransform(WidgetTester tester) {
   return tester.widget<Transform>(
     find.descendant(of: imageTransform, matching: find.byType(Transform)),
   );
+}
+
+class _FailingImageProvider extends ImageProvider<_FailingImageProvider> {
+  const _FailingImageProvider();
+
+  @override
+  Future<_FailingImageProvider> obtainKey(ImageConfiguration configuration) {
+    return SynchronousFuture<_FailingImageProvider>(this);
+  }
+
+  @override
+  ImageStreamCompleter loadImage(
+    _FailingImageProvider key,
+    ImageDecoderCallback decode,
+  ) {
+    return OneFrameImageStreamCompleter(
+      Future<ImageInfo>.error(Exception('load failed')),
+    );
+  }
 }
 
 void main() {
@@ -593,6 +613,21 @@ void main() {
       tester.getRect(toolbar).bottom,
       lessThanOrEqualTo(844 - bars.bottom - KunSpacing.unit * 6),
     );
+  });
+
+  testWidgets('a failed image shows no error box or exception text', (
+    WidgetTester tester,
+  ) async {
+    await _pumpOpen(
+      tester,
+      config: KunUIConfig(
+        imageProvider: (String url) => const _FailingImageProvider(),
+      ),
+    );
+    await tester.pumpAndSettle();
+    expect(find.textContaining('load failed'), findsNothing);
+    expect(find.byType(ErrorWidget), findsNothing);
+    expect(layer, findsOneWidget);
   });
 
   testWidgets('close button dismisses', (WidgetTester tester) async {
