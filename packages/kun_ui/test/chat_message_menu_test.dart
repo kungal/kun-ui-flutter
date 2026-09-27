@@ -768,6 +768,23 @@ void main() {
       tester.getSemantics(find.bySemanticsLabel('Reactions')),
       isSemantics(label: 'Reactions'),
     );
+
+    final List<SemanticsNode> unnamed = <SemanticsNode>[];
+    void walk(SemanticsNode node) {
+      final SemanticsData data = node.getSemanticsData();
+      if ((data.hasAction(SemanticsAction.tap) ||
+              data.hasAction(SemanticsAction.longPress)) &&
+          data.label.isEmpty) {
+        unnamed.add(node);
+      }
+      node.visitChildren((SemanticsNode child) {
+        walk(child);
+        return true;
+      });
+    }
+
+    walk(tester.getSemantics(panel));
+    expect(unnamed, isEmpty);
     semantics.dispose();
   });
 

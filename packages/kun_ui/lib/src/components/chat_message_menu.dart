@@ -835,6 +835,7 @@ class _KunChatMessageMenuState extends State<KunChatMessageMenu>
         role: SemanticsRole.menu,
         label: messages.chatMenu.label,
         child: GestureDetector(
+          excludeFromSemantics: true,
           onSecondaryTap: () {},
           child: DecoratedBox(
             key: _panelKey,
