@@ -324,6 +324,114 @@
         "events.click": "Every card in the Interactive demo carries a live onTap, and the prop's one subtlety -- that it fires whether or not the card is clickable -- is a behaviour, not an appearance. A callback has nothing of its own to show."
       }
     },
+    "KunChatComposer": {
+      "source": "demos/chat_composer.dart",
+      "demos": [
+        {
+          "slug": "basic",
+          "title": "Basic",
+          "builder": "chatComposerBasic",
+          "shows": [
+            "props.modelValue",
+            "props.placeholder",
+            "slots.prefix",
+            "slots.suffix",
+            "events.send",
+            "events.typing",
+            "events.update:modelValue"
+          ]
+        },
+        {
+          "slug": "reply-edit",
+          "title": "ReplyEdit",
+          "builder": "chatComposerReplyEdit",
+          "shows": [
+            "props.editing",
+            "props.quote",
+            "props.replyTo",
+            "props.users",
+            "events.edit",
+            "events.edit-last",
+            "events.update:editing",
+            "events.update:quote",
+            "events.update:replyTo"
+          ]
+        },
+        {
+          "slug": "attachments",
+          "title": "Attachments",
+          "builder": "chatComposerAttachments",
+          "shows": [
+            "props.attachments",
+            "events.attach",
+            "events.remove-attachment",
+            "events.retry-attachment"
+          ]
+        },
+        {
+          "slug": "limit",
+          "title": "Limit",
+          "builder": "chatComposerLimit",
+          "shows": [
+            "props.maxLength",
+            "props.maxRows"
+          ]
+        },
+        {
+          "slug": "disabled",
+          "title": "Disabled",
+          "builder": "chatComposerDisabled",
+          "shows": [
+            "props.disabled",
+            "props.disabledText"
+          ]
+        }
+      ],
+      "undemoable": {
+        "props.enterToSend": "Enter-to-send versus newline is a keyboard behaviour asserted by the widget tests; auto follows Android/iOS versus other platforms."
+      }
+    },
+    "KunChatConversationItem": {
+      "source": "demos/chat_conversation_item.dart",
+      "demos": [
+        {
+          "slug": "basic",
+          "title": "Basic",
+          "builder": "chatConversationItemBasic",
+          "shows": [
+            "props.avatar",
+            "props.currentUserId",
+            "props.draft",
+            "props.kind",
+            "props.lastMessage",
+            "props.lastMessageSender",
+            "props.markedUnread",
+            "props.mentionCount",
+            "props.muted",
+            "props.pinned",
+            "props.selected",
+            "props.status",
+            "props.time",
+            "props.title",
+            "props.typing",
+            "props.unreadCount",
+            "props.user",
+            "props.users",
+            "events.click"
+          ]
+        },
+        {
+          "slug": "swipe",
+          "title": "Swipe",
+          "builder": "chatConversationItemSwipe",
+          "shows": [
+            "props.leadingActions",
+            "props.trailingActions",
+            "events.action"
+          ]
+        }
+      ]
+    },
     "KunChatReactionPicker": {
       "source": "demos/chat_reaction_picker.dart",
       "demos": [

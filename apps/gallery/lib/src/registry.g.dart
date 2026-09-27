@@ -9,6 +9,8 @@ import 'demos/avatar.dart';
 import 'demos/badge.dart';
 import 'demos/button.dart';
 import 'demos/card.dart';
+import 'demos/chat_composer.dart';
+import 'demos/chat_conversation_item.dart';
 import 'demos/chat_reaction_picker.dart';
 import 'demos/chat_request_bar.dart';
 import 'demos/chat_text.dart';
@@ -138,6 +140,42 @@ const List<GalleryComponent> galleryComponents = <GalleryComponent>[
           slug: 'interactive', title: 'Interactive', builder: cardInteractive),
       GalleryDemo(
           slug: 'contract', title: 'Contract', builder: kunCardContract),
+    ],
+  ),
+  GalleryComponent(
+    slug: 'kunchatcomposer',
+    name: 'KunChatComposer',
+    demos: <GalleryDemo>[
+      GalleryDemo(slug: 'basic', title: 'Basic', builder: chatComposerBasic),
+      GalleryDemo(
+          slug: 'reply-edit',
+          title: 'ReplyEdit',
+          builder: chatComposerReplyEdit),
+      GalleryDemo(
+          slug: 'attachments',
+          title: 'Attachments',
+          builder: chatComposerAttachments),
+      GalleryDemo(slug: 'limit', title: 'Limit', builder: chatComposerLimit),
+      GalleryDemo(
+          slug: 'disabled', title: 'Disabled', builder: chatComposerDisabled),
+      GalleryDemo(
+          slug: 'contract',
+          title: 'Contract',
+          builder: kunChatComposerContract),
+    ],
+  ),
+  GalleryComponent(
+    slug: 'kunchatconversationitem',
+    name: 'KunChatConversationItem',
+    demos: <GalleryDemo>[
+      GalleryDemo(
+          slug: 'basic', title: 'Basic', builder: chatConversationItemBasic),
+      GalleryDemo(
+          slug: 'swipe', title: 'Swipe', builder: chatConversationItemSwipe),
+      GalleryDemo(
+          slug: 'contract',
+          title: 'Contract',
+          builder: kunChatConversationItemContract),
     ],
   ),
   GalleryComponent(

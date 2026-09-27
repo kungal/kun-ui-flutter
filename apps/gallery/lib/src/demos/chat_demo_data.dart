@@ -62,10 +62,12 @@ final List<KunChatReactionOption> demoReactions = <KunChatReactionOption>[
 /// Parse composer syntax and mark bare `http(s)` URLs, as the docs demos do.
 KunChatFormattedText demoChatMarkup(String source) {
   final KunChatFormattedText parsed = parseKunChatMarkdown(source);
-  final List<KunChatEntity> entities =
-      List<KunChatEntity>.from(parsed.entities);
-  for (final RegExpMatch match
-      in RegExp(r'https?:\/\/[^\s,，。]+').allMatches(parsed.text)) {
+  final List<KunChatEntity> entities = List<KunChatEntity>.from(
+    parsed.entities,
+  );
+  for (final RegExpMatch match in RegExp(
+    r'https?:\/\/[^\s,，。]+',
+  ).allMatches(parsed.text)) {
     entities.add(
       KunChatEntity(
         type: KunChatEntityType.url,
@@ -101,13 +103,35 @@ KunChatMessage demoMessage(
   );
 }
 
+/// Clock time for conversation-row demos, matching the docs' `demoTime`.
+///
+/// Today and yesterday are counted back from now; older days are a fixed
+/// date in December 2025 so the weekday/date label does not drift.
+DateTime demoChatTime(int daysAgo, String hhmm) {
+  final List<String> parts = hhmm.split(':');
+  final int hour = int.parse(parts[0]);
+  final int minute = int.parse(parts[1]);
+  if (daysAgo < 2) {
+    final DateTime now = DateTime.now();
+    final DateTime day = DateTime(
+      now.year,
+      now.month,
+      now.day,
+    ).subtract(Duration(days: daysAgo));
+    return DateTime(day.year, day.month, day.day, hour, minute);
+  }
+  final int day = 31 - daysAgo < 1 ? 1 : 31 - daysAgo;
+  return DateTime(2025, 12, day, hour, minute);
+}
+
+/// A photo payload for conversation-row demos (`demoPhoto` in chatDemo.ts).
+KunChatPhoto demoChatPhoto(String path, int width, int height) {
+  return KunChatPhoto(imageHash: path, width: width, height: height);
+}
+
 /// Sample messages the ChatText demos share; later chat dispatches extend this.
 final List<KunChatMessage> demoSampleMessages = <KunChatMessage>[
-  demoMessage(
-    '1002',
-    DateTime.utc(2025, 12, 29, 13, 3),
-    '在吗在吗',
-  ),
+  demoMessage('1002', DateTime.utc(2025, 12, 29, 13, 3), '在吗在吗'),
   demoMessage(
     demoMe,
     DateTime.utc(2025, 12, 29, 13, 8),

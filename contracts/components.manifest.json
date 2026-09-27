@@ -118,6 +118,70 @@
         "header": "header"
       }
     },
+    "KunChatComposer": {
+      "widget": "KunChatComposer",
+      "props": {
+        "attachments": "attachments",
+        "disabled": "disabled",
+        "disabledText": "disabledText",
+        "editing": "editing",
+        "enterToSend": "enterToSend",
+        "maxLength": "maxLength",
+        "maxRows": "maxRows",
+        "modelValue": "value",
+        "placeholder": "placeholder",
+        "quote": "quote",
+        "replyTo": "replyTo",
+        "users": "users"
+      },
+      "events": {
+        "attach": "onAttach",
+        "edit": "onEdit",
+        "edit-last": "onEditLast",
+        "remove-attachment": "onRemoveAttachment",
+        "retry-attachment": "onRetryAttachment",
+        "send": "onSend",
+        "typing": "onTyping",
+        "update:editing": "onEditingChanged",
+        "update:modelValue": "onChanged",
+        "update:quote": "onQuoteChanged",
+        "update:replyTo": "onReplyToChanged"
+      },
+      "slots": {
+        "prefix": "prefix",
+        "suffix": "suffix"
+      }
+    },
+    "KunChatConversationItem": {
+      "widget": "KunChatConversationItem",
+      "props": {
+        "avatar": "avatar",
+        "currentUserId": "currentUserId",
+        "draft": "draft",
+        "kind": "kind",
+        "lastMessage": "lastMessage",
+        "lastMessageSender": "lastMessageSender",
+        "leadingActions": "leadingActions",
+        "markedUnread": "markedUnread",
+        "mentionCount": "mentionCount",
+        "muted": "muted",
+        "pinned": "pinned",
+        "selected": "selected",
+        "status": "status",
+        "time": "time",
+        "title": "title",
+        "trailingActions": "trailingActions",
+        "typing": "typing",
+        "unreadCount": "unreadCount",
+        "user": "user",
+        "users": "users"
+      },
+      "events": {
+        "action": "onAction",
+        "click": "onTap"
+      },
+      "slots": {}
+    },
     "KunChatReactionPicker": {
       "widget": "KunChatReactionPicker",
       "props": {
