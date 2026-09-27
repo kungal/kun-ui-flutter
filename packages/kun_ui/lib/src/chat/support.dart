@@ -203,6 +203,118 @@ String kunChatListJoin(List<String> names, String locale) {
   return '${names.sublist(0, names.length - 1).join(', ')}, and ${names.last}';
 }
 
+const int _punyBase = 36;
+const int _punyTmin = 1;
+const int _punyTmax = 26;
+const int _punySkew = 38;
+const int _punyDamp = 700;
+const int _punyInitialBias = 72;
+const int _punyInitialN = 128;
+
+int _punyDigit(int d) => d < 26 ? 97 + d : 22 + d;
+
+int _punyAdapt(int delta, int numPoints, bool firstTime) {
+  int next = firstTime ? delta ~/ _punyDamp : delta ~/ 2;
+  next += next ~/ numPoints;
+  int k = 0;
+  while (next > ((_punyBase - _punyTmin) * _punyTmax) ~/ 2) {
+    next ~/= _punyBase - _punyTmin;
+    k += _punyBase;
+  }
+  return k + (((_punyBase - _punyTmin + 1) * next) ~/ (next + _punySkew));
+}
+
+String _punycodeEncode(String input) {
+  final List<int> cps = input.runes.toList();
+  final StringBuffer output = StringBuffer();
+  int n = _punyInitialN;
+  int delta = 0;
+  int bias = _punyInitialBias;
+  int basic = 0;
+  for (final int c in cps) {
+    if (c < 0x80) {
+      output.writeCharCode(c);
+      basic++;
+    }
+  }
+  int h = basic;
+  if (basic > 0) {
+    output.write('-');
+  }
+  while (h < cps.length) {
+    int m = 0x10FFFF;
+    for (final int c in cps) {
+      if (c >= n && c < m) {
+        m = c;
+      }
+    }
+    delta += (m - n) * (h + 1);
+    n = m;
+    for (final int c in cps) {
+      if (c < n) {
+        delta++;
+      }
+      if (c == n) {
+        int q = delta;
+        for (int k = _punyBase;; k += _punyBase) {
+          final int t = k <= bias
+              ? _punyTmin
+              : (k >= bias + _punyTmax ? _punyTmax : k - bias);
+          if (q < t) {
+            break;
+          }
+          output.writeCharCode(
+            _punyDigit(t + ((q - t) % (_punyBase - t))),
+          );
+          q = (q - t) ~/ (_punyBase - t);
+        }
+        output.writeCharCode(_punyDigit(q));
+        bias = _punyAdapt(delta, h + 1, h == basic);
+        delta = 0;
+        h++;
+      }
+    }
+    delta++;
+    n++;
+  }
+  return output.toString();
+}
+
+bool _labelHasNonAscii(String label) {
+  for (final int c in label.runes) {
+    if (c > 0x7F) {
+      return true;
+    }
+  }
+  return false;
+}
+
+String _labelToAscii(String label) {
+  if (label.isEmpty) {
+    return label;
+  }
+  final String lower = label.toLowerCase();
+  if (!_labelHasNonAscii(lower)) {
+    return lower;
+  }
+  return 'xn--${_punycodeEncode(lower)}';
+}
+
+String _hostToAscii(String host) {
+  if (host.contains(':')) {
+    return host;
+  }
+  String decoded = host;
+  try {
+    decoded = Uri.decodeComponent(host);
+  } on FormatException {
+    decoded = host;
+  } on ArgumentError {
+    decoded = host;
+  }
+  return decoded.split('.').map(_labelToAscii).join('.');
+}
+
 String? _httpHref(Uri uri) {
   final String scheme = uri.scheme.toLowerCase();
   Uri current = uri;
@@ -225,6 +337,10 @@ String? _httpHref(Uri uri) {
   if (current.hasPort && (current.port < 0 || current.port > 65535)) {
     return null;
   }
+  final String asciiHost = _hostToAscii(current.host);
+  if (asciiHost != current.host) {
+    current = current.replace(host: asciiHost);
+  }
   if (current.hasEmptyPath) {
     current = current.replace(path: '/');
   }
@@ -234,9 +350,11 @@ String? _httpHref(Uri uri) {
 /// An href safe to render from another user's message, or null. A bare
 /// `moyu.moe/x` gets `https://`; anything but http(s) and mailto is refused.
 ///
-/// Uses [Uri], not the WHATWG parser. Scheme and host are lowercased, and an
-/// http(s) URL with an empty path gets `/`, matching `URL.href` for the
-/// common cases. `host:port` without a scheme is refused, as on the web.
+/// Uses [Uri], not the WHATWG parser. Scheme and host are lowercased, an
+/// http(s) URL with an empty path gets `/`, and a host label that contains
+/// non-ASCII is encoded with RFC 3492 Punycode (`xn--`), matching `URL.href`
+/// for IDN. There is no NFC or UTS 46 mapping. `host:port` without a scheme
+/// is refused, as on the web.
 String? kunChatSafeUrl(String raw) {
   final String value = raw.trim();
   if (value.isEmpty) {

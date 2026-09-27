@@ -34,6 +34,12 @@ class _GalleryAppState extends State<GalleryApp> {
     return KunApp.router(
       color: KunColors.light.primary.solid,
       title: 'KunUI',
+      config: KunUIConfig(
+        imageProvider: (String url) => NetworkImage(
+          url,
+          webHtmlElementStrategy: WebHtmlElementStrategy.fallback,
+        ),
+      ),
       routeInformationParser: _parser,
       routerDelegate: _delegate,
       backButtonDispatcher: _backButtonDispatcher,
