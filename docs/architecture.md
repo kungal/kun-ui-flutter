@@ -878,6 +878,38 @@ The Dart surface differs from the TS in three deliberate ways:
   Iron rule 1 covers design values, and these belong to the module they are
   ported with.
 
+### Where the chat components part from the web (decided 2026-09-27)
+
+KunUI 2.51.0's chat components are ported whole, contract name for
+contract name. A few web mechanisms have no Flutter framework
+counterpart, and iron rule 6 rules out the plugins that would supply
+them. So the port hands those jobs to the app:
+
+- **Links open through `KunUIConfig.navigate`.** kun_ui never opens a
+  browser. A link or mention tap fires `KunChatLinkEvent` or
+  `KunChatUserEvent`. Unless the handler calls `preventDefault()`, the
+  default hands the URL to `navigate`, or `userLinkForId(id)` for a
+  user, and the app's navigate launches external URLs itself.
+- **Files come from the app.** The composer's paperclip fires
+  `onAttach`, and the app runs its own picker and passes the results
+  back as `attachments`, which carry `ImageProvider`s rather than object
+  URLs. Image paste, file drop and the lightbox's download button are
+  not implemented.
+- **Dates and lists are tabulated.** There is no `intl`, so the chat's
+  time, day, list-time and conjunction shapes are hand-tabulated for the
+  two catalogs (zh-CN and en) and checked against Node's `Intl`.
+- **Quoting a selection is not ported yet.** The web offers `quote` only
+  while text in the message is selected, and never on touch. The Flutter
+  menu does not offer it, and `onAction`'s quote is always null.
+
+Where the web is weaker for screen readers, the port goes further,
+because the target is an Android app used with TalkBack:
+- swipe actions and the message menu are also custom semantics actions;
+- a hidden spoiler reads the visible text with the reveal hint in place
+  of each hidden run;
+- each actionable node carries a name. A test walks every chat
+  component for unnamed actionable nodes.
+
 ### Reduced motion collapses every transition (decided 2026-09-17)
 
 kun-ui's base stylesheet sets every transition and animation to 0.01ms

@@ -154,6 +154,19 @@ clones kungal/kun-ui at `kun_ui_tokens-v<version>`, runs its
   bar takes no role at all, where ARIA allows `role="progressbar"` with no
   `aria-valuenow`. `status` refuses to be a live region as well, because it
   already is one. Both fired at runtime, not at compile time.
+- A `GestureDetector` that holds a `TapGestureRecognizer` gets a
+  semantics **tap** action even with no `onTap`: `onSecondaryTapUp`
+  alone is enough. The action is dead, and when it sits next to a
+  `Semantics(onTap)` or a child button, the two taps cannot merge, which
+  leaves TalkBack an unnamed clickable node. Four chat widgets shipped
+  this to the device in one day. Put `excludeFromSemantics: true` on
+  every detector whose tap is not the node's meaning, and walk the
+  semantics tree in a test for actionable nodes without a label.
+- `Image` without an `errorBuilder` paints Flutter's debug error box on a
+  failed load, exception text included, and `Image.build` returns it in
+  place of the image, so `excludeFromSemantics` does not keep the text
+  out of the accessibility tree. An offline phone showed it in every
+  reaction label. Every raw `Image` gets an `errorBuilder`.
 - In `flutter test` the paragraph cache does not key on
   `leadingDistribution`: laying the same string out again with only that
   changed returns the first layout's metrics, which reads as "even and
