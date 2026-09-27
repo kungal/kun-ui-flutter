@@ -187,6 +187,39 @@ BorderRadius surfaceRadius(WidgetTester tester) {
   return (box.decoration as BoxDecoration).borderRadius! as BorderRadius;
 }
 
+const double _kCapFraction = 0.85;
+
+const double _kCapMax = 34 * 16;
+
+double _capOf(double parent) {
+  final double fraction = parent * _kCapFraction;
+  return fraction < _kCapMax ? fraction : _kCapMax;
+}
+
+KunChatContext _contextWithTitle(String title) {
+  return KunChatContext(
+    site: 'moyu',
+    kind: 'patch',
+    id: '3021',
+    title: title,
+    url: 'https://www.moyu.moe/patch/3021/introduction',
+  );
+}
+
+(RenderParagraph, String) messageParagraph(WidgetTester tester, String needle) {
+  for (final Element el in tester.elementList(find.byType(RichText))) {
+    final RichText rich = el.widget as RichText;
+    final String value = rich.text.toPlainText(
+      includeSemanticsLabels: false,
+      includePlaceholders: false,
+    );
+    if (value.contains(needle)) {
+      return (el.renderObject! as RenderParagraph, value);
+    }
+  }
+  fail('no paragraph contains "$needle"');
+}
+
 void main() {
   testWidgets('link and user events navigate unless prevented', (
     WidgetTester tester,
@@ -667,23 +700,12 @@ void main() {
         ),
       );
       await tester.pump();
-      RenderParagraph? paragraph;
-      String? plain;
-      for (final Element el in tester.elementList(find.byType(RichText))) {
-        final RichText rich = el.widget as RichText;
-        final String value = rich.text.toPlainText(
-          includeSemanticsLabels: false,
-          includePlaceholders: false,
-        );
-        if (value.contains(text.split(' ').first)) {
-          paragraph = el.renderObject! as RenderParagraph;
-          plain = value;
-          break;
-        }
-      }
-      expect(paragraph, isNotNull);
-      final int last = plain!.length - 1;
-      final List<TextBox> boxes = paragraph!.getBoxesForSelection(
+      final (RenderParagraph paragraph, String plain) = messageParagraph(
+        tester,
+        text.split(' ').first,
+      );
+      final int last = plain.length - 1;
+      final List<TextBox> boxes = paragraph.getBoxesForSelection(
         TextSelection(baseOffset: last, extentOffset: last + 1),
       );
       expect(boxes, isNotEmpty);
@@ -1013,6 +1035,203 @@ void main() {
     await tester.tap(find.text('Patch'));
     await tester.pump();
     expect(hrefs.single, contains('www.moyu.moe:8443'));
+  });
+
+  testWidgets('short own message keeps meta on the text line', (
+    WidgetTester tester,
+  ) async {
+    await tester.pumpWidget(
+      wrap(
+        KunChatBubble(
+          message: _msg(senderId: '1001', text: 'ok', editedAt: _when),
+          users: _users,
+          own: true,
+          status: KunChatSendStatus.read,
+        ),
+        width: 600,
+      ),
+    );
+    await tester.pump();
+    final (RenderParagraph paragraph, String plain) = messageParagraph(
+      tester,
+      'ok',
+    );
+    expect(plain, 'ok');
+    expect(
+      paragraph.size.height,
+      closeTo(paragraph.preferredLineHeight, 0.5),
+    );
+    final Size surface = tester.getSize(find.byKey(KunChatBubble.surfaceKey));
+    expect(
+      surface.height,
+      closeTo(
+        paragraph.preferredLineHeight + KunSpacing.unit * 1.5 * 2,
+        1,
+      ),
+    );
+    final List<TextBox> boxes = paragraph.getBoxesForSelection(
+      const TextSelection(baseOffset: 0, extentOffset: 2),
+    );
+    expect(boxes, isNotEmpty);
+    final Offset origin = paragraph.localToGlobal(Offset.zero);
+    final Rect textBand = Rect.fromLTRB(
+      boxes.first.left,
+      boxes.map((TextBox b) => b.top).reduce(
+            (double a, double b) => a < b ? a : b,
+          ),
+      boxes.last.right,
+      boxes.map((TextBox b) => b.bottom).reduce(
+            (double a, double b) => a > b ? a : b,
+          ),
+    ).shift(origin);
+    final Rect meta = tester.getRect(find.byKey(KunChatBubble.metaKey));
+    expect(meta.top, lessThan(textBand.bottom - 0.5));
+    expect(meta.bottom, greaterThan(textBand.top + 0.5));
+    for (final TextBox box in boxes) {
+      final Rect glyph = Rect.fromLTRB(
+        box.left,
+        box.top,
+        box.right,
+        box.bottom,
+      ).shift(origin);
+      expect(
+        meta.deflate(0.5).overlaps(glyph.deflate(0.5)),
+        isFalse,
+        reason: 'meta $meta overlaps glyph $glyph',
+      );
+    }
+  });
+
+  testWidgets('text plus meta longer than the cap wraps the meta', (
+    WidgetTester tester,
+  ) async {
+    const double parent = 600;
+    final double cap = _capOf(parent);
+    const String text = 'xxxxxxxxxxxxxxxxxxxxxxxxxxxx';
+    await tester.pumpWidget(
+      wrap(
+        KunChatBubble(
+          message: _msg(senderId: '1001', text: text, editedAt: _when),
+          users: _users,
+          own: true,
+          status: KunChatSendStatus.read,
+        ),
+        width: parent,
+      ),
+    );
+    await tester.pump();
+    final (RenderParagraph paragraph, String plain) = messageParagraph(
+      tester,
+      text.substring(0, 8),
+    );
+    expect(plain, text);
+    expect(
+        paragraph.size.height, greaterThan(paragraph.preferredLineHeight + 4));
+    expect(
+      tester.getSize(find.byKey(KunChatBubble.surfaceKey)).width,
+      closeTo(cap, 0.5),
+    );
+    final List<TextBox> boxes = paragraph.getBoxesForSelection(
+      TextSelection(baseOffset: 0, extentOffset: plain.length),
+    );
+    final Offset origin = paragraph.localToGlobal(Offset.zero);
+    final double textBottom = boxes
+        .map((TextBox b) => b.bottom)
+        .reduce((double a, double b) => a > b ? a : b);
+    final Rect meta = tester.getRect(find.byKey(KunChatBubble.metaKey));
+    expect(
+      meta.top,
+      greaterThanOrEqualTo(origin.dy + textBottom - 1),
+      reason:
+          'meta $meta should sit on its own line below text at ${origin.dy + textBottom}',
+    );
+  });
+
+  testWidgets('a long context title widens the bubble and is not truncated', (
+    WidgetTester tester,
+  ) async {
+    await tester.pumpWidget(
+      wrap(
+        KunChatBubble(
+          message: _msg(text: 'ok', context: _contextWithTitle('Hi')),
+          users: _users,
+        ),
+        width: 800,
+      ),
+    );
+    final Size shortSize = tester.getSize(find.byKey(KunChatBubble.surfaceKey));
+    const String longTitle = '《星空鉄道とシロの旅》汉化补丁 v0.9';
+    await tester.pumpWidget(
+      wrap(
+        KunChatBubble(
+          message: _msg(text: 'ok', context: _contextWithTitle(longTitle)),
+          users: _users,
+        ),
+        width: 800,
+      ),
+    );
+    final Size longSize = tester.getSize(find.byKey(KunChatBubble.surfaceKey));
+    expect(longSize.width, greaterThan(shortSize.width + 8));
+    final RenderParagraph title = tester.renderObject<RenderParagraph>(
+      find.text(longTitle),
+    );
+    expect(title.didExceedMaxLines, isFalse);
+  });
+
+  testWidgets('twelve reaction chips wrap and keep meta on the last row', (
+    WidgetTester tester,
+  ) async {
+    const double parent = 400;
+    final double cap = _capOf(parent);
+    final List<KunChatReaction> reactions = <KunChatReaction>[
+      for (int i = 0; i < 12; i++)
+        KunChatReaction(reaction: 'r$i', count: i + 1, reacted: false),
+    ];
+    final List<KunChatReactionOption> options = <KunChatReactionOption>[
+      for (int i = 0; i < 12; i++)
+        KunChatReactionOption(key: 'r$i', emoji: '😀', label: 'R$i'),
+    ];
+    await tester.pumpWidget(
+      wrap(
+        KunChatBubble(
+          message: _msg(text: 'hi', reactions: reactions),
+          users: _users,
+          reactionOptions: options,
+        ),
+        width: parent,
+      ),
+    );
+    await tester.pump();
+    final Size surface = tester.getSize(find.byKey(KunChatBubble.surfaceKey));
+    expect(surface.width, lessThanOrEqualTo(cap + 0.5));
+    final List<Rect> chips = <Rect>[
+      for (int i = 0; i < 12; i++)
+        tester.getRect(
+          find.byWidgetPredicate((Widget w) {
+            return w is Semantics &&
+                w.properties.label ==
+                    KunMessages.en.chat.reactionCount(
+                      label: 'R$i',
+                      count: i + 1,
+                    );
+          }),
+        ),
+    ];
+    final double firstTop = chips.first.top;
+    expect(
+      chips.any((Rect r) => (r.top - firstTop).abs() > 8),
+      isTrue,
+      reason: 'chips should wrap onto a second row, tops=$chips',
+    );
+    final double lastRowTop = chips
+        .map((Rect r) => r.top)
+        .reduce((double a, double b) => a > b ? a : b);
+    final Rect meta = tester.getRect(find.byKey(KunChatBubble.metaKey));
+    expect(
+      (meta.top - lastRowTop).abs(),
+      lessThan(8),
+      reason: 'meta $meta not on last chip row (top $lastRowTop)',
+    );
   });
 
   testWidgets('absent resolveMediaUrl passes an empty src', (

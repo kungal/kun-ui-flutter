@@ -301,7 +301,9 @@ class _StatusDemoState extends State<_StatusDemo> {
 Widget chatBubbleStatus(BuildContext context) => const _StatusDemo();
 
 class _ReactionsDemo extends StatefulWidget {
-  const _ReactionsDemo();
+  const _ReactionsDemo({this.many = false});
+
+  final bool many;
 
   @override
   State<_ReactionsDemo> createState() => _ReactionsDemoState();
@@ -313,13 +315,25 @@ class _ReactionsDemoState extends State<_ReactionsDemo> {
   @override
   void initState() {
     super.initState();
-    _message =
-        demoMessage('1004', demoChatTime(0, '08:45'), '第三章校对完成,辛苦大家!').copyWith(
-      reactions: const <KunChatReaction>[
-        KunChatReaction(reaction: 'party', count: 4, reacted: false),
-        KunChatReaction(reaction: 'heart', count: 3, reacted: true),
-        KunChatReaction(reaction: 'salute', count: 1, reacted: false),
-      ],
+    _message = demoMessage(
+      '1004',
+      demoChatTime(0, '08:45'),
+      '第三章校对完成,辛苦大家!',
+    ).copyWith(
+      reactions: widget.many
+          ? <KunChatReaction>[
+              for (int i = 0; i < 12; i++)
+                KunChatReaction(
+                  reaction: demoReactions[i].key,
+                  count: i == 1 ? 3 : 1,
+                  reacted: i == 1,
+                ),
+            ]
+          : const <KunChatReaction>[
+              KunChatReaction(reaction: 'party', count: 4, reacted: false),
+              KunChatReaction(reaction: 'heart', count: 3, reacted: true),
+              KunChatReaction(reaction: 'salute', count: 1, reacted: false),
+            ],
     );
   }
 
@@ -366,6 +380,9 @@ class _ReactionsDemoState extends State<_ReactionsDemo> {
 }
 
 Widget chatBubbleReactions(BuildContext context) => const _ReactionsDemo();
+
+Widget chatBubbleReactionsMany(BuildContext context) =>
+    const _ReactionsDemo(many: true);
 
 Widget chatBubbleService(BuildContext context) {
   final List<KunChatMessage> service = <KunChatMessage>[

@@ -1111,6 +1111,8 @@ class _ChatInlineState extends State<_ChatInline>
       overflow: widget.preview ? TextOverflow.ellipsis : TextOverflow.clip,
       softWrap: !widget.preview,
       textAlign: TextAlign.start,
+      textWidthBasis:
+          widget.preview ? TextWidthBasis.parent : TextWidthBasis.longestLine,
     );
 
     if (_wantSpoiler || _wantCode) {

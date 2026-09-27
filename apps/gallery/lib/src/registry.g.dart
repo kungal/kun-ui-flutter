@@ -155,6 +155,8 @@ const List<GalleryComponent> galleryComponents = <GalleryComponent>[
       GalleryDemo(
           slug: 'reactions', title: 'Reactions', builder: chatBubbleReactions),
       GalleryDemo(
+          slug: 'many', title: 'Many', builder: chatBubbleReactionsMany),
+      GalleryDemo(
           slug: 'service', title: 'Service', builder: chatBubbleService),
       GalleryDemo(
           slug: 'contract', title: 'Contract', builder: kunChatBubbleContract),

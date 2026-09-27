@@ -1,5 +1,6 @@
 import 'dart:math' as math;
 
+import 'package:flutter/rendering.dart';
 import 'package:flutter/widgets.dart';
 import 'package:kun_ui_icons/kun_ui_icons.dart';
 import 'package:kun_ui_messages/kun_ui_messages.dart';
@@ -526,170 +527,174 @@ class _KunChatBubbleState extends State<KunChatBubble> {
           boxWidth = math.min(_kAlbumWidth, cap);
         }
 
-        final Widget column = Column(
-          crossAxisAlignment: CrossAxisAlignment.stretch,
-          mainAxisSize: MainAxisSize.min,
-          children: <Widget>[
-            if (!widget.showSender)
-              Semantics(
-                label: messages.chat.senderPrefix(
-                  name: widget.own ? messages.chat.you : sender.name,
-                ),
-                child: const SizedBox.shrink(),
+        final List<Widget> bodyChildren = <Widget>[
+          if (!widget.showSender)
+            Semantics(
+              label: messages.chat.senderPrefix(
+                name: widget.own ? messages.chat.you : sender.name,
               ),
-            if (showName)
-              _SenderName(
-                sender: sender,
-                scheme: scheme,
-                mediaOnly: mediaOnly,
-                hovered: _isHovered('sender'),
-                onHover: (bool v) => _setHovered('sender', v),
-                onTap: () => _onUserTap(context, sender),
+              child: const SizedBox.shrink(),
+            ),
+          if (showName)
+            _SenderName(
+              sender: sender,
+              scheme: scheme,
+              mediaOnly: mediaOnly,
+              hovered: _isHovered('sender'),
+              onHover: (bool v) => _setHovered('sender', v),
+              onTap: () => _onUserTap(context, sender),
+            ),
+          if (reply != null)
+            _ReplyPreview(
+              reply: reply,
+              quote: widget.message.replyQuote,
+              users: users,
+              messages: messages,
+              scheme: scheme,
+              own: widget.own,
+              mediaOnly: mediaOnly,
+              disabled: widget.disabled,
+              hovered: _isHovered('reply'),
+              onHover: (bool v) => _setHovered('reply', v),
+              onTap: () => widget.onReplyTap?.call(reply.seq),
+              duration: kunMotion(context, KunDefaultTransition.duration),
+            ),
+          if (single != null)
+            _SinglePhoto(
+              photo: photos.first,
+              size: Size(
+                boxWidth!,
+                boxWidth / (single.width / single.height),
               ),
-            if (reply != null)
-              _ReplyPreview(
-                reply: reply,
-                quote: widget.message.replyQuote,
-                users: users,
-                messages: messages,
-                scheme: scheme,
-                own: widget.own,
-                mediaOnly: mediaOnly,
-                disabled: widget.disabled,
-                hovered: _isHovered('reply'),
-                onHover: (bool v) => _setHovered('reply', v),
-                onTap: () => widget.onReplyTap?.call(reply.seq),
-                duration: kunMotion(context, KunDefaultTransition.duration),
-              ),
-            if (single != null)
-              _SinglePhoto(
-                photo: photos.first,
-                size: Size(
-                  boxWidth!,
-                  boxWidth / (single.width / single.height),
-                ),
-                src: _src(photos.first, KunChatMediaVariant.preview),
-                radius: insetMedia
-                    ? BorderRadius.circular(KunRadius.md)
-                    : (hasText
-                        ? corners.copyWith(
-                            bottomLeft: Radius.zero,
-                            bottomRight: Radius.zero,
-                          )
-                        : corners),
-                inset: insetMedia,
-                label: messages.chat.photoFrom(name: sender.name),
-                onTap: () => _openPhoto(context, 0, photos, sender.name),
-                overlay: mediaOnly && !hasReactions
-                    ? _MediaMeta(
-                        edited: widget.message.editedAt != null
-                            ? messages.chat.edited
-                            : null,
-                        time: time,
-                        fullTime: fullTime,
-                        icon: widget.own ? statusIcon : null,
-                        scheme: scheme,
-                      )
+              src: _src(photos.first, KunChatMediaVariant.preview),
+              radius: insetMedia
+                  ? BorderRadius.circular(KunRadius.md)
+                  : (hasText
+                      ? corners.copyWith(
+                          bottomLeft: Radius.zero,
+                          bottomRight: Radius.zero,
+                        )
+                      : corners),
+              inset: insetMedia,
+              label: messages.chat.photoFrom(name: sender.name),
+              onTap: () => _openPhoto(context, 0, photos, sender.name),
+              overlay: mediaOnly && !hasReactions
+                  ? _MediaMeta(
+                      edited: widget.message.editedAt != null
+                          ? messages.chat.edited
+                          : null,
+                      time: time,
+                      fullTime: fullTime,
+                      icon: widget.own ? statusIcon : null,
+                      scheme: scheme,
+                    )
+                  : null,
+            ),
+          if (albumLayout != null)
+            _AlbumMosaic(
+              photos: photos,
+              layout: albumLayout,
+              width: boxWidth!,
+              srcOf: (KunChatPhoto photo) =>
+                  _src(photo, KunChatMediaVariant.preview),
+              radius: insetMedia
+                  ? BorderRadius.circular(KunRadius.md)
+                  : (hasText
+                      ? corners.copyWith(
+                          bottomLeft: Radius.zero,
+                          bottomRight: Radius.zero,
+                        )
+                      : corners),
+              inset: insetMedia,
+              label: messages.chat.photoFrom(name: sender.name),
+              onTap: (int i) => _openPhoto(context, i, photos, sender.name),
+              overlay: mediaOnly && !hasReactions
+                  ? _MediaMeta(
+                      time: time,
+                      fullTime: fullTime,
+                      icon: widget.own ? statusIcon : null,
+                      scheme: scheme,
+                    )
+                  : null,
+            ),
+          if (rawContext != null)
+            _ContextCard(
+              raw: rawContext,
+              scheme: scheme,
+              hovered: _isHovered('context'),
+              onHover: (bool v) => _setHovered('context', v),
+              onTap: (String href) => _onContextTap(context, href),
+              duration: kunMotion(context, KunDefaultTransition.duration),
+            ),
+          if (hasText)
+            _TextBlock(
+              message: widget.message,
+              onLink: widget.onLink,
+              onMention: widget.onMention,
+              showCornerMeta: !hasReactions,
+              twin: !hasReactions
+                  ? _MetaLine(
+                      edited: widget.message.editedAt != null
+                          ? messages.chat.edited
+                          : null,
+                      time: time,
+                      icon: widget.own ? statusIcon : null,
+                      color: metaColor,
+                      twin: true,
+                    )
+                  : null,
+              meta: !hasReactions
+                  ? _MetaLine(
+                      edited: widget.message.editedAt != null
+                          ? messages.chat.edited
+                          : null,
+                      time: time,
+                      fullTime: fullTime,
+                      icon: widget.own ? statusIcon : null,
+                      iconLabel: widget.own ? statusLabel : null,
+                      color: metaColor,
+                    )
+                  : null,
+            ),
+          if (hasReactions)
+            _ReactionsRow(
+              reactions: widget.message.reactions,
+              options: widget.reactionOptions,
+              messages: messages,
+              scheme: scheme,
+              own: widget.own,
+              hasText: hasText,
+              disabled: widget.disabled,
+              hovered: _hovered,
+              onHover: _setHovered,
+              onReact: (KunChatReaction reaction) {
+                if (!widget.disabled) {
+                  widget.onReact?.call(
+                    reaction.reacted ? null : reaction.reaction,
+                  );
+                }
+              },
+              duration: kunMotion(context, KunDefaultTransition.duration),
+              meta: _MetaLine(
+                edited: widget.message.editedAt != null
+                    ? messages.chat.edited
                     : null,
+                time: time,
+                fullTime: fullTime,
+                icon: widget.own ? statusIcon : null,
+                iconLabel: widget.own ? statusLabel : null,
+                color: metaColor,
               ),
-            if (albumLayout != null)
-              _AlbumMosaic(
-                photos: photos,
-                layout: albumLayout,
-                width: boxWidth!,
-                srcOf: (KunChatPhoto photo) =>
-                    _src(photo, KunChatMediaVariant.preview),
-                radius: insetMedia
-                    ? BorderRadius.circular(KunRadius.md)
-                    : (hasText
-                        ? corners.copyWith(
-                            bottomLeft: Radius.zero,
-                            bottomRight: Radius.zero,
-                          )
-                        : corners),
-                inset: insetMedia,
-                label: messages.chat.photoFrom(name: sender.name),
-                onTap: (int i) => _openPhoto(context, i, photos, sender.name),
-                overlay: mediaOnly && !hasReactions
-                    ? _MediaMeta(
-                        time: time,
-                        fullTime: fullTime,
-                        icon: widget.own ? statusIcon : null,
-                        scheme: scheme,
-                      )
-                    : null,
-              ),
-            if (rawContext != null)
-              _ContextCard(
-                raw: rawContext,
-                scheme: scheme,
-                hovered: _isHovered('context'),
-                onHover: (bool v) => _setHovered('context', v),
-                onTap: (String href) => _onContextTap(context, href),
-                duration: kunMotion(context, KunDefaultTransition.duration),
-              ),
-            if (hasText)
-              _TextBlock(
-                message: widget.message,
-                onLink: widget.onLink,
-                onMention: widget.onMention,
-                showCornerMeta: !hasReactions,
-                twin: !hasReactions
-                    ? _MetaLine(
-                        edited: widget.message.editedAt != null
-                            ? messages.chat.edited
-                            : null,
-                        time: time,
-                        icon: widget.own ? statusIcon : null,
-                        color: metaColor,
-                        twin: true,
-                      )
-                    : null,
-                meta: !hasReactions
-                    ? _MetaLine(
-                        edited: widget.message.editedAt != null
-                            ? messages.chat.edited
-                            : null,
-                        time: time,
-                        fullTime: fullTime,
-                        icon: widget.own ? statusIcon : null,
-                        iconLabel: widget.own ? statusLabel : null,
-                        color: metaColor,
-                      )
-                    : null,
-              ),
-            if (hasReactions)
-              _ReactionsRow(
-                reactions: widget.message.reactions,
-                options: widget.reactionOptions,
-                messages: messages,
-                scheme: scheme,
-                own: widget.own,
-                hasText: hasText,
-                disabled: widget.disabled,
-                hovered: _hovered,
-                onHover: _setHovered,
-                onReact: (KunChatReaction reaction) {
-                  if (!widget.disabled) {
-                    widget.onReact?.call(
-                      reaction.reacted ? null : reaction.reaction,
-                    );
-                  }
-                },
-                duration: kunMotion(context, KunDefaultTransition.duration),
-                meta: _MetaLine(
-                  edited: widget.message.editedAt != null
-                      ? messages.chat.edited
-                      : null,
-                  time: time,
-                  fullTime: fullTime,
-                  icon: widget.own ? statusIcon : null,
-                  iconLabel: widget.own ? statusLabel : null,
-                  color: metaColor,
-                ),
-              ),
-          ],
-        );
+            ),
+        ];
+
+        final Widget body = boxWidth != null
+            ? Column(
+                crossAxisAlignment: CrossAxisAlignment.stretch,
+                mainAxisSize: MainAxisSize.min,
+                children: bodyChildren,
+              )
+            : _WFitColumn(cap: cap, children: bodyChildren);
 
         Widget bubble = DefaultTextStyle(
           style: TextStyle(
@@ -698,7 +703,7 @@ class _KunChatBubbleState extends State<KunChatBubble> {
             leadingDistribution: TextLeadingDistribution.even,
             color: scheme.foreground,
           ),
-          child: column,
+          child: body,
         );
 
         if (!bare) {
@@ -736,8 +741,6 @@ class _KunChatBubbleState extends State<KunChatBubble> {
 
         if (boxWidth != null) {
           bubble = SizedBox(width: boxWidth, child: bubble);
-        } else {
-          bubble = IntrinsicWidth(child: bubble);
         }
 
         bubble = ConstrainedBox(
@@ -949,14 +952,12 @@ class _ReplyPreview extends StatelessWidget {
             color: scheme.foreground.withValues(alpha: 0.8),
           ),
           const SizedBox(width: KunSpacing.unit),
-          Flexible(
-            child: Text(
-              kunChatMediaLabel(media, messages),
-              maxLines: 1,
-              overflow: TextOverflow.ellipsis,
-              style: KunText.sm.copyWith(
-                color: scheme.foreground.withValues(alpha: 0.8),
-              ),
+          Text(
+            kunChatMediaLabel(media, messages),
+            maxLines: 1,
+            overflow: TextOverflow.ellipsis,
+            style: KunText.sm.copyWith(
+              color: scheme.foreground.withValues(alpha: 0.8),
             ),
           ),
         ],
@@ -980,7 +981,6 @@ class _ReplyPreview extends StatelessWidget {
             key: KunChatBubble.replyKey,
             duration: duration,
             curve: KunDefaultTransition.curve,
-            width: double.infinity,
             padding: const EdgeInsets.fromLTRB(
               KunSpacing.unit * 2,
               KunSpacing.unit,
@@ -1002,6 +1002,7 @@ class _ReplyPreview extends StatelessWidget {
               mainAxisSize: MainAxisSize.min,
               children: <Widget>[
                 Row(
+                  mainAxisSize: MainAxisSize.min,
                   children: <Widget>[
                     if (quote != null) ...<Widget>[
                       Icon(
@@ -1011,15 +1012,13 @@ class _ReplyPreview extends StatelessWidget {
                       ),
                       const SizedBox(width: KunSpacing.unit),
                     ],
-                    Expanded(
-                      child: Text(
-                        replySender.name,
-                        maxLines: 1,
-                        overflow: TextOverflow.ellipsis,
-                        style: KunText.sm.copyWith(
-                          fontWeight: KunFontWeights.semibold,
-                          color: scheme.primary.solid,
-                        ),
+                    Text(
+                      replySender.name,
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                      style: KunText.sm.copyWith(
+                        fontWeight: KunFontWeights.semibold,
+                        color: scheme.primary.solid,
                       ),
                     ),
                   ],
@@ -1258,6 +1257,7 @@ class _ContextCard extends StatelessWidget {
               mainAxisSize: MainAxisSize.min,
               children: <Widget>[
                 Row(
+                  mainAxisSize: MainAxisSize.min,
                   children: <Widget>[
                     Icon(
                       KunIcons.externalLink,
@@ -1265,14 +1265,12 @@ class _ContextCard extends StatelessWidget {
                       color: scheme.neutral.shade500,
                     ),
                     const SizedBox(width: KunSpacing.unit),
-                    Expanded(
-                      child: Text(
-                        host,
-                        maxLines: 1,
-                        overflow: TextOverflow.ellipsis,
-                        style: KunText.xs.copyWith(
-                          color: scheme.neutral.shade500,
-                        ),
+                    Text(
+                      host,
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                      style: KunText.xs.copyWith(
+                        color: scheme.neutral.shade500,
                       ),
                     ),
                   ],
@@ -1326,17 +1324,19 @@ class _TextBlock extends StatelessWidget {
             entities: message.entities,
             trailing: twin == null
                 ? null
-                : ExcludeSemantics(
-                    child: Visibility(
-                      visible: false,
-                      maintainSize: true,
-                      maintainAnimation: true,
-                      maintainState: true,
-                      child: Padding(
-                        padding: const EdgeInsets.only(
-                          left: KunSpacing.unit * 2,
+                : _TwinSeat(
+                    child: ExcludeSemantics(
+                      child: Visibility(
+                        visible: false,
+                        maintainSize: true,
+                        maintainAnimation: true,
+                        maintainState: true,
+                        child: Padding(
+                          padding: const EdgeInsets.only(
+                            left: KunSpacing.unit * 2,
+                          ),
+                          child: twin,
                         ),
-                        child: twin,
                       ),
                     ),
                   ),
@@ -1406,12 +1406,10 @@ class _ReactionsRow extends StatelessWidget {
       child: Semantics(
         container: true,
         label: messages.chat.reactions,
-        child: Row(
-          mainAxisSize: MainAxisSize.min,
-          crossAxisAlignment: CrossAxisAlignment.center,
+        child: _ChipWrap(
+          spacing: KunSpacing.unit,
           children: <Widget>[
-            for (int i = 0; i < reactions.length; i++) ...<Widget>[
-              if (i > 0) const SizedBox(width: KunSpacing.unit),
+            for (int i = 0; i < reactions.length; i++)
               _ReactionChip(
                 reaction: reactions[i],
                 option: _option(reactions[i].reaction),
@@ -1425,11 +1423,13 @@ class _ReactionsRow extends StatelessWidget {
                 onTap: () => onReact(reactions[i]),
                 duration: duration,
               ),
-            ],
-            const SizedBox(width: KunSpacing.unit),
             SizedBox(
+              key: KunChatBubble.metaKey,
               height: _kChipHeight,
-              child: Center(child: meta),
+              child: Padding(
+                padding: const EdgeInsets.only(left: KunSpacing.unit),
+                child: Center(child: meta),
+              ),
             ),
           ],
         ),
@@ -1729,5 +1729,383 @@ class _TailPainter extends CustomPainter {
   @override
   bool shouldRepaint(covariant _TailPainter oldDelegate) {
     return oldDelegate.color != color;
+  }
+}
+
+class _TwinSeat extends SingleChildRenderObjectWidget {
+  const _TwinSeat({required super.child});
+
+  @override
+  RenderBox createRenderObject(BuildContext context) => _RenderTwinSeat();
+}
+
+class _RenderTwinSeat extends RenderProxyBox {
+  static const BoxConstraints _unbounded = BoxConstraints();
+
+  @override
+  void performLayout() {
+    final RenderBox? child = this.child;
+    if (child == null) {
+      size = constraints.smallest;
+      return;
+    }
+    child.layout(_unbounded, parentUsesSize: true);
+    size = child.size;
+  }
+
+  @override
+  Size computeDryLayout(BoxConstraints constraints) {
+    return child?.getDryLayout(_unbounded) ?? constraints.smallest;
+  }
+
+  @override
+  double computeMaxIntrinsicWidth(double height) {
+    return child?.getMaxIntrinsicWidth(double.infinity) ?? 0;
+  }
+
+  @override
+  double computeMinIntrinsicWidth(double height) {
+    return child?.getMinIntrinsicWidth(double.infinity) ?? 0;
+  }
+
+  @override
+  double computeMaxIntrinsicHeight(double width) {
+    return child?.getMaxIntrinsicHeight(double.infinity) ?? 0;
+  }
+
+  @override
+  double computeMinIntrinsicHeight(double width) {
+    return child?.getMinIntrinsicHeight(double.infinity) ?? 0;
+  }
+}
+
+class _WFitParentData extends ContainerBoxParentData<RenderBox> {}
+
+class _WFitColumn extends MultiChildRenderObjectWidget {
+  const _WFitColumn({required this.cap, required super.children});
+
+  final double cap;
+
+  @override
+  RenderBox createRenderObject(BuildContext context) {
+    return _RenderWFitColumn(cap: cap);
+  }
+
+  @override
+  void updateRenderObject(
+    BuildContext context,
+    covariant _RenderWFitColumn renderObject,
+  ) {
+    renderObject.cap = cap;
+  }
+}
+
+class _RenderWFitColumn extends RenderBox
+    with
+        ContainerRenderObjectMixin<RenderBox, _WFitParentData>,
+        RenderBoxContainerDefaultsMixin<RenderBox, _WFitParentData> {
+  _RenderWFitColumn({required double cap}) : _cap = cap;
+
+  double _cap;
+  double get cap => _cap;
+  set cap(double value) {
+    if (_cap == value) {
+      return;
+    }
+    _cap = value;
+    markNeedsLayout();
+  }
+
+  @override
+  void setupParentData(RenderBox child) {
+    if (child.parentData is! _WFitParentData) {
+      child.parentData = _WFitParentData();
+    }
+  }
+
+  double _capped(double width) {
+    return width.isFinite ? math.min(width, _cap) : _cap;
+  }
+
+  static double _finiteMax(double width, double candidate) {
+    return candidate.isFinite ? math.max(width, candidate) : width;
+  }
+
+  Size _layout({
+    required BoxConstraints constraints,
+    required ChildLayouter layouter,
+    required bool position,
+  }) {
+    final List<RenderBox> children = <RenderBox>[];
+    RenderBox? child = firstChild;
+    while (child != null) {
+      children.add(child);
+      child = childAfter(child);
+    }
+    final double maxW = _capped(constraints.maxWidth);
+    final BoxConstraints loose = BoxConstraints(maxWidth: maxW);
+    double width = 0;
+    for (final RenderBox child in children) {
+      width = _finiteMax(width, layouter(child, loose).width);
+      width = _finiteMax(width, child.getMaxIntrinsicWidth(double.infinity));
+    }
+    width = constraints.constrainWidth(math.min(width, maxW));
+    final BoxConstraints tight = BoxConstraints(
+      minWidth: width,
+      maxWidth: width,
+      maxHeight: constraints.maxHeight,
+    );
+    double y = 0;
+    for (final RenderBox child in children) {
+      final Size laidOut = layouter(child, tight);
+      if (position) {
+        (child.parentData! as _WFitParentData).offset = Offset(0, y);
+      }
+      y += laidOut.height;
+    }
+    return constraints.constrain(Size(width, y));
+  }
+
+  @override
+  void performLayout() {
+    size = _layout(
+      constraints: constraints,
+      layouter: ChildLayoutHelper.layoutChild,
+      position: true,
+    );
+  }
+
+  @override
+  Size computeDryLayout(BoxConstraints constraints) {
+    return _layout(
+      constraints: constraints,
+      layouter: ChildLayoutHelper.dryLayoutChild,
+      position: false,
+    );
+  }
+
+  @override
+  double computeMinIntrinsicWidth(double height) {
+    return computeMaxIntrinsicWidth(height);
+  }
+
+  @override
+  double computeMaxIntrinsicWidth(double height) {
+    double width = 0;
+    RenderBox? child = firstChild;
+    while (child != null) {
+      width = _finiteMax(width, child.getMaxIntrinsicWidth(height));
+      child = childAfter(child);
+    }
+    return math.min(width, _cap);
+  }
+
+  @override
+  double computeMinIntrinsicHeight(double width) {
+    return computeMaxIntrinsicHeight(width);
+  }
+
+  @override
+  double computeMaxIntrinsicHeight(double width) {
+    final double w = _capped(width);
+    double height = 0;
+    RenderBox? child = firstChild;
+    while (child != null) {
+      height += child.getMaxIntrinsicHeight(w);
+      child = childAfter(child);
+    }
+    return height;
+  }
+
+  @override
+  double? computeDistanceToActualBaseline(TextBaseline baseline) {
+    return defaultComputeDistanceToFirstActualBaseline(baseline);
+  }
+
+  @override
+  bool hitTestChildren(BoxHitTestResult result, {required Offset position}) {
+    return defaultHitTestChildren(result, position: position);
+  }
+
+  @override
+  void paint(PaintingContext context, Offset offset) {
+    defaultPaint(context, offset);
+  }
+}
+
+class _ChipWrapParentData extends ContainerBoxParentData<RenderBox> {}
+
+class _ChipWrap extends MultiChildRenderObjectWidget {
+  const _ChipWrap({required this.spacing, required super.children});
+
+  final double spacing;
+
+  @override
+  RenderBox createRenderObject(BuildContext context) {
+    return _RenderChipWrap(spacing: spacing);
+  }
+
+  @override
+  void updateRenderObject(
+    BuildContext context,
+    covariant _RenderChipWrap renderObject,
+  ) {
+    renderObject.spacing = spacing;
+  }
+}
+
+class _RenderChipWrap extends RenderBox
+    with
+        ContainerRenderObjectMixin<RenderBox, _ChipWrapParentData>,
+        RenderBoxContainerDefaultsMixin<RenderBox, _ChipWrapParentData> {
+  _RenderChipWrap({required double spacing}) : _spacing = spacing;
+
+  double _spacing;
+  double get spacing => _spacing;
+  set spacing(double value) {
+    if (_spacing == value) {
+      return;
+    }
+    _spacing = value;
+    markNeedsLayout();
+  }
+
+  @override
+  void setupParentData(RenderBox child) {
+    if (child.parentData is! _ChipWrapParentData) {
+      child.parentData = _ChipWrapParentData();
+    }
+  }
+
+  @override
+  double computeMinIntrinsicWidth(double height) {
+    double width = 0;
+    RenderBox? child = firstChild;
+    while (child != null) {
+      width = math.max(width, child.getMinIntrinsicWidth(height));
+      child = childAfter(child);
+    }
+    return width;
+  }
+
+  @override
+  double computeMaxIntrinsicWidth(double height) {
+    double sum = 0;
+    int n = 0;
+    RenderBox? child = firstChild;
+    while (child != null) {
+      sum += child.getMaxIntrinsicWidth(height);
+      n++;
+      child = childAfter(child);
+    }
+    return n == 0 ? 0 : sum + spacing * (n - 1);
+  }
+
+  @override
+  double computeMinIntrinsicHeight(double width) {
+    return computeMaxIntrinsicHeight(width);
+  }
+
+  @override
+  double computeMaxIntrinsicHeight(double width) {
+    return getDryLayout(BoxConstraints(maxWidth: width)).height;
+  }
+
+  Size _layout({
+    required BoxConstraints constraints,
+    required ChildLayouter layouter,
+    required bool position,
+  }) {
+    final List<RenderBox> children = <RenderBox>[];
+    final List<Size> sizes = <Size>[];
+    RenderBox? child = firstChild;
+    while (child != null) {
+      children.add(child);
+      sizes.add(layouter(child, const BoxConstraints()));
+      child = childAfter(child);
+    }
+    if (children.isEmpty) {
+      return constraints.smallest;
+    }
+    final bool tight = constraints.hasTightWidth;
+    final double maxW =
+        constraints.maxWidth.isFinite ? constraints.maxWidth : double.infinity;
+    final int last = children.length - 1;
+    double x = 0;
+    double y = 0;
+    double rowH = 0;
+    double contentW = 0;
+
+    void wrapRow() {
+      y += rowH + spacing;
+      x = 0;
+      rowH = 0;
+    }
+
+    bool overflows(double childWidth) {
+      return x > 0 && maxW.isFinite && x + spacing + childWidth > maxW;
+    }
+
+    void place(int i, double dx) {
+      final Size sz = sizes[i];
+      if (position) {
+        final double dy = (math.max(rowH, sz.height) - sz.height) / 2;
+        (children[i].parentData! as _ChipWrapParentData).offset = Offset(
+          dx,
+          y + dy,
+        );
+      }
+      x = dx + sz.width;
+      rowH = math.max(rowH, sz.height);
+      contentW = math.max(contentW, x);
+    }
+
+    for (int i = 0; i < last; i++) {
+      if (overflows(sizes[i].width)) {
+        wrapRow();
+      }
+      place(i, x > 0 ? x + spacing : 0);
+    }
+
+    final Size meta = sizes[last];
+    if (overflows(meta.width)) {
+      wrapRow();
+    }
+    final double start = x > 0 ? x + spacing : 0;
+    place(last, tight ? math.max(start, maxW - meta.width) : start);
+    return constraints.constrain(Size(tight ? maxW : contentW, y + rowH));
+  }
+
+  @override
+  void performLayout() {
+    size = _layout(
+      constraints: constraints,
+      layouter: ChildLayoutHelper.layoutChild,
+      position: true,
+    );
+  }
+
+  @override
+  Size computeDryLayout(BoxConstraints constraints) {
+    return _layout(
+      constraints: constraints,
+      layouter: ChildLayoutHelper.dryLayoutChild,
+      position: false,
+    );
+  }
+
+  @override
+  double? computeDistanceToActualBaseline(TextBaseline baseline) {
+    return defaultComputeDistanceToHighestActualBaseline(baseline);
+  }
+
+  @override
+  bool hitTestChildren(BoxHitTestResult result, {required Offset position}) {
+    return defaultHitTestChildren(result, position: position);
+  }
+
+  @override
+  void paint(PaintingContext context, Offset offset) {
+    defaultPaint(context, offset);
   }
 }

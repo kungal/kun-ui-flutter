@@ -376,6 +376,11 @@
           ]
         },
         {
+          "slug": "many",
+          "title": "Many",
+          "builder": "chatBubbleReactionsMany"
+        },
+        {
           "slug": "service",
           "title": "Service",
           "builder": "chatBubbleService",
