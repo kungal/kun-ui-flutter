@@ -48,6 +48,9 @@ const List<(String, String, String)> _reactions = <(String, String, String)>[
   ('whale', '🐳', '鲸鱼'),
 ];
 
+/// Source line the ChatMessageMenu docs demo long-presses.
+const String demoMenuMessageSource = '周末的线下聚会你去吗?';
+
 /// Forum reaction vocabulary with kungal.com art.
 final List<KunChatReactionOption> demoReactions = <KunChatReactionOption>[
   for (final (String key, String emoji, String label) in _reactions)
