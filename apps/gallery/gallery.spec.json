@@ -501,6 +501,72 @@
         }
       ]
     },
+    "KunChatMessageList": {
+      "source": "demos/chat_message_list.dart",
+      "demos": [
+        {
+          "slug": "direct",
+          "title": "Direct",
+          "builder": "chatMessageListDirect",
+          "shows": [
+            "props.actions",
+            "props.currentUserId",
+            "props.lastReadSeq",
+            "props.messages",
+            "props.peerReadSeq",
+            "props.reactionOptions",
+            "props.resolveMediaUrl",
+            "props.unreadCount",
+            "props.users",
+            "events.action",
+            "events.link",
+            "events.react",
+            "events.read"
+          ]
+        },
+        {
+          "slug": "group",
+          "title": "Group",
+          "builder": "chatMessageListGroup",
+          "shows": [
+            "props.groupWindow",
+            "props.kind",
+            "slots.footer",
+            "events.jump",
+            "events.mention",
+            "events.retry",
+            "events.user-click"
+          ]
+        },
+        {
+          "slug": "paging",
+          "title": "Paging",
+          "builder": "chatMessageListPaging",
+          "shows": [
+            "props.hasNewer",
+            "props.hasOlder",
+            "props.loadingNewer",
+            "props.loadingOlder",
+            "slots.start",
+            "events.latest",
+            "events.load-newer",
+            "events.load-older"
+          ]
+        },
+        {
+          "slug": "thousands",
+          "title": "Thousands",
+          "builder": "chatMessageListThousands",
+          "shows": [
+            "slots.empty"
+          ]
+        }
+      ],
+      "undemoable": {
+        "props.ariaLabel": "An accessible name has no visual form; every demo uses the locale default, and what is announced is asserted by the widget tests.",
+        "props.swipeToReply": "A touch swipe is asserted by the widget tests; a desktop gallery cannot show the drag."
+      }
+    },
     "KunChatMessageMenu": {
       "source": "demos/chat_message_menu.dart",
       "demos": [
