@@ -1,6 +1,7 @@
 import 'dart:async';
 import 'dart:math' as math;
 
+import 'package:flutter/foundation.dart';
 import 'package:flutter/gestures.dart';
 import 'package:flutter/rendering.dart';
 import 'package:flutter/scheduler.dart';
@@ -34,17 +35,11 @@ const int _kMaxParticles = 2500;
 /// Web `FADE` seconds.
 const double _kFade = 0.6;
 
-/// Web `TINT_ALPHA`.
-const double _kTintAlpha = 0.34;
-
 /// Web `V_MIN`.
 const double _kVMin = 2;
 
 /// Web `V_MAX`.
 const double _kVMax = 12;
-
-/// Web `devicePixelRatio` cap.
-const double _kDprCap = 2;
 
 /// IntersectionObserver `rootMargin` `120px`.
 const double _kViewMargin = 120;
@@ -58,8 +53,12 @@ const Color _kSpoilerTint = Color.fromRGBO(150, 150, 150, 0.18);
 /// Web `ChatText.vue:274` hidden spoiler hover tint.
 const Color _kSpoilerTintHover = Color.fromRGBO(150, 150, 150, 0.26);
 
-/// Web `useSpoilerContent.ts:169` canvas tint grey.
-const int _kParticleTint = 150;
+/// Web `useSpoilerContent.ts:169`: the canvas's own grey, drawn over the
+/// word boxes behind the particles at [_kTintAlpha].
+const Color _kCanvasTint = Color.fromRGBO(150, 150, 150, 1);
+
+/// Web `TINT_ALPHA`.
+const double _kTintAlpha = 0.34;
 
 /// Web `text-[0.9em]` on inline code.
 const double _kCodeEm = 0.9;
@@ -121,6 +120,19 @@ class _SpoilerRect {
   final double y;
   final double w;
   final double h;
+
+  Rect toRect() => Rect.fromLTWH(x, y, w, h);
+
+  @override
+  bool operator ==(Object other) =>
+      other is _SpoilerRect &&
+      other.x == x &&
+      other.y == y &&
+      other.w == w &&
+      other.h == h;
+
+  @override
+  int get hashCode => Object.hash(x, y, w, h);
 }
 
 class _Particle {
@@ -155,6 +167,34 @@ class _SpoilerRange {
   final int start;
   final int end;
 }
+
+class _SpoilerPaintData {
+  List<_SpoilerRect> rects = const <_SpoilerRect>[];
+  List<_SpoilerRect> textRects = const <_SpoilerRect>[];
+  List<_Particle> particles = const <_Particle>[];
+  double clock = 0;
+  double? tStop;
+
+  void clear() {
+    rects = const <_SpoilerRect>[];
+    textRects = const <_SpoilerRect>[];
+    particles = const <_Particle>[];
+  }
+
+  void reset() {
+    clear();
+    clock = 0;
+    tStop = null;
+  }
+}
+
+class _CodeChipPaintData {
+  List<_SpoilerRect> rects = const <_SpoilerRect>[];
+  Color? color;
+}
+
+List<Rect> _toRects(List<_SpoilerRect> rects) =>
+    <Rect>[for (final _SpoilerRect r in rects) r.toRect()];
 
 List<_Particle> _seedParticles(List<_SpoilerRect> rects, math.Random random) {
   if (rects.isEmpty) {
@@ -264,6 +304,75 @@ class KunChatText extends StatefulWidget {
 
   @override
   State<KunChatText> createState() => _KunChatTextState();
+
+  /// Particle cover boxes after layout, in each inline run's coordinates.
+  @visibleForTesting
+  static List<Rect> debugSpoilerParticleBoxes(BuildContext context) {
+    return _inlineStates(context)
+        .expand((_ChatInlineState s) => s._particleRects)
+        .toList();
+  }
+
+  /// Text boxes of every hidden spoiler run, from `getBoxesForSelection`.
+  @visibleForTesting
+  static List<Rect> debugSpoilerTextBoxes(BuildContext context) {
+    return _inlineStates(context)
+        .expand((_ChatInlineState s) => s._spoilerTextRects)
+        .toList();
+  }
+
+  /// Boxes handed to the inline-code chip painter.
+  @visibleForTesting
+  static List<Rect> debugCodeChipBoxes(BuildContext context) {
+    return _inlineStates(context)
+        .expand((_ChatInlineState s) => s._codeChipRects)
+        .toList();
+  }
+
+  /// Paragraph-local `[start, end)` ranges recorded for inline code chips.
+  @visibleForTesting
+  static List<(int, int)> debugCodeRanges(BuildContext context) {
+    return _inlineStates(context)
+        .expand(
+          (_ChatInlineState s) => s._codeRanges.map(
+            (_SpoilerRange r) => (r.start, r.end),
+          ),
+        )
+        .toList();
+  }
+
+  /// Paragraph-local `[start, end)` ranges recorded for hidden spoilers.
+  @visibleForTesting
+  static List<(int, int)> debugSpoilerRanges(BuildContext context) {
+    return _inlineStates(context)
+        .expand(
+          (_ChatInlineState s) => s._ranges.map(
+            (_SpoilerRange r) => (r.start, r.end),
+          ),
+        )
+        .toList();
+  }
+
+  /// Seeded particles after measurement: origin and the box they occupy.
+  @visibleForTesting
+  static List<(Offset, Rect)> debugSpoilerParticles(BuildContext context) {
+    return _inlineStates(context)
+        .expand((_ChatInlineState s) => s._debugParticles)
+        .toList();
+  }
+}
+
+List<_ChatInlineState> _inlineStates(BuildContext context) {
+  final List<_ChatInlineState> out = <_ChatInlineState>[];
+  void visit(Element el) {
+    if (el is StatefulElement && el.state is _ChatInlineState) {
+      out.add(el.state as _ChatInlineState);
+    }
+    el.visitChildren(visit);
+  }
+
+  visit(context as Element);
+  return out;
 }
 
 class _KunChatTextState extends State<KunChatText> {
@@ -443,6 +552,7 @@ class _ChatQuote extends StatelessWidget {
   Widget build(BuildContext context) {
     final KunColorScheme scheme = KunTheme.of(context).colors;
     return Container(
+      width: double.infinity,
       margin: const EdgeInsets.symmetric(vertical: KunSpacing.unit),
       padding: const EdgeInsets.fromLTRB(
         KunSpacing.unit * 2.5,
@@ -611,22 +721,46 @@ class _ChatInlineState extends State<_ChatInline>
   final Set<int> _hovered = <int>{};
   final ValueNotifier<int> _repaint = ValueNotifier<int>(0);
   final math.Random _random = math.Random();
+  final _SpoilerPaintData _spoilerPaint = _SpoilerPaintData();
+  final _CodeChipPaintData _chipPaint = _CodeChipPaintData();
 
   Ticker? _ticker;
-  double _clock = 0;
   double? _lastFrame;
-  double? _tStop;
-  List<_SpoilerRect> _rects = const <_SpoilerRect>[];
-  List<_Particle> _particles = const <_Particle>[];
   List<_SpoilerRange> _ranges = const <_SpoilerRange>[];
+  List<_SpoilerRange> _codeRanges = const <_SpoilerRange>[];
   bool _hoverSpoiler = false;
-  bool _measured = false;
 
   bool get _hidden => !widget.preview && !widget.revealed;
+
+  bool get _wantSpoiler => _hidden && _ranges.isNotEmpty;
+
+  bool get _wantCode => _codeRanges.isNotEmpty;
+
+  List<Rect> get _particleRects => _toRects(_spoilerPaint.rects);
+
+  List<Rect> get _spoilerTextRects => _toRects(_spoilerPaint.textRects);
+
+  List<Rect> get _codeChipRects => _toRects(_chipPaint.rects);
+
+  List<(Offset, Rect)> get _debugParticles => <(Offset, Rect)>[
+        for (final _Particle p in _spoilerPaint.particles)
+          (Offset(p.rect.x + p.x0, p.rect.y + p.y0), p.rect.toRect()),
+      ];
+
+  @override
+  void initState() {
+    super.initState();
+    PaintingBinding.instance.systemFonts.addListener(_onSystemFonts);
+  }
 
   @override
   void didUpdateWidget(_ChatInline oldWidget) {
     super.didUpdateWidget(oldWidget);
+    if (oldWidget.source != widget.source) {
+      _spoilerPaint.reset();
+      _chipPaint.rects = const <_SpoilerRect>[];
+      _lastFrame = null;
+    }
     if (oldWidget.revealed != widget.revealed && widget.revealed) {
       _beginReveal();
     }
@@ -634,10 +768,25 @@ class _ChatInlineState extends State<_ChatInline>
 
   @override
   void dispose() {
+    PaintingBinding.instance.systemFonts.removeListener(_onSystemFonts);
     _ticker?.dispose();
     _repaint.dispose();
     _disposeRecognizers();
     super.dispose();
+  }
+
+  void _scheduleMeasure() {
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (mounted) {
+        _measure();
+      }
+    });
+  }
+
+  void _onSystemFonts() {
+    if (mounted) {
+      _scheduleMeasure();
+    }
   }
 
   void _disposeRecognizers() {
@@ -669,15 +818,14 @@ class _ChatInlineState extends State<_ChatInline>
   }
 
   void _beginReveal() {
-    if (kunReducedMotion(context) || _particles.isEmpty) {
+    if (kunReducedMotion(context) || _spoilerPaint.particles.isEmpty) {
       _ticker?.stop();
-      _particles = const <_Particle>[];
-      _rects = const <_SpoilerRect>[];
-      _tStop = null;
+      _spoilerPaint.clear();
+      _spoilerPaint.tStop = null;
       _repaint.value++;
       return;
     }
-    _tStop = _clock;
+    _spoilerPaint.tStop = _spoilerPaint.clock;
     _ticker?.start();
   }
 
@@ -703,23 +851,28 @@ class _ChatInlineState extends State<_ChatInline>
     if (_lastFrame != null && (now - _lastFrame!) * 1000 < _kFrameMs) {
       return;
     }
-    _clock += _lastFrame == null ? 0 : now - _lastFrame!;
+    _spoilerPaint.clock += _lastFrame == null ? 0 : now - _lastFrame!;
     _lastFrame = now;
     if (_isInView()) {
+      _measure();
       _repaint.value++;
     }
-    if (_tStop != null && _clock > _tStop! + _kFade) {
+    final double? tStop = _spoilerPaint.tStop;
+    if (tStop != null && _spoilerPaint.clock > tStop + _kFade) {
       _ticker?.stop();
-      _particles = const <_Particle>[];
-      _rects = const <_SpoilerRect>[];
+      _spoilerPaint.clear();
       _repaint.value++;
+    } else if (_spoilerPaint.particles.isEmpty &&
+        _spoilerPaint.tStop == null &&
+        elapsed.inMilliseconds >= 2000) {
+      _ticker?.stop();
     }
   }
 
   RenderParagraph? _paragraph() {
-    final BuildContext? ctx = _textKey.currentContext;
-    if (ctx == null) {
-      return null;
+    final RenderObject? root = _textKey.currentContext?.findRenderObject();
+    if (root is RenderParagraph) {
+      return root;
     }
     RenderParagraph? found;
     void visit(RenderObject child) {
@@ -733,64 +886,150 @@ class _ChatInlineState extends State<_ChatInline>
       child.visitChildren(visit);
     }
 
-    final RenderObject? root = ctx.findRenderObject();
-    if (root is RenderParagraph) {
-      return root;
-    }
     root?.visitChildren(visit);
     return found;
   }
 
+  Offset _paintOrigin(RenderParagraph paragraph) {
+    for (RenderObject? node = paragraph; node != null; node = node.parent) {
+      if (node is RenderCustomPaint) {
+        return paragraph.localToGlobal(Offset.zero, ancestor: node);
+      }
+    }
+    final RenderObject? host = context.findRenderObject();
+    if (host is RenderBox && host.hasSize && host.attached) {
+      return host.globalToLocal(paragraph.localToGlobal(Offset.zero));
+    }
+    return Offset.zero;
+  }
+
+  List<_SpoilerRect> _boxesFor(
+    RenderParagraph paragraph,
+    int start,
+    int end,
+    Offset origin, {
+    required bool words,
+  }) {
+    final List<_SpoilerRect> rects = <_SpoilerRect>[];
+    void add(int a, int b) {
+      if (a >= b) {
+        return;
+      }
+      final List<TextBox> boxes = paragraph.getBoxesForSelection(
+        TextSelection(baseOffset: a, extentOffset: b),
+      );
+      for (final TextBox tb in boxes) {
+        final double w = tb.right - tb.left;
+        final double h = tb.bottom - tb.top;
+        if (w < 0.5 || h < 0.5) {
+          continue;
+        }
+        rects.add(
+          _SpoilerRect(
+            x: tb.left + origin.dx,
+            y: tb.top + origin.dy,
+            w: w,
+            h: h,
+          ),
+        );
+      }
+    }
+
+    final String text = paragraph.text.toPlainText(
+      includeSemanticsLabels: false,
+      includePlaceholders: false,
+    );
+    if (start < 0 || end < 0 || start >= text.length) {
+      return rects;
+    }
+    final int hi = math.min(end, text.length);
+    if (!words) {
+      add(start, hi);
+      return rects;
+    }
+    final String slice = text.substring(start, hi);
+    for (final RegExpMatch match in RegExp(r'\S+').allMatches(slice)) {
+      final int a = start + match.start;
+      add(a, a + match.group(0)!.length);
+    }
+    if (rects.isEmpty) {
+      add(start, hi);
+    }
+    return rects;
+  }
+
+  List<_SpoilerRect> _boxesForRanges(
+    RenderParagraph paragraph,
+    List<_SpoilerRange> ranges,
+    Offset origin, {
+    required bool words,
+  }) {
+    final List<_SpoilerRect> out = <_SpoilerRect>[];
+    for (final _SpoilerRange range in ranges) {
+      out.addAll(
+        _boxesFor(paragraph, range.start, range.end, origin, words: words),
+      );
+    }
+    return out;
+  }
+
+  void _ensureTicker() {
+    if (kunReducedMotion(context)) {
+      return;
+    }
+    _ticker ??= createTicker(_onTick);
+    if (!_ticker!.isTicking) {
+      _lastFrame = null;
+      _ticker!.start();
+    }
+  }
+
   void _measure() {
-    if (!_hidden || _ranges.isEmpty) {
+    if (!_wantSpoiler && !_wantCode) {
       return;
     }
     final RenderParagraph? paragraph = _paragraph();
     if (paragraph == null) {
       return;
     }
-    final List<_SpoilerRect> rects = <_SpoilerRect>[];
-    final Offset origin = paragraph.localToGlobal(Offset.zero);
-    final RenderBox? box = context.findRenderObject() as RenderBox?;
-    final Offset localOrigin =
-        box == null ? Offset.zero : box.globalToLocal(origin);
-    final String text = paragraph.text.toPlainText();
-    for (final _SpoilerRange range in _ranges) {
-      if (range.start >= text.length || range.end > text.length) {
-        continue;
-      }
-      final String slice = text.substring(range.start, range.end);
-      for (final RegExpMatch match in RegExp(r'\S+').allMatches(slice)) {
-        final int start = range.start + match.start;
-        final int end = start + match.group(0)!.length;
-        final List<TextBox> boxes = paragraph.getBoxesForSelection(
-          TextSelection(baseOffset: start, extentOffset: end),
-        );
-        for (final TextBox tb in boxes) {
-          final double w = tb.right - tb.left;
-          final double h = tb.bottom - tb.top;
-          if (w < 0.5 || h < 0.5) {
-            continue;
-          }
-          rects.add(
-            _SpoilerRect(
-              x: tb.left + localOrigin.dx,
-              y: tb.top + localOrigin.dy,
-              w: w,
-              h: h,
-            ),
-          );
+    final Offset origin = _paintOrigin(paragraph);
+
+    if (_wantSpoiler) {
+      final List<_SpoilerRect> textRects = _boxesForRanges(
+        paragraph,
+        _ranges,
+        origin,
+        words: false,
+      );
+      final List<_SpoilerRect> wordRects = _boxesForRanges(
+        paragraph,
+        _ranges,
+        origin,
+        words: true,
+      );
+      _spoilerPaint.textRects = textRects;
+      final List<_SpoilerRect> seedRects =
+          wordRects.isEmpty ? textRects : wordRects;
+      if (_spoilerPaint.tStop == null) {
+        if (!listEquals(_spoilerPaint.rects, seedRects)) {
+          _spoilerPaint.particles = _seedParticles(seedRects, _random);
         }
+        _spoilerPaint.rects = seedRects;
+      }
+      if (_spoilerPaint.particles.isNotEmpty && _spoilerPaint.tStop == null) {
+        _ensureTicker();
       }
     }
-    _rects = rects;
-    _particles = _seedParticles(rects, _random);
-    _measured = true;
-    if (!kunReducedMotion(context) && _particles.isNotEmpty && _tStop == null) {
-      _ticker ??= createTicker(_onTick);
-      if (!_ticker!.isTicking) {
-        _lastFrame = null;
-        _ticker!.start();
+
+    if (_wantCode) {
+      _chipPaint.rects = _boxesForRanges(
+        paragraph,
+        _codeRanges,
+        origin,
+        words: false,
+      );
+      if (!_wantSpoiler) {
+        _ensureTicker();
       }
     }
     _repaint.value++;
@@ -805,6 +1044,7 @@ class _ChatInlineState extends State<_ChatInline>
       color: inherited.color ?? scheme.foreground,
     );
     _ranges = <_SpoilerRange>[];
+    _codeRanges = <_SpoilerRange>[];
     int cursor = 0;
     final List<InlineSpan> spans = _buildNodes(
       context,
@@ -816,38 +1056,43 @@ class _ChatInlineState extends State<_ChatInline>
       cursorValue: () => cursor,
     );
 
-    if (_hidden && _ranges.isNotEmpty) {
-      WidgetsBinding.instance.addPostFrameCallback((_) {
-        if (mounted) {
-          _measure();
-        }
-      });
-    } else if (!_hidden) {
-      if (_tStop == null) {
-        _ticker?.stop();
-      }
+    _chipPaint.color = scheme.neutral.solid.withValues(alpha: 0.2);
+
+    if (_wantSpoiler || _wantCode) {
+      _scheduleMeasure();
+    } else if (!_hidden && _spoilerPaint.tStop == null) {
+      _ticker?.stop();
     }
 
-    final TextAlign align = TextAlign.start;
-    final TextSpan root = TextSpan(style: base, children: spans);
-    final Widget text = widget.preview
-        ? Text.rich(
-            key: _textKey,
-            root,
-            maxLines: 1,
-            overflow: TextOverflow.ellipsis,
-            softWrap: false,
-            textAlign: align,
-          )
-        : Text.rich(
-            key: _textKey,
-            root,
-            softWrap: true,
-            textAlign: align,
-          );
+    Widget child = Text.rich(
+      key: _textKey,
+      TextSpan(style: base, children: spans),
+      maxLines: widget.preview ? 1 : null,
+      overflow: widget.preview ? TextOverflow.ellipsis : TextOverflow.clip,
+      softWrap: !widget.preview,
+      textAlign: TextAlign.start,
+    );
 
-    if (!_hidden || _ranges.isEmpty) {
-      return text;
+    if (_wantSpoiler || _wantCode) {
+      child = CustomPaint(
+        painter: _wantCode
+            ? _CodeChipPainter(
+                data: _chipPaint,
+                listenable: _repaint,
+              )
+            : null,
+        foregroundPainter: _wantSpoiler
+            ? _SpoilerPainter(
+                data: _spoilerPaint,
+                listenable: _repaint,
+              )
+            : null,
+        child: child,
+      );
+    }
+
+    if (!_wantSpoiler) {
+      return child;
     }
 
     return MouseRegion(
@@ -856,35 +1101,12 @@ class _ChatInlineState extends State<_ChatInline>
       cursor: SystemMouseCursors.click,
       child: Listener(
         behavior: HitTestBehavior.translucent,
-        onPointerUp: (PointerUpEvent event) {
+        onPointerUp: (_) {
           if (_hidden) {
             widget.onReveal();
           }
         },
-        child: Stack(
-          children: <Widget>[
-            text,
-            Positioned.fill(
-              child: IgnorePointer(
-                child: CustomPaint(
-                  painter: _SpoilerPainter(
-                    rects: _rects,
-                    particles: _particles,
-                    clock: _clock,
-                    tStop: _tStop,
-                    hover: _hoverSpoiler,
-                    measured: _measured,
-                    dpr: math.min(
-                      MediaQuery.devicePixelRatioOf(context),
-                      _kDprCap,
-                    ),
-                    listenable: _repaint,
-                  ),
-                ),
-              ),
-            ),
-          ],
-        ),
+        child: child,
       ),
     );
   }
@@ -973,9 +1195,17 @@ class _ChatInlineState extends State<_ChatInline>
           ),
         );
       case KunChatEntityType.code:
-        return children(
+        final int start = cursorValue();
+        final List<InlineSpan> inner = children(
           next: _codeStyle(style, scheme, inSpoiler: inSpoiler),
         );
+        if (!(_hidden && inSpoiler)) {
+          _codeRanges = <_SpoilerRange>[
+            ..._codeRanges,
+            _SpoilerRange(start, cursorValue()),
+          ];
+        }
+        return inner;
       case KunChatEntityType.pre:
         if (widget.preview) {
           return children(
@@ -1009,9 +1239,13 @@ class _ChatInlineState extends State<_ChatInline>
           ];
         }
         final int start = cursorValue();
+        final Color? tint = _hidden
+            ? (_hoverSpoiler ? _kSpoilerTintHover : _kSpoilerTint)
+            : null;
         final TextStyle hiddenStyle = _hidden
             ? style.copyWith(
                 color: (style.color ?? scheme.foreground).withValues(alpha: 0),
+                backgroundColor: tint,
               )
             : style;
         final List<InlineSpan> inner =
@@ -1020,7 +1254,9 @@ class _ChatInlineState extends State<_ChatInline>
           ..._ranges,
           _SpoilerRange(start, cursorValue())
         ];
-        return inner;
+        return <InlineSpan>[
+          TextSpan(style: hiddenStyle, children: inner),
+        ];
       case KunChatEntityType.textLink:
         return _linkSpans(
           context,
@@ -1069,7 +1305,6 @@ class _ChatInlineState extends State<_ChatInline>
       fontSize: size,
       fontFamily: KunFontFamilies.mono,
       fontFamilyFallback: KunFontFamilies.monoFallback,
-      backgroundColor: scheme.neutral.solid.withValues(alpha: 0.2),
       color: _hidden && inSpoiler
           ? (style.color ?? scheme.foreground).withValues(alpha: 0)
           : style.color,
@@ -1189,53 +1424,36 @@ class _ChatInlineState extends State<_ChatInline>
 
 class _SpoilerPainter extends CustomPainter {
   _SpoilerPainter({
-    required this.rects,
-    required this.particles,
-    required this.clock,
-    required this.tStop,
-    required this.hover,
-    required this.measured,
-    required this.dpr,
+    required this.data,
     required Listenable listenable,
   }) : super(repaint: listenable);
 
-  final List<_SpoilerRect> rects;
-  final List<_Particle> particles;
-  final double clock;
-  final double? tStop;
-  final bool hover;
-  final bool measured;
-  final double dpr;
+  final _SpoilerPaintData data;
 
   @override
   void paint(Canvas canvas, Size size) {
-    if (!measured || rects.isEmpty) {
-      final Paint fill = Paint()
-        ..color = hover ? _kSpoilerTintHover : _kSpoilerTint;
-      canvas.drawRect(Offset.zero & size, fill);
+    final List<_SpoilerRect> rects = data.rects;
+    final List<_Particle> particles = data.particles;
+    if (rects.isEmpty) {
       return;
     }
-    final double t = clock;
-    final int n = particles.length;
+    final double t = data.clock;
+    final double? tStop = data.tStop;
     final double tintFade = tStop != null
-        ? _clamp01(1 - (t - tStop!) / _kFade)
+        ? _clamp01(1 - (t - tStop) / _kFade)
         : _clamp01(t / (_kFade * 0.5));
     if (tintFade > 0) {
       final Paint tint = Paint()
-        ..color = Color.fromRGBO(
-          _kParticleTint,
-          _kParticleTint,
-          _kParticleTint,
-          _kTintAlpha * tintFade,
-        );
+        ..color = _kCanvasTint.withValues(alpha: _kTintAlpha * tintFade);
       for (final _SpoilerRect rect in rects) {
-        canvas.drawRect(Rect.fromLTWH(rect.x, rect.y, rect.w, rect.h), tint);
+        canvas.drawRect(rect.toRect(), tint);
       }
     }
+    final int n = particles.length;
     for (int i = 0; i < n; i++) {
       final _Particle p = particles[i];
       if (tStop != null &&
-          ((tStop! + p.phase) / p.cycle).floor() <
+          ((tStop + p.phase) / p.cycle).floor() <
               ((t + p.phase) / p.cycle).floor()) {
         continue;
       }
@@ -1271,10 +1489,44 @@ class _SpoilerPainter extends CustomPainter {
 
   @override
   bool shouldRepaint(covariant _SpoilerPainter oldDelegate) {
-    return oldDelegate.clock != clock ||
-        oldDelegate.tStop != tStop ||
-        oldDelegate.hover != hover ||
-        oldDelegate.measured != measured ||
-        !identical(oldDelegate.particles, particles);
+    return oldDelegate.data != data;
+  }
+}
+
+class _CodeChipPainter extends CustomPainter {
+  _CodeChipPainter({
+    required this.data,
+    required Listenable listenable,
+  }) : super(repaint: listenable);
+
+  final _CodeChipPaintData data;
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    final Color? color = data.color;
+    if (color == null || data.rects.isEmpty) {
+      return;
+    }
+    final Paint fill = Paint()..color = color;
+    final Radius radius = const Radius.circular(KunRounded.sm);
+    for (final _SpoilerRect rect in data.rects) {
+      canvas.drawRRect(
+        RRect.fromRectAndRadius(
+          Rect.fromLTRB(
+            rect.x - KunSpacing.unit * 0.5,
+            rect.y - 1,
+            rect.x + rect.w + KunSpacing.unit * 0.5,
+            rect.y + rect.h + 1,
+          ),
+          radius,
+        ),
+        fill,
+      );
+    }
+  }
+
+  @override
+  bool shouldRepaint(covariant _CodeChipPainter oldDelegate) {
+    return oldDelegate.data != data;
   }
 }

@@ -313,10 +313,45 @@ void main() {
           'https://sub.domain.example.co.uk/a',
       'HTTP://ABC.COM': 'http://abc.com/',
       ' tel:+123': null,
+      'https://例子.测试': 'https://xn--fsqu00a.xn--0zwm56d/',
+      '例子.测试': 'https://xn--fsqu00a.xn--0zwm56d/',
+      'https://ドメイン.テスト': 'https://xn--eckwd4c7c.xn--zckzah/',
+      'https://日本語.jp': 'https://xn--wgv71a119e.jp/',
+      'https://Bücher.de': 'https://xn--bcher-kva.de/',
+      'https://bücher.de': 'https://xn--bcher-kva.de/',
+      'https://faß.de': 'https://xn--fa-hia.de/',
+      'https://😉.com': 'https://xn--n28h.com/',
+      'https://www.例子.测试': 'https://www.xn--fsqu00a.xn--0zwm56d/',
+      'https://例子.测试:8080/路径?q=1#frag':
+          'https://xn--fsqu00a.xn--0zwm56d:8080/%E8%B7%AF%E5%BE%84?q=1#frag',
+      'https://shop.münchen.de/a': 'https://shop.xn--mnchen-3ya.de/a',
+      'https://яндекс.рф': 'https://xn--d1acpjx3f.xn--p1ai/',
+      'https://스타벅스코리아.com': 'https://xn--oy2b35ckwhba574atvuzkc.com/',
+      'http://例子.测试/foo': 'http://xn--fsqu00a.xn--0zwm56d/foo',
+      'https://xn--fsqu00a.xn--0zwm56d/': 'https://xn--fsqu00a.xn--0zwm56d/',
+      'https://münchen.example.com:443/': 'https://xn--mnchen-3ya.example.com/',
+      'https://café.com': 'https://xn--caf-dma.com/',
+      'https://foo.バー.baz': 'https://foo.xn--ndkue.baz/',
     };
     for (final MapEntry<String, String?> entry in vectors.entries) {
       expect(kunChatSafeUrl(entry.key), entry.value, reason: entry.key);
     }
+  });
+
+  test('IDN without NFC or UTS 46 mapping', () {
+    expect(
+      kunChatSafeUrl('https://cafe\u0301.com'),
+      'https://xn--cafe-yvc.com/',
+    );
+    expect(
+      kunChatSafeUrl('https://ＡＢＣ.ＣＯＭ'),
+      'https://xn--mi7ccd.xn--oi7cuaf/',
+    );
+    expect(kunChatSafeUrl('https://İ.com'), 'https://i.com/');
+    expect(
+      kunChatSafeUrl('https://example。com'),
+      'https://xn--examplecom-th3i/',
+    );
   });
 
   test('kunChatMediaLabel and kunChatPlainText', () {
