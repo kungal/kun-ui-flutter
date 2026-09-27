@@ -825,6 +825,29 @@
         "props.autofocus": "A demo page is the payload of an iframe, and a field that takes focus on mount steals the caret from the page hosting it. Showing this honestly needs a mount-on-demand control the gallery does not have."
       }
     },
+    "KunLightbox": {
+      "source": "demos/lightbox.dart",
+      "demos": [
+        {
+          "slug": "basic",
+          "title": "Basic",
+          "builder": "lightboxBasic",
+          "shows": [
+            "props.images",
+            "props.isOpen",
+            "events.update:isOpen"
+          ]
+        },
+        {
+          "slug": "standalone",
+          "title": "Standalone",
+          "builder": "lightboxStandalone",
+          "shows": [
+            "props.initialIndex"
+          ]
+        }
+      ]
+    },
     "KunLoading": {
       "source": "demos/loading.dart",
       "demos": [
