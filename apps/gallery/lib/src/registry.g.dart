@@ -12,6 +12,7 @@ import 'demos/card.dart';
 import 'demos/checkbox.dart';
 import 'demos/checkbox_group.dart';
 import 'demos/chip.dart';
+import 'demos/date_picker.dart';
 import 'demos/divider.dart';
 import 'demos/dropdown.dart';
 import 'demos/image.dart';
@@ -184,6 +185,32 @@ const List<GalleryComponent> galleryComponents = <GalleryComponent>[
       GalleryDemo(slug: 'dismiss', title: 'Dismiss', builder: chipDismiss),
       GalleryDemo(
           slug: 'contract', title: 'Contract', builder: kunChipContract),
+    ],
+  ),
+  GalleryComponent(
+    slug: 'kundatepicker',
+    name: 'KunDatePicker',
+    demos: <GalleryDemo>[
+      GalleryDemo(slug: 'basic', title: 'Basic', builder: datePickerBasic),
+      GalleryDemo(slug: 'range', title: 'Range', builder: datePickerRange),
+      GalleryDemo(
+          slug: 'precision', title: 'Precision', builder: datePickerPrecision),
+      GalleryDemo(slug: 'format', title: 'Format', builder: datePickerFormat),
+      GalleryDemo(slug: 'colors', title: 'Colors', builder: datePickerColors),
+      GalleryDemo(slug: 'states', title: 'States', builder: datePickerStates),
+      GalleryDemo(slug: 'error', title: 'Error', builder: datePickerError),
+      GalleryDemo(
+          slug: 'deadline', title: 'Deadline', builder: datePickerDeadline),
+      GalleryDemo(
+          slug: 'in-modal', title: 'In a modal', builder: datePickerInModal),
+      GalleryDemo(slug: 'locale', title: 'Locale', builder: datePickerLocale),
+      GalleryDemo(
+          slug: 'filter-bar',
+          title: 'Filter bar',
+          builder: datePickerFilterBar),
+      GalleryDemo(slug: 'sizes', title: 'Sizes', builder: datePickerSizes),
+      GalleryDemo(
+          slug: 'contract', title: 'Contract', builder: kunDatePickerContract),
     ],
   ),
   GalleryComponent(

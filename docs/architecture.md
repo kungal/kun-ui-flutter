@@ -814,6 +814,30 @@ renders every item and defers each image with `loading="lazy"`, and the
 contract already says that Flutter's counterpart to that hint is a lazily
 built list.
 
+### Dates are formatted here, not by `intl` (decided 2026-09-27)
+
+The web's `KunDatePicker` leans on date-fns for its calendar grid: weekday
+and month names, the full date each day cell announces, and the pattern
+behind `format`. kun-ui's contract already decided that the date-fns locale
+object does not cross to Flutter, and that the grid resolves from a locale
+code instead (`contracts/README.md`). The Dart counterpart of date-fns
+would be `intl`, a third-party package, and iron rule 6 says no.
+
+So `src/foundation/calendar.dart` carries the names for the three locales
+the web bundles (en, zh-CN, ja), copied from date-fns 4.4.0, and a formatter
+for the date subset of date-fns patterns. Any other letter throws, as
+date-fns does. At acceptance it matched date-fns on 49,365 outputs: every
+day of 2024, 2026 and 2028, in the three locales and fifteen patterns.
+When kun-ui moves to a new date-fns, re-run that comparison before
+trusting the tables. A fourth language waits for an app that needs it, and
+would have to start upstream.
+
+The value is a `DateTime`, not the web's string, so `valueFormat` is
+omitted with a reason. Dates are compared by year, month and day, never
+by instant, because a local midnight does not exist on some DST
+transitions, and a month step clamps the day the way date-fns `addMonths`
+does. Dart's `DateTime(y, m + 1, 31)` overflows instead.
+
 ### Reduced motion collapses every transition (decided 2026-09-17)
 
 kun-ui's base stylesheet sets every transition and animation to 0.01ms

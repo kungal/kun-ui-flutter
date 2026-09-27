@@ -191,6 +191,41 @@
         "start": "start"
       }
     },
+    "KunDatePicker": {
+      "widget": "KunDatePicker",
+      "props": {
+        "clearable": "clearable",
+        "color": "color",
+        "darkBorder": {
+          "omit": "No-op since 0.18.0. Every neutral border now resolves to the unified `--color-kun-border` token (the `border-kun` utility), which already flips light↔dark — so the old light-translucent / dark-solid split this prop toggled is gone. Safe to remove from call sites."
+        },
+        "disabled": "disabled",
+        "error": "error",
+        "format": "format",
+        "fullWidth": "fullWidth",
+        "icon": "icon",
+        "isDateDisabled": "isDateDisabled",
+        "label": "label",
+        "locale": "locale",
+        "maxDate": "maxDate",
+        "minDate": "minDate",
+        "mode": "KunDatePicker.range",
+        "modelValue": "value / range",
+        "months": "months",
+        "placeholder": "placeholder",
+        "precision": "precision",
+        "rounded": "rounded",
+        "size": "size",
+        "valueFormat": {
+          "omit": "The value is a DateTime at local midnight on the first day of the chosen period, not a string, so there is no emitted text to format. An app that stores a string formats the DateTime itself."
+        },
+        "weekdays": "weekdays"
+      },
+      "events": {
+        "update:modelValue": "onChanged / onRangeChanged"
+      },
+      "slots": {}
+    },
     "KunDivider": {
       "widget": "KunDivider",
       "props": {

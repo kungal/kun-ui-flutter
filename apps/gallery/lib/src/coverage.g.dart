@@ -846,6 +846,179 @@ const ComponentCoverage _kunChip = ComponentCoverage(
 Widget kunChipContract(BuildContext context) =>
     const CoveragePage(coverage: _kunChip);
 
+const ComponentCoverage _kunDatePicker = ComponentCoverage(
+  name: 'KunDatePicker',
+  entries: <CoverageEntry>[
+    CoverageEntry(
+      section: 'props',
+      contractName: 'clearable',
+      status: CoverageStatus.shown,
+      dartName: 'clearable',
+      shownBy: 'States',
+    ),
+    CoverageEntry(
+      section: 'props',
+      contractName: 'color',
+      status: CoverageStatus.shown,
+      dartName: 'color',
+      shownBy: 'Colors',
+    ),
+    CoverageEntry(
+      section: 'props',
+      contractName: 'darkBorder',
+      status: CoverageStatus.omitted,
+      dartName: null,
+      reason:
+          'No-op since 0.18.0. Every neutral border now resolves to the unified `--color-kun-border` token (the `border-kun` utility), which already flips light↔dark — so the old light-translucent / dark-solid split this prop toggled is gone. Safe to remove from call sites.',
+    ),
+    CoverageEntry(
+      section: 'props',
+      contractName: 'disabled',
+      status: CoverageStatus.shown,
+      dartName: 'disabled',
+      shownBy: 'States',
+    ),
+    CoverageEntry(
+      section: 'props',
+      contractName: 'error',
+      status: CoverageStatus.shown,
+      dartName: 'error',
+      shownBy: 'Error',
+    ),
+    CoverageEntry(
+      section: 'props',
+      contractName: 'format',
+      status: CoverageStatus.shown,
+      dartName: 'format',
+      shownBy: 'Format',
+    ),
+    CoverageEntry(
+      section: 'props',
+      contractName: 'fullWidth',
+      status: CoverageStatus.shown,
+      dartName: 'fullWidth',
+      shownBy: 'Filter bar',
+    ),
+    CoverageEntry(
+      section: 'props',
+      contractName: 'icon',
+      status: CoverageStatus.shown,
+      dartName: 'icon',
+      shownBy: 'Filter bar',
+    ),
+    CoverageEntry(
+      section: 'props',
+      contractName: 'isDateDisabled',
+      status: CoverageStatus.shown,
+      dartName: 'isDateDisabled',
+      shownBy: 'Format',
+    ),
+    CoverageEntry(
+      section: 'props',
+      contractName: 'label',
+      status: CoverageStatus.shown,
+      dartName: 'label',
+      shownBy: 'Basic',
+    ),
+    CoverageEntry(
+      section: 'props',
+      contractName: 'locale',
+      status: CoverageStatus.shown,
+      dartName: 'locale',
+      shownBy: 'Locale',
+    ),
+    CoverageEntry(
+      section: 'props',
+      contractName: 'maxDate',
+      status: CoverageStatus.shown,
+      dartName: 'maxDate',
+      shownBy: 'Deadline',
+    ),
+    CoverageEntry(
+      section: 'props',
+      contractName: 'minDate',
+      status: CoverageStatus.shown,
+      dartName: 'minDate',
+      shownBy: 'Precision',
+    ),
+    CoverageEntry(
+      section: 'props',
+      contractName: 'mode',
+      status: CoverageStatus.shown,
+      dartName: 'KunDatePicker.range',
+      shownBy: 'Range',
+    ),
+    CoverageEntry(
+      section: 'props',
+      contractName: 'modelValue',
+      status: CoverageStatus.shown,
+      dartName: 'value / range',
+      shownBy: 'Basic',
+    ),
+    CoverageEntry(
+      section: 'props',
+      contractName: 'months',
+      status: CoverageStatus.shown,
+      dartName: 'months',
+      shownBy: 'Locale',
+    ),
+    CoverageEntry(
+      section: 'props',
+      contractName: 'placeholder',
+      status: CoverageStatus.shown,
+      dartName: 'placeholder',
+      shownBy: 'Basic',
+    ),
+    CoverageEntry(
+      section: 'props',
+      contractName: 'precision',
+      status: CoverageStatus.shown,
+      dartName: 'precision',
+      shownBy: 'Precision',
+    ),
+    CoverageEntry(
+      section: 'props',
+      contractName: 'rounded',
+      status: CoverageStatus.shown,
+      dartName: 'rounded',
+      shownBy: 'Sizes',
+    ),
+    CoverageEntry(
+      section: 'props',
+      contractName: 'size',
+      status: CoverageStatus.shown,
+      dartName: 'size',
+      shownBy: 'Sizes',
+    ),
+    CoverageEntry(
+      section: 'props',
+      contractName: 'valueFormat',
+      status: CoverageStatus.omitted,
+      dartName: null,
+      reason:
+          'The value is a DateTime at local midnight on the first day of the chosen period, not a string, so there is no emitted text to format. An app that stores a string formats the DateTime itself.',
+    ),
+    CoverageEntry(
+      section: 'props',
+      contractName: 'weekdays',
+      status: CoverageStatus.shown,
+      dartName: 'weekdays',
+      shownBy: 'Locale',
+    ),
+    CoverageEntry(
+      section: 'events',
+      contractName: 'update:modelValue',
+      status: CoverageStatus.shown,
+      dartName: 'onChanged / onRangeChanged',
+      shownBy: 'Basic',
+    ),
+  ],
+);
+
+/// The contract coverage page for KunDatePicker.
+Widget kunDatePickerContract(BuildContext context) =>
+    const CoveragePage(coverage: _kunDatePicker);
+
 const ComponentCoverage _kunDivider = ComponentCoverage(
   name: 'KunDivider',
   entries: <CoverageEntry>[

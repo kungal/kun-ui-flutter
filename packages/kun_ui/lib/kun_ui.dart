@@ -23,6 +23,7 @@ export 'src/components/card.dart';
 export 'src/components/checkbox.dart';
 export 'src/components/checkbox_group.dart';
 export 'src/components/chip.dart';
+export 'src/components/date_picker.dart';
 export 'src/components/divider.dart';
 export 'src/components/dropdown.dart';
 export 'src/components/image.dart';
