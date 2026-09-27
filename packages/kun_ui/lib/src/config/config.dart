@@ -69,6 +69,11 @@ class KunUIConfig {
   /// [userLinkTemplate] with its first `{id}` replaced by [id].
   String userLinkFor(int id) => userLinkTemplate.replaceFirst('{id}', '$id');
 
+  /// [userLinkTemplate] with its first `{id}` replaced by the URI-encoded
+  /// [id], as the web's chat mentions do (`encodeURIComponent`).
+  String userLinkForId(String id) =>
+      userLinkTemplate.replaceFirst('{id}', Uri.encodeComponent(id));
+
   /// Hands [href] to [navigate], or reports once in a debug build that
   /// there is nothing to hand it to.
   Future<void> navigateTo(BuildContext context, String href) async {

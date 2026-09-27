@@ -538,6 +538,201 @@ const ComponentCoverage _kunCard = ComponentCoverage(
 Widget kunCardContract(BuildContext context) =>
     const CoveragePage(coverage: _kunCard);
 
+const ComponentCoverage _kunChatReactionPicker = ComponentCoverage(
+  name: 'KunChatReactionPicker',
+  entries: <CoverageEntry>[
+    CoverageEntry(
+      section: 'props',
+      contractName: 'ariaLabel',
+      status: CoverageStatus.noVisualForm,
+      dartName: 'semanticLabel',
+      reason:
+          'An accessible name has no visual form; the basic demo uses the locale default, and what is announced is asserted by the widget tests.',
+    ),
+    CoverageEntry(
+      section: 'props',
+      contractName: 'columns',
+      status: CoverageStatus.shown,
+      dartName: 'columns',
+      shownBy: 'Basic',
+    ),
+    CoverageEntry(
+      section: 'props',
+      contractName: 'modelValue',
+      status: CoverageStatus.shown,
+      dartName: 'value',
+      shownBy: 'Basic',
+    ),
+    CoverageEntry(
+      section: 'props',
+      contractName: 'options',
+      status: CoverageStatus.shown,
+      dartName: 'options',
+      shownBy: 'Basic',
+    ),
+    CoverageEntry(
+      section: 'events',
+      contractName: 'select',
+      status: CoverageStatus.shown,
+      dartName: 'onChanged',
+      shownBy: 'Basic',
+    ),
+    CoverageEntry(
+      section: 'events',
+      contractName: 'update:modelValue',
+      status: CoverageStatus.shown,
+      dartName: 'onChanged',
+      shownBy: 'Basic',
+    ),
+  ],
+);
+
+/// The contract coverage page for KunChatReactionPicker.
+Widget kunChatReactionPickerContract(BuildContext context) =>
+    const CoveragePage(coverage: _kunChatReactionPicker);
+
+const ComponentCoverage _kunChatRequestBar = ComponentCoverage(
+  name: 'KunChatRequestBar',
+  entries: <CoverageEntry>[
+    CoverageEntry(
+      section: 'props',
+      contractName: 'actions',
+      status: CoverageStatus.shown,
+      dartName: 'actions',
+      shownBy: 'Basic',
+    ),
+    CoverageEntry(
+      section: 'props',
+      contractName: 'loading',
+      status: CoverageStatus.shown,
+      dartName: 'loading',
+      shownBy: 'Basic',
+    ),
+    CoverageEntry(
+      section: 'props',
+      contractName: 'user',
+      status: CoverageStatus.shown,
+      dartName: 'user',
+      shownBy: 'Basic',
+    ),
+    CoverageEntry(
+      section: 'events',
+      contractName: 'accept',
+      status: CoverageStatus.shown,
+      dartName: 'onAccept',
+      shownBy: 'Basic',
+    ),
+    CoverageEntry(
+      section: 'events',
+      contractName: 'block',
+      status: CoverageStatus.shown,
+      dartName: 'onBlock',
+      shownBy: 'Basic',
+    ),
+    CoverageEntry(
+      section: 'events',
+      contractName: 'delete',
+      status: CoverageStatus.shown,
+      dartName: 'onDelete',
+      shownBy: 'Basic',
+    ),
+    CoverageEntry(
+      section: 'events',
+      contractName: 'report',
+      status: CoverageStatus.shown,
+      dartName: 'onReport',
+      shownBy: 'Basic',
+    ),
+  ],
+);
+
+/// The contract coverage page for KunChatRequestBar.
+Widget kunChatRequestBarContract(BuildContext context) =>
+    const CoveragePage(coverage: _kunChatRequestBar);
+
+const ComponentCoverage _kunChatText = ComponentCoverage(
+  name: 'KunChatText',
+  entries: <CoverageEntry>[
+    CoverageEntry(
+      section: 'props',
+      contractName: 'entities',
+      status: CoverageStatus.shown,
+      dartName: 'entities',
+      shownBy: 'Basic',
+    ),
+    CoverageEntry(
+      section: 'props',
+      contractName: 'preview',
+      status: CoverageStatus.shown,
+      dartName: 'preview',
+      shownBy: 'Preview',
+    ),
+    CoverageEntry(
+      section: 'props',
+      contractName: 'text',
+      status: CoverageStatus.shown,
+      dartName: 'text',
+      shownBy: 'Basic',
+    ),
+    CoverageEntry(
+      section: 'events',
+      contractName: 'link',
+      status: CoverageStatus.shown,
+      dartName: 'onLink',
+      shownBy: 'Events',
+    ),
+    CoverageEntry(
+      section: 'events',
+      contractName: 'mention',
+      status: CoverageStatus.shown,
+      dartName: 'onMention',
+      shownBy: 'Events',
+    ),
+  ],
+);
+
+/// The contract coverage page for KunChatText.
+Widget kunChatTextContract(BuildContext context) =>
+    const CoveragePage(coverage: _kunChatText);
+
+const ComponentCoverage _kunChatTyping = ComponentCoverage(
+  name: 'KunChatTyping',
+  entries: <CoverageEntry>[
+    CoverageEntry(
+      section: 'props',
+      contractName: 'events',
+      status: CoverageStatus.shown,
+      dartName: 'events',
+      shownBy: 'Basic',
+    ),
+    CoverageEntry(
+      section: 'props',
+      contractName: 'kind',
+      status: CoverageStatus.shown,
+      dartName: 'kind',
+      shownBy: 'Basic',
+    ),
+    CoverageEntry(
+      section: 'props',
+      contractName: 'showText',
+      status: CoverageStatus.shown,
+      dartName: 'showText',
+      shownBy: 'Basic',
+    ),
+    CoverageEntry(
+      section: 'props',
+      contractName: 'users',
+      status: CoverageStatus.shown,
+      dartName: 'users',
+      shownBy: 'Basic',
+    ),
+  ],
+);
+
+/// The contract coverage page for KunChatTyping.
+Widget kunChatTypingContract(BuildContext context) =>
+    const CoveragePage(coverage: _kunChatTyping);
+
 const ComponentCoverage _kunCheckBox = ComponentCoverage(
   name: 'KunCheckBox',
   entries: <CoverageEntry>[

@@ -324,6 +324,98 @@
         "events.click": "Every card in the Interactive demo carries a live onTap, and the prop's one subtlety -- that it fires whether or not the card is clickable -- is a behaviour, not an appearance. A callback has nothing of its own to show."
       }
     },
+    "KunChatReactionPicker": {
+      "source": "demos/chat_reaction_picker.dart",
+      "demos": [
+        {
+          "slug": "basic",
+          "title": "Basic",
+          "builder": "chatReactionPickerBasic",
+          "shows": [
+            "props.options",
+            "props.columns",
+            "props.modelValue",
+            "events.select",
+            "events.update:modelValue"
+          ]
+        }
+      ],
+      "undemoable": {
+        "props.ariaLabel": "An accessible name has no visual form; the basic demo uses the locale default, and what is announced is asserted by the widget tests."
+      }
+    },
+    "KunChatRequestBar": {
+      "source": "demos/chat_request_bar.dart",
+      "demos": [
+        {
+          "slug": "basic",
+          "title": "Basic",
+          "builder": "chatRequestBarBasic",
+          "shows": [
+            "props.actions",
+            "props.loading",
+            "props.user",
+            "events.accept",
+            "events.block",
+            "events.delete",
+            "events.report"
+          ]
+        }
+      ]
+    },
+    "KunChatText": {
+      "source": "demos/chat_text.dart",
+      "demos": [
+        {
+          "slug": "basic",
+          "title": "Basic",
+          "builder": "chatTextBasic",
+          "shows": [
+            "props.text",
+            "props.entities"
+          ]
+        },
+        {
+          "slug": "spoiler",
+          "title": "Spoiler",
+          "builder": "chatTextSpoiler",
+          "shows": []
+        },
+        {
+          "slug": "preview",
+          "title": "Preview",
+          "builder": "chatTextPreview",
+          "shows": [
+            "props.preview"
+          ]
+        },
+        {
+          "slug": "events",
+          "title": "Events",
+          "builder": "chatTextEvents",
+          "shows": [
+            "events.link",
+            "events.mention"
+          ]
+        }
+      ]
+    },
+    "KunChatTyping": {
+      "source": "demos/chat_typing.dart",
+      "demos": [
+        {
+          "slug": "basic",
+          "title": "Basic",
+          "builder": "chatTypingBasic",
+          "shows": [
+            "props.events",
+            "props.kind",
+            "props.showText",
+            "props.users"
+          ]
+        }
+      ]
+    },
     "KunCheckBox": {
       "source": "demos/checkbox.dart",
       "demos": [

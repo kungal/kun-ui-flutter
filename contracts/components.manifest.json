@@ -118,6 +118,59 @@
         "header": "header"
       }
     },
+    "KunChatReactionPicker": {
+      "widget": "KunChatReactionPicker",
+      "props": {
+        "ariaLabel": "semanticLabel",
+        "columns": "columns",
+        "modelValue": "value",
+        "options": "options"
+      },
+      "events": {
+        "select": "onChanged",
+        "update:modelValue": "onChanged"
+      },
+      "slots": {}
+    },
+    "KunChatRequestBar": {
+      "widget": "KunChatRequestBar",
+      "props": {
+        "actions": "actions",
+        "loading": "loading",
+        "user": "user"
+      },
+      "events": {
+        "accept": "onAccept",
+        "block": "onBlock",
+        "delete": "onDelete",
+        "report": "onReport"
+      },
+      "slots": {}
+    },
+    "KunChatText": {
+      "widget": "KunChatText",
+      "props": {
+        "entities": "entities",
+        "preview": "preview",
+        "text": "text"
+      },
+      "events": {
+        "link": "onLink",
+        "mention": "onMention"
+      },
+      "slots": {}
+    },
+    "KunChatTyping": {
+      "widget": "KunChatTyping",
+      "props": {
+        "events": "events",
+        "kind": "kind",
+        "showText": "showText",
+        "users": "users"
+      },
+      "events": {},
+      "slots": {}
+    },
     "KunCheckBox": {
       "widget": "KunCheckBox",
       "props": {

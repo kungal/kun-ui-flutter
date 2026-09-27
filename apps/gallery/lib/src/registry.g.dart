@@ -9,6 +9,10 @@ import 'demos/avatar.dart';
 import 'demos/badge.dart';
 import 'demos/button.dart';
 import 'demos/card.dart';
+import 'demos/chat_reaction_picker.dart';
+import 'demos/chat_request_bar.dart';
+import 'demos/chat_text.dart';
+import 'demos/chat_typing.dart';
 import 'demos/checkbox.dart';
 import 'demos/checkbox_group.dart';
 import 'demos/chip.dart';
@@ -134,6 +138,50 @@ const List<GalleryComponent> galleryComponents = <GalleryComponent>[
           slug: 'interactive', title: 'Interactive', builder: cardInteractive),
       GalleryDemo(
           slug: 'contract', title: 'Contract', builder: kunCardContract),
+    ],
+  ),
+  GalleryComponent(
+    slug: 'kunchatreactionpicker',
+    name: 'KunChatReactionPicker',
+    demos: <GalleryDemo>[
+      GalleryDemo(
+          slug: 'basic', title: 'Basic', builder: chatReactionPickerBasic),
+      GalleryDemo(
+          slug: 'contract',
+          title: 'Contract',
+          builder: kunChatReactionPickerContract),
+    ],
+  ),
+  GalleryComponent(
+    slug: 'kunchatrequestbar',
+    name: 'KunChatRequestBar',
+    demos: <GalleryDemo>[
+      GalleryDemo(slug: 'basic', title: 'Basic', builder: chatRequestBarBasic),
+      GalleryDemo(
+          slug: 'contract',
+          title: 'Contract',
+          builder: kunChatRequestBarContract),
+    ],
+  ),
+  GalleryComponent(
+    slug: 'kunchattext',
+    name: 'KunChatText',
+    demos: <GalleryDemo>[
+      GalleryDemo(slug: 'basic', title: 'Basic', builder: chatTextBasic),
+      GalleryDemo(slug: 'spoiler', title: 'Spoiler', builder: chatTextSpoiler),
+      GalleryDemo(slug: 'preview', title: 'Preview', builder: chatTextPreview),
+      GalleryDemo(slug: 'events', title: 'Events', builder: chatTextEvents),
+      GalleryDemo(
+          slug: 'contract', title: 'Contract', builder: kunChatTextContract),
+    ],
+  ),
+  GalleryComponent(
+    slug: 'kunchattyping',
+    name: 'KunChatTyping',
+    demos: <GalleryDemo>[
+      GalleryDemo(slug: 'basic', title: 'Basic', builder: chatTypingBasic),
+      GalleryDemo(
+          slug: 'contract', title: 'Contract', builder: kunChatTypingContract),
     ],
   ),
   GalleryComponent(

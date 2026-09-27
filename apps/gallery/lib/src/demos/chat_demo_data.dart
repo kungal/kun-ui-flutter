@@ -1,0 +1,121 @@
+import 'package:kun_ui/kun_ui.dart';
+
+import '../avatar_pool.dart';
+
+/// Demo viewer id, matching the web `ME`.
+const String demoMe = '1001';
+
+/// Users for the chat leaf demos, including the deleted account `1005`.
+final List<KunChatUser> demoUsers = <KunChatUser>[
+  KunChatUser(id: demoMe, name: '鲲', avatar: galleryAvatarPool[0]),
+  KunChatUser(id: '1002', name: '雪之下小春', avatar: galleryAvatarPool[5]),
+  KunChatUser(id: '1003', name: 'Ayase', avatar: galleryAvatarPool[9]),
+  KunChatUser(id: '1004', name: '樱小路露娜', avatar: galleryAvatarPool[14]),
+  const KunChatUser(id: '1005', name: '', avatar: '', deleted: true),
+];
+
+const List<(String, String, String)> _reactions = <(String, String, String)>[
+  ('heart', '❤️', '爱心'),
+  ('fire', '🔥', '火'),
+  ('party', '🎉', '庆祝'),
+  ('love', '🥰', '喜欢'),
+  ('clap', '👏', '鼓掌'),
+  ('thinking', '🤔', '思考'),
+  ('mindblown', '🤯', '震惊'),
+  ('scream', '😱', '尖叫'),
+  ('cry', '😢', '哭'),
+  ('pray', '🙏', '感谢'),
+  ('eyes', '👀', '关注'),
+  ('hundred', '💯', '满分'),
+  ('partyface', '🥳', '派对'),
+  ('starstruck', '🤩', '星星眼'),
+  ('angry', '😠', '生气'),
+  ('anxious', '😰', '紧张'),
+  ('banana', '🍌', '香蕉'),
+  ('eyebrow', '🤨', '挑眉'),
+  ('voltage', '⚡', '闪电'),
+  ('hotdog', '🌭', '热狗'),
+  ('hot', '🥵', '热'),
+  ('sob', '😭', '大哭'),
+  ('moai', '🗿', '摩艾'),
+  ('newmoon', '🌚', '黑月亮'),
+  ('police', '🚓', '警车'),
+  ('pouting', '😡', '怒'),
+  ('salute', '🫡', '敬礼'),
+  ('shrimp', '🦐', '虾'),
+  ('halo', '😇', '天使'),
+  ('sunglasses', '😎', '酷'),
+  ('whale', '🐳', '鲸鱼'),
+];
+
+/// Forum reaction vocabulary with kungal.com art.
+final List<KunChatReactionOption> demoReactions = <KunChatReactionOption>[
+  for (final (String key, String emoji, String label) in _reactions)
+    KunChatReactionOption(
+      key: key,
+      emoji: emoji,
+      label: label,
+      imageUrl: 'https://www.kungal.com/emoji/$key.webp',
+    ),
+];
+
+/// Parse composer syntax and mark bare `http(s)` URLs, as the docs demos do.
+KunChatFormattedText demoChatMarkup(String source) {
+  final KunChatFormattedText parsed = parseKunChatMarkdown(source);
+  final List<KunChatEntity> entities =
+      List<KunChatEntity>.from(parsed.entities);
+  for (final RegExpMatch match
+      in RegExp(r'https?:\/\/[^\s,，。]+').allMatches(parsed.text)) {
+    entities.add(
+      KunChatEntity(
+        type: KunChatEntityType.url,
+        offset: match.start,
+        length: match.end - match.start,
+      ),
+    );
+  }
+  return KunChatFormattedText(text: parsed.text, entities: entities);
+}
+
+int _seq = 0;
+
+/// A sample message written in composer syntax.
+KunChatMessage demoMessage(
+  String sender,
+  DateTime when,
+  String source, {
+  List<KunChatReaction> reactions = const <KunChatReaction>[],
+}) {
+  _seq += 1;
+  final KunChatFormattedText parsed = demoChatMarkup(source);
+  return KunChatMessage(
+    id: '${90000 + _seq}',
+    conversationId: '77',
+    seq: _seq,
+    senderId: sender,
+    createdAt: when,
+    text: parsed.text,
+    entities: parsed.entities,
+    reactions: reactions,
+    clientMessageId: sender == demoMe ? 'demo-$_seq' : null,
+  );
+}
+
+/// Sample messages the ChatText demos share; later chat dispatches extend this.
+final List<KunChatMessage> demoSampleMessages = <KunChatMessage>[
+  demoMessage(
+    '1002',
+    DateTime.utc(2025, 12, 29, 13, 3),
+    '在吗在吗',
+  ),
+  demoMessage(
+    demoMe,
+    DateTime.utc(2025, 12, 29, 13, 8),
+    '```shell\nLANG=ja_JP.UTF-8 wine "Game.exe"\n```',
+  ),
+  demoMessage(
+    '1002',
+    DateTime.utc(2025, 12, 30, 2, 32),
+    '通关了!最后的反转是 ||列车长就是白本人||',
+  ),
+];

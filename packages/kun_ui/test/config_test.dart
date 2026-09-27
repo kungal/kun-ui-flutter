@@ -58,6 +58,18 @@ void main() {
     );
   });
 
+  test('userLinkForId URI-encodes the string id', () {
+    expect(KunUIConfig.fallback.userLinkForId('42'), '/user/42/info');
+    expect(
+      KunUIConfig.fallback.userLinkForId('a/b c'),
+      '/user/${Uri.encodeComponent('a/b c')}/info',
+    );
+    expect(
+      const KunUIConfig(userLinkTemplate: '/u/{id}/{id}').userLinkForId('7'),
+      '/u/7/{id}',
+    );
+  });
+
   test('the fallback pick matches the web hash', () {
     // Indices computed by ui-core's pickAvatarFallback over a 7-entry pool.
     const pool = ['p0', 'p1', 'p2', 'p3', 'p4', 'p5', 'p6'];
