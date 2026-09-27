@@ -1,5 +1,52 @@
 # Changelog
 
+## 0.15.0
+
+Built on kun-ui 2.51.0. The first part of the chat port, for NextMoe
+`/v2/chat`. kun_ui's own API has no breaking change, but see the last
+bullet about `kun_ui_messages`.
+
+- **The chat core**, ported line for line from the web's `ui-core/src/chat`.
+  It has no widgets yet. The chat components follow in 0.16.0 and 0.17.0.
+  - **The wire types:**
+    - `KunChatMessage` and `KunChatEntity`;
+    - `KunChatMedia`, with `KunChatPhoto` and `KunChatUnknownMedia`;
+    - `KunChatServiceAction`, with its eight actions and
+      `KunChatUnknownAction`;
+    - `KunChatReplyTo`, `KunChatReplyQuote`, `KunChatReaction`,
+      `KunChatReactionOption`, `KunChatUser`, `KunChatContext`,
+      `KunChatFormattedText` and `KunChatTypingEvent`.
+
+    Every type has a complete `const` constructor, so an app can build it
+    from its own API client, and value equality. `fromJson` and `toJson` use
+    the wire's snake_case keys, and timestamps are `DateTime`s.
+    `KunChatMessage.copyWith` clears a nullable field when you pass `null`.
+  - **The composer shortcuts:** `parseKunChatMarkdown` and
+    `formatKunChatMarkdown` convert `**bold**`, `__italic__`,
+    `++underline++`, `~~strikethrough~~`, `||spoiler||`, `` `code` ``,
+    fenced code blocks, links, mentions and `>` quotes to and from
+    entities.
+  - **Entities:** `normalizeKunChatEntities`, `buildKunChatEntityTree`,
+    `kunChatTreeText` and `sliceKunChatEntities`. Offsets are UTF-16 code
+    units, which is what Dart strings index.
+  - **Grouping:** `groupKunChatMessages` builds day sections, sender groups,
+    the unread divider and album rows. With `kunChatMessageKey` and
+    `kunChatDayKey`, it works in the device's time zone.
+  - **Albums:** `layoutKunChatAlbum` lays out Telegram's album mosaic.
+  - **Limits:** `kunChatTextLimit`, `kunChatAlbumLimit`,
+    `kunChatTypingInterval` and `kunChatTypingTimeout`.
+  - **Checked against the web.** The tests include a fixture of 2,800 cases
+    produced by running the web's own TypeScript, and the Dart port has to
+    reproduce every one exactly. CI regenerates the fixture from the pinned
+    kun-ui release, so an upstream change to the chat logic cannot go
+    unnoticed.
+- **The generated packages now require 2.51.0.** This covers
+  `kun_ui_tokens`, `kun_ui_icons` and `kun_ui_messages`. Upstream's
+  `KunMessages` gained required fields in these releases: `steps` (2.49.0)
+  and eight `chat*` string groups (2.51.0). An app that builds its own
+  `KunMessages` has to supply them. An app that uses the bundled catalogs
+  is unaffected.
+
 ## 0.14.1
 
 A clipping fix from the kungal app. There are no API changes.
