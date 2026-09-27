@@ -838,6 +838,46 @@ by instant, because a local midnight does not exist on some DST
 transitions, and a month step clamps the day the way date-fns `addMonths`
 does. Dart's `DateTime(y, m + 1, 31)` overflows instead.
 
+### The chat core is ported line for line and checked against upstream (decided 2026-09-27)
+
+The web chat (KunUI 2.51.0) puts its logic in `ui-core/src/chat`: the
+`/v2/chat` wire types, entity normalization and the render tree, the
+composer's markdown shortcuts, message grouping and the album mosaic. Its
+`entities.ts` says it is "the specification the Flutter port copies line for
+line". `lib/src/chat/` is that copy: one Dart file per TS module, in the same
+order, with the same helper names, so an upstream diff maps onto it hunk by
+hunk. Offsets need no translation, because Dart strings and JavaScript
+strings both index UTF-16 code units.
+
+The app and the website must turn the same composer input into the same
+entities, and render the same entities the same way. Ported unit tests alone
+cannot promise that, so `scripts/chat-fixtures.mjs` runs the upstream
+TypeScript under Node 24 and writes `test/chat/chat_core.fixture.json`. It
+holds 2,800 seeded random cases for parse, format, normalize, tree, slice
+and album, and `fixture_test.dart` requires the Dart port to reproduce every
+one exactly. `scripts/parity.sh` regenerates the fixture from kun-ui at the
+pinned tag and fails if it differs from the checked-in file. Bumping the
+contract therefore also surfaces any upstream change to the chat logic, and
+fixing it means porting the change and regenerating the fixture.
+
+The Dart surface differs from the TS in three deliberate ways:
+
+- Fields are camelCase, and `fromJson`/`toJson` keep the snake_case keys.
+  Every type also has a complete `const` constructor, including
+  `KunChatUnknownMedia` and `KunChatUnknownAction` for wire variants that
+  this version does not know. The kungal app builds these types from its
+  own generated API client and never passes raw JSON.
+- There is no `timeZone` option. The contract omits it for Flutter, and day
+  keys use `DateTime.toLocal()`.
+- Three `Duration`s are written as literals, and they are not motion:
+  - `kunChatTypingInterval` and `kunChatTypingTimeout` are protocol timings
+    shared with the server (`constants.ts`);
+  - `groupKunChatMessages`' 10-minute `groupWindow` default is telegram-tt's
+    `GROUP_INTERVAL_SECONDS`.
+
+  Iron rule 1 covers design values, and these belong to the module they are
+  ported with.
+
 ### Reduced motion collapses every transition (decided 2026-09-17)
 
 kun-ui's base stylesheet sets every transition and animation to 0.01ms

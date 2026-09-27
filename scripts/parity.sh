@@ -24,3 +24,4 @@ else
 fi
 
 node "$upstream/scripts/flutter-parity.mjs" "$root/contracts/components.manifest.json"
+node "$root/scripts/chat-fixtures.mjs" "$upstream" --check "$root/packages/kun_ui/test/chat/chat_core.fixture.json"

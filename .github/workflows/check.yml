@@ -78,6 +78,10 @@ jobs:
     steps:
       - uses: actions/checkout@v5
 
+      - uses: actions/setup-node@v5
+        with:
+          node-version: 24
+
       # Diffs contracts/components.manifest.json against kungal/kun-ui checked
       # out at the release tag matching the kun_ui_tokens version in
       # pubspec.lock — the lockstep version IS the contract version. Drift
