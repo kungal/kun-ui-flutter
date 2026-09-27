@@ -29,6 +29,7 @@ export 'src/components/card.dart';
 export 'src/components/chat_bubble.dart';
 export 'src/components/chat_composer.dart';
 export 'src/components/chat_conversation_item.dart';
+export 'src/components/chat_message_list.dart';
 export 'src/components/chat_message_menu.dart';
 export 'src/components/chat_reaction_picker.dart';
 export 'src/components/chat_request_bar.dart';

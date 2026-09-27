@@ -1043,6 +1043,235 @@ const ComponentCoverage _kunChatConversationItem = ComponentCoverage(
 Widget kunChatConversationItemContract(BuildContext context) =>
     const CoveragePage(coverage: _kunChatConversationItem);
 
+const ComponentCoverage _kunChatMessageList = ComponentCoverage(
+  name: 'KunChatMessageList',
+  entries: <CoverageEntry>[
+    CoverageEntry(
+      section: 'props',
+      contractName: 'actions',
+      status: CoverageStatus.shown,
+      dartName: 'actions',
+      shownBy: 'Direct',
+    ),
+    CoverageEntry(
+      section: 'props',
+      contractName: 'ariaLabel',
+      status: CoverageStatus.noVisualForm,
+      dartName: 'semanticLabel',
+      reason:
+          'An accessible name has no visual form; every demo uses the locale default, and what is announced is asserted by the widget tests.',
+    ),
+    CoverageEntry(
+      section: 'props',
+      contractName: 'currentUserId',
+      status: CoverageStatus.shown,
+      dartName: 'currentUserId',
+      shownBy: 'Direct',
+    ),
+    CoverageEntry(
+      section: 'props',
+      contractName: 'groupWindow',
+      status: CoverageStatus.shown,
+      dartName: 'groupWindow',
+      shownBy: 'Group',
+    ),
+    CoverageEntry(
+      section: 'props',
+      contractName: 'hasNewer',
+      status: CoverageStatus.shown,
+      dartName: 'hasNewer',
+      shownBy: 'Paging',
+    ),
+    CoverageEntry(
+      section: 'props',
+      contractName: 'hasOlder',
+      status: CoverageStatus.shown,
+      dartName: 'hasOlder',
+      shownBy: 'Paging',
+    ),
+    CoverageEntry(
+      section: 'props',
+      contractName: 'kind',
+      status: CoverageStatus.shown,
+      dartName: 'kind',
+      shownBy: 'Group',
+    ),
+    CoverageEntry(
+      section: 'props',
+      contractName: 'lastReadSeq',
+      status: CoverageStatus.shown,
+      dartName: 'lastReadSeq',
+      shownBy: 'Direct',
+    ),
+    CoverageEntry(
+      section: 'props',
+      contractName: 'loadingNewer',
+      status: CoverageStatus.shown,
+      dartName: 'loadingNewer',
+      shownBy: 'Paging',
+    ),
+    CoverageEntry(
+      section: 'props',
+      contractName: 'loadingOlder',
+      status: CoverageStatus.shown,
+      dartName: 'loadingOlder',
+      shownBy: 'Paging',
+    ),
+    CoverageEntry(
+      section: 'props',
+      contractName: 'messages',
+      status: CoverageStatus.shown,
+      dartName: 'messages',
+      shownBy: 'Direct',
+    ),
+    CoverageEntry(
+      section: 'props',
+      contractName: 'peerReadSeq',
+      status: CoverageStatus.shown,
+      dartName: 'peerReadSeq',
+      shownBy: 'Direct',
+    ),
+    CoverageEntry(
+      section: 'props',
+      contractName: 'reactionOptions',
+      status: CoverageStatus.shown,
+      dartName: 'reactionOptions',
+      shownBy: 'Direct',
+    ),
+    CoverageEntry(
+      section: 'props',
+      contractName: 'resolveMediaUrl',
+      status: CoverageStatus.shown,
+      dartName: 'resolveMediaUrl',
+      shownBy: 'Direct',
+    ),
+    CoverageEntry(
+      section: 'props',
+      contractName: 'swipeToReply',
+      status: CoverageStatus.noVisualForm,
+      dartName: 'swipeToReply',
+      reason:
+          'A touch swipe is asserted by the widget tests; a desktop gallery cannot show the drag.',
+    ),
+    CoverageEntry(
+      section: 'props',
+      contractName: 'unreadCount',
+      status: CoverageStatus.shown,
+      dartName: 'unreadCount',
+      shownBy: 'Direct',
+    ),
+    CoverageEntry(
+      section: 'props',
+      contractName: 'users',
+      status: CoverageStatus.shown,
+      dartName: 'users',
+      shownBy: 'Direct',
+    ),
+    CoverageEntry(
+      section: 'events',
+      contractName: 'action',
+      status: CoverageStatus.shown,
+      dartName: 'onAction',
+      shownBy: 'Direct',
+    ),
+    CoverageEntry(
+      section: 'events',
+      contractName: 'jump',
+      status: CoverageStatus.shown,
+      dartName: 'onJump',
+      shownBy: 'Group',
+    ),
+    CoverageEntry(
+      section: 'events',
+      contractName: 'latest',
+      status: CoverageStatus.shown,
+      dartName: 'onLatest',
+      shownBy: 'Paging',
+    ),
+    CoverageEntry(
+      section: 'events',
+      contractName: 'link',
+      status: CoverageStatus.shown,
+      dartName: 'onLink',
+      shownBy: 'Direct',
+    ),
+    CoverageEntry(
+      section: 'events',
+      contractName: 'load-newer',
+      status: CoverageStatus.shown,
+      dartName: 'onLoadNewer',
+      shownBy: 'Paging',
+    ),
+    CoverageEntry(
+      section: 'events',
+      contractName: 'load-older',
+      status: CoverageStatus.shown,
+      dartName: 'onLoadOlder',
+      shownBy: 'Paging',
+    ),
+    CoverageEntry(
+      section: 'events',
+      contractName: 'mention',
+      status: CoverageStatus.shown,
+      dartName: 'onMention',
+      shownBy: 'Group',
+    ),
+    CoverageEntry(
+      section: 'events',
+      contractName: 'react',
+      status: CoverageStatus.shown,
+      dartName: 'onReact',
+      shownBy: 'Direct',
+    ),
+    CoverageEntry(
+      section: 'events',
+      contractName: 'read',
+      status: CoverageStatus.shown,
+      dartName: 'onRead',
+      shownBy: 'Direct',
+    ),
+    CoverageEntry(
+      section: 'events',
+      contractName: 'retry',
+      status: CoverageStatus.shown,
+      dartName: 'onRetry',
+      shownBy: 'Group',
+    ),
+    CoverageEntry(
+      section: 'events',
+      contractName: 'user-click',
+      status: CoverageStatus.shown,
+      dartName: 'onUserTap',
+      shownBy: 'Group',
+    ),
+    CoverageEntry(
+      section: 'slots',
+      contractName: 'empty',
+      status: CoverageStatus.shown,
+      dartName: 'empty',
+      shownBy: 'Thousands',
+    ),
+    CoverageEntry(
+      section: 'slots',
+      contractName: 'footer',
+      status: CoverageStatus.shown,
+      dartName: 'footer',
+      shownBy: 'Group',
+    ),
+    CoverageEntry(
+      section: 'slots',
+      contractName: 'start',
+      status: CoverageStatus.shown,
+      dartName: 'start',
+      shownBy: 'Paging',
+    ),
+  ],
+);
+
+/// The contract coverage page for KunChatMessageList.
+Widget kunChatMessageListContract(BuildContext context) =>
+    const CoveragePage(coverage: _kunChatMessageList);
+
 const ComponentCoverage _kunChatMessageMenu = ComponentCoverage(
   name: 'KunChatMessageMenu',
   entries: <CoverageEntry>[

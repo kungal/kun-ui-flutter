@@ -210,6 +210,46 @@
       },
       "slots": {}
     },
+    "KunChatMessageList": {
+      "widget": "KunChatMessageList",
+      "props": {
+        "actions": "actions",
+        "ariaLabel": "semanticLabel",
+        "currentUserId": "currentUserId",
+        "groupWindow": "groupWindow",
+        "hasNewer": "hasNewer",
+        "hasOlder": "hasOlder",
+        "kind": "kind",
+        "lastReadSeq": "lastReadSeq",
+        "loadingNewer": "loadingNewer",
+        "loadingOlder": "loadingOlder",
+        "messages": "messages",
+        "peerReadSeq": "peerReadSeq",
+        "reactionOptions": "reactionOptions",
+        "resolveMediaUrl": "resolveMediaUrl",
+        "swipeToReply": "swipeToReply",
+        "unreadCount": "unreadCount",
+        "users": "users"
+      },
+      "events": {
+        "action": "onAction",
+        "jump": "onJump",
+        "latest": "onLatest",
+        "link": "onLink",
+        "load-newer": "onLoadNewer",
+        "load-older": "onLoadOlder",
+        "mention": "onMention",
+        "react": "onReact",
+        "read": "onRead",
+        "retry": "onRetry",
+        "user-click": "onUserTap"
+      },
+      "slots": {
+        "empty": "empty",
+        "footer": "footer",
+        "start": "start"
+      }
+    },
     "KunChatMessageMenu": {
       "widget": "KunChatMessageMenu",
       "props": {

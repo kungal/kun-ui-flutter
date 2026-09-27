@@ -12,6 +12,7 @@ import 'demos/card.dart';
 import 'demos/chat_bubble.dart';
 import 'demos/chat_composer.dart';
 import 'demos/chat_conversation_item.dart';
+import 'demos/chat_message_list.dart';
 import 'demos/chat_message_menu.dart';
 import 'demos/chat_reaction_picker.dart';
 import 'demos/chat_request_bar.dart';
@@ -197,6 +198,25 @@ const List<GalleryComponent> galleryComponents = <GalleryComponent>[
           slug: 'contract',
           title: 'Contract',
           builder: kunChatConversationItemContract),
+    ],
+  ),
+  GalleryComponent(
+    slug: 'kunchatmessagelist',
+    name: 'KunChatMessageList',
+    demos: <GalleryDemo>[
+      GalleryDemo(
+          slug: 'direct', title: 'Direct', builder: chatMessageListDirect),
+      GalleryDemo(slug: 'group', title: 'Group', builder: chatMessageListGroup),
+      GalleryDemo(
+          slug: 'paging', title: 'Paging', builder: chatMessageListPaging),
+      GalleryDemo(
+          slug: 'thousands',
+          title: 'Thousands',
+          builder: chatMessageListThousands),
+      GalleryDemo(
+          slug: 'contract',
+          title: 'Contract',
+          builder: kunChatMessageListContract),
     ],
   ),
   GalleryComponent(
