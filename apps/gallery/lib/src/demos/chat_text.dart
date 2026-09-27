@@ -3,11 +3,7 @@ import 'package:kun_ui/kun_ui.dart';
 
 import 'chat_demo_data.dart';
 
-Widget _frame(
-  BuildContext context, {
-  required Widget child,
-  double? width,
-}) {
+Widget _frame(BuildContext context, {required Widget child, double? width}) {
   final KunColorScheme scheme = KunTheme.of(context).colors;
   return Padding(
     padding: const EdgeInsets.all(KunSpacing.unit * 6),
@@ -140,7 +136,7 @@ class _EventsDemoState extends State<_EventsDemo> {
               event.preventDefault();
               setState(() => _log = 'link → ${event.url}');
             },
-            onMention: (KunChatMentionEvent event) {
+            onMention: (KunChatUserEvent event) {
               event.preventDefault();
               setState(() => _log = 'mention → 用户 ${event.userId}');
             },

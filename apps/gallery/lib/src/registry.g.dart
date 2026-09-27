@@ -9,6 +9,7 @@ import 'demos/avatar.dart';
 import 'demos/badge.dart';
 import 'demos/button.dart';
 import 'demos/card.dart';
+import 'demos/chat_bubble.dart';
 import 'demos/chat_composer.dart';
 import 'demos/chat_conversation_item.dart';
 import 'demos/chat_reaction_picker.dart';
@@ -141,6 +142,22 @@ const List<GalleryComponent> galleryComponents = <GalleryComponent>[
           slug: 'interactive', title: 'Interactive', builder: cardInteractive),
       GalleryDemo(
           slug: 'contract', title: 'Contract', builder: kunCardContract),
+    ],
+  ),
+  GalleryComponent(
+    slug: 'kunchatbubble',
+    name: 'KunChatBubble',
+    demos: <GalleryDemo>[
+      GalleryDemo(slug: 'basic', title: 'Basic', builder: chatBubbleBasic),
+      GalleryDemo(slug: 'reply', title: 'Reply', builder: chatBubbleReply),
+      GalleryDemo(slug: 'media', title: 'Media', builder: chatBubbleMedia),
+      GalleryDemo(slug: 'status', title: 'Status', builder: chatBubbleStatus),
+      GalleryDemo(
+          slug: 'reactions', title: 'Reactions', builder: chatBubbleReactions),
+      GalleryDemo(
+          slug: 'service', title: 'Service', builder: chatBubbleService),
+      GalleryDemo(
+          slug: 'contract', title: 'Contract', builder: kunChatBubbleContract),
     ],
   ),
   GalleryComponent(

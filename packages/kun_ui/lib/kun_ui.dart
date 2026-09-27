@@ -26,6 +26,7 @@ export 'src/components/avatar.dart';
 export 'src/components/badge.dart';
 export 'src/components/button.dart';
 export 'src/components/card.dart';
+export 'src/components/chat_bubble.dart';
 export 'src/components/chat_composer.dart';
 export 'src/components/chat_conversation_item.dart';
 export 'src/components/chat_reaction_picker.dart';

@@ -1,0 +1,1040 @@
+import 'dart:typed_data';
+
+import 'package:flutter/gestures.dart';
+import 'package:flutter/rendering.dart';
+import 'package:flutter/widgets.dart';
+import 'package:flutter_test/flutter_test.dart';
+import 'package:kun_ui/kun_ui.dart';
+import 'package:kun_ui/src/chat/support.dart';
+
+Uint8List _u32(int value) {
+  final ByteData data = ByteData(4)..setUint32(0, value);
+  return data.buffer.asUint8List();
+}
+
+int _crc32(List<int> data) {
+  int crc = 0xffffffff;
+  for (final int byte in data) {
+    crc ^= byte;
+    for (int i = 0; i < 8; i++) {
+      final bool bit = crc & 1 == 1;
+      crc >>= 1;
+      if (bit) {
+        crc ^= 0xEDB88320;
+      }
+    }
+  }
+  return crc ^ 0xffffffff;
+}
+
+int _adler32(List<int> data) {
+  int a = 1;
+  int b = 0;
+  for (final int byte in data) {
+    a = (a + byte) % 65521;
+    b = (b + a) % 65521;
+  }
+  return (b << 16) | a;
+}
+
+Uint8List _chunk(List<int> type, List<int> payload) {
+  final BytesBuilder body = BytesBuilder()
+    ..add(type)
+    ..add(payload);
+  final Uint8List bytes = body.toBytes();
+  return Uint8List.fromList(<int>[
+    ..._u32(payload.length),
+    ...bytes,
+    ..._u32(_crc32(bytes)),
+  ]);
+}
+
+Uint8List _solidPng({int width = 16, int height = 16}) {
+  final BytesBuilder raw = BytesBuilder(copy: false);
+  for (int y = 0; y < height; y++) {
+    raw.addByte(0);
+    for (int x = 0; x < width; x++) {
+      raw
+        ..addByte(0x7C)
+        ..addByte(0x3A)
+        ..addByte(0xED);
+    }
+  }
+  final Uint8List pixels = raw.toBytes();
+  final BytesBuilder zlib = BytesBuilder()
+    ..addByte(0x78)
+    ..addByte(0x01);
+  zlib
+    ..addByte(1)
+    ..addByte(pixels.length & 0xff)
+    ..addByte((pixels.length >> 8) & 0xff)
+    ..addByte((~pixels.length) & 0xff)
+    ..addByte(((~pixels.length) >> 8) & 0xff)
+    ..add(pixels)
+    ..add(_u32(_adler32(pixels)));
+  final ByteData ihdr = ByteData(13)
+    ..setUint32(0, width)
+    ..setUint32(4, height)
+    ..setUint8(8, 8)
+    ..setUint8(9, 2);
+  return Uint8List.fromList(<int>[
+    0x89,
+    0x50,
+    0x4E,
+    0x47,
+    0x0D,
+    0x0A,
+    0x1A,
+    0x0A,
+    ..._chunk(<int>[0x49, 0x48, 0x44, 0x52], ihdr.buffer.asUint8List()),
+    ..._chunk(<int>[0x49, 0x44, 0x41, 0x54], zlib.toBytes()),
+    ..._chunk(<int>[0x49, 0x45, 0x4E, 0x44], const <int>[]),
+  ]);
+}
+
+final MemoryImage _memory = MemoryImage(_solidPng());
+
+ImageProvider _resolveImage(String url) => _memory;
+
+final DateTime _when = DateTime(2026, 9, 27, 14, 5);
+
+const List<KunChatUser> _users = <KunChatUser>[
+  KunChatUser(id: '1001', name: 'Kun', avatar: ''),
+  KunChatUser(id: '1002', name: 'Haru', avatar: ''),
+  KunChatUser(id: '1005', name: '', avatar: '', deleted: true),
+];
+
+KunChatMessage _msg({
+  String id = '1',
+  int seq = 1,
+  String senderId = '1002',
+  String text = 'hello',
+  List<KunChatEntity> entities = const <KunChatEntity>[],
+  KunChatMedia? media,
+  String? mediaGroupId,
+  KunChatReplyTo? replyTo,
+  KunChatReplyQuote? replyQuote,
+  KunChatContext? context,
+  List<KunChatReaction> reactions = const <KunChatReaction>[],
+  DateTime? editedAt,
+  KunChatMessageKind kind = KunChatMessageKind.message,
+  KunChatServiceAction? serviceAction,
+}) {
+  return KunChatMessage(
+    id: id,
+    conversationId: '77',
+    seq: seq,
+    senderId: senderId,
+    createdAt: _when,
+    kind: kind,
+    text: text,
+    entities: entities,
+    media: media,
+    mediaGroupId: mediaGroupId,
+    replyTo: replyTo,
+    replyQuote: replyQuote,
+    context: context,
+    reactions: reactions,
+    editedAt: editedAt,
+    serviceAction: serviceAction,
+  );
+}
+
+Widget wrap(
+  Widget child, {
+  KunUIConfig? config,
+  KunMessages messages = KunMessages.en,
+  Size size = const Size(800, 800),
+  double width = 400,
+}) {
+  return MediaQuery(
+    data: MediaQueryData(size: size),
+    child: KunTheme(
+      data: KunThemeData.light(),
+      child: KunMessagesScope(
+        messages: messages,
+        child: KunUIConfigScope(
+          config: config ??
+              KunUIConfig(imageProvider: _resolveImage, navigate: (_, __) {}),
+          child: WidgetsApp(
+            color: KunColors.black,
+            debugShowCheckedModeBanner: false,
+            home: Center(
+              child: SizedBox(width: width, child: child),
+            ),
+            pageRouteBuilder:
+                <T>(RouteSettings settings, WidgetBuilder builder) {
+              return PageRouteBuilder<T>(
+                settings: settings,
+                pageBuilder: (
+                  BuildContext context,
+                  Animation<double> animation,
+                  Animation<double> secondaryAnimation,
+                ) {
+                  return builder(context);
+                },
+              );
+            },
+          ),
+        ),
+      ),
+    ),
+  );
+}
+
+BorderRadius surfaceRadius(WidgetTester tester) {
+  final DecoratedBox box = tester.widget(find.byKey(KunChatBubble.surfaceKey));
+  return (box.decoration as BoxDecoration).borderRadius! as BorderRadius;
+}
+
+void main() {
+  testWidgets('link and user events navigate unless prevented', (
+    WidgetTester tester,
+  ) async {
+    final List<String> hrefs = <String>[];
+    const String text = 'see x and y';
+    const List<KunChatEntity> entities = <KunChatEntity>[
+      KunChatEntity(
+        type: KunChatEntityType.textLink,
+        offset: 4,
+        length: 1,
+        url: 'https://www.kungal.com/topic/1',
+      ),
+      KunChatEntity(
+        type: KunChatEntityType.mention,
+        offset: 10,
+        length: 1,
+        userId: '1001',
+      ),
+    ];
+    await tester.pumpWidget(
+      wrap(
+        KunChatBubble(
+          message: _msg(text: text, entities: entities),
+          users: _users,
+        ),
+        config: KunUIConfig(
+          imageProvider: _resolveImage,
+          navigate: (_, String href) => hrefs.add(href),
+        ),
+      ),
+    );
+    void collect(InlineSpan span, List<TapGestureRecognizer> found) {
+      if (span is TextSpan) {
+        if (span.recognizer is TapGestureRecognizer) {
+          found.add(span.recognizer! as TapGestureRecognizer);
+        }
+        final List<InlineSpan>? children = span.children;
+        if (children != null) {
+          for (final InlineSpan child in children) {
+            collect(child, found);
+          }
+        }
+      }
+    }
+
+    final List<TapGestureRecognizer> found = <TapGestureRecognizer>[];
+    for (final Element element in tester.elementList(find.byType(RichText))) {
+      collect((element.widget as RichText).text, found);
+    }
+    expect(found, hasLength(2));
+    found[0].onTap?.call();
+    found[1].onTap?.call();
+    expect(hrefs, <String>[
+      'https://www.kungal.com/topic/1',
+      KunUIConfig.fallback.userLinkForId('1001'),
+    ]);
+
+    hrefs.clear();
+    await tester.pumpWidget(
+      wrap(
+        KunChatBubble(
+          message: _msg(text: text, entities: entities),
+          users: _users,
+          onLink: (KunChatLinkEvent event) => event.preventDefault(),
+          onMention: (KunChatUserEvent event) => event.preventDefault(),
+        ),
+        config: KunUIConfig(
+          imageProvider: _resolveImage,
+          navigate: (_, String href) => hrefs.add(href),
+        ),
+      ),
+    );
+    found.clear();
+    for (final Element element in tester.elementList(find.byType(RichText))) {
+      collect((element.widget as RichText).text, found);
+    }
+    found[0].onTap?.call();
+    found[1].onTap?.call();
+    expect(hrefs, isEmpty);
+  });
+
+  testWidgets('sender name navigates unless prevented; deleted is plain', (
+    WidgetTester tester,
+  ) async {
+    final List<String> hrefs = <String>[];
+    await tester.pumpWidget(
+      wrap(
+        KunChatBubble(message: _msg(), users: _users, showSender: true),
+        config: KunUIConfig(
+          imageProvider: _resolveImage,
+          navigate: (_, String href) => hrefs.add(href),
+        ),
+      ),
+    );
+    expect(find.text('Haru'), findsOneWidget);
+    await tester.tap(find.byKey(KunChatBubble.senderKey));
+    await tester.pump();
+    expect(hrefs, <String>[KunUIConfig.fallback.userLinkForId('1002')]);
+
+    hrefs.clear();
+    String? tapped;
+    await tester.pumpWidget(
+      wrap(
+        KunChatBubble(
+          message: _msg(),
+          users: _users,
+          showSender: true,
+          onUserTap: (KunChatUserEvent event) {
+            tapped = event.userId;
+            event.preventDefault();
+          },
+        ),
+        config: KunUIConfig(
+          imageProvider: _resolveImage,
+          navigate: (_, String href) => hrefs.add(href),
+        ),
+      ),
+    );
+    await tester.tap(find.byKey(KunChatBubble.senderKey));
+    await tester.pump();
+    expect(tapped, '1002');
+    expect(hrefs, isEmpty);
+
+    await tester.pumpWidget(
+      wrap(
+        KunChatBubble(
+          message: _msg(senderId: '1005'),
+          users: _users,
+          showSender: true,
+        ),
+        config: KunUIConfig(
+          imageProvider: _resolveImage,
+          navigate: (_, String href) => hrefs.add(href),
+        ),
+      ),
+    );
+    expect(find.text(KunMessages.en.chat.deletedUser), findsOneWidget);
+    await tester.tap(find.byKey(KunChatBubble.senderKey));
+    await tester.pump();
+    expect(hrefs, isEmpty);
+  });
+
+  testWidgets('reply states: text, quote, deleted, media', (
+    WidgetTester tester,
+  ) async {
+    final List<int> seqs = <int>[];
+    final KunChatReplyTo textReply = KunChatReplyTo(
+      seq: 3,
+      senderId: '1002',
+      text: 'original line',
+      deleted: false,
+    );
+    await tester.pumpWidget(
+      wrap(
+        KunChatBubble(
+          message: _msg(text: 'answer', replyTo: textReply),
+          users: _users,
+          onReplyTap: seqs.add,
+        ),
+      ),
+    );
+    expect(find.text('original line', findRichText: true), findsOneWidget);
+    await tester.tap(find.byKey(KunChatBubble.replyKey));
+    await tester.pump();
+    expect(seqs, <int>[3]);
+
+    await tester.pumpWidget(
+      wrap(
+        KunChatBubble(
+          message: _msg(
+            text: 'quoted',
+            replyTo: textReply,
+            replyQuote: const KunChatReplyQuote(text: 'slice', offset: 0),
+          ),
+          users: _users,
+        ),
+      ),
+    );
+    expect(find.byIcon(KunIcons.quote), findsOneWidget);
+    expect(find.text('slice', findRichText: true), findsOneWidget);
+
+    await tester.pumpWidget(
+      wrap(
+        KunChatBubble(
+          message: _msg(
+            text: 'gone',
+            replyTo: const KunChatReplyTo(
+              seq: 4,
+              senderId: '1002',
+              text: '',
+              deleted: true,
+            ),
+          ),
+          users: _users,
+        ),
+      ),
+    );
+    expect(find.text(KunMessages.en.chat.deletedMessage), findsOneWidget);
+
+    await tester.pumpWidget(
+      wrap(
+        KunChatBubble(
+          message: _msg(
+            text: 'pic',
+            replyTo: const KunChatReplyTo(
+              seq: 5,
+              senderId: '1002',
+              text: '',
+              mediaType: 'photo',
+              deleted: false,
+            ),
+          ),
+          users: _users,
+        ),
+      ),
+    );
+    expect(find.byIcon(KunIcons.image), findsOneWidget);
+    expect(find.text(KunMessages.en.chat.photo), findsOneWidget);
+  });
+
+  testWidgets('single-photo clamp sizes', (WidgetTester tester) async {
+    const KunChatPhoto wide = KunChatPhoto(
+      imageHash: 'wide',
+      width: 1920,
+      height: 1080,
+    );
+    expect(KunChatBubble.debugSinglePhotoSize(wide).width, 320);
+    expect(
+      KunChatBubble.debugSinglePhotoSize(wide).height,
+      closeTo(320 / (1920 / 1080), 0.01),
+    );
+
+    const KunChatPhoto tall = KunChatPhoto(
+      imageHash: 'tall',
+      width: 290,
+      height: 599,
+    );
+    final Size tallSize = KunChatBubble.debugSinglePhotoSize(tall);
+    expect(tallSize.width, 210);
+    expect(tallSize.height, 420);
+
+    await tester.pumpWidget(
+      wrap(
+        KunChatBubble(
+          message: _msg(text: '', media: wide),
+          users: _users,
+          lightbox: false,
+          resolveMediaUrl: (KunChatMedia _, KunChatMediaVariant __) => 'p',
+        ),
+        width: 500,
+      ),
+    );
+    await tester.pump();
+    expect(tester.getSize(find.byKey(KunChatBubble.photoKey(0))).width, 320);
+  });
+
+  testWidgets('album tiles match layoutKunChatAlbum', (
+    WidgetTester tester,
+  ) async {
+    final List<KunChatPhoto> photos = <KunChatPhoto>[
+      const KunChatPhoto(imageHash: 'a', width: 1920, height: 1080),
+      const KunChatPhoto(imageHash: 'b', width: 367, height: 602),
+      const KunChatPhoto(imageHash: 'c', width: 1920, height: 1239),
+      const KunChatPhoto(imageHash: 'd', width: 1920, height: 1200),
+      const KunChatPhoto(imageHash: 'e', width: 1920, height: 1268),
+    ];
+    final List<KunChatMessage> album = <KunChatMessage>[
+      for (int i = 0; i < photos.length; i++)
+        _msg(
+          id: '$i',
+          seq: i + 1,
+          text: i == 4 ? 'caption' : '',
+          media: photos[i],
+          mediaGroupId: 'g',
+        ),
+    ];
+    final KunChatAlbumLayout layout = layoutKunChatAlbum(<KunChatAlbumSize>[
+      for (final KunChatPhoto photo in photos)
+        KunChatAlbumSize(
+          width: photo.width.toDouble(),
+          height: photo.height.toDouble(),
+        ),
+    ]);
+
+    await tester.pumpWidget(
+      wrap(
+        KunChatBubble(
+          message: album.last,
+          album: album,
+          users: _users,
+          lightbox: false,
+          resolveMediaUrl: (KunChatMedia _, KunChatMediaVariant __) => 'p',
+        ),
+        width: 500,
+      ),
+    );
+    await tester.pump();
+
+    final List<Rect> tiles = <Rect>[
+      for (int i = 0; i < photos.length; i++)
+        tester.getRect(find.byKey(KunChatBubble.photoKey(i))),
+    ];
+    final double mosaicLeft = tiles
+        .map((Rect r) => r.left)
+        .reduce((double a, double b) => a < b ? a : b);
+    final double mosaicTop = tiles
+        .map((Rect r) => r.top)
+        .reduce((double a, double b) => a < b ? a : b);
+    final double mosaicW = tiles
+            .map((Rect r) => r.right)
+            .reduce((double a, double b) => a > b ? a : b) -
+        mosaicLeft;
+    expect(mosaicW, closeTo(320, 1));
+
+    for (int i = 0; i < layout.tiles.length; i++) {
+      final KunChatAlbumTile tile = layout.tiles[i];
+      expect(
+        tiles[i].left,
+        closeTo(mosaicLeft + tile.x / layout.width * mosaicW, 1.5),
+        reason: 'tile $i left',
+      );
+      expect(
+        tiles[i].top,
+        closeTo(
+          mosaicTop +
+              tile.y / layout.height * (mosaicW * layout.height / layout.width),
+          1.5,
+        ),
+        reason: 'tile $i top',
+      );
+    }
+  });
+
+  testWidgets('photo tap fires with and without the lightbox', (
+    WidgetTester tester,
+  ) async {
+    final List<int> taps = <int>[];
+    const KunChatPhoto photo = KunChatPhoto(
+      imageHash: 'wide',
+      width: 1920,
+      height: 1080,
+    );
+    await tester.pumpWidget(
+      wrap(
+        KunChatBubble(
+          message: _msg(text: '', media: photo),
+          users: _users,
+          lightbox: false,
+          resolveMediaUrl: (KunChatMedia _, KunChatMediaVariant __) => 'mem',
+          onPhotoTap: taps.add,
+        ),
+      ),
+    );
+    await tester.tap(find.byKey(KunChatBubble.photoKey(0)));
+    await tester.pump();
+    expect(taps, <int>[0]);
+    expect(find.byKey(KunLightbox.layerKey), findsNothing);
+
+    await tester.pumpWidget(
+      wrap(
+        KunChatBubble(
+          message: _msg(text: '', media: photo),
+          users: _users,
+          resolveMediaUrl: (KunChatMedia _, KunChatMediaVariant variant) =>
+              variant == KunChatMediaVariant.original ? 'orig' : 'prev',
+          onPhotoTap: taps.add,
+        ),
+      ),
+    );
+    await tester.tap(find.byKey(KunChatBubble.photoKey(0)));
+    await tester.pump();
+    await tester.pump(const Duration(milliseconds: 300));
+    expect(taps, <int>[0, 0]);
+    expect(find.byKey(KunLightbox.layerKey), findsOneWidget);
+  });
+
+  testWidgets('meta shows time, edited, and each status icon', (
+    WidgetTester tester,
+  ) async {
+    await tester.pumpWidget(
+      wrap(
+        KunChatBubble(
+          message: _msg(senderId: '1001', editedAt: _when),
+          users: _users,
+          own: true,
+          status: KunChatSendStatus.sending,
+        ),
+      ),
+    );
+    expect(
+      find.text(formatKunChatTime(_when, KunMessages.en.code)),
+      findsWidgets,
+    );
+    expect(find.text(KunMessages.en.chat.edited), findsWidgets);
+    expect(
+      find.descendant(
+        of: find.byKey(KunChatBubble.metaKey),
+        matching: find.byIcon(KunIcons.clock),
+      ),
+      findsOneWidget,
+    );
+    final KunTooltip tip = tester.widget(find.byType(KunTooltip).first);
+    expect(tip.text, formatKunChatFullTime(_when, KunMessages.en.code));
+
+    await tester.pumpWidget(
+      wrap(
+        KunChatBubble(
+          message: _msg(senderId: '1001'),
+          users: _users,
+          own: true,
+          status: KunChatSendStatus.sent,
+        ),
+      ),
+    );
+    expect(
+      find.descendant(
+        of: find.byKey(KunChatBubble.metaKey),
+        matching: find.byIcon(KunIcons.check),
+      ),
+      findsOneWidget,
+    );
+
+    await tester.pumpWidget(
+      wrap(
+        KunChatBubble(
+          message: _msg(senderId: '1001'),
+          users: _users,
+          own: true,
+          status: KunChatSendStatus.read,
+        ),
+      ),
+    );
+    expect(
+      find.descendant(
+        of: find.byKey(KunChatBubble.metaKey),
+        matching: find.byIcon(KunIcons.checkCheck),
+      ),
+      findsOneWidget,
+    );
+    expect(
+      tester.getSemantics(
+        find.descendant(
+          of: find.byKey(KunChatBubble.metaKey),
+          matching: find.byIcon(KunIcons.checkCheck),
+        ),
+      ),
+      isSemantics(label: KunMessages.en.chatStatus.read),
+    );
+
+    await tester.pumpWidget(
+      wrap(
+        KunChatBubble(
+          message: _msg(senderId: '1001'),
+          users: _users,
+          own: true,
+          status: KunChatSendStatus.failed,
+        ),
+      ),
+    );
+    expect(find.byIcon(KunIcons.check), findsNothing);
+    expect(find.byIcon(KunIcons.checkCheck), findsNothing);
+    expect(find.byIcon(KunIcons.clock), findsNothing);
+    expect(find.byKey(KunChatBubble.retryKey), findsOneWidget);
+  });
+
+  testWidgets('twin keeps the last line clear of the real meta', (
+    WidgetTester tester,
+  ) async {
+    Future<void> expectClear(String text, {required double width}) async {
+      await tester.pumpWidget(
+        wrap(
+          KunChatBubble(
+            message: _msg(text: text),
+            users: _users,
+          ),
+          width: width,
+        ),
+      );
+      await tester.pump();
+      RenderParagraph? paragraph;
+      String? plain;
+      for (final Element el in tester.elementList(find.byType(RichText))) {
+        final RichText rich = el.widget as RichText;
+        final String value = rich.text.toPlainText(
+          includeSemanticsLabels: false,
+          includePlaceholders: false,
+        );
+        if (value.contains(text.split(' ').first)) {
+          paragraph = el.renderObject! as RenderParagraph;
+          plain = value;
+          break;
+        }
+      }
+      expect(paragraph, isNotNull);
+      final int last = plain!.length - 1;
+      final List<TextBox> boxes = paragraph!.getBoxesForSelection(
+        TextSelection(baseOffset: last, extentOffset: last + 1),
+      );
+      expect(boxes, isNotEmpty);
+      final TextBox box = boxes.last;
+      final Rect glyph = Rect.fromLTRB(
+        box.left,
+        box.top,
+        box.right,
+        box.bottom,
+      );
+      final Rect glyphGlobal = glyph.shift(
+        paragraph.localToGlobal(Offset.zero),
+      );
+      final Rect meta = tester.getRect(find.byKey(KunChatBubble.metaKey));
+      expect(
+        meta.deflate(0.5).overlaps(glyphGlobal.deflate(0.5)),
+        isFalse,
+        reason: 'meta $meta overlaps glyph $glyphGlobal for "$text"',
+      );
+    }
+
+    await expectClear('Hi', width: 400);
+    await expectClear(
+      'xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx',
+      width: 220,
+    );
+  });
+
+  testWidgets('reaction toggle payloads and semantics', (
+    WidgetTester tester,
+  ) async {
+    final SemanticsHandle handle = tester.ensureSemantics();
+    final List<String?> keys = <String?>[];
+    final KunChatMessage message = _msg(
+      text: 'hi',
+      reactions: const <KunChatReaction>[
+        KunChatReaction(reaction: 'heart', count: 3, reacted: true),
+        KunChatReaction(reaction: 'party', count: 1, reacted: false),
+      ],
+    );
+    const List<KunChatReactionOption> options = <KunChatReactionOption>[
+      KunChatReactionOption(key: 'heart', emoji: '❤️', label: 'Love'),
+      KunChatReactionOption(key: 'party', emoji: '🎉', label: 'Party'),
+    ];
+    await tester.pumpWidget(
+      wrap(
+        KunChatBubble(
+          message: message,
+          users: _users,
+          reactionOptions: options,
+          onReact: keys.add,
+        ),
+      ),
+    );
+    final Finder heart = find.byWidgetPredicate((Widget w) {
+      return w is Semantics &&
+          w.properties.label ==
+              KunMessages.en.chat.reactionCount(label: 'Love', count: 3);
+    });
+    final Finder party = find.byWidgetPredicate((Widget w) {
+      return w is Semantics &&
+          w.properties.label ==
+              KunMessages.en.chat.reactionCount(label: 'Party', count: 1);
+    });
+    expect(
+      tester.getSemantics(heart),
+      isSemantics(
+        isButton: true,
+        hasToggledState: true,
+        isToggled: true,
+        label: KunMessages.en.chat.reactionCount(label: 'Love', count: 3),
+      ),
+    );
+    expect(
+      tester.getSemantics(party),
+      isSemantics(
+        isButton: true,
+        hasToggledState: true,
+        isToggled: false,
+        label: KunMessages.en.chat.reactionCount(label: 'Party', count: 1),
+      ),
+    );
+    expect(
+      tester.getSemantics(
+        find.byWidgetPredicate(
+          (Widget w) =>
+              w is Semantics &&
+              w.properties.label == KunMessages.en.chat.reactions,
+        ),
+      ),
+      isSemantics(label: KunMessages.en.chat.reactions),
+    );
+
+    await tester.tap(heart);
+    await tester.tap(party);
+    expect(keys, <String?>[null, 'party']);
+    handle.dispose();
+  });
+
+  testWidgets('retry fires and its gutter is hittable', (
+    WidgetTester tester,
+  ) async {
+    int retries = 0;
+    await tester.pumpWidget(
+      wrap(
+        KunChatBubble(
+          message: _msg(senderId: '1001'),
+          users: _users,
+          own: true,
+          status: KunChatSendStatus.failed,
+          onRetry: () => retries++,
+        ),
+        width: 400,
+      ),
+    );
+    final Rect retry = tester.getRect(find.byKey(KunChatBubble.retryKey));
+    final Rect surface = tester.getRect(find.byKey(KunChatBubble.surfaceKey));
+    expect(retry.right, lessThanOrEqualTo(surface.left + 0.5));
+    expect(surface.left - retry.left, closeTo(32, 1));
+    await tester.tap(find.byKey(KunChatBubble.retryKey));
+    await tester.pump();
+    expect(retries, 1);
+    await tester.tapAt(retry.center);
+    await tester.pump();
+    expect(retries, 2);
+  });
+
+  testWidgets('disabled swallows sender, reply, reactions and photos', (
+    WidgetTester tester,
+  ) async {
+    final List<String> log = <String>[];
+    const KunChatPhoto photo = KunChatPhoto(
+      imageHash: 'wide',
+      width: 1920,
+      height: 1080,
+    );
+    await tester.pumpWidget(
+      wrap(
+        Column(
+          children: <Widget>[
+            KunChatBubble(
+              message: _msg(
+                text: 'cap',
+                media: photo,
+                replyTo: const KunChatReplyTo(
+                  seq: 9,
+                  senderId: '1002',
+                  text: 'earlier',
+                  deleted: false,
+                ),
+                reactions: const <KunChatReaction>[
+                  KunChatReaction(reaction: 'heart', count: 1, reacted: false),
+                ],
+              ),
+              users: _users,
+              showSender: true,
+              disabled: true,
+              lightbox: false,
+              reactionOptions: const <KunChatReactionOption>[
+                KunChatReactionOption(key: 'heart', emoji: '❤️', label: 'Love'),
+              ],
+              resolveMediaUrl: (KunChatMedia _, KunChatMediaVariant __) => 'p',
+              onUserTap: (_) => log.add('user'),
+              onReplyTap: (_) => log.add('reply'),
+              onReact: (_) => log.add('react'),
+              onPhotoTap: (_) => log.add('photo'),
+            ),
+            KunChatBubble(
+              message: _msg(
+                senderId: '1001',
+                context: const KunChatContext(
+                  site: 'moyu',
+                  kind: 'patch',
+                  id: '1',
+                  title: 'Patch',
+                  url: 'https://www.moyu.moe/patch/1',
+                ),
+              ),
+              users: _users,
+              own: true,
+              status: KunChatSendStatus.failed,
+              disabled: true,
+              onRetry: () => log.add('retry'),
+              onLink: (KunChatLinkEvent event) {
+                event.preventDefault();
+                log.add('link');
+              },
+            ),
+          ],
+        ),
+        config: KunUIConfig(
+          imageProvider: _resolveImage,
+          navigate: (_, __) => log.add('nav'),
+        ),
+      ),
+    );
+    await tester.tap(find.byKey(KunChatBubble.senderKey));
+    await tester.tap(find.byKey(KunChatBubble.replyKey));
+    await tester.tap(find.byKey(KunChatBubble.photoKey(0)));
+    await tester.tap(
+      find.byWidgetPredicate(
+        (Widget w) =>
+            w is Semantics &&
+            w.properties.label ==
+                KunMessages.en.chat.reactionCount(label: 'Love', count: 1),
+      ),
+    );
+    await tester.tap(find.byKey(KunChatBubble.retryKey));
+    await tester.tap(find.text('Patch'));
+    await tester.pump();
+    expect(log, <String>['retry', 'link']);
+  });
+
+  testWidgets('service pill uses kunChatServiceText', (
+    WidgetTester tester,
+  ) async {
+    final KunChatMessage created = _msg(
+      senderId: '1001',
+      text: '',
+      kind: KunChatMessageKind.service,
+      serviceAction: const KunChatGroupCreatedAction(title: 'Room'),
+    );
+    await tester.pumpWidget(
+      wrap(
+        KunChatBubble(message: created, users: _users, currentUserId: '1001'),
+      ),
+    );
+    final String expected = kunChatServiceText(
+      created,
+      KunChatServiceContext(
+        users: kunChatUserMap(_users),
+        currentUserId: '1001',
+        messages: KunMessages.en,
+      ),
+    );
+    expect(find.text(expected), findsOneWidget);
+    expect(find.byKey(KunChatBubble.serviceKey), findsOneWidget);
+    expect(find.byKey(KunChatBubble.surfaceKey), findsNothing);
+  });
+
+  testWidgets('corner radii follow position and own', (
+    WidgetTester tester,
+  ) async {
+    Future<BorderRadius> pump(
+      KunChatBubblePosition position, {
+      required bool own,
+    }) async {
+      await tester.pumpWidget(
+        wrap(
+          KunChatBubble(
+            message: _msg(senderId: own ? '1001' : '1002'),
+            users: _users,
+            own: own,
+            position: position,
+            status: own ? KunChatSendStatus.sent : null,
+          ),
+        ),
+      );
+      return surfaceRadius(tester);
+    }
+
+    const Radius lg = Radius.circular(KunRadius.lg);
+    const Radius sm = Radius.circular(KunRadius.sm);
+
+    final BorderRadius ownSingle = await pump(
+      KunChatBubblePosition.single,
+      own: true,
+    );
+    expect(ownSingle.bottomRight, Radius.zero);
+    expect(ownSingle.topRight, lg);
+
+    final BorderRadius ownFirst = await pump(
+      KunChatBubblePosition.first,
+      own: true,
+    );
+    expect(ownFirst.bottomRight, sm);
+    expect(ownFirst.topRight, lg);
+
+    final BorderRadius ownMiddle = await pump(
+      KunChatBubblePosition.middle,
+      own: true,
+    );
+    expect(ownMiddle.topRight, sm);
+    expect(ownMiddle.bottomRight, sm);
+
+    final BorderRadius ownLast = await pump(
+      KunChatBubblePosition.last,
+      own: true,
+    );
+    expect(ownLast.topRight, sm);
+    expect(ownLast.bottomRight, Radius.zero);
+
+    final BorderRadius otherSingle = await pump(
+      KunChatBubblePosition.single,
+      own: false,
+    );
+    expect(otherSingle.bottomLeft, Radius.zero);
+    expect(otherSingle.topLeft, lg);
+    expect(find.byKey(KunChatBubble.tailKey), findsOneWidget);
+  });
+
+  testWidgets('context card host includes the port', (
+    WidgetTester tester,
+  ) async {
+    final List<String> hrefs = <String>[];
+    await tester.pumpWidget(
+      wrap(
+        KunChatBubble(
+          message: _msg(
+            context: const KunChatContext(
+              site: 'moyu',
+              kind: 'patch',
+              id: '1',
+              title: 'Patch',
+              url: 'https://www.moyu.moe:8443/patch/1',
+            ),
+          ),
+          users: _users,
+        ),
+        config: KunUIConfig(
+          imageProvider: _resolveImage,
+          navigate: (_, String href) => hrefs.add(href),
+        ),
+      ),
+    );
+    expect(find.text('www.moyu.moe:8443'), findsOneWidget);
+    await tester.tap(find.text('Patch'));
+    await tester.pump();
+    expect(hrefs.single, contains('www.moyu.moe:8443'));
+  });
+
+  testWidgets('absent resolveMediaUrl passes an empty src', (
+    WidgetTester tester,
+  ) async {
+    await tester.pumpWidget(
+      wrap(
+        KunChatBubble(
+          message: _msg(
+            text: '',
+            media: const KunChatPhoto(
+              imageHash: 'wide',
+              width: 1920,
+              height: 1080,
+            ),
+          ),
+          users: _users,
+          lightbox: false,
+        ),
+      ),
+    );
+    final KunImage image = tester.widget(find.byType(KunImage));
+    expect(image.src, isEmpty);
+  });
+}

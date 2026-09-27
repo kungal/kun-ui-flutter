@@ -29,7 +29,9 @@ Widget wrap(
           child: Directionality(
             textDirection: TextDirection.ltr,
             child: FocusScope(
-              child: Center(child: SizedBox(width: width, child: child)),
+              child: Center(
+                child: SizedBox(width: width, child: child),
+              ),
             ),
           ),
         ),
@@ -73,8 +75,11 @@ List<Rect> selectionBoxes(
 void expectRectsClose(List<Rect> actual, List<Rect> expected) {
   expect(actual, hasLength(expected.length));
   for (int i = 0; i < expected.length; i++) {
-    expect(actual[i].left, closeTo(expected[i].left, 0.5),
-        reason: 'rect $i left');
+    expect(
+      actual[i].left,
+      closeTo(expected[i].left, 0.5),
+      reason: 'rect $i left',
+    );
     expect(actual[i].top, closeTo(expected[i].top, 0.5), reason: 'rect $i top');
     expect(
       actual[i].width,
@@ -100,8 +105,10 @@ Future<void> expectCodeChipMatches(
   );
   await tester.pump();
   await tester.pump();
-  final (RenderParagraph paragraph, String plain) =
-      paragraphContaining(tester, needle);
+  final (RenderParagraph paragraph, String plain) = paragraphContaining(
+    tester,
+    needle,
+  );
   expectRectsClose(
     KunChatText.debugCodeChipBoxes(tester.element(find.byType(KunChatText))),
     selectionBoxes(paragraph, plain, needle),
@@ -215,11 +222,13 @@ void main() {
     expect(hrefs, isEmpty);
   });
 
-  testWidgets('a mention navigates to userLinkForId unless prevented',
-      (tester) async {
+  testWidgets('a mention navigates to userLinkForId unless prevented', (
+    tester,
+  ) async {
     final List<String> hrefs = <String>[];
-    final KunChatFormattedText parsed =
-        parseKunChatMarkdown('[@鲲](mention:1001)');
+    final KunChatFormattedText parsed = parseKunChatMarkdown(
+      '[@鲲](mention:1001)',
+    );
     await tester.pumpWidget(
       wrap(
         KunChatText(text: parsed.text, entities: parsed.entities),
@@ -236,7 +245,7 @@ void main() {
         KunChatText(
           text: parsed.text,
           entities: parsed.entities,
-          onMention: (KunChatMentionEvent event) {
+          onMention: (KunChatUserEvent event) {
             mentioned = event.userId;
             event.preventDefault();
           },
@@ -269,8 +278,9 @@ void main() {
     expect(recognizerCount(tester), 0);
   });
 
-  testWidgets('one reveal uncovers every spoiler and hidden links stay quiet',
-      (tester) async {
+  testWidgets('one reveal uncovers every spoiler and hidden links stay quiet', (
+    tester,
+  ) async {
     final List<String> hrefs = <String>[];
     final KunChatFormattedText parsed = parseKunChatMarkdown(
       '||secret [link](https://www.kungal.com)|| and ||more||',
@@ -285,10 +295,7 @@ void main() {
     expect(recognizerCount(tester), 0);
     expect(
       tester.getSemantics(find.byType(KunChatText)),
-      isSemantics(
-        label: KunMessages.en.spoiler.reveal,
-        isButton: true,
-      ),
+      isSemantics(label: KunMessages.en.spoiler.reveal, isButton: true),
     );
 
     tapRecognizers(tester);
@@ -329,8 +336,9 @@ void main() {
     );
   });
 
-  testWidgets('preview flattens breaks, masks spoilers, and is not tappable',
-      (tester) async {
+  testWidgets('preview flattens breaks, masks spoilers, and is not tappable', (
+    tester,
+  ) async {
     final KunChatFormattedText parsed = parseKunChatMarkdown(
       'a\nb ||secret|| [x](https://www.kungal.com)',
     );
@@ -473,8 +481,9 @@ void main() {
     await tester.pump();
     await tester.pump();
 
-    final RenderRepaintBoundary boundary =
-        tester.renderObject(find.byKey(boundaryKey));
+    final RenderRepaintBoundary boundary = tester.renderObject(
+      find.byKey(boundaryKey),
+    );
     late ui.Image image;
     late ByteData bytes;
     await tester.runAsync(() async {
@@ -491,8 +500,9 @@ void main() {
     final int midY = image.height ~/ 2;
     expect(redAt(2, midY), greaterThan(250));
 
-    final RenderParagraph paragraph =
-        tester.renderObject(find.byType(RichText));
+    final RenderParagraph paragraph = tester.renderObject(
+      find.byType(RichText),
+    );
     final List<TextBox> boxes = paragraph.getBoxesForSelection(
       const TextSelection(baseOffset: 4, extentOffset: 10),
     );
@@ -533,9 +543,9 @@ void main() {
         textBoxes.any(
           (Rect box) =>
               box.inflate(0.5).contains(particle.topLeft) &&
-              box.inflate(0.5).contains(
-                    particle.bottomRight - const Offset(0.01, 0.01),
-                  ),
+              box
+                  .inflate(0.5)
+                  .contains(particle.bottomRight - const Offset(0.01, 0.01)),
         ),
         isTrue,
         reason: '$particle outside $textBoxes',
@@ -563,8 +573,9 @@ void main() {
     expect(tester.getSize(quote).width, 400);
   });
 
-  testWidgets('inline code has no backgroundColor and chips get boxes',
-      (tester) async {
+  testWidgets('inline code has no backgroundColor and chips get boxes', (
+    tester,
+  ) async {
     final KunChatFormattedText parsed = parseKunChatMarkdown('see `%APPDATA%`');
     await tester.pumpWidget(
       wrap(KunChatText(text: parsed.text, entities: parsed.entities)),
@@ -584,8 +595,9 @@ void main() {
     expect(KunChatText.debugCodeChipBoxes(context), isNotEmpty);
   });
 
-  testWidgets('code chip after a pre matches the code substring boxes',
-      (tester) async {
+  testWidgets('code chip after a pre matches the code substring boxes', (
+    tester,
+  ) async {
     const String code = '%APPDATA%/StarRail';
     await expectCodeChipMatches(
       tester,
@@ -594,14 +606,11 @@ void main() {
     );
   });
 
-  testWidgets('code chip after a blockquote matches the code substring boxes',
-      (tester) async {
+  testWidgets('code chip after a blockquote matches the code substring boxes', (
+    tester,
+  ) async {
     const String code = '%APPDATA%';
-    await expectCodeChipMatches(
-      tester,
-      '> 转区后再启动\n见 `$code` 目录。',
-      code,
-    );
+    await expectCodeChipMatches(tester, '> 转区后再启动\n见 `$code` 目录。', code);
   });
 
   testWidgets('spoiler after a block matches substring boxes', (tester) async {
@@ -615,15 +624,18 @@ void main() {
     await tester.pump();
     await tester.pump();
     final BuildContext context = tester.element(find.byType(KunChatText));
-    final (RenderParagraph paragraph, String plain) =
-        paragraphContaining(tester, secret);
+    final (RenderParagraph paragraph, String plain) = paragraphContaining(
+      tester,
+      secret,
+    );
     final List<Rect> expected = selectionBoxes(paragraph, plain, secret);
     expectRectsClose(KunChatText.debugSpoilerTextBoxes(context), expected);
     expectRectsClose(KunChatText.debugSpoilerParticleBoxes(context), expected);
   });
 
-  testWidgets('hidden spoiler particles fill each run at web density',
-      (tester) async {
+  testWidgets('hidden spoiler particles fill each run at web density', (
+    tester,
+  ) async {
     const String first = '列车长就是白本人';
     const String second = '第三章那封信';
     final KunChatFormattedText parsed = parseKunChatMarkdown(
@@ -638,10 +650,13 @@ void main() {
     await tester.pump();
     await tester.pump();
     final BuildContext context = tester.element(find.byType(KunChatText));
-    final (RenderParagraph paragraph, String plain) =
-        paragraphContaining(tester, first);
-    final List<(Offset, Rect)> particles =
-        KunChatText.debugSpoilerParticles(context);
+    final (RenderParagraph paragraph, String plain) = paragraphContaining(
+      tester,
+      first,
+    );
+    final List<(Offset, Rect)> particles = KunChatText.debugSpoilerParticles(
+      context,
+    );
     expect(particles, isNotEmpty);
     bool hits(List<Rect> boxes, Offset pos, Rect box) {
       return boxes.any(
@@ -663,11 +678,7 @@ void main() {
           .toList();
       expect(inRun.length, greaterThanOrEqualTo(floor), reason: secret);
       for (final (Offset pos, Rect box) in inRun) {
-        expect(
-          hits(boxes, pos, box),
-          isTrue,
-          reason: '$pos outside $boxes',
-        );
+        expect(hits(boxes, pos, box), isTrue, reason: '$pos outside $boxes');
       }
       for (final Rect box in boxes) {
         if (box.width < 8) {
@@ -690,5 +701,81 @@ void main() {
         );
       }
     }
+  });
+
+  testWidgets('trailing leaves spoiler and chip boxes unchanged', (
+    tester,
+  ) async {
+    const String secret = 'SECRET';
+    const String code = '%APPDATA%';
+    final KunChatFormattedText parsed = parseKunChatMarkdown(
+      'hide ||$secret|| and `$code`',
+    );
+    final Widget text = KunChatText(
+      text: parsed.text,
+      entities: parsed.entities,
+    );
+    await tester.pumpWidget(wrap(text));
+    await tester.pump();
+    await tester.pump();
+    final BuildContext bare = tester.element(find.byType(KunChatText));
+    final List<Rect> spoiler = KunChatText.debugSpoilerTextBoxes(bare);
+    final List<Rect> chips = KunChatText.debugCodeChipBoxes(bare);
+    expect(spoiler, isNotEmpty);
+    expect(chips, isNotEmpty);
+
+    await tester.pumpWidget(
+      wrap(
+        KunChatText(
+          text: parsed.text,
+          entities: parsed.entities,
+          trailing: const SizedBox(width: 48, height: 12),
+        ),
+      ),
+    );
+    await tester.pump();
+    await tester.pump();
+    final BuildContext withTrail = tester.element(find.byType(KunChatText));
+    expectRectsClose(KunChatText.debugSpoilerTextBoxes(withTrail), spoiler);
+    expectRectsClose(KunChatText.debugCodeChipBoxes(withTrail), chips);
+  });
+
+  testWidgets('trailing is ignored in preview and follows a trailing block', (
+    tester,
+  ) async {
+    const Key trail = Key('trail');
+    final KunChatFormattedText parsed = parseKunChatMarkdown('```\nwine\n```');
+    await tester.pumpWidget(
+      wrap(
+        KunChatText(
+          text: parsed.text,
+          entities: parsed.entities,
+          preview: true,
+          trailing: const SizedBox(key: trail, width: 24, height: 8),
+        ),
+      ),
+    );
+    expect(find.byKey(trail), findsNothing);
+
+    await tester.pumpWidget(
+      wrap(
+        KunChatText(
+          text: parsed.text,
+          entities: parsed.entities,
+          trailing: const SizedBox(key: trail, width: 24, height: 8),
+        ),
+      ),
+    );
+    expect(find.byKey(trail), findsOneWidget);
+    final RichText last =
+        tester.widgetList<RichText>(find.byType(RichText)).last;
+    bool found = false;
+    last.text.visitChildren((InlineSpan span) {
+      if (span is WidgetSpan) {
+        found = true;
+      }
+      return true;
+    });
+    expect(found, isTrue);
   });
 }

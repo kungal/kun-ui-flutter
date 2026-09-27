@@ -193,8 +193,9 @@ class _CodeChipPaintData {
   Color? color;
 }
 
-List<Rect> _toRects(List<_SpoilerRect> rects) =>
-    <Rect>[for (final _SpoilerRect r in rects) r.toRect()];
+List<Rect> _toRects(List<_SpoilerRect> rects) => <Rect>[
+      for (final _SpoilerRect r in rects) r.toRect(),
+    ];
 
 List<_Particle> _seedParticles(List<_SpoilerRect> rects, math.Random random) {
   if (rects.isEmpty) {
@@ -206,8 +207,10 @@ List<_Particle> _seedParticles(List<_SpoilerRect> rects, math.Random random) {
     total += r.w * r.h;
     cum.add(total);
   }
-  final int count =
-      math.min(_kMaxParticles, math.max(6, (total * _kDensity).round()));
+  final int count = math.min(
+    _kMaxParticles,
+    math.max(6, (total * _kDensity).round()),
+  );
   return <_Particle>[
     for (int i = 0; i < count; i++) _oneParticle(rects, cum, total, random),
   ];
@@ -246,8 +249,10 @@ _Particle _oneParticle(
     cycle: cycle,
     phase: random.nextDouble() * cycle,
     size0: 1 + random.nextDouble() * 0.6,
-    light:
-        math.max(8, math.min(92, 50 + ldir * (16 + random.nextDouble() * 30))),
+    light: math.max(
+      8,
+      math.min(92, 50 + ldir * (16 + random.nextDouble() * 30)),
+    ),
     square: random.nextDouble() < 0.5,
   );
 }
@@ -267,8 +272,10 @@ bool _treeHasSpoiler(List<KunChatTextNode> nodes) {
 }
 
 int _spoilerMaskSize(String text, KunChatEntity entity) {
-  final String slice =
-      text.substring(entity.offset, entity.offset + entity.length);
+  final String slice = text.substring(
+    entity.offset,
+    entity.offset + entity.length,
+  );
   return slice.runes.length.clamp(3, 12);
 }
 
@@ -280,6 +287,7 @@ class KunChatText extends StatefulWidget {
     required this.text,
     this.entities,
     this.preview = false,
+    this.trailing,
     this.onLink,
     this.onMention,
   });
@@ -294,13 +302,24 @@ class KunChatText extends StatefulWidget {
   /// masked, nothing is tappable.
   final bool preview;
 
+  /// An inline widget appended after the last character of the last inline
+  /// paragraph, as a baseline-aligned [WidgetSpan].
+  ///
+  /// Not part of the web contract. [KunChatBubble] uses it for the invisible
+  /// twin that reserves the meta's seat on the last line. Ignored when
+  /// [preview] is true. If the message ends with a block (`pre` or
+  /// `blockquote`), the span is a new paragraph after that block. It sits
+  /// after every character, so paragraph offsets used by the spoiler and
+  /// code-chip measurements stay the same.
+  final Widget? trailing;
+
   /// A link was tapped. The default is [KunUIConfig.navigateTo] unless the
   /// listener calls [KunChatLinkEvent.preventDefault].
   final KunChatLinkCallback? onLink;
 
-  /// A mention was tapped. The default is navigating to
-  /// [KunUIConfig.userLinkForId] unless prevented.
-  final KunChatMentionCallback? onMention;
+  /// A tap on a user: a mention, or a sender name. The default is
+  /// navigating to [KunUIConfig.userLinkForId] unless prevented.
+  final KunChatUserCallback? onMention;
 
   @override
   State<KunChatText> createState() => _KunChatTextState();
@@ -334,9 +353,8 @@ class KunChatText extends StatefulWidget {
   static List<(int, int)> debugCodeRanges(BuildContext context) {
     return _inlineStates(context)
         .expand(
-          (_ChatInlineState s) => s._codeRanges.map(
-            (_SpoilerRange r) => (r.start, r.end),
-          ),
+          (_ChatInlineState s) =>
+              s._codeRanges.map((_SpoilerRange r) => (r.start, r.end)),
         )
         .toList();
   }
@@ -346,9 +364,8 @@ class KunChatText extends StatefulWidget {
   static List<(int, int)> debugSpoilerRanges(BuildContext context) {
     return _inlineStates(context)
         .expand(
-          (_ChatInlineState s) => s._ranges.map(
-            (_SpoilerRange r) => (r.start, r.end),
-          ),
+          (_ChatInlineState s) =>
+              s._ranges.map((_SpoilerRange r) => (r.start, r.end)),
         )
         .toList();
   }
@@ -410,8 +427,10 @@ class _KunChatTextState extends State<KunChatText> {
     final KunChatEntity entity = node.entity;
     Clipboard.setData(
       ClipboardData(
-        text:
-            widget.text.substring(entity.offset, entity.offset + entity.length),
+        text: widget.text.substring(
+          entity.offset,
+          entity.offset + entity.length,
+        ),
       ),
     );
     setState(() => _copiedAt = entity.offset);
@@ -432,7 +451,7 @@ class _KunChatTextState extends State<KunChatText> {
   }
 
   void _handleMention(BuildContext context, String userId) {
-    final KunChatMentionEvent event = KunChatMentionEvent(userId);
+    final KunChatUserEvent event = KunChatUserEvent(userId);
     widget.onMention?.call(event);
     if (!event.defaultPrevented) {
       final KunUIConfig config = KunUIConfigScope.of(context);
@@ -442,8 +461,10 @@ class _KunChatTextState extends State<KunChatText> {
 
   @override
   Widget build(BuildContext context) {
-    final List<KunChatTextNode> tree =
-        buildKunChatEntityTree(widget.text, widget.entities);
+    final List<KunChatTextNode> tree = buildKunChatEntityTree(
+      widget.text,
+      widget.entities,
+    );
     if (widget.preview) {
       return _ChatInline(
         nodes: tree,
@@ -455,11 +476,12 @@ class _KunChatTextState extends State<KunChatText> {
         onMention: _handleMention,
       );
     }
+    final Widget? trailing = widget.trailing;
     final bool hiddenSpoilers = !_revealed && _treeHasSpoiler(tree);
     final List<Widget> children = <Widget>[];
     final List<KunChatTextNode> inline = <KunChatTextNode>[];
-    void flushInline() {
-      if (inline.isEmpty) {
+    void flushInline({Widget? trailing}) {
+      if (inline.isEmpty && trailing == null) {
         return;
       }
       children.add(
@@ -471,6 +493,7 @@ class _KunChatTextState extends State<KunChatText> {
           onReveal: _reveal,
           onLink: _handleLink,
           onMention: _handleMention,
+          trailing: trailing,
         ),
       );
       inline.clear();
@@ -508,7 +531,11 @@ class _KunChatTextState extends State<KunChatText> {
         inline.add(node);
       }
     }
-    flushInline();
+    if (inline.isNotEmpty) {
+      flushInline(trailing: trailing);
+    } else if (trailing != null) {
+      flushInline(trailing: trailing);
+    }
 
     Widget body = children.length == 1
         ? children.first
@@ -700,6 +727,7 @@ class _ChatInline extends StatefulWidget {
     required this.onReveal,
     required this.onLink,
     required this.onMention,
+    this.trailing,
   });
 
   final List<KunChatTextNode> nodes;
@@ -709,6 +737,7 @@ class _ChatInline extends StatefulWidget {
   final VoidCallback onReveal;
   final void Function(BuildContext context, String url) onLink;
   final void Function(BuildContext context, String userId) onMention;
+  final Widget? trailing;
 
   @override
   State<_ChatInline> createState() => _ChatInlineState();
@@ -797,8 +826,9 @@ class _ChatInlineState extends State<_ChatInline>
   }
 
   void _recycleRecognizers() {
-    final List<GestureRecognizer> old =
-        List<GestureRecognizer>.from(_recognizers);
+    final List<GestureRecognizer> old = List<GestureRecognizer>.from(
+      _recognizers,
+    );
     _recognizers.clear();
     if (old.isEmpty) {
       return;
@@ -1055,6 +1085,16 @@ class _ChatInlineState extends State<_ChatInline>
       cursor: (int delta) => cursor += delta,
       cursorValue: () => cursor,
     );
+    final Widget? trailing = widget.trailing;
+    if (trailing != null) {
+      spans.add(
+        WidgetSpan(
+          alignment: PlaceholderAlignment.baseline,
+          baseline: TextBaseline.alphabetic,
+          child: trailing,
+        ),
+      );
+    }
 
     _chipPaint.color = scheme.neutral.solid.withValues(alpha: 0.2);
 
@@ -1076,16 +1116,10 @@ class _ChatInlineState extends State<_ChatInline>
     if (_wantSpoiler || _wantCode) {
       child = CustomPaint(
         painter: _wantCode
-            ? _CodeChipPainter(
-                data: _chipPaint,
-                listenable: _repaint,
-              )
+            ? _CodeChipPainter(data: _chipPaint, listenable: _repaint)
             : null,
         foregroundPainter: _wantSpoiler
-            ? _SpoilerPainter(
-                data: _spoilerPaint,
-                listenable: _repaint,
-              )
+            ? _SpoilerPainter(data: _spoilerPaint, listenable: _repaint)
             : null,
         child: child,
       );
@@ -1127,12 +1161,7 @@ class _ChatInlineState extends State<_ChatInline>
         if (widget.preview) {
           text = text.replaceAll('\n', ' ');
         }
-        out.add(
-          TextSpan(
-            text: text,
-            style: style,
-          ),
-        );
+        out.add(TextSpan(text: text, style: style));
         cursor(text.length);
         continue;
       }
@@ -1177,7 +1206,8 @@ class _ChatInlineState extends State<_ChatInline>
     switch (entity.type) {
       case KunChatEntityType.bold:
         return children(
-            next: style.copyWith(fontWeight: KunFontWeights.semibold));
+          next: style.copyWith(fontWeight: KunFontWeights.semibold),
+        );
       case KunChatEntityType.italic:
         return children(next: style.copyWith(fontStyle: FontStyle.italic));
       case KunChatEntityType.underline:
@@ -1228,8 +1258,9 @@ class _ChatInlineState extends State<_ChatInline>
                 child: Text(
                   mask,
                   style: style.copyWith(
-                    color: (style.color ?? scheme.foreground)
-                        .withValues(alpha: 0.55),
+                    color: (style.color ?? scheme.foreground).withValues(
+                      alpha: 0.55,
+                    ),
                     letterSpacing:
                         -0.05 * (style.fontSize ?? KunText.base.fontSize!),
                   ),
@@ -1248,15 +1279,15 @@ class _ChatInlineState extends State<_ChatInline>
                 backgroundColor: tint,
               )
             : style;
-        final List<InlineSpan> inner =
-            children(next: hiddenStyle, spoiler: true);
+        final List<InlineSpan> inner = children(
+          next: hiddenStyle,
+          spoiler: true,
+        );
         _ranges = <_SpoilerRange>[
           ..._ranges,
-          _SpoilerRange(start, cursorValue())
+          _SpoilerRange(start, cursorValue()),
         ];
-        return <InlineSpan>[
-          TextSpan(style: hiddenStyle, children: inner),
-        ];
+        return <InlineSpan>[TextSpan(style: hiddenStyle, children: inner)];
       case KunChatEntityType.textLink:
         return _linkSpans(
           context,
@@ -1273,8 +1304,10 @@ class _ChatInlineState extends State<_ChatInline>
           context,
           node,
           kunChatSafeUrl(
-            widget.source
-                .substring(entity.offset, entity.offset + entity.length),
+            widget.source.substring(
+              entity.offset,
+              entity.offset + entity.length,
+            ),
           ),
           style,
           scheme,
@@ -1423,10 +1456,8 @@ class _ChatInlineState extends State<_ChatInline>
 }
 
 class _SpoilerPainter extends CustomPainter {
-  _SpoilerPainter({
-    required this.data,
-    required Listenable listenable,
-  }) : super(repaint: listenable);
+  _SpoilerPainter({required this.data, required Listenable listenable})
+      : super(repaint: listenable);
 
   final _SpoilerPaintData data;
 
@@ -1477,8 +1508,12 @@ class _SpoilerPainter extends CustomPainter {
           rect.y + (((p.y0 + p.vy * lt) % rect.h) + rect.h) % rect.h;
       final int channel = (p.light * 255 / 100).round().clamp(0, 255);
       final Paint paint = Paint()
-        ..color =
-            Color.fromRGBO(channel, channel, channel, alpha > 1 ? 1 : alpha);
+        ..color = Color.fromRGBO(
+          channel,
+          channel,
+          channel,
+          alpha > 1 ? 1 : alpha,
+        );
       if (p.square) {
         canvas.drawRect(Rect.fromLTWH(x, y, sz, sz), paint);
       } else {
@@ -1494,10 +1529,8 @@ class _SpoilerPainter extends CustomPainter {
 }
 
 class _CodeChipPainter extends CustomPainter {
-  _CodeChipPainter({
-    required this.data,
-    required Listenable listenable,
-  }) : super(repaint: listenable);
+  _CodeChipPainter({required this.data, required Listenable listenable})
+      : super(repaint: listenable);
 
   final _CodeChipPaintData data;
 

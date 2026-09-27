@@ -324,6 +324,75 @@
         "events.click": "Every card in the Interactive demo carries a live onTap, and the prop's one subtlety -- that it fires whether or not the card is clickable -- is a behaviour, not an appearance. A callback has nothing of its own to show."
       }
     },
+    "KunChatBubble": {
+      "source": "demos/chat_bubble.dart",
+      "demos": [
+        {
+          "slug": "basic",
+          "title": "Basic",
+          "builder": "chatBubbleBasic",
+          "shows": [
+            "props.message",
+            "props.own",
+            "props.position",
+            "props.users"
+          ]
+        },
+        {
+          "slug": "reply",
+          "title": "Reply",
+          "builder": "chatBubbleReply",
+          "shows": [
+            "events.reply-click"
+          ]
+        },
+        {
+          "slug": "media",
+          "title": "Media",
+          "builder": "chatBubbleMedia",
+          "shows": [
+            "props.album",
+            "props.lightbox",
+            "props.resolveMediaUrl",
+            "events.photo-click"
+          ]
+        },
+        {
+          "slug": "status",
+          "title": "Status",
+          "builder": "chatBubbleStatus",
+          "shows": [
+            "props.status",
+            "events.retry"
+          ]
+        },
+        {
+          "slug": "reactions",
+          "title": "Reactions",
+          "builder": "chatBubbleReactions",
+          "shows": [
+            "props.reactionOptions",
+            "events.react"
+          ]
+        },
+        {
+          "slug": "service",
+          "title": "Service",
+          "builder": "chatBubbleService",
+          "shows": [
+            "props.currentUserId",
+            "events.link"
+          ]
+        }
+      ],
+      "undemoable": {
+        "props.disabled": "Swallowing taps has no visual form of its own; the widget tests assert the four kinds of tap.",
+        "props.resolveMessage": "The sentence a pinned-message service line quotes is asserted by the widget tests; the docs Service demo does not pin.",
+        "props.showSender": "The docs demos are a direct chat and never show the name; the widget tests cover showSender and deleted users.",
+        "events.mention": "A mention tap is the same callback as KunChatText; the widget tests cover preventDefault.",
+        "events.user-click": "Sender-name navigation is asserted by the widget tests; the docs demos never show the name."
+      }
+    },
     "KunChatComposer": {
       "source": "demos/chat_composer.dart",
       "demos": [

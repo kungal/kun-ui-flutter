@@ -124,9 +124,51 @@ DateTime demoChatTime(int daysAgo, String hhmm) {
   return DateTime(2025, 12, day, hour, minute);
 }
 
+/// ThumbHashes the docs compute from the kungal.com stills.
+const Map<String, String> demoThumbhashes = <String, String>{
+  'bg/bg12': 'qPgFJIhQhKZHq4fKmJrXgIpkBQ==',
+  'ren/2339': 'NCiCAwA1SJY59IhKQFeEBQqFiWaDipg=',
+  'bg/bg25': 'b9eFK4YPvJfAW5yZgHkIZzc3h4dwiAg=',
+  'bg/bg36': 'KBkGHIRS1Jtfm1SKaIqsq6BARw==',
+  'bg/bg1': 'NdcFDISQspq+e3M3pptAbESQJg==',
+  'bg/bg4': 'JpoKHIYOc2tmd3iUaIdmToBveA==',
+  'ren/2337': '9BeCAgA2RqcJp5kbib+S9QiIenWUeYg=',
+  'bg/bg45': 'bfcFJYg5rHbwiYqXVpaYigeSaGCJ',
+};
+
+/// Docs `resolveDemoMedia`: `https://www.kungal.com/<image_hash>.webp`.
+String resolveDemoMedia(KunChatMedia media, KunChatMediaVariant variant) {
+  if (media is KunChatPhoto) {
+    return 'https://www.kungal.com/${media.imageHash}.webp';
+  }
+  return '';
+}
+
 /// A photo payload for conversation-row demos (`demoPhoto` in chatDemo.ts).
 KunChatPhoto demoChatPhoto(String path, int width, int height) {
-  return KunChatPhoto(imageHash: path, width: width, height: height);
+  return KunChatPhoto(
+    imageHash: path,
+    width: width,
+    height: height,
+    thumbhash: demoThumbhashes[path],
+  );
+}
+
+/// What the server embeds as `reply_to` for a reply to [message].
+KunChatReplyTo demoReplyTo(KunChatMessage message) {
+  return KunChatReplyTo(
+    seq: message.seq,
+    senderId: message.senderId,
+    text: message.text.length > 120
+        ? message.text.substring(0, 120)
+        : message.text,
+    entities: <KunChatEntity>[
+      for (final KunChatEntity entity in message.entities)
+        if (entity.offset + entity.length <= 120) entity,
+    ],
+    mediaType: message.media?.type,
+    deleted: false,
+  );
 }
 
 /// Sample messages the ChatText demos share; later chat dispatches extend this.

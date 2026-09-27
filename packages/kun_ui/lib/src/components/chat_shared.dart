@@ -25,13 +25,13 @@ class KunChatLinkEvent {
   void preventDefault() => _defaultPrevented = true;
 }
 
-/// A mention tap in chat text. Call [preventDefault] to stop the widget from
-/// navigating to the user's profile.
-class KunChatMentionEvent {
-  /// Creates a mention event for [userId].
-  KunChatMentionEvent(this.userId);
+/// A tap on a user: a mention, or a sender name. Call [preventDefault] to
+/// stop the widget from navigating to the user's profile.
+class KunChatUserEvent {
+  /// Creates a user event for [userId].
+  KunChatUserEvent(this.userId);
 
-  /// The mentioned user's id.
+  /// The user's id.
   final String userId;
 
   bool _defaultPrevented = false;
@@ -46,5 +46,5 @@ class KunChatMentionEvent {
 /// Called when a chat link is tapped.
 typedef KunChatLinkCallback = void Function(KunChatLinkEvent event);
 
-/// Called when a chat mention is tapped.
-typedef KunChatMentionCallback = void Function(KunChatMentionEvent event);
+/// Called when a chat user is tapped: a mention, or a sender name.
+typedef KunChatUserCallback = void Function(KunChatUserEvent event);

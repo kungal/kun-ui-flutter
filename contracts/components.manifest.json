@@ -118,6 +118,34 @@
         "header": "header"
       }
     },
+    "KunChatBubble": {
+      "widget": "KunChatBubble",
+      "props": {
+        "album": "album",
+        "currentUserId": "currentUserId",
+        "disabled": "disabled",
+        "lightbox": "lightbox",
+        "message": "message",
+        "own": "own",
+        "position": "position",
+        "reactionOptions": "reactionOptions",
+        "resolveMediaUrl": "resolveMediaUrl",
+        "resolveMessage": "resolveMessage",
+        "showSender": "showSender",
+        "status": "status",
+        "users": "users"
+      },
+      "events": {
+        "link": "onLink",
+        "mention": "onMention",
+        "photo-click": "onPhotoTap",
+        "react": "onReact",
+        "reply-click": "onReplyTap",
+        "retry": "onRetry",
+        "user-click": "onUserTap"
+      },
+      "slots": {}
+    },
     "KunChatComposer": {
       "widget": "KunChatComposer",
       "props": {

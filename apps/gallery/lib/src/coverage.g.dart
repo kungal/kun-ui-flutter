@@ -538,6 +538,161 @@ const ComponentCoverage _kunCard = ComponentCoverage(
 Widget kunCardContract(BuildContext context) =>
     const CoveragePage(coverage: _kunCard);
 
+const ComponentCoverage _kunChatBubble = ComponentCoverage(
+  name: 'KunChatBubble',
+  entries: <CoverageEntry>[
+    CoverageEntry(
+      section: 'props',
+      contractName: 'album',
+      status: CoverageStatus.shown,
+      dartName: 'album',
+      shownBy: 'Media',
+    ),
+    CoverageEntry(
+      section: 'props',
+      contractName: 'currentUserId',
+      status: CoverageStatus.shown,
+      dartName: 'currentUserId',
+      shownBy: 'Service',
+    ),
+    CoverageEntry(
+      section: 'props',
+      contractName: 'disabled',
+      status: CoverageStatus.noVisualForm,
+      dartName: 'disabled',
+      reason:
+          'Swallowing taps has no visual form of its own; the widget tests assert the four kinds of tap.',
+    ),
+    CoverageEntry(
+      section: 'props',
+      contractName: 'lightbox',
+      status: CoverageStatus.shown,
+      dartName: 'lightbox',
+      shownBy: 'Media',
+    ),
+    CoverageEntry(
+      section: 'props',
+      contractName: 'message',
+      status: CoverageStatus.shown,
+      dartName: 'message',
+      shownBy: 'Basic',
+    ),
+    CoverageEntry(
+      section: 'props',
+      contractName: 'own',
+      status: CoverageStatus.shown,
+      dartName: 'own',
+      shownBy: 'Basic',
+    ),
+    CoverageEntry(
+      section: 'props',
+      contractName: 'position',
+      status: CoverageStatus.shown,
+      dartName: 'position',
+      shownBy: 'Basic',
+    ),
+    CoverageEntry(
+      section: 'props',
+      contractName: 'reactionOptions',
+      status: CoverageStatus.shown,
+      dartName: 'reactionOptions',
+      shownBy: 'Reactions',
+    ),
+    CoverageEntry(
+      section: 'props',
+      contractName: 'resolveMediaUrl',
+      status: CoverageStatus.shown,
+      dartName: 'resolveMediaUrl',
+      shownBy: 'Media',
+    ),
+    CoverageEntry(
+      section: 'props',
+      contractName: 'resolveMessage',
+      status: CoverageStatus.noVisualForm,
+      dartName: 'resolveMessage',
+      reason:
+          'The sentence a pinned-message service line quotes is asserted by the widget tests; the docs Service demo does not pin.',
+    ),
+    CoverageEntry(
+      section: 'props',
+      contractName: 'showSender',
+      status: CoverageStatus.noVisualForm,
+      dartName: 'showSender',
+      reason:
+          'The docs demos are a direct chat and never show the name; the widget tests cover showSender and deleted users.',
+    ),
+    CoverageEntry(
+      section: 'props',
+      contractName: 'status',
+      status: CoverageStatus.shown,
+      dartName: 'status',
+      shownBy: 'Status',
+    ),
+    CoverageEntry(
+      section: 'props',
+      contractName: 'users',
+      status: CoverageStatus.shown,
+      dartName: 'users',
+      shownBy: 'Basic',
+    ),
+    CoverageEntry(
+      section: 'events',
+      contractName: 'link',
+      status: CoverageStatus.shown,
+      dartName: 'onLink',
+      shownBy: 'Service',
+    ),
+    CoverageEntry(
+      section: 'events',
+      contractName: 'mention',
+      status: CoverageStatus.noVisualForm,
+      dartName: 'onMention',
+      reason:
+          'A mention tap is the same callback as KunChatText; the widget tests cover preventDefault.',
+    ),
+    CoverageEntry(
+      section: 'events',
+      contractName: 'photo-click',
+      status: CoverageStatus.shown,
+      dartName: 'onPhotoTap',
+      shownBy: 'Media',
+    ),
+    CoverageEntry(
+      section: 'events',
+      contractName: 'react',
+      status: CoverageStatus.shown,
+      dartName: 'onReact',
+      shownBy: 'Reactions',
+    ),
+    CoverageEntry(
+      section: 'events',
+      contractName: 'reply-click',
+      status: CoverageStatus.shown,
+      dartName: 'onReplyTap',
+      shownBy: 'Reply',
+    ),
+    CoverageEntry(
+      section: 'events',
+      contractName: 'retry',
+      status: CoverageStatus.shown,
+      dartName: 'onRetry',
+      shownBy: 'Status',
+    ),
+    CoverageEntry(
+      section: 'events',
+      contractName: 'user-click',
+      status: CoverageStatus.noVisualForm,
+      dartName: 'onUserTap',
+      reason:
+          'Sender-name navigation is asserted by the widget tests; the docs demos never show the name.',
+    ),
+  ],
+);
+
+/// The contract coverage page for KunChatBubble.
+Widget kunChatBubbleContract(BuildContext context) =>
+    const CoveragePage(coverage: _kunChatBubble);
+
 const ComponentCoverage _kunChatComposer = ComponentCoverage(
   name: 'KunChatComposer',
   entries: <CoverageEntry>[
