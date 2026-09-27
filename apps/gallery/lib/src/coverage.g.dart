@@ -1043,6 +1043,79 @@ const ComponentCoverage _kunChatConversationItem = ComponentCoverage(
 Widget kunChatConversationItemContract(BuildContext context) =>
     const CoveragePage(coverage: _kunChatConversationItem);
 
+const ComponentCoverage _kunChatMessageMenu = ComponentCoverage(
+  name: 'KunChatMessageMenu',
+  entries: <CoverageEntry>[
+    CoverageEntry(
+      section: 'props',
+      contractName: 'actions',
+      status: CoverageStatus.shown,
+      dartName: 'actions',
+      shownBy: 'Basic',
+    ),
+    CoverageEntry(
+      section: 'props',
+      contractName: 'currentReaction',
+      status: CoverageStatus.shown,
+      dartName: 'currentReaction',
+      shownBy: 'Basic',
+    ),
+    CoverageEntry(
+      section: 'props',
+      contractName: 'position',
+      status: CoverageStatus.shown,
+      dartName: 'position',
+      shownBy: 'Basic',
+    ),
+    CoverageEntry(
+      section: 'props',
+      contractName: 'quickReactions',
+      status: CoverageStatus.shown,
+      dartName: 'quickReactions',
+      shownBy: 'Basic',
+    ),
+    CoverageEntry(
+      section: 'props',
+      contractName: 'reactions',
+      status: CoverageStatus.shown,
+      dartName: 'reactions',
+      shownBy: 'Basic',
+    ),
+    CoverageEntry(
+      section: 'props',
+      contractName: 'visible',
+      status: CoverageStatus.shown,
+      dartName: 'visible',
+      shownBy: 'Basic',
+    ),
+    CoverageEntry(
+      section: 'events',
+      contractName: 'close',
+      status: CoverageStatus.shown,
+      dartName: 'onClose',
+      shownBy: 'Basic',
+    ),
+    CoverageEntry(
+      section: 'events',
+      contractName: 'react',
+      status: CoverageStatus.shown,
+      dartName: 'onReact',
+      shownBy: 'Basic',
+    ),
+    CoverageEntry(
+      section: 'events',
+      contractName: 'select',
+      status: CoverageStatus.shown,
+      dartName: 'onSelect',
+      shownBy: 'Basic',
+    ),
+  ],
+);
+
+/// The contract coverage page for KunChatMessageMenu.
+Widget kunChatMessageMenuContract(BuildContext context) =>
+    const CoveragePage(coverage: _kunChatMessageMenu);
+
 const ComponentCoverage _kunChatReactionPicker = ComponentCoverage(
   name: 'KunChatReactionPicker',
   entries: <CoverageEntry>[

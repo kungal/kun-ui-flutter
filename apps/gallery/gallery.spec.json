@@ -506,6 +506,27 @@
         }
       ]
     },
+    "KunChatMessageMenu": {
+      "source": "demos/chat_message_menu.dart",
+      "demos": [
+        {
+          "slug": "basic",
+          "title": "Basic",
+          "builder": "chatMessageMenuBasic",
+          "shows": [
+            "props.actions",
+            "props.currentReaction",
+            "props.position",
+            "props.quickReactions",
+            "props.reactions",
+            "props.visible",
+            "events.close",
+            "events.react",
+            "events.select"
+          ]
+        }
+      ]
+    },
     "KunChatReactionPicker": {
       "source": "demos/chat_reaction_picker.dart",
       "demos": [

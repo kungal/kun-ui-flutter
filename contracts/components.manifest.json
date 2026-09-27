@@ -210,6 +210,23 @@
       },
       "slots": {}
     },
+    "KunChatMessageMenu": {
+      "widget": "KunChatMessageMenu",
+      "props": {
+        "actions": "actions",
+        "currentReaction": "currentReaction",
+        "position": "position",
+        "quickReactions": "quickReactions",
+        "reactions": "reactions",
+        "visible": "visible"
+      },
+      "events": {
+        "close": "onClose",
+        "react": "onReact",
+        "select": "onSelect"
+      },
+      "slots": {}
+    },
     "KunChatReactionPicker": {
       "widget": "KunChatReactionPicker",
       "props": {
