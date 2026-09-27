@@ -1945,6 +1945,44 @@ const ComponentCoverage _kunInput = ComponentCoverage(
 Widget kunInputContract(BuildContext context) =>
     const CoveragePage(coverage: _kunInput);
 
+const ComponentCoverage _kunLightbox = ComponentCoverage(
+  name: 'KunLightbox',
+  entries: <CoverageEntry>[
+    CoverageEntry(
+      section: 'props',
+      contractName: 'images',
+      status: CoverageStatus.shown,
+      dartName: 'images',
+      shownBy: 'Basic',
+    ),
+    CoverageEntry(
+      section: 'props',
+      contractName: 'initialIndex',
+      status: CoverageStatus.shown,
+      dartName: 'initialIndex',
+      shownBy: 'Standalone',
+    ),
+    CoverageEntry(
+      section: 'props',
+      contractName: 'isOpen',
+      status: CoverageStatus.shown,
+      dartName: 'isOpen',
+      shownBy: 'Basic',
+    ),
+    CoverageEntry(
+      section: 'events',
+      contractName: 'update:isOpen',
+      status: CoverageStatus.shown,
+      dartName: 'onOpenChanged',
+      shownBy: 'Basic',
+    ),
+  ],
+);
+
+/// The contract coverage page for KunLightbox.
+Widget kunLightboxContract(BuildContext context) =>
+    const CoveragePage(coverage: _kunLightbox);
+
 const ComponentCoverage _kunLoading = ComponentCoverage(
   name: 'KunLoading',
   entries: <CoverageEntry>[

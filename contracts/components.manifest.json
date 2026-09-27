@@ -431,6 +431,18 @@
         "suffix": "suffix"
       }
     },
+    "KunLightbox": {
+      "widget": "KunLightbox",
+      "props": {
+        "images": "images",
+        "initialIndex": "initialIndex",
+        "isOpen": "isOpen"
+      },
+      "events": {
+        "update:isOpen": "onOpenChanged"
+      },
+      "slots": {}
+    },
     "KunLoading": {
       "widget": "KunLoading",
       "props": {

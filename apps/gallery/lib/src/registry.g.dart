@@ -23,6 +23,7 @@ import 'demos/divider.dart';
 import 'demos/dropdown.dart';
 import 'demos/image.dart';
 import 'demos/input.dart';
+import 'demos/lightbox.dart';
 import 'demos/loading.dart';
 import 'demos/message.dart';
 import 'demos/modal.dart';
@@ -368,6 +369,17 @@ const List<GalleryComponent> galleryComponents = <GalleryComponent>[
       GalleryDemo(slug: 'submit', title: 'Submit', builder: inputSubmit),
       GalleryDemo(
           slug: 'contract', title: 'Contract', builder: kunInputContract),
+    ],
+  ),
+  GalleryComponent(
+    slug: 'kunlightbox',
+    name: 'KunLightbox',
+    demos: <GalleryDemo>[
+      GalleryDemo(slug: 'basic', title: 'Basic', builder: lightboxBasic),
+      GalleryDemo(
+          slug: 'standalone', title: 'Standalone', builder: lightboxStandalone),
+      GalleryDemo(
+          slug: 'contract', title: 'Contract', builder: kunLightboxContract),
     ],
   ),
   GalleryComponent(
