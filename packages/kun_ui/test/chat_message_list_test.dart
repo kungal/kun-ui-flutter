@@ -1,4 +1,5 @@
 import 'package:flutter/gestures.dart';
+import 'package:flutter/rendering.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter/widgets.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -335,6 +336,59 @@ void tapRecognizers(WidgetTester tester) {
     recognizer.onTap?.call();
   }
 }
+
+SemanticsNode listSemantics(WidgetTester tester) {
+  return tester.getSemantics(find.byType(KunChatMessageList));
+}
+
+SemanticsNode? nodeWithLabel(SemanticsNode root, String needle) {
+  SemanticsNode? found;
+  void walk(SemanticsNode node) {
+    if (found != null) {
+      return;
+    }
+    if (node.getSemanticsData().label.contains(needle)) {
+      found = node;
+      return;
+    }
+    node.visitChildren((SemanticsNode child) {
+      walk(child);
+      return found == null;
+    });
+  }
+
+  walk(root);
+  return found;
+}
+
+List<String> unnamedActionable(SemanticsNode root) {
+  final List<String> found = <String>[];
+  void walk(SemanticsNode node) {
+    final SemanticsData data = node.getSemanticsData();
+    final bool actionable = data.hasAction(SemanticsAction.tap) ||
+        data.hasAction(SemanticsAction.longPress) ||
+        data.hasAction(SemanticsAction.customAction);
+    if (actionable && data.label.isEmpty) {
+      found.add(
+        'id=${node.id} tap=${data.hasAction(SemanticsAction.tap)} '
+        'longPress=${data.hasAction(SemanticsAction.longPress)} '
+        'custom=${data.hasAction(SemanticsAction.customAction)} '
+        'rect=${node.rect}',
+      );
+    }
+    node.visitChildren((SemanticsNode child) {
+      walk(child);
+      return true;
+    });
+  }
+
+  walk(root);
+  return found;
+}
+
+CustomSemanticsAction menuAction() => CustomSemanticsAction(
+      label: KunMessages.en.chatMenu.label,
+    );
 
 void main() {
   testWidgets('1 bottom origin puts the newest row on the bottom edge', (
@@ -1344,5 +1398,221 @@ void main() {
     );
     await tester.pump(KunDurations.base);
     expect(find.text('2'), findsWidgets);
+  });
+
+  testWidgets('a text row and a service row expose no tap action', (
+    WidgetTester tester,
+  ) async {
+    final SemanticsHandle handle = tester.ensureSemantics();
+    final KunChatFormattedText parsed = parseKunChatMarkdown(
+      'plain text and [site-link](https://example.com)',
+    );
+    final KunChatMessage text = msg(
+      id: 't',
+      seq: 1,
+      text: parsed.text,
+      entities: parsed.entities,
+    );
+    final KunChatMessage service = msg(
+      id: 's',
+      seq: 2,
+      text: '',
+      kind: KunChatMessageKind.service,
+      serviceAction: const KunChatGroupCreatedAction(title: 'Room'),
+    );
+    await pumpList(
+      tester,
+      messages: <KunChatMessage>[text, service],
+    );
+    final SemanticsData textRow =
+        tester.getSemantics(rowOf(text)).getSemanticsData();
+    expect(textRow.hasAction(SemanticsAction.tap), isFalse);
+    expect(textRow.hasAction(SemanticsAction.focus), isTrue);
+    final SemanticsNode? link =
+        nodeWithLabel(listSemantics(tester), 'site-link');
+    expect(link, isNotNull);
+    expect(link!.getSemanticsData().hasAction(SemanticsAction.tap), isTrue);
+    expect(
+      tester.getSemantics(rowOf(service)).getSemanticsData().hasAction(
+            SemanticsAction.tap,
+          ),
+      isFalse,
+    );
+    handle.dispose();
+  });
+
+  testWidgets('the list has no unnamed actionable node', (
+    WidgetTester tester,
+  ) async {
+    final SemanticsHandle handle = tester.ensureSemantics();
+    final KunChatMessageListController controller =
+        KunChatMessageListController();
+    addTearDown(controller.dispose);
+    const String album = 'g1';
+    final KunChatMessage dayText = msg(
+      id: 'd',
+      seq: 1,
+      text: 'day-a-text',
+      at: _day0,
+    );
+    final KunChatMessage service = msg(
+      id: 's',
+      seq: 2,
+      text: '',
+      kind: KunChatMessageKind.service,
+      serviceAction: const KunChatGroupCreatedAction(title: 'Room'),
+      at: _day2,
+    );
+    final KunChatMessage groupText = msg(
+      id: 'g',
+      seq: 3,
+      text: 'group-hi',
+      at: _day2.add(const Duration(minutes: 1)),
+    );
+    final KunChatMessage photo = msg(
+      id: 'p',
+      seq: 4,
+      text: 'caption',
+      media: const KunChatPhoto(imageHash: 'p', width: 120, height: 80),
+      at: _day2.add(const Duration(minutes: 2)),
+    );
+    final KunChatMessage albumA = msg(
+      id: 'a1',
+      seq: 5,
+      text: '',
+      media: const KunChatPhoto(imageHash: 'a', width: 120, height: 80),
+      mediaGroupId: album,
+      at: _day2.add(const Duration(minutes: 3)),
+    );
+    final KunChatMessage albumB = msg(
+      id: 'a2',
+      seq: 6,
+      text: '',
+      media: const KunChatPhoto(imageHash: 'b', width: 120, height: 80),
+      mediaGroupId: album,
+      at: _day2.add(const Duration(minutes: 3, seconds: 1)),
+    );
+    final KunChatMessage reply = msg(
+      id: 'r',
+      seq: 7,
+      senderId: 'me',
+      text: 'reply-body',
+      replyTo: const KunChatReplyTo(
+        seq: 3,
+        senderId: 'her',
+        text: 'group-hi',
+        deleted: false,
+      ),
+      at: _day2.add(const Duration(minutes: 4)),
+    );
+    await pumpList(
+      tester,
+      controller: controller,
+      messages: <KunChatMessage>[
+        dayText,
+        service,
+        groupText,
+        photo,
+        albumA,
+        albumB,
+        reply,
+      ],
+      kind: KunChatKind.group,
+      lastReadSeq: 2,
+      height: 800,
+    );
+    final List<String> unnamed = <String>[];
+    Future<void> collectAt(int seq) async {
+      expect(
+        controller.scrollToSeq(seq, highlight: false, animate: false),
+        isTrue,
+      );
+      await tester.pump();
+      unnamed.addAll(unnamedActionable(listSemantics(tester)));
+    }
+
+    await collectAt(7);
+    expect(find.byKey(KunChatBubble.replyKey), findsOneWidget);
+    await collectAt(5);
+    expect(find.byKey(KunChatBubble.photoKey(0)), findsWidgets);
+    await collectAt(4);
+    expect(rowOf(photo), findsOneWidget);
+    await collectAt(3);
+    expect(find.byType(KunAvatar), findsWidgets);
+    expect(find.text(KunMessages.en.chat.unreadDivider), findsOneWidget);
+    await collectAt(2);
+    expect(find.byKey(KunChatBubble.serviceKey), findsOneWidget);
+    await collectAt(1);
+    expect(rowOf(dayText), findsOneWidget);
+    expect(unnamed, isEmpty);
+    handle.dispose();
+  });
+
+  testWidgets('a screen reader opens the menu from the labelled row node',
+      (WidgetTester tester) async {
+    final SemanticsHandle handle = tester.ensureSemantics();
+    final KunChatMessage text = msg(id: 't', seq: 1, text: 'plain text');
+    final KunChatMessage photo = msg(
+      id: 'p',
+      seq: 2,
+      text: 'caption',
+      media: const KunChatPhoto(imageHash: 'p', width: 120, height: 80),
+    );
+    await pumpList(
+      tester,
+      messages: <KunChatMessage>[text, photo],
+      height: 800,
+    );
+    final SemanticsNode root = listSemantics(tester);
+    final SemanticsNode? textNode = nodeWithLabel(root, 'plain text');
+    expect(textNode, isNotNull);
+    expect(textNode!.getSemanticsData().label, isNotEmpty);
+    final CustomSemanticsAction menu = menuAction();
+    expect(
+      textNode,
+      isSemantics(
+        customActions: <CustomSemanticsAction>[menu],
+      ),
+    );
+    final SemanticsNode? photoNode = nodeWithLabel(root, 'Photo from Haru');
+    expect(photoNode, isNotNull);
+    expect(photoNode!.getSemanticsData().label, isNotEmpty);
+    expect(
+      photoNode,
+      isSemantics(
+        isButton: true,
+        customActions: <CustomSemanticsAction>[menu],
+      ),
+    );
+
+    tester.semantics.customAction(
+      find.semantics.byPredicate(
+        (SemanticsNode node) =>
+            node.getSemanticsData().label.contains('plain text') &&
+            node.getSemanticsData().hasAction(SemanticsAction.customAction),
+      ),
+      menu,
+    );
+    await tester.pump();
+    await tester.pump();
+    expect(menuPanel, findsOneWidget);
+
+    await pumpList(
+      tester,
+      messages: <KunChatMessage>[text, photo],
+      height: 800,
+    );
+    tester.semantics.customAction(
+      find.semantics.byPredicate(
+        (SemanticsNode node) =>
+            node.getSemanticsData().label.contains('Photo from Haru') &&
+            node.getSemanticsData().hasAction(SemanticsAction.customAction),
+      ),
+      menu,
+    );
+    await tester.pump();
+    await tester.pump();
+    expect(menuPanel, findsOneWidget);
+    handle.dispose();
   });
 }

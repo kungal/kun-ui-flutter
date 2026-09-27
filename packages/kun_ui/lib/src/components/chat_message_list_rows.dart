@@ -513,6 +513,27 @@ class _MessageListRowState extends State<_MessageListRow>
     controller.forward();
   }
 
+  void _openMenuAtRow() {
+    final RenderBox? box = context.findRenderObject() as RenderBox?;
+    if (box == null || !box.hasSize) {
+      return;
+    }
+    final Offset origin = box.localToGlobal(Offset.zero);
+    widget.onOpenMenu(
+      Offset(
+        origin.dx + _kMenuAtRowX,
+        origin.dy + box.size.height - _kMenuAtRowY,
+      ),
+    );
+  }
+
+  Map<CustomSemanticsAction, VoidCallback> _menuActions() {
+    return <CustomSemanticsAction, VoidCallback>{
+      CustomSemanticsAction(label: widget.catalog.chatMenu.label):
+          _openMenuAtRow,
+    };
+  }
+
   @override
   Widget build(BuildContext context) {
     final KunChatMessageRow row = widget.row;
@@ -534,6 +555,8 @@ class _MessageListRowState extends State<_MessageListRow>
       onPointerCancel: _onPointerCancel,
       child: GestureDetector(
         behavior: HitTestBehavior.translucent,
+        // Any TapGestureRecognizer gets a semantics tap action, onTap or not.
+        excludeFromSemantics: true,
         onSecondaryTapUp: (TapUpDetails details) {
           widget.onOpenMenu(details.globalPosition);
         },
@@ -610,6 +633,7 @@ class _MessageListRowState extends State<_MessageListRow>
                             reactionOptions: widget.reactionOptions,
                             resolveMediaUrl: widget.resolveMediaUrl,
                             resolveMessage: widget.resolveMessage,
+                            semanticActions: _menuActions(),
                             lightbox: false,
                             onReplyTap: widget.onReplyTap,
                             onReact: widget.onReact,

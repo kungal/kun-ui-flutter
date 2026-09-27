@@ -152,6 +152,7 @@ class KunChatBubble extends StatefulWidget {
     this.reactionOptions = const <KunChatReactionOption>[],
     this.resolveMediaUrl,
     this.resolveMessage,
+    this.semanticActions,
     this.showSender = false,
     this.status,
     this.users = const <KunChatUser>[],
@@ -197,6 +198,11 @@ class KunChatBubble extends StatefulWidget {
   /// Finds a loaded message by seq — the text a "pinned a message" service
   /// line quotes.
   final KunChatMessage? Function(int seq)? resolveMessage;
+
+  /// Extra actions merged onto the labelled text node and each photo
+  /// button. [KunChatMessageList] uses this so a screen reader can open
+  /// the message menu.
+  final Map<CustomSemanticsAction, VoidCallback>? semanticActions;
 
   /// Show the sender's name on top: group chats, first of a run.
   final bool showSender;
@@ -333,12 +339,20 @@ String? _statusLabel(KunChatSendStatus? status, KunMessages messages) {
   };
 }
 
-Widget _withSenderPrefix(String? prefix, Widget child) {
-  if (prefix == null) {
+Widget _withSenderPrefix(
+  String? prefix,
+  Widget child, {
+  Map<CustomSemanticsAction, VoidCallback>? semanticActions,
+}) {
+  if (prefix == null && (semanticActions == null || semanticActions.isEmpty)) {
     return child;
   }
   // A zero-size semantics node is dropped by Android.
-  return Semantics(label: prefix, child: child);
+  return Semantics(
+    label: prefix,
+    customSemanticsActions: semanticActions,
+    child: child,
+  );
 }
 
 BorderRadius _corners({
@@ -593,6 +607,7 @@ class _KunChatBubbleState extends State<KunChatBubble> {
                 inset: insetMedia,
                 label: messages.chat.photoFrom(name: sender.name),
                 onTap: () => _openPhoto(context, 0, photos, sender.name),
+                semanticActions: widget.semanticActions,
                 overlay: mediaOnly && !hasReactions
                     ? _MediaMeta(
                         edited: widget.message.editedAt != null
@@ -626,6 +641,7 @@ class _KunChatBubbleState extends State<KunChatBubble> {
                 inset: insetMedia,
                 label: messages.chat.photoFrom(name: sender.name),
                 onTap: (int i) => _openPhoto(context, i, photos, sender.name),
+                semanticActions: widget.semanticActions,
                 overlay: mediaOnly && !hasReactions
                     ? _MediaMeta(
                         time: time,
@@ -652,6 +668,7 @@ class _KunChatBubbleState extends State<KunChatBubble> {
             _TextBlock(
               message: widget.message,
               senderPrefix: senderPrefix,
+              semanticActions: widget.semanticActions,
               onLink: widget.onLink,
               onMention: widget.onMention,
               showCornerMeta: !hasReactions,
@@ -1065,6 +1082,7 @@ class _SinglePhoto extends StatelessWidget {
     required this.inset,
     required this.label,
     required this.onTap,
+    this.semanticActions,
     this.overlay,
   });
 
@@ -1075,6 +1093,7 @@ class _SinglePhoto extends StatelessWidget {
   final bool inset;
   final String label;
   final VoidCallback onTap;
+  final Map<CustomSemanticsAction, VoidCallback>? semanticActions;
   final Widget? overlay;
 
   @override
@@ -1104,6 +1123,7 @@ class _SinglePhoto extends StatelessWidget {
                   child: Semantics(
                     button: true,
                     label: label,
+                    customSemanticsActions: semanticActions,
                     child: KunImage(
                       src: src,
                       thumbhash: photo.thumbhash,
@@ -1140,6 +1160,7 @@ class _AlbumMosaic extends StatelessWidget {
     required this.inset,
     required this.label,
     required this.onTap,
+    this.semanticActions,
     this.overlay,
   });
 
@@ -1151,6 +1172,7 @@ class _AlbumMosaic extends StatelessWidget {
   final bool inset;
   final String label;
   final ValueChanged<int> onTap;
+  final Map<CustomSemanticsAction, VoidCallback>? semanticActions;
   final Widget? overlay;
 
   @override
@@ -1209,6 +1231,7 @@ class _AlbumMosaic extends StatelessWidget {
               key: KunChatBubble.photoKey(i),
               button: true,
               label: label,
+              customSemanticsActions: semanticActions,
               child: KunImage(
                 src: srcOf(photo),
                 thumbhash: photo.thumbhash,
@@ -1317,6 +1340,7 @@ class _TextBlock extends StatelessWidget {
   const _TextBlock({
     required this.message,
     this.senderPrefix,
+    this.semanticActions,
     required this.onLink,
     required this.onMention,
     required this.showCornerMeta,
@@ -1326,6 +1350,7 @@ class _TextBlock extends StatelessWidget {
 
   final KunChatMessage message;
   final String? senderPrefix;
+  final Map<CustomSemanticsAction, VoidCallback>? semanticActions;
   final KunChatLinkCallback? onLink;
   final KunChatUserCallback? onMention;
   final bool showCornerMeta;
@@ -1362,6 +1387,7 @@ class _TextBlock extends StatelessWidget {
         onLink: onLink,
         onMention: onMention,
       ),
+      semanticActions: semanticActions,
     );
     return Stack(
       clipBehavior: Clip.none,
