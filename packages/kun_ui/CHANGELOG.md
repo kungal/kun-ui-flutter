@@ -1,5 +1,99 @@
 # Changelog
 
+## 0.16.0
+
+Built on kun-ui 2.51.0. The chat components, the second part of the chat port
+for NextMoe `/v2/chat`, plus `KunLightbox`. Nothing here is a breaking change.
+
+- **`KunChatMessageList`**, the conversation view, built on a reversed
+  scroll view whose offset 0 is the live end.
+  - **Layout.** Day sections with a pill that pins under the top and is
+    pushed out by the next day's. The unread divider, service rows, and
+    group avatars on each run's last message.
+  - **Anchoring.** Loading older messages never moves what is on screen.
+    The list stays at the bottom when the reader was there, or when they
+    send, and otherwise keeps the row they are looking at in place.
+  - **Paging and read receipts.** Pages load within 800px of either end.
+    `onRead` only increases, and only fires while the app is in the
+    foreground.
+  - **Messages.** A shared `KunLightbox` over every loaded photo. The
+    message menu opens on a right-click at the pointer, a 450 ms
+    long-press, or Enter, Shift+F10 or the context-menu key on a focused
+    row. Swipe left to reply on touch. A scroll-to-bottom button with an
+    unread badge.
+  - **Accessibility.** Incoming messages are announced. Rows take a
+    roving keyboard focus. Every row offers a "Message actions" screen
+    reader action.
+  - **`KunChatMessageListController`** carries the web's exposed methods:
+    `scrollToSeq` (which reaches rows never built), `scrollToBottom` and
+    `atBottom`.
+  - **Not ported yet: quoting a text selection.** The web offers `quote`
+    only while text is selected, so the menu does not offer it.
+- **`KunChatBubble`**, the message bubble, sized like the web's `w-fit`.
+  - **Shape.** The web's tail and corners, per position in a run.
+  - **Content.** Sender name, reply preview, single photo or album
+    mosaic, context card, reactions, a retry button, and service pills.
+  - **The time and status sit on the text's last line when they fit.**
+    That uses an invisible copy after the text, as the web does,
+    through a new `KunChatText.trailing`.
+  - **Photos** open `KunLightbox`.
+  - **Media URLs.** `resolveMediaUrl` (a `KunChatMediaUrlResolver`) turns
+    `KunChatMedia` into a URL.
+- **`KunChatComposer`**, the message input. A reply, quote or edit bar,
+  auto-grow, a character counter, and send through
+  `parseKunChatMarkdown`. Edit mode loads the message through
+  `formatKunChatMarkdown` and stashes the draft. Typing events are
+  throttled to `kunChatTypingInterval`.
+  - **Enter.** `enterToSend: null` inserts a newline on Android and iOS,
+    where the send button sends, and sends on Enter elsewhere.
+  - **Attachments.** Flutter has no framework file picker, so the
+    paperclip calls `onAttach` and the app passes its picks back as
+    `attachments`. Each `KunChatAttachment` carries an `ImageProvider`.
+    Pasting images and dropping files need plugins and are not
+    implemented.
+- **`KunChatConversationItem`**, a conversation row.
+  - **Layout.** Avatar, title, time and status, and a preview line
+    (typing, then draft, then last message). Mention, unread and pinned
+    badges.
+  - **Swipe actions.** Swipe on touch to reveal them. They are also
+    offered as screen reader actions, which the web does not do.
+- **`KunChatMessageMenu`**, the message menu. A quick reaction row that
+  expands into the full picker, over built-in actions and your own.
+  `KunChatMessageAction.reply` and the other built-ins are constants.
+  - **Placement.** Opens at a point in the root overlay, kept 8px
+    inside the screen and clear of the system bars.
+  - **Closing.** An outside tap, Escape, the system back, or a wheel
+    scroll elsewhere.
+- **`KunChatText`**, a message's text and formatting. Links, mentions,
+  code chips, code blocks with a copy button, quotes, and spoilers under
+  the web's particle cover. `preview` renders one line.
+  - **Links and mentions** call `onLink` / `onMention` with an event
+    whose default, `KunUIConfig.navigate` (to the link, or to the new
+    `KunUIConfig.userLinkForId` for a user), runs unless you call
+    `preventDefault()`.
+  - **Screen readers** read a hidden spoiler as the reveal hint, never
+    as its text.
+- **`KunChatTyping`**, **`KunChatRequestBar`** and
+  **`KunChatReactionPicker`**. When reaction art fails to load, the emoji
+  shows in its place.
+- **`KunLightbox`** and **`showKunLightbox`**, the full-screen image
+  viewer.
+  - **Gestures.** Wheel and pinch zoom, pan, swipe between images,
+    double-tap zoom, rotate, a thumbnail strip, and the arrow keys.
+  - **Chrome.** Its controls stay clear of the status and navigation
+    bars.
+  - **Download** needs a plugin and is not included.
+- **Dates and lists are formatted without `intl`.** The chat's time,
+  day, list-time and "A, B and C" shapes are tabulated for the zh-CN and
+  en catalogs, and checked against Node's `Intl`.
+- **Checked on a Pixel 10 Pro, with TalkBack.** Fixes found there:
+  - failed images no longer show Flutter's error box, or put the
+    exception into the accessibility tree;
+  - the sender reaches the screen reader ("Name: text");
+  - nothing actionable is left unnamed;
+  - each conversation row is a single button;
+  - the unread count is read once.
+
 ## 0.15.0
 
 Built on kun-ui 2.51.0. The first part of the chat port, for NextMoe
