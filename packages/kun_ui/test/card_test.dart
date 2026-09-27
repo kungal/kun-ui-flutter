@@ -1,3 +1,4 @@
+import 'package:flutter/rendering.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter/widgets.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -178,6 +179,66 @@ void main() {
       tester.getSemantics(find.byType(KunCard)).flagsCollection.isButton,
       isTrue,
     );
+  });
+
+  testWidgets('a clickable card clips at its border, never inside the padding',
+      (tester) async {
+    RRect clipOf() {
+      final RenderClipRRect clip = tester.renderObject<RenderClipRRect>(
+        find.descendant(
+          of: find.byType(KunCard),
+          matching: find.byType(ClipRRect),
+        ),
+      );
+      return clip.borderRadius
+          .resolve(TextDirection.ltr)
+          .toRRect(clip.localToGlobal(Offset.zero) & clip.size);
+    }
+
+    Rect cardRect() => tester.getRect(
+          find
+              .descendant(
+                of: find.byType(KunCard),
+                matching: find.byType(Container),
+              )
+              .first,
+        );
+
+    await tester.pumpWidget(
+      wrap(
+        const KunCard(
+          clickable: true,
+          padding: KunCardPadding.md,
+          rounded: KunUIRounded.lg,
+          child: body,
+        ),
+      ),
+    );
+    final Rect content = tester.getRect(find.byKey(const ValueKey('body')));
+    final RRect clip = clipOf();
+    expect(clip.outerRect, cardRect().deflate(1));
+    expect(clip.tlRadiusX, KunUIRounded.lg.radius - 1);
+    for (final Offset corner in [
+      content.topLeft,
+      content.topRight,
+      content.bottomLeft,
+      content.bottomRight,
+    ]) {
+      expect(clip.contains(corner - (corner - content.center) * 0.001), isTrue);
+    }
+
+    await tester.pumpWidget(
+      wrap(
+        const KunCard(
+          clickable: true,
+          bordered: false,
+          rounded: KunUIRounded.lg,
+          child: body,
+        ),
+      ),
+    );
+    expect(clipOf().outerRect, cardRect());
+    expect(clipOf().tlRadiusX, KunUIRounded.lg.radius);
   });
 
   testWidgets('the slots stack header, cover, body, footer', (tester) async {

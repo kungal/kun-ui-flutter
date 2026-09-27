@@ -122,9 +122,8 @@ class _KunCardState extends State<KunCard> {
   Widget build(BuildContext context) {
     final theme = KunTheme.of(context);
     final scheme = theme.colors;
-    final radius = BorderRadius.circular(
-      (widget.rounded ?? theme.rounded).radius,
-    );
+    final double cornerRadius = (widget.rounded ?? theme.rounded).radius;
+    final radius = BorderRadius.circular(cornerRadius);
 
     // A tinted card deepens the border to its own 300 shade (web
     // `border-{color}-300`).
@@ -155,24 +154,35 @@ class _KunCardState extends State<KunCard> {
       if (widget.footer != null) widget.footer!,
     ];
 
-    Widget content = Column(
-      mainAxisSize: MainAxisSize.min,
-      crossAxisAlignment: CrossAxisAlignment.stretch,
-      spacing: KunSpacing.unit * 4,
-      children: blocks,
+    final Border? outline = widget.bordered ? Border.all(color: border) : null;
+
+    Widget content = Padding(
+      padding: EdgeInsets.all(widget.padding.value),
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        spacing: KunSpacing.unit * 4,
+        children: blocks,
+      ),
     );
 
     if (widget.clickable) {
-      content =
-          ClipRRect(borderRadius: radius, child: content); // overflow-hidden
+      // The web's overflow-hidden clips the padding box, at the border's
+      // inner edge, so its rounded corners fall in the padding. Clipped
+      // inside the padding instead, the content box took the full radius on
+      // its own corners and cut the last glyph of a right-aligned count.
+      final double inner = cornerRadius - (outline?.top.width ?? 0);
+      content = ClipRRect(
+        borderRadius: BorderRadius.circular(inner < 0 ? 0 : inner),
+        child: content,
+      );
     }
 
     final bool tinted = fill != null && fill.a < 1;
     Widget card = Container(
-      padding: EdgeInsets.all(widget.padding.value),
       decoration: BoxDecoration(
         color: fill,
-        border: widget.bordered ? Border.all(color: border) : null,
+        border: outline,
         borderRadius: radius,
         boxShadow: widget.isTransparent || tinted ? null : KunShadows.sm,
       ),
