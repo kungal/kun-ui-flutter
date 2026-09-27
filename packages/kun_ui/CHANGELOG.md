@@ -1,5 +1,36 @@
 # Changelog
 
+## 0.14.0
+
+Built on kun-ui 2.47.2. Nothing here is a breaking change.
+
+- **`KunDatePicker`**, the date and date-range picker, with the whole
+  contract: `KunDatePicker` for one date and `KunDatePicker.range` for two,
+  at day, month or year `precision`. The panel header zooms out day →
+  month → year, and a pick in a coarser view drills back in.
+  - The value is a local `DateTime` at midnight on the first day of the
+    chosen period (`DateTime(y, m, d)`, `DateTime(y, m)` or `DateTime(y)`),
+    where the web emits a `'yyyy-MM-dd'` string. A range is a
+    `KunDateRange` whose ends may be null. `minDate`, `maxDate` and the
+    value are read by their year, month and day only, so
+    `minDate: DateTime.now()` means "from today".
+  - The panel is a portal like `KunSelect`'s, not a route, so it works
+    inside a `KunModal`: the first back or Escape closes the picker and
+    leaves the dialog open. Measured on a Pixel 10 Pro.
+  - The trigger's × is pointer-only, with the web's 6px of extra tap area
+    around it. Backspace or Delete on the focused trigger clears from the
+    keyboard, and the panel's Clear button is the screen-reader path. Each
+    day cell is one button named by its full date (`2026年9月27日 星期日`).
+  - Weekday and month names, and each day cell's full date, follow the
+    calendar locale: `locale`, else the `KunMessagesScope` code. `zh-CN`
+    and `ja` match and anything else is English, as on the web. kun_ui
+    still depends on no third-party package: the names are date-fns 4.4.0's,
+    and `format` takes the date-fns pattern letters for dates (`y`, `M`,
+    `L`, `d`, `do`, `E`, `P`) plus quoted text.
+  - As on the web, the trigger text is formatted in English whatever the
+    calendar locale, which only shows with a custom `format` that names a
+    month or weekday.
+
 ## 0.13.2
 
 A focus fix from the kungal app. There are no API changes.
