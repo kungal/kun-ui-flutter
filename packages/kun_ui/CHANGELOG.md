@@ -1,5 +1,17 @@
 # Changelog
 
+## 0.14.1
+
+A clipping fix from the kungal app. There are no API changes.
+
+- **`KunCard(clickable: true)` no longer cuts into content at its
+  corners.** The clip that stands in for the web's `overflow-hidden` sat
+  inside the padding, so the content box took the card's full corner radius
+  on its own corners. A right-aligned count on the card's last row lost the
+  outer corner of its last glyph, with no overflow reported. The clip now
+  follows the border's inner edge, as the web's does, so the rounded corners
+  fall in the padding.
+
 ## 0.14.0
 
 Built on kun-ui 2.47.2. Nothing here is a breaking change.
