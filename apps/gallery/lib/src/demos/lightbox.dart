@@ -116,17 +116,23 @@ class _LightboxBasicState extends State<_LightboxBasic> {
           spacing: KunSpacing.unit * 3,
           children: <Widget>[
             for (int i = 0; i < _basicImages.length; i++)
-              GestureDetector(
+              Semantics(
+                button: true,
+                label: _basicImages[i].alt,
                 onTap: () => _openAt(i),
-                child: ClipRRect(
-                  borderRadius: BorderRadius.circular(KunRounded.lg),
-                  child: SizedBox(
-                    width: KunSpacing.unit * 24,
-                    height: KunSpacing.unit * 24,
-                    child: Image(
-                      image: _demoImageProvider(_basicImages[i].src),
-                      fit: BoxFit.cover,
-                      semanticLabel: _basicImages[i].alt,
+                child: GestureDetector(
+                  excludeFromSemantics: true,
+                  onTap: () => _openAt(i),
+                  child: ClipRRect(
+                    borderRadius: BorderRadius.circular(KunRounded.lg),
+                    child: SizedBox(
+                      width: KunSpacing.unit * 24,
+                      height: KunSpacing.unit * 24,
+                      child: Image(
+                        image: _demoImageProvider(_basicImages[i].src),
+                        fit: BoxFit.cover,
+                        excludeFromSemantics: true,
+                      ),
                     ),
                   ),
                 ),

@@ -670,6 +670,10 @@ class _KunChatConversationItemState extends State<KunChatConversationItem>
       cursor: SystemMouseCursors.click,
       child: GestureDetector(
         behavior: HitTestBehavior.opaque,
+        // The row's Semantics already carries the tap. A second tap action
+        // cannot merge with it, which left TalkBack an unnamed button over a
+        // separately clickable label.
+        excludeFromSemantics: true,
         onTap: _onRowTap,
         child: AnimatedContainer(
           duration:
@@ -682,10 +686,12 @@ class _KunChatConversationItemState extends State<KunChatConversationItem>
           ),
           child: Row(
             children: <Widget>[
-              KunAvatar(
-                user: avatarUser,
-                size: KunAvatarSize.xl,
-                isNavigation: false,
+              ExcludeSemantics(
+                child: KunAvatar(
+                  user: avatarUser,
+                  size: KunAvatarSize.xl,
+                  isNavigation: false,
+                ),
               ),
               const SizedBox(width: KunSpacing.unit * 3),
               Expanded(

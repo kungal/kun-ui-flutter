@@ -1,6 +1,8 @@
 import 'package:flutter/gestures.dart';
 import 'package:flutter/rendering.dart';
 import 'package:flutter/services.dart';
+import 'dart:ui' show Tristate;
+
 import 'package:flutter/widgets.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:kun_ui/kun_ui.dart';
@@ -209,6 +211,42 @@ void main() {
       wrap(const KunChatConversationItem(user: haru, pinned: true)),
     );
     expect(find.byIcon(KunIcons.pin), findsOneWidget);
+  });
+
+  testWidgets('the row is one tappable node, named and selected', (
+    WidgetTester tester,
+  ) async {
+    final SemanticsHandle semantics = tester.ensureSemantics();
+    await tester.pumpWidget(
+      wrap(
+        KunChatConversationItem(
+          user: haru,
+          selected: true,
+          lastMessage: message(
+            createdAt: DateTime(2026, 9, 27, 9, 14),
+            text: 'hello',
+          ),
+          onTap: () {},
+        ),
+      ),
+    );
+    final List<SemanticsData> tappable = <SemanticsData>[];
+    void walk(SemanticsNode node) {
+      final SemanticsData data = node.getSemanticsData();
+      if (data.hasAction(SemanticsAction.tap)) {
+        tappable.add(data);
+      }
+      node.visitChildren((SemanticsNode child) {
+        walk(child);
+        return true;
+      });
+    }
+
+    walk(tester.getSemantics(find.byType(KunChatConversationItem)));
+    expect(tappable, hasLength(1));
+    expect(tappable.single.label, contains('hello'));
+    expect(tappable.single.flagsCollection.isSelected, Tristate.isTrue);
+    semantics.dispose();
   });
 
   testWidgets('unread badge digit is not read after the unread label', (
