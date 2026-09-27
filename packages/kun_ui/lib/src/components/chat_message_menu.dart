@@ -832,7 +832,9 @@ class _KunChatMessageMenuState extends State<KunChatMessageMenu>
         key: const ValueKey<String>('KunChatMessageMenu.panel'),
         container: true,
         explicitChildNodes: true,
-        role: SemanticsRole.menu,
+        // The list clears actions on close while this portal is still
+        // exiting; role=menu with no items asserts.
+        role: _hasContent ? SemanticsRole.menu : null,
         label: messages.chatMenu.label,
         child: GestureDetector(
           excludeFromSemantics: true,

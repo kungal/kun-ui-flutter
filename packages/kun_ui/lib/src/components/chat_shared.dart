@@ -54,9 +54,10 @@ typedef KunChatLinkCallback = void Function(KunChatLinkEvent event);
 /// Called when a chat user is tapped: a mention, or a sender name.
 typedef KunChatUserCallback = void Function(KunChatUserEvent event);
 
-/// Reaction art at [size]. Empty or failed [imageUrl] draws [emoji] in the
-/// same box so Flutter's error box never reaches the screen or the
-/// semantics tree.
+/// Reaction art. An [imageUrl] paints at [size]; a failed load still
+/// draws [emoji] in that box so Flutter's error box never reaches the
+/// screen or the semantics tree. No image draws [emoji] as unboxed
+/// text (web `text-base leading-none`), sized by its glyphs.
 Widget kunChatReactionArt({
   required BuildContext context,
   required double size,
@@ -64,6 +65,10 @@ Widget kunChatReactionArt({
   String? imageUrl,
   TextStyle? style,
 }) {
+  final TextStyle textStyle = (style ?? KunText.base).copyWith(
+    height: 1,
+    leadingDistribution: TextLeadingDistribution.even,
+  );
   final Widget fallback = ExcludeSemantics(
     child: SizedBox(
       width: size,
@@ -71,16 +76,15 @@ Widget kunChatReactionArt({
       child: Center(
         child: Text(
           emoji,
-          style: (style ?? KunText.xl2).copyWith(
-            height: 1,
-            leadingDistribution: TextLeadingDistribution.even,
-          ),
+          style: textStyle,
         ),
       ),
     ),
   );
   if (imageUrl == null || imageUrl.isEmpty) {
-    return fallback;
+    return ExcludeSemantics(
+      child: Text(emoji, style: textStyle),
+    );
   }
   return Image(
     image: KunUIConfigScope.of(context).imageProvider(imageUrl),

@@ -1540,10 +1540,7 @@ class _ReactionChip extends StatelessWidget {
       size: _kChipArt,
       emoji: option?.emoji ?? reaction.reaction,
       imageUrl: option?.imageUrl,
-      style: TextStyle(
-        fontSize: KunText.base.fontSize,
-        color: foreground,
-      ),
+      style: KunText.base.copyWith(color: foreground),
     );
 
     return MouseRegion(

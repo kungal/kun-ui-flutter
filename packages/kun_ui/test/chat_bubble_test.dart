@@ -1277,6 +1277,52 @@ void main() {
     expect(image.src, isEmpty);
   });
 
+  testWidgets('a reaction key with no option is unboxed text, not clipped', (
+    WidgetTester tester,
+  ) async {
+    await tester.pumpWidget(
+      wrap(
+        KunChatBubble(
+          message: _msg(
+            text: 'hi',
+            reactions: const <KunChatReaction>[
+              KunChatReaction(reaction: 'heart', count: 2, reacted: false),
+            ],
+          ),
+          users: _users,
+        ),
+      ),
+    );
+    await tester.pump();
+    expect(tester.takeException(), isNull);
+    expect(find.text('heart'), findsOneWidget);
+    final RenderParagraph para = tester.renderObject<RenderParagraph>(
+      find.text('heart'),
+    );
+    expect(para.didExceedMaxLines, isFalse);
+    expect(para.size.width, greaterThan(KunSpacing.unit * 5));
+    expect(
+      para.size.width,
+      greaterThanOrEqualTo(para.textSize.width - 0.5),
+    );
+    expect(
+      para.size.width,
+      greaterThanOrEqualTo(
+        para.getMaxIntrinsicWidth(double.infinity) - 0.5,
+      ),
+    );
+    final String chipLabel = KunMessages.en.chat.reactionCount(
+      label: 'heart',
+      count: 2,
+    );
+    final Size chip = tester.getSize(
+      find.byWidgetPredicate((Widget w) {
+        return w is Semantics && w.properties.label == chipLabel;
+      }),
+    );
+    expect(chip.width, greaterThan(KunSpacing.unit * 5 + 8));
+  });
+
   testWidgets('a failed reaction image falls back to the emoji', (
     WidgetTester tester,
   ) async {

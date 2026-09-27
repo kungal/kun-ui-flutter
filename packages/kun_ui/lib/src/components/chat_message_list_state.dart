@@ -1272,13 +1272,21 @@ class _KunChatMessageListState extends State<KunChatMessageList>
               children: <Widget>[
                 NotificationListener<Notification>(
                   onNotification: (Notification n) {
-                    if (n is ScrollNotification &&
+                    // Pointer-up with no movement lets the list's vertical
+                    // drag win the arena as a zero-distance drag, which
+                    // still dispatches ScrollStartNotification /
+                    // ScrollEndNotification. The web closes the menu only
+                    // when the list actually moves.
+                    if (_menu != null &&
+                        n is ScrollUpdateNotification &&
                         n.depth == 0 &&
-                        _menu != null &&
+                        (n.scrollDelta ?? 0) != 0 &&
                         !_adjusting) {
                       setState(() => _menu = null);
                     }
-                    if (n is UserScrollNotification && _menu != null) {
+                    if (_menu != null &&
+                        n is UserScrollNotification &&
+                        n.direction != ScrollDirection.idle) {
                       setState(() => _menu = null);
                     }
                     if (n is SizeChangedLayoutNotification) {
@@ -1305,10 +1313,13 @@ class _KunChatMessageListState extends State<KunChatMessageList>
                     left: 0,
                     right: 0,
                     child: IgnorePointer(
-                      child: _DayPill(
-                        key: KunChatMessageList.stickyDayKey,
-                        label: stickyLabel,
-                        scheme: scheme,
+                      child: Center(
+                        heightFactor: 1,
+                        child: _DayPill(
+                          key: KunChatMessageList.stickyDayKey,
+                          label: stickyLabel,
+                          scheme: scheme,
+                        ),
                       ),
                     ),
                   ),

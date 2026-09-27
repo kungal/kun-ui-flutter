@@ -736,6 +736,71 @@ void main() {
     }
   });
 
+  testWidgets('8b the pinned day pill matches the in-flow pill', (
+    WidgetTester tester,
+  ) async {
+    final List<KunChatMessage> messages = <KunChatMessage>[
+      for (int i = 1; i <= 12; i++)
+        msg(
+          id: 'a$i',
+          seq: i,
+          text: 'dayA-$i',
+          at: _day0.add(Duration(minutes: i)),
+        ),
+      for (int i = 1; i <= 12; i++)
+        msg(
+          id: 'b$i',
+          seq: 12 + i,
+          text: 'dayB-$i',
+          at: _day1.add(Duration(minutes: i)),
+        ),
+    ];
+    await pumpList(tester, messages: messages, height: 300);
+    scrollOf(tester).position.jumpTo(
+          scrollOf(tester).position.maxScrollExtent * 0.55,
+        );
+    await tester.pump();
+    await tester.pump();
+    final Finder sticky = find.byKey(KunChatMessageList.stickyDayKey);
+    expect(sticky, findsOneWidget);
+    final Rect view = tester.getRect(
+      find.byKey(KunChatMessageList.scrollKey),
+    );
+    final Rect pill = tester.getRect(sticky);
+    final String stickyLabel = tester
+        .widget<Text>(
+          find.descendant(of: sticky, matching: find.byType(Text)),
+        )
+        .data!;
+    Finder? inFlowPill;
+    for (final DateTime day in <DateTime>[_day0, _day1]) {
+      final Finder dayFinder = find.byKey(
+        KunChatMessageList.dayKey(kunChatDayKey(day)),
+      );
+      if (dayFinder.evaluate().isEmpty) {
+        continue;
+      }
+      if (find
+          .descendant(of: dayFinder, matching: find.text(stickyLabel))
+          .evaluate()
+          .isEmpty) {
+        continue;
+      }
+      inFlowPill = find.descendant(
+        of: dayFinder,
+        matching: find.byType(DecoratedBox),
+      );
+      break;
+    }
+    expect(inFlowPill, isNotNull, reason: 'in-flow pill for "$stickyLabel"');
+    final Size inFlowSize = tester.getSize(inFlowPill!);
+    expect(pill.width, closeTo(inFlowSize.width, 1));
+    expect(pill.height, closeTo(inFlowSize.height, 1));
+    expect(pill.center.dx, closeTo(view.center.dx, 1));
+    expect(pill.top, closeTo(view.top + KunSpacing.unit * 2, 1));
+    expect(pill.width, lessThan(view.width - 8));
+  });
+
   testWidgets('9 read tracking increases once per frame while resumed', (
     WidgetTester tester,
   ) async {
@@ -982,9 +1047,9 @@ void main() {
   testWidgets('12c a still touch of 450ms opens the menu', (
     WidgetTester tester,
   ) async {
-    final KunChatMessage message = msg(id: '1', seq: 1, text: 'hold');
-    await pumpList(tester, messages: <KunChatMessage>[message]);
-    final Offset center = tester.getCenter(rowOf(message));
+    final List<KunChatMessage> messages = thread(20);
+    await pumpList(tester, messages: messages, height: 280);
+    final Offset center = tester.getCenter(rowOf(messages.last));
     final TestGesture held = await tester.startGesture(
       center,
       kind: PointerDeviceKind.touch,
@@ -996,6 +1061,49 @@ void main() {
     await tester.pump(KunDurations.base);
     expect(menuPanel, findsOneWidget);
     await held.up();
+    await tester.pump();
+    await tester.pump();
+    await tester.pump(KunDurations.exit);
+    expect(
+      tester
+          .widget<KunChatMessageMenu>(find.byType(KunChatMessageMenu))
+          .visible,
+      isTrue,
+    );
+    expect(menuPanel, findsOneWidget);
+  });
+
+  testWidgets('12d a real list scroll after the menu opens closes it', (
+    WidgetTester tester,
+  ) async {
+    final List<KunChatMessage> messages = thread(20);
+    await pumpList(tester, messages: messages, height: 280);
+    final Offset center = tester.getCenter(rowOf(messages.last));
+    final TestGesture held = await tester.startGesture(
+      center,
+      kind: PointerDeviceKind.touch,
+    );
+    await tester.pump();
+    await tester.pump(const Duration(milliseconds: 450));
+    await tester.pump();
+    await tester.pump();
+    await tester.pump(KunDurations.base);
+    expect(
+      tester
+          .widget<KunChatMessageMenu>(find.byType(KunChatMessageMenu))
+          .visible,
+      isTrue,
+    );
+    await held.moveBy(const Offset(0, 80));
+    await tester.pump();
+    await held.up();
+    await tester.pump();
+    expect(
+      tester
+          .widget<KunChatMessageMenu>(find.byType(KunChatMessageMenu))
+          .visible,
+      isFalse,
+    );
   });
 
   testWidgets('13 quote is not offered without a selection, as on the web', (
