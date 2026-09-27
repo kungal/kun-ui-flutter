@@ -39,12 +39,16 @@ class _LightboxChrome extends StatelessWidget {
     final KunThemeData theme = KunTheme.of(context);
     final bool wide = _isWide(context);
     final bool many = images.length > 1;
+    // The web dialog lives inside the browser's viewport; here the route
+    // covers the status and navigation bars, which hid the close button and
+    // the toolbar on a phone.
+    final EdgeInsets bars = MediaQuery.viewPaddingOf(context);
     return _PassThroughStack(
       children: <Widget>[
         if (many)
           Positioned(
-            top: KunSpacing.unit * 4,
-            left: KunSpacing.unit * 4,
+            top: bars.top + KunSpacing.unit * 4,
+            left: bars.left + KunSpacing.unit * 4,
             child: _glass(
               radius: BorderRadius.circular(KunRounded.lg),
               child: Padding(
@@ -68,8 +72,8 @@ class _LightboxChrome extends StatelessWidget {
             ),
           ),
         Positioned(
-          top: KunSpacing.unit * 4,
-          right: KunSpacing.unit * 4,
+          top: bars.top + KunSpacing.unit * 4,
+          right: bars.right + KunSpacing.unit * 4,
           child: _iconButton(
             size: KunUISize.lg,
             rounded: KunUIRounded.lg,
@@ -81,7 +85,7 @@ class _LightboxChrome extends StatelessWidget {
         ),
         if (many && wide) ...<Widget>[
           Positioned(
-            left: KunSpacing.unit * 4,
+            left: bars.left + KunSpacing.unit * 4,
             top: _navTop(context),
             child: _iconButton(
               size: KunUISize.xl,
@@ -93,7 +97,7 @@ class _LightboxChrome extends StatelessWidget {
             ),
           ),
           Positioned(
-            right: KunSpacing.unit * 4,
+            right: bars.right + KunSpacing.unit * 4,
             top: _navTop(context),
             child: _iconButton(
               size: KunUISize.xl,
@@ -106,9 +110,9 @@ class _LightboxChrome extends StatelessWidget {
           ),
         ],
         Positioned(
-          left: 0,
-          right: 0,
-          bottom: KunSpacing.unit * 6,
+          left: bars.left,
+          right: bars.right,
+          bottom: bars.bottom + KunSpacing.unit * 6,
           child: Column(
             mainAxisSize: MainAxisSize.min,
             children: <Widget>[

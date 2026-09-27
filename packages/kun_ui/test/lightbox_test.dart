@@ -134,9 +134,14 @@ Widget wrap(
   KunUIConfig? config,
   KunMessages? messages,
   Size size = const Size(1024, 768),
+  EdgeInsets viewPadding = EdgeInsets.zero,
 }) {
   return MediaQuery(
-    data: MediaQueryData(size: size),
+    data: MediaQueryData(
+      size: size,
+      viewPadding: viewPadding,
+      padding: viewPadding,
+    ),
     child: KunTheme(
       data: KunThemeData.light(),
       child: KunMessagesScope(
@@ -236,6 +241,7 @@ Future<_HostState> _pumpOpen(
   Size size = const Size(1024, 768),
   Widget? behind,
   KunUIConfig? config,
+  EdgeInsets viewPadding = EdgeInsets.zero,
 }) async {
   setView(tester, size);
   _resolverHits.clear();
@@ -251,6 +257,7 @@ Future<_HostState> _pumpOpen(
       ),
       config: config,
       size: size,
+      viewPadding: viewPadding,
     ),
   );
   await tester.pump();
@@ -563,6 +570,29 @@ void main() {
     );
     await tester.pumpAndSettle();
     expect(find.text('2 / 3'), findsOneWidget);
+  });
+
+  testWidgets('the chrome clears the system bars', (
+    WidgetTester tester,
+  ) async {
+    const EdgeInsets bars = EdgeInsets.only(top: 48, bottom: 56);
+    await _pumpOpen(
+      tester,
+      size: const Size(390, 844),
+      viewPadding: bars,
+    );
+    expect(
+      tester.getRect(close).top,
+      greaterThanOrEqualTo(bars.top + KunSpacing.unit * 4),
+    );
+    expect(
+      tester.getRect(counter).top,
+      greaterThanOrEqualTo(bars.top + KunSpacing.unit * 4),
+    );
+    expect(
+      tester.getRect(toolbar).bottom,
+      lessThanOrEqualTo(844 - bars.bottom - KunSpacing.unit * 6),
+    );
   });
 
   testWidgets('close button dismisses', (WidgetTester tester) async {
