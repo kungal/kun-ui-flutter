@@ -60,7 +60,7 @@ class _KunDatePickerTrigger extends StatelessWidget {
       color: scheme.foreground,
     );
     final double em = textStyle.fontSize!;
-    final String displayText = state._displayText;
+    final String displayText = state._displayTextOf(context);
     final bool hasValue = displayText.isNotEmpty;
     final String placeholder = state._resolvedPlaceholder(context);
     final String painted = hasValue ? displayText : placeholder;

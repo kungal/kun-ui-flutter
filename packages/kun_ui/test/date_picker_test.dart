@@ -6,6 +6,7 @@ import 'package:flutter/widgets.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:kun_ui/kun_ui.dart';
 import 'package:kun_ui/src/foundation/dismiss_layers.dart';
+import 'package:kun_ui/src/foundation/focus_outline.dart';
 
 Finder get trigger =>
     find.byKey(const ValueKey<String>('KunDatePicker.trigger'));
@@ -24,6 +25,12 @@ Finder get selectTrigger =>
 
 Finder cell(String key) =>
     find.byKey(ValueKey<String>('KunDatePicker.cell.$key'));
+
+KunFocusOutline cellOutline(WidgetTester tester, String key) {
+  return tester.widget<KunFocusOutline>(
+    find.descendant(of: cell(key), matching: find.byType(KunFocusOutline)),
+  );
+}
 
 const List<KunSelectOption<String>> _selectOptions = <KunSelectOption<String>>[
   KunSelectOption<String>(value: 'vue', label: 'Vue'),
@@ -843,6 +850,152 @@ void main() {
       ),
     );
     expect(find.text('2026 年 06 月 14 日'), findsOneWidget);
+  });
+
+  testWidgets('trigger format uses the calendar locale',
+      (WidgetTester tester) async {
+    await tester.pumpWidget(
+      wrap(
+        SizedBox(
+          width: 420,
+          child: _Host(
+            value: DateTime(2026, 9, 27),
+            format: 'yyyy MMMM do EEEE',
+          ),
+        ),
+      ),
+    );
+    expect(find.text('2026 九月 27日 星期日'), findsOneWidget);
+
+    await tester.pumpWidget(
+      wrap(
+        SizedBox(
+          width: 420,
+          child: _Host(
+            key: const ValueKey<String>('en-format'),
+            value: DateTime(2026, 9, 27),
+            format: 'yyyy MMMM do EEEE',
+            locale: 'en',
+          ),
+        ),
+      ),
+    );
+    expect(find.text('2026 September 27th Sunday'), findsOneWidget);
+  });
+
+  testWidgets('default trigger formats are unchanged',
+      (WidgetTester tester) async {
+    await tester.pumpWidget(
+      wrap(
+        SizedBox(
+          width: 320,
+          child: _Host(value: DateTime(2026, 9, 26)),
+        ),
+      ),
+    );
+    expect(find.text('2026-09-26'), findsOneWidget);
+  });
+
+  testWidgets('keyboard active cell draws a ring; click open does not',
+      (WidgetTester tester) async {
+    await tester.pumpWidget(
+      wrap(
+        SizedBox(
+          width: 320,
+          child: _Host(value: DateTime(2026, 9, 15)),
+        ),
+      ),
+    );
+    await openByTap(tester);
+    expect(cellOutline(tester, '2026-09-15').visible, isFalse);
+
+    await tester.sendKeyEvent(LogicalKeyboardKey.arrowRight);
+    await tester.pump();
+    expect(cellOutline(tester, '2026-09-16').visible, isTrue);
+    expect(cellOutline(tester, '2026-09-15').visible, isFalse);
+    expect(
+      cellOutline(tester, '2026-09-16').color,
+      KunColors.light.neutral.solid.withValues(alpha: 0.5),
+    );
+
+    await tester.sendKeyEvent(LogicalKeyboardKey.escape);
+    await tester.pump();
+    await tester.pump(KunDurations.exit);
+
+    await tester.sendKeyEvent(LogicalKeyboardKey.arrowDown);
+    await tester.pump();
+    await tester.pump(KunDurations.base);
+    expect(panel, findsOneWidget);
+    expect(cellOutline(tester, '2026-09-15').visible, isTrue);
+
+    await tester.sendKeyEvent(LogicalKeyboardKey.arrowRight);
+    await tester.pump();
+    expect(cellOutline(tester, '2026-09-16').visible, isTrue);
+
+    await tester.tapAt(tester.getTopLeft(panel) + const Offset(8, 8));
+    await tester.pump();
+    expect(cellOutline(tester, '2026-09-16').visible, isFalse);
+
+    await tester.sendKeyEvent(LogicalKeyboardKey.escape);
+    await tester.pump();
+    await tester.pump(KunDurations.exit);
+    await openByTap(tester);
+    expect(cellOutline(tester, '2026-09-15').visible, isFalse);
+  });
+
+  testWidgets('active-cell ring follows arrows across a page turn',
+      (WidgetTester tester) async {
+    await tester.pumpWidget(
+      wrap(
+        SizedBox(
+          width: 320,
+          child: _Host(value: DateTime(2026, 9, 30)),
+        ),
+      ),
+    );
+    await tester.tap(trigger);
+    await tester.pump();
+    await tester.sendKeyEvent(LogicalKeyboardKey.escape);
+    await tester.pump();
+    await tester.pump(KunDurations.exit);
+    await tester.sendKeyEvent(LogicalKeyboardKey.arrowDown);
+    await tester.pump();
+    await tester.pump(KunDurations.base);
+    expect(cellOutline(tester, '2026-09-30').visible, isTrue);
+
+    await tester.sendKeyEvent(LogicalKeyboardKey.arrowRight);
+    await tester.pump();
+    expect(find.text('2026 / 10'), findsOneWidget);
+    expect(cellOutline(tester, '2026-10-01').visible, isTrue);
+    expect(cellOutline(tester, '2026-09-30').visible, isFalse);
+  });
+
+  testWidgets('active-cell ring on the month and year grids',
+      (WidgetTester tester) async {
+    await tester.pumpWidget(
+      wrap(
+        SizedBox(
+          width: 320,
+          child: _Host(value: DateTime(2026, 9, 15)),
+        ),
+      ),
+    );
+    await openByTap(tester);
+    await tester.tap(title);
+    await tester.pump();
+    expect(cellOutline(tester, '2026-09').visible, isFalse);
+
+    await tester.sendKeyEvent(LogicalKeyboardKey.arrowRight);
+    await tester.pump();
+    expect(cellOutline(tester, '2026-10').visible, isTrue);
+
+    await tester.tap(title);
+    await tester.pump();
+    expect(cellOutline(tester, '2026').visible, isFalse);
+
+    await tester.sendKeyEvent(LogicalKeyboardKey.arrowRight);
+    await tester.pump();
+    expect(cellOutline(tester, '2027').visible, isTrue);
   });
 
   testWidgets('inside a modal, back closes the picker and leaves the modal',

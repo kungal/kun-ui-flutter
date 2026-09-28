@@ -162,9 +162,10 @@ class KunDatePicker extends StatefulWidget {
   /// Pattern for the text shown in the trigger. Null or empty uses the
   /// default for [precision] (`yyyy-MM-dd` / `yyyy-MM` / `yyyy`).
   ///
-  /// The trigger is always formatted in English, matching the web's
-  /// `formatDate` (date-fns `format` without a locale). Name tokens in a
-  /// custom pattern therefore render in English.
+  /// Formatted with the calendar locale: [locale], else
+  /// [KunMessagesScope.of]'s [KunMessages.code]. `'zh-CN'` and `'ja'`
+  /// match; anything else is English. Machine keys still use unlocalized
+  /// `kunFormatDate`.
   ///
   /// Supported letters, as runs of the same letter:
   ///
@@ -256,6 +257,13 @@ class _KunDatePickerState extends State<KunDatePicker>
   DateTime? _tempRangeStart;
   DateTime? _hoveredDate;
 
+  // DOM focus stays on the trigger while the arrows move `aria-activedescendant`,
+  // so no cell ever matches :focus-visible and a sighted keyboard user saw
+  // nothing move until the page turned. The active cell draws the focus ring
+  // itself, after a key and not after a click, as React Aria's useOption shows a
+  // virtually focused option focus-visible only under keyboard modality.
+  bool _keyboardActive = false;
+
   bool get _isRange => widget.mode == KunDatePickerMode.range;
 
   DateTime? get _singleValue =>
@@ -277,29 +285,29 @@ class _KunDatePickerState extends State<KunDatePicker>
     return format;
   }
 
-  String _formatTrigger(DateTime date) =>
-      kunFormatDate(date, _resolvedFormat, KunCalendarLocale.en);
+  String _formatTrigger(BuildContext context, DateTime date) =>
+      kunFormatDate(date, _resolvedFormat, _calendarLocale(context));
 
-  String get _displayText {
+  String _displayTextOf(BuildContext context) {
     if (_isRange) {
       final DateTime? start = _rangeStart;
       final DateTime? end = _rangeEnd;
       if (start != null && end != null) {
-        return '${_formatTrigger(start)} - ${_formatTrigger(end)}';
+        return '${_formatTrigger(context, start)} - ${_formatTrigger(context, end)}';
       }
       // A half-open range is not hypothetical: the first click of every
       // range selection emits a start and a null end. Rendering '' for it
       // left the trigger reading "nothing selected" and hid the ×.
       if (start != null) {
-        return '${_formatTrigger(start)} -';
+        return '${_formatTrigger(context, start)} -';
       }
       if (end != null) {
-        return '- ${_formatTrigger(end)}';
+        return '- ${_formatTrigger(context, end)}';
       }
       return '';
     }
     final DateTime? value = _singleValue;
-    return value == null ? '' : _formatTrigger(value);
+    return value == null ? '' : _formatTrigger(context, value);
   }
 
   String _resolvedPlaceholder(BuildContext context) {
@@ -515,6 +523,13 @@ class _KunDatePickerState extends State<KunDatePicker>
     _syncTriggerPresentation();
   }
 
+  void _onPanelPointerDown() {
+    _setRingSuppressed(true);
+    if (_keyboardActive) {
+      setState(() => _keyboardActive = false);
+    }
+  }
+
   void _setViewingDate(DateTime date) {
     setState(() {
       _viewingDate = date;
@@ -540,7 +555,7 @@ class _KunDatePickerState extends State<KunDatePicker>
     });
   }
 
-  void _open() {
+  void _open({bool fromKey = false}) {
     if (widget.disabled || _isOpen) {
       return;
     }
@@ -555,6 +570,9 @@ class _KunDatePickerState extends State<KunDatePicker>
         _activeDate = anchor;
       }
       _hoveredDate = null;
+      if (fromKey) {
+        _keyboardActive = true;
+      }
     });
     if (!_portal.isShowing) {
       _portal.show();
@@ -573,6 +591,7 @@ class _KunDatePickerState extends State<KunDatePicker>
     setState(() {
       _isOpen = false;
       _hoveredDate = null;
+      _keyboardActive = false;
     });
     if (kunReducedMotion(context)) {
       _openClose.value = 0;
@@ -674,6 +693,7 @@ class _KunDatePickerState extends State<KunDatePicker>
         kunDecadeStart(next.year) != kunDecadeStart(_viewingDate.year),
     };
     setState(() {
+      _keyboardActive = true;
       _activeDate = next;
       if (leftPage) {
         _viewingDate = next;
@@ -730,7 +750,7 @@ class _KunDatePickerState extends State<KunDatePicker>
     if ((key == LogicalKeyboardKey.backspace ||
             key == LogicalKeyboardKey.delete) &&
         _triggerFocus.hasPrimaryFocus) {
-      if (widget.clearable && _displayText.isNotEmpty) {
+      if (widget.clearable && _displayTextOf(context).isNotEmpty) {
         _clear();
       }
       return KeyEventResult.handled;
@@ -741,7 +761,7 @@ class _KunDatePickerState extends State<KunDatePicker>
           key == LogicalKeyboardKey.enter ||
           key == LogicalKeyboardKey.numpadEnter ||
           key == LogicalKeyboardKey.space) {
-        _open();
+        _open(fromKey: true);
         return KeyEventResult.handled;
       }
       return KeyEventResult.ignored;

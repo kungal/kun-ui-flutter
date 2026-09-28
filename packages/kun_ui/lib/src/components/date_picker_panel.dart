@@ -20,7 +20,7 @@ class _KunDatePickerPanel extends StatelessWidget {
         kunWeekdayLabels(locale, widget.weekdays);
 
     return Listener(
-      onPointerDown: (_) => state._setRingSuppressed(true),
+      onPointerDown: (_) => state._onPanelPointerDown(),
       child: DecoratedBox(
         key: const ValueKey<String>('KunDatePicker.panel'),
         decoration: BoxDecoration(
@@ -445,6 +445,12 @@ class _DayCellState extends State<_DayCell> {
           isToday: cell.isToday,
           isMuted: !cell.isCurrentMonth,
           hovered: _hovered,
+          showActiveRing: widget.state._keyboardActive &&
+              cell.key == widget.state._activeKey,
+          ringColor: widget.state.widget.color
+              .scaleOf(widget.scheme)
+              .solid
+              .withValues(alpha: 0.5),
           scheme: widget.scheme,
           text: '${cell.dayOfMonth}',
           onTap: () => widget.state._handleCellSelect(cell.date),
@@ -503,6 +509,12 @@ class _PeriodCellState extends State<_PeriodCell> {
         isToday: cell.isNow,
         isMuted: cell.isOutside,
         hovered: _hovered,
+        showActiveRing:
+            widget.state._keyboardActive && cell.key == widget.state._activeKey,
+        ringColor: widget.state.widget.color
+            .scaleOf(widget.scheme)
+            .solid
+            .withValues(alpha: 0.5),
         scheme: widget.scheme,
         text: cell.label,
         onTap: () => widget.state._handleCellSelect(cell.date),
@@ -530,6 +542,8 @@ class _CellButton extends StatelessWidget {
     required this.isToday,
     required this.isMuted,
     required this.hovered,
+    required this.showActiveRing,
+    required this.ringColor,
     required this.scheme,
     required this.text,
     required this.onTap,
@@ -547,6 +561,8 @@ class _CellButton extends StatelessWidget {
   final bool isToday;
   final bool isMuted;
   final bool hovered;
+  final bool showActiveRing;
+  final Color ringColor;
   final KunColorScheme scheme;
   final String text;
   final VoidCallback onTap;
@@ -612,6 +628,15 @@ class _CellButton extends StatelessWidget {
           style: KunText.sm.copyWith(color: foreground),
         ),
       ),
+    );
+
+    box = KunFocusOutline(
+      visible: showActiveRing,
+      color: ringColor,
+      offset: 0,
+      circle: day && !inBand && !isRangeStart && !isRangeEnd,
+      borderRadius: radius,
+      child: box,
     );
 
     if (disabled) {
