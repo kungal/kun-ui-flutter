@@ -497,6 +497,50 @@ void main() {
     expect(tester.getSize(find.byKey(KunChatBubble.photoKey(0))).width, 320);
   });
 
+  testWidgets('a photo falls back to its url, and a resolver still wins', (
+    WidgetTester tester,
+  ) async {
+    const KunChatPhoto photo = KunChatPhoto(
+      imageHash: 'h',
+      width: 400,
+      height: 300,
+      url: 'https://img.test/h.webp',
+    );
+    await tester.pumpWidget(
+      wrap(
+        KunChatBubble(
+          message: _msg(text: '', media: photo),
+          users: _users,
+          lightbox: false,
+        ),
+        width: 500,
+      ),
+    );
+    await tester.pump();
+    expect(
+      tester.widget<KunImage>(find.byType(KunImage)).src,
+      'https://img.test/h.webp',
+    );
+
+    await tester.pumpWidget(
+      wrap(
+        KunChatBubble(
+          message: _msg(text: '', media: photo),
+          users: _users,
+          lightbox: false,
+          resolveMediaUrl: (KunChatMedia _, KunChatMediaVariant __) =>
+              'https://small.test/h',
+        ),
+        width: 500,
+      ),
+    );
+    await tester.pump();
+    expect(
+      tester.widget<KunImage>(find.byType(KunImage)).src,
+      'https://small.test/h',
+    );
+  });
+
   testWidgets('album tiles match layoutKunChatAlbum', (
     WidgetTester tester,
   ) async {

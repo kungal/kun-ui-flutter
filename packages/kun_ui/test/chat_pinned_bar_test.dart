@@ -279,6 +279,50 @@ void main() {
     expect(find.textContaining('ERROR'), findsNothing);
   });
 
+  testWidgets('a photo thumbnail falls back to its url, else none', (
+    WidgetTester tester,
+  ) async {
+    await tester.pumpWidget(
+      wrap(
+        KunChatPinnedBar(
+          messages: <KunChatMessage>[
+            message(
+              seq: 1,
+              text: '',
+              media: const KunChatPhoto(
+                imageHash: 'h',
+                width: 32,
+                height: 32,
+                url: 'https://img.test/h.webp',
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+    await tester.pump();
+    expect(
+      tester.widget<KunImage>(find.byType(KunImage)).src,
+      'https://img.test/h.webp',
+    );
+
+    await tester.pumpWidget(
+      wrap(
+        KunChatPinnedBar(
+          messages: <KunChatMessage>[
+            message(
+              seq: 1,
+              text: '',
+              media: const KunChatPhoto(imageHash: 'h', width: 32, height: 32),
+            ),
+          ],
+        ),
+      ),
+    );
+    await tester.pump();
+    expect(find.byType(KunImage), findsNothing);
+  });
+
   testWidgets('a media pin without text shows the media label', (
     WidgetTester tester,
   ) async {

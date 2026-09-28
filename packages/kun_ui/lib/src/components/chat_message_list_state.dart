@@ -1027,6 +1027,10 @@ class _KunChatMessageListState extends State<KunChatMessageList>
                   m.media!,
                   KunChatMediaVariant.original,
                 ) ??
+                switch (m.media) {
+                  KunChatPhoto(:final String? url) => url,
+                  _ => null,
+                } ??
                 '',
             alt: catalog.chat.photoFrom(
               name: resolveKunChatUser(users, m.senderId, catalog).name,

@@ -191,8 +191,9 @@ class KunChatBubble extends StatefulWidget {
   /// The reaction vocabulary, to draw each reaction key.
   final List<KunChatReactionOption> reactionOptions;
 
-  /// Turns a photo into a URL. Required to show pictures; without it the
-  /// web (and this port) pass an empty `src`.
+  /// Turns a photo into a URL. Without it a photo shows its
+  /// [KunChatPhoto.url], and a photo with neither shows nothing. Pass it to
+  /// serve a smaller preview than the server's URL.
   final KunChatMediaUrlResolver? resolveMediaUrl;
 
   /// Finds a loaded message by seq — the text a "pinned a message" service
@@ -415,7 +416,7 @@ class _KunChatBubbleState extends State<KunChatBubble> {
   }
 
   String _src(KunChatPhoto photo, KunChatMediaVariant variant) {
-    return widget.resolveMediaUrl?.call(photo, variant) ?? '';
+    return widget.resolveMediaUrl?.call(photo, variant) ?? photo.url ?? '';
   }
 
   void _openPhoto(

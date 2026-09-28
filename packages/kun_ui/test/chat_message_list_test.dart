@@ -5,6 +5,8 @@ import 'package:flutter/widgets.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:kun_ui/kun_ui.dart';
 
+final List<String> _requestedImages = <String>[];
+
 final MemoryImage _memory = MemoryImage(
   Uint8List.fromList(<int>[
     0x89,
@@ -196,7 +198,10 @@ Widget wrap(
         messages: messages,
         child: KunUIConfigScope(
           config: KunUIConfig(
-            imageProvider: (_) => _memory,
+            imageProvider: (String url) {
+              _requestedImages.add(url);
+              return _memory;
+            },
             navigate: (_, String href) => navigated?.add(href),
           ),
           child: WidgetsApp(
@@ -247,6 +252,7 @@ Future<void> pumpList(
   bool loadingOlder = false,
   bool loadingNewer = false,
   bool swipeToReply = true,
+  bool withResolver = true,
   String? semanticLabel,
   Widget? empty,
   Widget? footer,
@@ -292,7 +298,9 @@ Future<void> pumpList(
         actions: actions,
         groupWindow: groupWindow,
         reactionOptions: _reactions,
-        resolveMediaUrl: (KunChatMedia _, KunChatMediaVariant __) => 'mem',
+        resolveMediaUrl: withResolver
+            ? (KunChatMedia _, KunChatMediaVariant __) => 'mem'
+            : null,
         onAction: onAction,
         onJump: onJump,
         onLatest: onLatest,
@@ -980,6 +988,38 @@ void main() {
     await tester.pump(KunDurations.base);
     expect(find.byKey(KunLightbox.layerKey), findsOneWidget);
     expect(find.text('1 / 2'), findsOneWidget);
+  });
+
+  testWidgets('11b the lightbox falls back to each photo url', (
+    WidgetTester tester,
+  ) async {
+    const String url = 'https://img.test/b.webp';
+    final List<KunChatMessage> messages = <KunChatMessage>[
+      msg(
+        id: '1',
+        seq: 1,
+        text: 'cap',
+        media: const KunChatPhoto(
+          imageHash: 'b',
+          width: 120,
+          height: 80,
+          url: url,
+        ),
+      ),
+    ];
+    _requestedImages.clear();
+    await pumpList(tester, messages: messages, withResolver: false);
+    final int before = _requestedImages.where((String u) => u == url).length;
+    expect(before, greaterThan(0));
+    await tester.tap(find.byKey(KunChatBubble.photoKey(0)));
+    await tester.pump();
+    await tester.pump(KunDurations.base);
+    expect(find.byKey(KunLightbox.layerKey), findsOneWidget);
+    expect(
+      _requestedImages.where((String u) => u == url).length,
+      greaterThan(before),
+    );
+    expect(_requestedImages.where((String u) => u.isEmpty), isEmpty);
   });
 
   testWidgets(

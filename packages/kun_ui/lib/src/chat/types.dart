@@ -346,9 +346,10 @@ class KunChatPhoto extends KunChatMedia {
     required this.width,
     required this.height,
     this.thumbhash,
+    this.url,
   });
 
-  /// Image-service hash. The site turns it into a URL; KunUI never builds one.
+  /// Image-service hash. KunUI never builds a URL from it.
   final String imageHash;
 
   /// Pixel width.
@@ -359,6 +360,11 @@ class KunChatPhoto extends KunChatMedia {
 
   /// ThumbHash payload, when the server sent one.
   final String? thumbhash;
+
+  /// Where the image is served, as the server sends it (chat spec 1.1.0).
+  /// Shown when no `resolveMediaUrl` is passed. Optional so payloads from
+  /// before 1.1.0 still parse.
+  final String? url;
 
   @override
   String get type => 'photo';
@@ -374,6 +380,9 @@ class KunChatPhoto extends KunChatMedia {
           : (json['thumbhash'] is String
               ? json['thumbhash'] as String
               : _invalid('thumbhash')),
+      url: json['url'] == null
+          ? null
+          : (json['url'] is String ? json['url'] as String : _invalid('url')),
     );
   }
 
@@ -384,6 +393,7 @@ class KunChatPhoto extends KunChatMedia {
         'width': width,
         'height': height,
         if (thumbhash != null) 'thumbhash': thumbhash,
+        if (url != null) 'url': url,
       };
 
   @override
@@ -392,10 +402,11 @@ class KunChatPhoto extends KunChatMedia {
       other.imageHash == imageHash &&
       other.width == width &&
       other.height == height &&
-      other.thumbhash == thumbhash;
+      other.thumbhash == thumbhash &&
+      other.url == url;
 
   @override
-  int get hashCode => Object.hash(imageHash, width, height, thumbhash);
+  int get hashCode => Object.hash(imageHash, width, height, thumbhash, url);
 
   @override
   String toString() => 'KunChatPhoto(imageHash: $imageHash, ${width}x$height)';

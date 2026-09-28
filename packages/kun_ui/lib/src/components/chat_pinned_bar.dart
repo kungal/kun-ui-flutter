@@ -57,7 +57,8 @@ class KunChatPinnedBar extends StatefulWidget {
   /// Pinned messages, in any order. The bar starts at the newest.
   final List<KunChatMessage> messages;
 
-  /// Turns a pinned photo's hash into a URL, for the thumbnail.
+  /// Turns a pinned photo into a URL for the thumbnail. Without it the
+  /// thumbnail uses [KunChatPhoto.url], and a photo with neither has none.
   final KunChatMediaUrlResolver? resolveMediaUrl;
 
   /// Show the × that emits [onUnpin].
@@ -158,9 +159,10 @@ class _KunChatPinnedBarState extends State<KunChatPinnedBar> {
     final String preview = current.text.isNotEmpty
         ? kunChatPlainText(current, messages)
         : kunChatMediaLabel(current.media, messages);
-    final String? thumb = current.media is KunChatPhoto &&
-            widget.resolveMediaUrl != null
-        ? widget.resolveMediaUrl!(current.media!, KunChatMediaVariant.preview)
+    final KunChatMedia? media = current.media;
+    final String? thumb = media is KunChatPhoto
+        ? widget.resolveMediaUrl?.call(media, KunChatMediaVariant.preview) ??
+            media.url
         : null;
     final String jumpLabel = preview.isEmpty ? title : '$title, $preview';
 

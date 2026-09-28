@@ -233,7 +233,8 @@ class KunChatMessageList extends StatefulWidget {
   /// Reaction vocabulary for chips and the menu.
   final List<KunChatReactionOption> reactionOptions;
 
-  /// Turns a photo into a URL.
+  /// Turns a photo into a URL. Without it a photo shows its
+  /// [KunChatPhoto.url].
   final KunChatMediaUrlResolver? resolveMediaUrl;
 
   /// Whether a touch swipe on a row emits `reply`.

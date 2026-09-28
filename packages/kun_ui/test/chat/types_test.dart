@@ -93,6 +93,28 @@ void main() {
     expect(KunChatServiceAction.fromJson(action.toJson()), action);
   });
 
+  test('a photo carries the served url, and older payloads parse without it',
+      () {
+    final KunChatPhoto withUrl = KunChatPhoto.fromJson(<String, Object?>{
+      'type': 'photo',
+      'image_hash': 'h',
+      'width': 4,
+      'height': 3,
+      'url': 'https://img.test/h.webp',
+    });
+    expect(withUrl.url, 'https://img.test/h.webp');
+    expect(withUrl.toJson()['url'], 'https://img.test/h.webp');
+    final KunChatPhoto old = KunChatPhoto.fromJson(<String, Object?>{
+      'type': 'photo',
+      'image_hash': 'h',
+      'width': 4,
+      'height': 3,
+    });
+    expect(old.url, isNull);
+    expect(old.toJson().containsKey('url'), isFalse);
+    expect(withUrl == old, isFalse);
+  });
+
   test('every entity drop rule of tryFromJson', () {
     expect(KunChatEntity.tryFromJson(null), isNull);
     expect(KunChatEntity.tryFromJson('nope'), isNull);
