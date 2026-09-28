@@ -736,6 +736,56 @@ void main() {
     }
   });
 
+  testWidgets('8c the pinned pill and the scroll button are separate nodes', (
+    WidgetTester tester,
+  ) async {
+    final SemanticsHandle handle = tester.ensureSemantics();
+    final List<KunChatMessage> messages = <KunChatMessage>[
+      for (int i = 1; i <= 12; i++)
+        msg(
+          id: 'a$i',
+          seq: i,
+          text: 'dayA-$i',
+          at: _day0.add(Duration(minutes: i)),
+        ),
+      for (int i = 1; i <= 12; i++)
+        msg(
+          id: 'b$i',
+          seq: 12 + i,
+          text: 'dayB-$i',
+          at: _day1.add(Duration(minutes: i)),
+        ),
+    ];
+    await pumpList(tester, messages: messages, height: 300);
+    scrollOf(tester).position.jumpTo(
+          scrollOf(tester).position.maxScrollExtent * 0.55,
+        );
+    await tester.pump();
+    await tester.pumpAndSettle();
+    expect(find.byKey(KunChatMessageList.stickyDayKey), findsOneWidget);
+    final String scrollLabel = KunMessages.en.chat.scrollToBottom;
+    final Rect fab = tester.getRect(find.byKey(KunChatMessageList.fabKey));
+    final List<SemanticsData> carrying = <SemanticsData>[];
+    void walk(SemanticsNode node) {
+      final SemanticsData data = node.getSemanticsData();
+      if (data.label.contains(scrollLabel)) {
+        carrying.add(data);
+      }
+      node.visitChildren((SemanticsNode child) {
+        walk(child);
+        return true;
+      });
+    }
+
+    walk(tester.getSemantics(find.byType(KunChatMessageList)));
+    expect(carrying, hasLength(1));
+    expect(carrying.single.label, scrollLabel);
+    expect(carrying.single.hasAction(SemanticsAction.tap), isTrue);
+    expect(carrying.single.rect.width, lessThanOrEqualTo(fab.width + 1));
+    expect(carrying.single.rect.height, lessThanOrEqualTo(fab.height + 1));
+    handle.dispose();
+  });
+
   testWidgets('8b the pinned day pill matches the in-flow pill', (
     WidgetTester tester,
   ) async {

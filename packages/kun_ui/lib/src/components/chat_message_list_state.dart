@@ -1315,10 +1315,13 @@ class _KunChatMessageListState extends State<KunChatMessageList>
                     child: IgnorePointer(
                       child: Center(
                         heightFactor: 1,
-                        child: _DayPill(
-                          key: KunChatMessageList.stickyDayKey,
-                          label: stickyLabel,
-                          scheme: scheme,
+                        child: Semantics(
+                          container: true,
+                          child: _DayPill(
+                            key: KunChatMessageList.stickyDayKey,
+                            label: stickyLabel,
+                            scheme: scheme,
+                          ),
                         ),
                       ),
                     ),

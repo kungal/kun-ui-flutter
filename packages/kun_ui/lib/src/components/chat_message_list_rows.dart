@@ -808,11 +808,15 @@ class _ScrollFab extends StatelessWidget {
           );
         },
         child: Semantics(
+          container: true,
           button: true,
           label: label,
+          onTap: onPressed,
+          excludeSemantics: true,
           child: MouseRegion(
             cursor: SystemMouseCursors.click,
             child: GestureDetector(
+              excludeFromSemantics: true,
               onTap: onPressed,
               child: DecoratedBox(
                 key: KunChatMessageList.fabKey,
