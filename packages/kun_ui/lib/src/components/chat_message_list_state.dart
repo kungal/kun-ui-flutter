@@ -271,6 +271,32 @@ class _KunChatMessageListState extends State<KunChatMessageList>
     return kunChatMessageKey(older ? messages.first : messages.last);
   }
 
+  // A duplicate otherwise surfaces as the sliver's own
+  // `indexOf(child) > index` assertion, which names no message.
+  bool _debugAssertUniqueKeys(List<KunChatMessage> messages) {
+    final Map<String, KunChatMessage> seen = <String, KunChatMessage>{};
+    for (final KunChatMessage message in messages) {
+      final String key = kunChatMessageKey(message);
+      final KunChatMessage? earlier = seen[key];
+      if (earlier != null) {
+        throw FlutterError.fromParts(<DiagnosticsNode>[
+          ErrorSummary('KunChatMessageList.messages holds a message twice.'),
+          ErrorDescription(
+            'Messages seq ${earlier.seq} and seq ${message.seq} share the '
+            'row key "$key" (client_message_id when set, else id).',
+          ),
+          ErrorHint(
+            'Each message must appear once. A duplicate usually means a page '
+            'was merged into the window twice, or a pending message was kept '
+            'after the server confirmed it under the same client_message_id.',
+          ),
+        ]);
+      }
+      seen[key] = message;
+    }
+    return true;
+  }
+
   void _regroup({bool force = false}) {
     final List<KunChatMessage> next = widget.messages;
     final String? first = next.isEmpty ? null : kunChatMessageKey(next.first);
@@ -286,6 +312,7 @@ class _KunChatMessageListState extends State<KunChatMessageList>
     if (!changed) {
       return;
     }
+    assert(_debugAssertUniqueKeys(next));
     KunChatMessageList.debugGroupComputations++;
     _sections = groupKunChatMessages(
       next,

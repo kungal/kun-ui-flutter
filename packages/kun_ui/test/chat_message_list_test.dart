@@ -1429,6 +1429,25 @@ void main() {
     expect(reads.length, greaterThan(before));
   });
 
+  testWidgets('a message listed twice fails with a message naming it', (
+    WidgetTester tester,
+  ) async {
+    final KunChatMessage one = msg(id: '7', seq: 7, text: 'twice');
+    await pumpList(
+      tester,
+      messages: <KunChatMessage>[msg(id: '6', seq: 6), one, one],
+    );
+    final Object? error = tester.takeException();
+    expect(error, isA<FlutterError>());
+    final String text = (error! as FlutterError)
+        .diagnostics
+        .map((DiagnosticsNode node) => node.toDescription())
+        .join('\n');
+    expect(text, contains('holds a message twice'));
+    expect(text, contains('seq 7'));
+    expect(text, contains('"m:7"'));
+  });
+
   testWidgets('20 grouping is skipped when the list identity is unchanged', (
     WidgetTester tester,
   ) async {
