@@ -1,5 +1,41 @@
 # Changelog
 
+## 0.17.0
+
+Built on kun-ui 2.51.0. The last three chat components, which complete the
+port of KunUI's web chat. Nothing here is a breaking change.
+
+- **`KunChatPinnedBar`**, the pinned-message bar.
+  - **Content.** The position indicator (up to four segments), a photo
+    thumbnail, the "Pinned message" title with its index, and a one-line
+    preview. An optional unpin button (`unpinnable`, `onUnpin`), and an
+    `actions` slot.
+  - **Tapping** calls `onJump(seq)`, which you can hand to
+    `KunChatMessageListController.scrollToSeq`, and moves to the next
+    older pin.
+  - **Differs from the web:** the bar follows the pin it is showing by
+    its seq, so a newly pinned message no longer switches what is shown.
+- **`KunChatHeader`**, the conversation header.
+  - **Content.** Back, avatar and title (`onTitleTap`), and a second
+    line that shows `KunChatTyping` while someone types, else
+    `subtitleWidget` or `subtitle`. An `actions` slot.
+  - **Back button.** The web's `back: boolean | 'mobile'` is
+    `KunChatHeaderBack.always`, `.never` or `.mobile`. `mobile` hides
+    it on screens at least the `md` breakpoint wide.
+- **`KunChatLayout`**, the two-pane chat screen: the conversation list
+  in `sidebar`, the open conversation in `child`, and `empty` when none
+  is open.
+  - **Panes.** From `md` up, the panes sit side by side, with the list
+    `sidebarWidth` wide (352 by default). Below `md` one pane shows at
+    a time, by `showConversation`. The hidden pane keeps its state, so
+    the list keeps its scroll position.
+  - **Back.** On a phone, `onBack` makes Android's back gesture or
+    button close the open conversation and return to the list, instead
+    of leaving the screen.
+- **Fixed in `KunChatMessageList`:** TalkBack read the pinned day label
+  and the scroll-to-bottom button as one button, "Yesterday, Scroll to
+  bottom", spanning the whole list. Each is now its own node.
+
 ## 0.16.0
 
 Built on kun-ui 2.51.0. The chat components, the second part of the chat port
