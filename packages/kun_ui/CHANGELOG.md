@@ -1,5 +1,25 @@
 # Changelog
 
+## 0.18.1
+
+A privacy fix from the kungal app. There are no API changes.
+
+- **`KunChatMessageList` no longer marks messages read while it is
+  hidden.** The list decided what was on screen from layout alone, but
+  `Offstage`, `IndexedStack`, a go_router `StatefulShellRoute` branch
+  that isn't current, and the hidden pane of `KunChatLayout` all still
+  lay it out. So a conversation left open behind another tab kept firing
+  `onRead` for new messages, and the other side got read receipts for
+  messages nobody had seen. The list now counts reads only while it can
+  be seen: its `TickerMode` is on, `Visibility.of` is true, and no
+  `Offstage` above it is offstage.
+  - When it is shown again, it reports the rows that are actually on
+    screen at that moment.
+  - New-message announcements are likewise silent while it is hidden.
+  - If you hide a message list yourself, wrap it in `TickerMode`, as
+    go_router and `KunChatLayout` do. Then the list also catches up the
+    moment it is shown, instead of on the next scroll.
+
 ## 0.18.0
 
 Built on kun-ui 2.52.0 (from 2.51.0), taking in the fixes for bugs this
