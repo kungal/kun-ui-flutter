@@ -852,13 +852,28 @@ strings both index UTF-16 code units.
 The app and the website must turn the same composer input into the same
 entities, and render the same entities the same way. Ported unit tests alone
 cannot promise that, so `scripts/chat-fixtures.mjs` runs the upstream
-TypeScript under Node 24 and writes `test/chat/chat_core.fixture.json`. It
-holds 2,800 seeded random cases for parse, format, normalize, tree, slice
-and album, and `fixture_test.dart` requires the Dart port to reproduce every
-one exactly. `scripts/parity.sh` regenerates the fixture from kun-ui at the
+TypeScript under Node 24 and writes `test/chat/chat_core.fixture.json`,
+and `fixture_test.dart` requires the Dart port to reproduce every case
+exactly. `scripts/parity.sh` regenerates the fixture from kun-ui at the
 pinned tag and fails if it differs from the checked-in file. Bumping the
 contract therefore also surfaces any upstream change to the chat logic, and
 fixing it means porting the change and regenerating the fixture.
+
+The fixture holds:
+- 2,800 seeded random cases for parse, format, normalize, tree, slice and
+  album;
+- every input in the upstream chat tests;
+- targeted families: overlapping quotes, a line start after a closing
+  marker, and `> ` inside a link label.
+
+The targeted families were added on adopting kun-ui 2.51.1 (decided
+2026-09-28), which fixed two chat bugs this repo had reported. The random
+cases alone still matched 2.51.1 unchanged, because none of them reached
+the two changed paths. The guard would have missed the change. The widened
+fixture matched the old port at 2.51.0 and failed it at 2.51.1 with 438
+mismatches before the port landed. When upstream changes a chat path the
+random cases do not reach, add a family that does, and check that it fails
+the old port.
 
 The Dart surface differs from the TS in three deliberate ways:
 
