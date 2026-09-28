@@ -210,6 +210,39 @@
       },
       "slots": {}
     },
+    "KunChatHeader": {
+      "widget": "KunChatHeader",
+      "props": {
+        "avatar": "avatar",
+        "back": "back",
+        "kind": "kind",
+        "subtitle": "subtitle",
+        "title": "title",
+        "typing": "typing",
+        "user": "user",
+        "users": "users"
+      },
+      "events": {
+        "back": "onBack",
+        "title-click": "onTitleTap"
+      },
+      "slots": {
+        "actions": "actions",
+        "subtitle": "subtitleWidget"
+      }
+    },
+    "KunChatLayout": {
+      "widget": "KunChatLayout",
+      "props": {
+        "showConversation": "showConversation"
+      },
+      "events": {},
+      "slots": {
+        "default": "child",
+        "empty": "empty",
+        "sidebar": "sidebar"
+      }
+    },
     "KunChatMessageList": {
       "widget": "KunChatMessageList",
       "props": {
@@ -266,6 +299,21 @@
         "select": "onSelect"
       },
       "slots": {}
+    },
+    "KunChatPinnedBar": {
+      "widget": "KunChatPinnedBar",
+      "props": {
+        "messages": "messages",
+        "resolveMediaUrl": "resolveMediaUrl",
+        "unpinnable": "unpinnable"
+      },
+      "events": {
+        "jump": "onJump",
+        "unpin": "onUnpin"
+      },
+      "slots": {
+        "actions": "actions"
+      }
     },
     "KunChatReactionPicker": {
       "widget": "KunChatReactionPicker",

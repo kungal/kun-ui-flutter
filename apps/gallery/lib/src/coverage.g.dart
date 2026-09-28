@@ -1043,6 +1043,141 @@ const ComponentCoverage _kunChatConversationItem = ComponentCoverage(
 Widget kunChatConversationItemContract(BuildContext context) =>
     const CoveragePage(coverage: _kunChatConversationItem);
 
+const ComponentCoverage _kunChatHeader = ComponentCoverage(
+  name: 'KunChatHeader',
+  entries: <CoverageEntry>[
+    CoverageEntry(
+      section: 'props',
+      contractName: 'avatar',
+      status: CoverageStatus.shown,
+      dartName: 'avatar',
+      shownBy: 'Basic',
+    ),
+    CoverageEntry(
+      section: 'props',
+      contractName: 'back',
+      status: CoverageStatus.shown,
+      dartName: 'back',
+      shownBy: 'Basic',
+    ),
+    CoverageEntry(
+      section: 'props',
+      contractName: 'kind',
+      status: CoverageStatus.shown,
+      dartName: 'kind',
+      shownBy: 'Basic',
+    ),
+    CoverageEntry(
+      section: 'props',
+      contractName: 'subtitle',
+      status: CoverageStatus.shown,
+      dartName: 'subtitle',
+      shownBy: 'Basic',
+    ),
+    CoverageEntry(
+      section: 'props',
+      contractName: 'title',
+      status: CoverageStatus.shown,
+      dartName: 'title',
+      shownBy: 'Basic',
+    ),
+    CoverageEntry(
+      section: 'props',
+      contractName: 'typing',
+      status: CoverageStatus.shown,
+      dartName: 'typing',
+      shownBy: 'Basic',
+    ),
+    CoverageEntry(
+      section: 'props',
+      contractName: 'user',
+      status: CoverageStatus.shown,
+      dartName: 'user',
+      shownBy: 'Basic',
+    ),
+    CoverageEntry(
+      section: 'props',
+      contractName: 'users',
+      status: CoverageStatus.shown,
+      dartName: 'users',
+      shownBy: 'Basic',
+    ),
+    CoverageEntry(
+      section: 'events',
+      contractName: 'back',
+      status: CoverageStatus.noVisualForm,
+      dartName: 'onBack',
+      reason:
+          'A callback has no appearance of its own; the widget tests fire onBack at both viewports.',
+    ),
+    CoverageEntry(
+      section: 'events',
+      contractName: 'title-click',
+      status: CoverageStatus.noVisualForm,
+      dartName: 'onTitleTap',
+      reason:
+          'A callback has no appearance of its own; the widget tests fire onTitleTap.',
+    ),
+    CoverageEntry(
+      section: 'slots',
+      contractName: 'actions',
+      status: CoverageStatus.shown,
+      dartName: 'actions',
+      shownBy: 'Basic',
+    ),
+    CoverageEntry(
+      section: 'slots',
+      contractName: 'subtitle',
+      status: CoverageStatus.notYet,
+      dartName: 'subtitleWidget',
+      reason:
+          'The docs Basic demo uses the string prop; the widget tests cover the slot.',
+    ),
+  ],
+);
+
+/// The contract coverage page for KunChatHeader.
+Widget kunChatHeaderContract(BuildContext context) =>
+    const CoveragePage(coverage: _kunChatHeader);
+
+const ComponentCoverage _kunChatLayout = ComponentCoverage(
+  name: 'KunChatLayout',
+  entries: <CoverageEntry>[
+    CoverageEntry(
+      section: 'props',
+      contractName: 'showConversation',
+      status: CoverageStatus.shown,
+      dartName: 'showConversation',
+      shownBy: 'App',
+    ),
+    CoverageEntry(
+      section: 'slots',
+      contractName: 'default',
+      status: CoverageStatus.shown,
+      dartName: 'child',
+      shownBy: 'App',
+    ),
+    CoverageEntry(
+      section: 'slots',
+      contractName: 'empty',
+      status: CoverageStatus.shown,
+      dartName: 'empty',
+      shownBy: 'App',
+    ),
+    CoverageEntry(
+      section: 'slots',
+      contractName: 'sidebar',
+      status: CoverageStatus.shown,
+      dartName: 'sidebar',
+      shownBy: 'App',
+    ),
+  ],
+);
+
+/// The contract coverage page for KunChatLayout.
+Widget kunChatLayoutContract(BuildContext context) =>
+    const CoveragePage(coverage: _kunChatLayout);
+
 const ComponentCoverage _kunChatMessageList = ComponentCoverage(
   name: 'KunChatMessageList',
   entries: <CoverageEntry>[
@@ -1344,6 +1479,59 @@ const ComponentCoverage _kunChatMessageMenu = ComponentCoverage(
 /// The contract coverage page for KunChatMessageMenu.
 Widget kunChatMessageMenuContract(BuildContext context) =>
     const CoveragePage(coverage: _kunChatMessageMenu);
+
+const ComponentCoverage _kunChatPinnedBar = ComponentCoverage(
+  name: 'KunChatPinnedBar',
+  entries: <CoverageEntry>[
+    CoverageEntry(
+      section: 'props',
+      contractName: 'messages',
+      status: CoverageStatus.shown,
+      dartName: 'messages',
+      shownBy: 'Basic',
+    ),
+    CoverageEntry(
+      section: 'props',
+      contractName: 'resolveMediaUrl',
+      status: CoverageStatus.shown,
+      dartName: 'resolveMediaUrl',
+      shownBy: 'Basic',
+    ),
+    CoverageEntry(
+      section: 'props',
+      contractName: 'unpinnable',
+      status: CoverageStatus.shown,
+      dartName: 'unpinnable',
+      shownBy: 'Basic',
+    ),
+    CoverageEntry(
+      section: 'events',
+      contractName: 'jump',
+      status: CoverageStatus.shown,
+      dartName: 'onJump',
+      shownBy: 'Basic',
+    ),
+    CoverageEntry(
+      section: 'events',
+      contractName: 'unpin',
+      status: CoverageStatus.shown,
+      dartName: 'onUnpin',
+      shownBy: 'Basic',
+    ),
+    CoverageEntry(
+      section: 'slots',
+      contractName: 'actions',
+      status: CoverageStatus.notYet,
+      dartName: 'actions',
+      reason:
+          'The docs Basic demo has no #actions; the widget tests cover the slot.',
+    ),
+  ],
+);
+
+/// The contract coverage page for KunChatPinnedBar.
+Widget kunChatPinnedBarContract(BuildContext context) =>
+    const CoveragePage(coverage: _kunChatPinnedBar);
 
 const ComponentCoverage _kunChatReactionPicker = ComponentCoverage(
   name: 'KunChatReactionPicker',

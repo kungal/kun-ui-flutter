@@ -200,13 +200,7 @@ List<KunChatMessage> makeDirectConversation() {
   }
 
   push(demoMessage(her, demoChatTime(2, '21:03'), '在吗在吗'));
-  push(
-    demoMessage(
-      her,
-      demoChatTime(2, '21:03'),
-      '你之前说的那个补丁我装上了,但是一进游戏就乱码',
-    ),
-  );
+  push(demoMessage(her, demoChatTime(2, '21:03'), '你之前说的那个补丁我装上了,但是一进游戏就乱码'));
   final KunChatMessage tip = push(
     demoMessage(
       demoMe,
@@ -261,10 +255,11 @@ List<KunChatMessage> makeDirectConversation() {
     ),
   );
   push(
-    demoMessage(her, demoChatTime(1, '10:33'), '').copyWith(
-      media: demoChatPhoto('ren/2339', 367, 602),
-      mediaGroupId: album,
-    ),
+    demoMessage(
+      her,
+      demoChatTime(1, '10:33'),
+      '',
+    ).copyWith(media: demoChatPhoto('ren/2339', 367, 602), mediaGroupId: album),
   );
   push(
     demoMessage(her, demoChatTime(1, '10:33'), '海边那段真的哭死我了').copyWith(
@@ -277,23 +272,12 @@ List<KunChatMessage> makeDirectConversation() {
     ),
   );
   final KunChatMessage spoiler = push(
-    demoMessage(
-      her,
-      demoChatTime(1, '10:35'),
-      '最后那个反转你猜到了吗?原来||列车长就是白本人||',
-    ),
+    demoMessage(her, demoChatTime(1, '10:35'), '最后那个反转你猜到了吗?原来||列车长就是白本人||'),
   );
   push(
-    demoMessage(
-      demoMe,
-      demoChatTime(1, '10:41'),
-      '猜到一半,第三章那封信就有暗示了',
-    ).copyWith(
+    demoMessage(demoMe, demoChatTime(1, '10:41'), '猜到一半,第三章那封信就有暗示了').copyWith(
       replyTo: demoReplyTo(spoiler),
-      replyQuote: const KunChatReplyQuote(
-        text: '列车长就是白本人',
-        offset: 14,
-      ),
+      replyQuote: const KunChatReplyQuote(text: '列车长就是白本人', offset: 14),
     ),
   );
   push(
@@ -426,6 +410,20 @@ const List<(String, int, int)> _historyPhotos = <(String, int, int)>[
   ('ren/2337', 290, 599),
   ('bg/bg45', 1920, 1268),
 ];
+
+/// Three pinned messages matching the ChatPinnedBar docs Basic demo.
+List<KunChatMessage> demoPinnedBarMessages() {
+  _seq = 0;
+  return <KunChatMessage>[
+    demoMessage(demoMe, demoChatTime(3, '19:02'), '群规:聊剧情请把关键内容用 ||剧透|| 遮起来'),
+    demoMessage(
+      '1004',
+      demoChatTime(2, '20:10'),
+      '',
+    ).copyWith(media: demoChatPhoto('bg/bg1', 1920, 1080)),
+    demoMessage('1004', demoChatTime(0, '08:47'), '**第三章校对截止**:本周日晚 22:00'),
+  ];
+}
 
 /// [count] messages of back-and-forth, oldest first, ending now.
 List<KunChatMessage> makeHistory(int count, {String peer = '1002'}) {

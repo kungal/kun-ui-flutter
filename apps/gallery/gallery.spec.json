@@ -506,6 +506,50 @@
         }
       ]
     },
+    "KunChatHeader": {
+      "source": "demos/chat_header.dart",
+      "demos": [
+        {
+          "slug": "basic",
+          "title": "Basic",
+          "builder": "chatHeaderBasic",
+          "shows": [
+            "props.avatar",
+            "props.back",
+            "props.kind",
+            "props.subtitle",
+            "props.title",
+            "props.typing",
+            "props.user",
+            "props.users",
+            "slots.actions"
+          ]
+        }
+      ],
+      "undemoable": {
+        "events.back": "A callback has no appearance of its own; the widget tests fire onBack at both viewports.",
+        "events.title-click": "A callback has no appearance of its own; the widget tests fire onTitleTap."
+      },
+      "gaps": {
+        "slots.subtitle": "The docs Basic demo uses the string prop; the widget tests cover the slot."
+      }
+    },
+    "KunChatLayout": {
+      "source": "demos/chat_layout.dart",
+      "demos": [
+        {
+          "slug": "app",
+          "title": "App",
+          "builder": "chatLayoutApp",
+          "shows": [
+            "props.showConversation",
+            "slots.default",
+            "slots.empty",
+            "slots.sidebar"
+          ]
+        }
+      ]
+    },
     "KunChatMessageList": {
       "source": "demos/chat_message_list.dart",
       "demos": [
@@ -592,6 +636,26 @@
           ]
         }
       ]
+    },
+    "KunChatPinnedBar": {
+      "source": "demos/chat_pinned_bar.dart",
+      "demos": [
+        {
+          "slug": "basic",
+          "title": "Basic",
+          "builder": "chatPinnedBarBasic",
+          "shows": [
+            "props.messages",
+            "props.resolveMediaUrl",
+            "props.unpinnable",
+            "events.jump",
+            "events.unpin"
+          ]
+        }
+      ],
+      "gaps": {
+        "slots.actions": "The docs Basic demo has no #actions; the widget tests cover the slot."
+      }
     },
     "KunChatReactionPicker": {
       "source": "demos/chat_reaction_picker.dart",

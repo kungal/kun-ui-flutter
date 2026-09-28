@@ -12,8 +12,11 @@ import 'demos/card.dart';
 import 'demos/chat_bubble.dart';
 import 'demos/chat_composer.dart';
 import 'demos/chat_conversation_item.dart';
+import 'demos/chat_header.dart';
+import 'demos/chat_layout.dart';
 import 'demos/chat_message_list.dart';
 import 'demos/chat_message_menu.dart';
+import 'demos/chat_pinned_bar.dart';
 import 'demos/chat_reaction_picker.dart';
 import 'demos/chat_request_bar.dart';
 import 'demos/chat_text.dart';
@@ -201,6 +204,24 @@ const List<GalleryComponent> galleryComponents = <GalleryComponent>[
     ],
   ),
   GalleryComponent(
+    slug: 'kunchatheader',
+    name: 'KunChatHeader',
+    demos: <GalleryDemo>[
+      GalleryDemo(slug: 'basic', title: 'Basic', builder: chatHeaderBasic),
+      GalleryDemo(
+          slug: 'contract', title: 'Contract', builder: kunChatHeaderContract),
+    ],
+  ),
+  GalleryComponent(
+    slug: 'kunchatlayout',
+    name: 'KunChatLayout',
+    demos: <GalleryDemo>[
+      GalleryDemo(slug: 'app', title: 'App', builder: chatLayoutApp),
+      GalleryDemo(
+          slug: 'contract', title: 'Contract', builder: kunChatLayoutContract),
+    ],
+  ),
+  GalleryComponent(
     slug: 'kunchatmessagelist',
     name: 'KunChatMessageList',
     demos: <GalleryDemo>[
@@ -228,6 +249,17 @@ const List<GalleryComponent> galleryComponents = <GalleryComponent>[
           slug: 'contract',
           title: 'Contract',
           builder: kunChatMessageMenuContract),
+    ],
+  ),
+  GalleryComponent(
+    slug: 'kunchatpinnedbar',
+    name: 'KunChatPinnedBar',
+    demos: <GalleryDemo>[
+      GalleryDemo(slug: 'basic', title: 'Basic', builder: chatPinnedBarBasic),
+      GalleryDemo(
+          slug: 'contract',
+          title: 'Contract',
+          builder: kunChatPinnedBarContract),
     ],
   ),
   GalleryComponent(
