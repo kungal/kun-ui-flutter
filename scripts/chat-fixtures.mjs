@@ -58,6 +58,10 @@ const TYPES = [
   'url',
 ]
 
+const INLINE_FORMATS = ['bold', 'italic', 'underline', 'strikethrough', 'spoiler']
+const PAIR_TYPES = [...INLINE_FORMATS]
+const LINK_TYPES = ['text_link', 'mention']
+
 const ALPHABET = [
   '*', '*', '_', '_', '+', '~', '|', '|',
   '`', '`', '[', ']', '(', ')', '>', '\\', '\\',
@@ -94,6 +98,23 @@ function extraFor(type, r) {
   return {}
 }
 
+function extraValid(type, r) {
+  if (type === 'text_link') return { url: pick(r, ['https://a', 'https://x/(y)', 'https://x']) }
+  if (type === 'mention') return { user_id: String(1 + Math.floor(r() * 99)) }
+  if (type === 'url') return {}
+  if (type === 'pre') return { language: pick(r, ['go', 'c++', '']) }
+  return {}
+}
+
+function entityOf(type, offset, length, r, valid = false) {
+  return {
+    type,
+    offset,
+    length,
+    ...(valid ? extraValid(type, r) : extraFor(type, r)),
+  }
+}
+
 function randomEntities(r, text, n) {
   const entities = []
   for (let i = 0; i < n; i++) {
@@ -116,8 +137,8 @@ function jsonTree(nodes) {
   )
 }
 
-function line(fn, input, output) {
-  return JSON.stringify({ fn, in: input, out: output })
+function line(fn, family, input, output) {
+  return JSON.stringify({ fn, family, in: input, out: output })
 }
 
 const parseSources = [
@@ -321,6 +342,281 @@ const albumFixtures = [
   Array.from({ length: 13 }, () => [1000, 800]),
 ]
 
+// Every (text, entities) pair that appears as input in ui-core chat tests,
+// including the 2.51.1 repros. parse() sources are listed in parseSources;
+// format() (text, entities) in formatCases plus the closer-line cases below.
+const testNormalizeCases = [
+  ['hello', null],
+  ['hello', []],
+  ['', [{ type: 'bold', offset: 0, length: 3 }]],
+  ['abcdef', [{ type: 'bold', offset: 1, length: 2 }]],
+  [
+    'abcdef',
+    [
+      { type: 'italic', offset: 2, length: 1 },
+      { type: 'bold', offset: 0, length: 4 },
+    ],
+  ],
+  [
+    'abcdef',
+    [
+      { type: 'bold', offset: 0, length: 3 },
+      { type: 'italic', offset: 3, length: 3 },
+    ],
+  ],
+  ['ab cd', [{ type: 'bold', offset: 3, length: 2 }]],
+  [
+    'link',
+    [
+      { type: 'bold', offset: 0, length: 4 },
+      { type: 'text_link', offset: 0, length: 4, url: 'https://moyu.moe' },
+    ],
+  ],
+  ['a😀b', [{ type: 'bold', offset: 1, length: 2 }]],
+  ['a😀b', [{ type: 'bold', offset: 2, length: 1 }]],
+  ['a😀b', [{ type: 'bold', offset: 0, length: 2 }]],
+  [
+    'abc',
+    [
+      { type: 'bold', offset: -1, length: 2 },
+      { type: 'bold', offset: 1, length: 0 },
+      { type: 'bold', offset: 5, length: 1 },
+      { type: 'bold', offset: 1.5, length: 1 },
+      { type: 'marquee', offset: 0, length: 1 },
+      { type: 'text_link', offset: 0, length: 1 },
+      { type: 'mention', offset: 0, length: 1 },
+    ],
+  ],
+  ['abc', [{ type: 'italic', offset: 1, length: 99 }]],
+  [
+    'abcdefgh',
+    [
+      { type: 'bold', offset: 0, length: 5 },
+      { type: 'italic', offset: 3, length: 5 },
+    ],
+  ],
+  [
+    'abcd',
+    [
+      { type: 'code', offset: 0, length: 4 },
+      { type: 'bold', offset: 1, length: 2 },
+    ],
+  ],
+  [
+    'abcd',
+    [
+      { type: 'text_link', offset: 0, length: 4, url: 'https://a' },
+      { type: 'mention', offset: 1, length: 2, user_id: '7' },
+    ],
+  ],
+  [
+    'abcd',
+    [
+      { type: 'blockquote', offset: 0, length: 4 },
+      { type: 'blockquote', offset: 1, length: 2 },
+    ],
+  ],
+  [
+    'abcdef',
+    [
+      { type: 'bold', offset: 0, length: 3 },
+      { type: 'bold', offset: 3, length: 3 },
+    ],
+  ],
+  [
+    'abcdef',
+    [
+      { type: 'bold', offset: 0, length: 4 },
+      { type: 'bold', offset: 2, length: 4 },
+    ],
+  ],
+  [
+    'abcd',
+    [
+      { type: 'text_link', offset: 0, length: 2, url: 'https://a' },
+      { type: 'text_link', offset: 2, length: 2, url: 'https://a' },
+    ],
+  ],
+  [
+    'ab\ncd',
+    [
+      { type: 'bold', offset: 0, length: 5 },
+      { type: 'blockquote', offset: 3, length: 2 },
+    ],
+  ],
+  ['ab\n', [{ type: 'blockquote', offset: 0, length: 3 }]],
+  ['\nab\n', [{ type: 'spoiler', offset: 0, length: 4 }]],
+  [
+    '中中b*bab',
+    [
+      { type: 'blockquote', offset: 2, length: 8 },
+      { type: 'url', offset: 6, length: 2 },
+      { type: 'blockquote', offset: 5, length: 5 },
+      { type: 'spoiler', offset: 1, length: 6 },
+    ],
+  ],
+  [
+    'abcdefgh',
+    [
+      { type: 'blockquote', offset: 0, length: 5 },
+      { type: 'blockquote', offset: 3, length: 5 },
+      { type: 'bold', offset: 1, length: 6 },
+    ],
+  ],
+  ['look:\ncode\nok', [{ type: 'pre', offset: 6, length: 4, language: 'go' }]],
+  ['a\n\nq', [{ type: 'blockquote', offset: 3, length: 1 }]],
+  [
+    'say hi there',
+    [
+      { type: 'bold', offset: 4, length: 2 },
+      { type: 'italic', offset: 0, length: 12 },
+    ],
+  ],
+]
+
+const testCloserFormatCases = [
+  ['a\n\\>b', [{ type: 'mention', offset: 1, length: 1, user_id: '12' }]],
+  [
+    ')\n>',
+    [
+      { type: 'blockquote', offset: 0, length: 1 },
+      { type: 'blockquote', offset: 1, length: 2 },
+      { type: 'mention', offset: 1, length: 1, user_id: '12' },
+    ],
+  ],
+  ['a\n> b', [{ type: 'text_link', offset: 0, length: 2, url: 'https://a' }]],
+  [
+    'a\nb',
+    [
+      { type: 'mention', offset: 0, length: 2, user_id: '1' },
+      { type: 'blockquote', offset: 2, length: 1 },
+    ],
+  ],
+]
+
+const testQuoteInLabelCases = [
+  [
+    'x\n\\>y',
+    [
+      { type: 'blockquote', offset: 0, length: 5 },
+      { type: 'mention', offset: 0, length: 2, user_id: '1' },
+    ],
+  ],
+]
+
+const testParseSourcesExtra = [
+  'a[\n](mention:12)\\\\>b',
+  '> )[\n](mention:12)\\>',
+  '[a\n](https://a)\\> b',
+  '[a\n](mention:1)> b',
+  '> [x\n> ](mention:1)\\>y',
+]
+
+const closerTails = ['>', '> b', '>x', '> ', '\\>', '\\\\>', '\\>y', '\\> b', '\\>x', '\\\\> b']
+const closerHeads = ['', 'a', 'x', ')', '中', 'ab', 'z', '*', 'aa']
+
+function closerCover(kind, offset, length, r) {
+  if (kind === 'mention') return { type: 'mention', offset, length, user_id: pick(r, ['1', '12', '9']) }
+  if (kind === 'text_link') {
+    return { type: 'text_link', offset, length, url: pick(r, ['https://a', 'https://x']) }
+  }
+  return { type: kind, offset, length }
+}
+
+function generateQuotesCase(r) {
+  const shape = pick(r, ['nested', 'crossing', 'triple', 'repro'])
+  if (shape === 'repro') {
+    if (r() < 0.5) {
+      return {
+        text: '中中b*bab',
+        entities: [
+          { type: 'blockquote', offset: 2, length: 8 },
+          { type: 'url', offset: 6, length: 2 },
+          { type: 'blockquote', offset: 5, length: 5 },
+          { type: 'spoiler', offset: 1, length: 6 },
+        ],
+      }
+    }
+    return {
+      text: 'abcdefgh',
+      entities: [
+        { type: 'blockquote', offset: 0, length: 5 },
+        { type: 'blockquote', offset: 3, length: 5 },
+        { type: 'bold', offset: 1, length: 6 },
+      ],
+    }
+  }
+  const n = 8 + Math.floor(r() * 9)
+  let text = ''
+  for (let i = 0; i < n; i++) text += pick(r, ['a', 'b', 'c', 'x', '中', '*', ' ', '\n'])
+  const entities = []
+  if (shape === 'nested') {
+    const outerStart = Math.floor(r() * Math.max(1, text.length - 4))
+    const outerLen = Math.min(text.length - outerStart, 3 + Math.floor(r() * 8))
+    const innerStart = outerStart + 1 + Math.floor(r() * Math.max(1, outerLen - 2))
+    const innerLen = Math.max(1, Math.min(outerStart + outerLen - innerStart - 1, 1 + Math.floor(r() * 4)))
+    entities.push({ type: 'blockquote', offset: outerStart, length: outerLen })
+    entities.push({ type: 'blockquote', offset: innerStart, length: innerLen })
+    const inlineStart = Math.max(0, outerStart - Math.floor(r() * 2))
+    const inlineLen = Math.min(text.length - inlineStart, outerLen + 2 + Math.floor(r() * 4))
+    const inlineType = pick(r, [...INLINE_FORMATS, 'url', 'code', 'text_link', 'mention'])
+    entities.push(entityOf(inlineType, inlineStart, inlineLen, r, true))
+  } else if (shape === 'crossing') {
+    const aStart = Math.floor(r() * Math.max(1, text.length - 5))
+    const aLen = 3 + Math.floor(r() * 5)
+    const bStart = aStart + 1 + Math.floor(r() * 3)
+    const bLen = 3 + Math.floor(r() * 5)
+    entities.push({ type: 'blockquote', offset: aStart, length: aLen })
+    entities.push({ type: 'blockquote', offset: bStart, length: bLen })
+    const inlineType = pick(r, INLINE_FORMATS)
+    entities.push({
+      type: inlineType,
+      offset: Math.max(0, aStart - 1),
+      length: aLen + bLen,
+    })
+  } else {
+    for (let i = 0; i < 3; i++) {
+      entities.push({
+        type: 'blockquote',
+        offset: Math.floor(r() * 14) - 1,
+        length: 2 + Math.floor(r() * 8),
+      })
+    }
+    for (let i = 0; i < 1 + Math.floor(r() * 3); i++) {
+      const inlineType = pick(r, [...INLINE_FORMATS, 'url', 'text_link', 'mention', 'code'])
+      entities.push(entityOf(inlineType, Math.floor(r() * 16) - 1, 1 + Math.floor(r() * 8), r, true))
+    }
+  }
+  return { text, entities }
+}
+
+function generateCloserCase(r) {
+  const head = pick(r, closerHeads)
+  const tail = pick(r, closerTails)
+  const text = `${head}\n${tail}`
+  const cover = head.length + 1
+  const kind = pick(r, [...LINK_TYPES, ...PAIR_TYPES])
+  const start = pick(r, [0, Math.max(0, head.length - 1), Math.max(0, head.length)])
+  const length = cover - start
+  if (length <= 0) return { text, entities: [closerCover(kind, 0, cover, r)] }
+  return { text, entities: [closerCover(kind, start, length, r)] }
+}
+
+function generateQuoteInLabelCase(r) {
+  const head = pick(r, ['x', 'a', 'ab', '中', 'z'])
+  const tail = pick(r, ['\\>y', '\\\\>y', '> b', '>x', '\\> b', '\\\\> b', '\\>', '>'])
+  const text = `${head}\n${tail}`
+  const labelEnd = head.length + 1 + (r() < 0.5 ? 0 : Math.min(2, tail.length))
+  const kind = pick(r, LINK_TYPES)
+  return {
+    text,
+    entities: [
+      { type: 'blockquote', offset: 0, length: text.length },
+      closerCover(kind, 0, Math.max(1, labelEnd), r),
+    ],
+  }
+}
+
 function generate() {
   const r = mulberry32(20260927)
   const lines = []
@@ -332,10 +628,12 @@ function generate() {
     slice: 0,
     album: 0,
   }
+  const families = {}
 
-  const add = (fn, input, output) => {
-    lines.push(line(fn, input, output))
+  const add = (fn, input, output, family = fn) => {
+    lines.push(line(fn, family, input, output))
     counts[fn]++
+    families[family] = (families[family] ?? 0) + 1
   }
 
   for (const source of parseSources) {
@@ -499,12 +797,139 @@ function generate() {
     )
   }
 
+  // (a) Every remaining input from the ui-core chat tests, including 2.51.1.
+  for (const source of testParseSourcesExtra) {
+    add('parse', { source }, chat.parseKunChatMarkdown(source), 'tests')
+  }
+  for (const [text, entities] of testNormalizeCases) {
+    add(
+      'normalize',
+      { text, entities },
+      chat.normalizeKunChatEntities(text, entities),
+      'tests',
+    )
+    add(
+      'tree',
+      { text, entities },
+      jsonTree(chat.buildKunChatEntityTree(text, entities)),
+      'tests',
+    )
+  }
+  add(
+    'slice',
+    {
+      text: 'say hi there',
+      entities: [
+        { type: 'bold', offset: 4, length: 2 },
+        { type: 'italic', offset: 0, length: 12 },
+      ],
+      start: 4,
+      end: 12,
+    },
+    chat.sliceKunChatEntities(
+      'say hi there',
+      [
+        { type: 'bold', offset: 4, length: 2 },
+        { type: 'italic', offset: 0, length: 12 },
+      ],
+      4,
+      12,
+    ),
+    'tests',
+  )
+  add(
+    'slice',
+    { text: 'a😀b', entities: [], start: 2, end: 4 },
+    chat.sliceKunChatEntities('a😀b', [], 2, 4),
+    'tests',
+  )
+  for (const [text, entities] of [...formatCases, ...testCloserFormatCases, ...testQuoteInLabelCases]) {
+    add(
+      'format',
+      { text, entities },
+      chat.formatKunChatMarkdown(text, entities),
+      'tests',
+    )
+  }
+
+  // (b) Targeted families aimed at the 2.51.1 paths.
+  const rq = mulberry32(25110001)
+  for (const [text, entities] of [
+    ...testNormalizeCases.filter((c) =>
+      (c[1] ?? []).some((e) => e && e.type === 'blockquote'),
+    ),
+  ]) {
+    add(
+      'normalize',
+      { text, entities },
+      chat.normalizeKunChatEntities(text, entities),
+      'quotes',
+    )
+    add(
+      'tree',
+      { text, entities },
+      jsonTree(chat.buildKunChatEntityTree(text, entities)),
+      'quotes',
+    )
+  }
+  for (let i = 0; i < 220; i++) {
+    const { text, entities } = generateQuotesCase(rq)
+    add(
+      'normalize',
+      { text, entities },
+      chat.normalizeKunChatEntities(text, entities),
+      'quotes',
+    )
+    add(
+      'tree',
+      { text, entities },
+      jsonTree(chat.buildKunChatEntityTree(text, entities)),
+      'quotes',
+    )
+  }
+
+  for (const [text, entities] of testCloserFormatCases) {
+    add(
+      'format',
+      { text, entities },
+      chat.formatKunChatMarkdown(text, entities),
+      'closer_line_start',
+    )
+  }
+  for (let i = 0; i < 240; i++) {
+    const { text, entities } = generateCloserCase(rq)
+    add(
+      'format',
+      { text, entities },
+      chat.formatKunChatMarkdown(text, entities),
+      'closer_line_start',
+    )
+  }
+
+  for (const [text, entities] of testQuoteInLabelCases) {
+    add(
+      'format',
+      { text, entities },
+      chat.formatKunChatMarkdown(text, entities),
+      'quote_in_label',
+    )
+  }
+  for (let i = 0; i < 160; i++) {
+    const { text, entities } = generateQuoteInLabelCase(rq)
+    add(
+      'format',
+      { text, entities },
+      chat.formatKunChatMarkdown(text, entities),
+      'quote_in_label',
+    )
+  }
+
   const body = `${lines.join('\n')}\n`
-  return { body, counts, bytes: Buffer.byteLength(body) }
+  return { body, counts, families, bytes: Buffer.byteLength(body) }
 }
 
-const { body, counts, bytes } = generate()
-const summary = `chat-fixtures: ${JSON.stringify(counts)} bytes=${bytes}`
+const { body, counts, families, bytes } = generate()
+const summary = `chat-fixtures: ${JSON.stringify(counts)} families=${JSON.stringify(families)} bytes=${bytes}`
 
 if (checkPath) {
   const existing = readFileSync(checkPath, 'utf8')
@@ -527,8 +952,9 @@ if (checkPath) {
   process.exit(1)
 }
 
-if (bytes > 1024 * 1024) {
-  console.error(`${summary} exceeds 1 MB`)
+const limit = 1.2 * 1024 * 1024
+if (bytes > limit) {
+  console.error(`${summary} exceeds 1.2 MB`)
   process.exit(1)
 }
 

@@ -131,14 +131,13 @@ List<_Range> _mergeTouching(List<_Range> ranges) {
 }
 
 // A quote is a block, so it must sit outside every inline entity: anything
-// that straddles a quote boundary is cut there.
-List<_Range> _splitAtQuotes(List<_Range> ranges) {
-  final List<int> cuts = ranges
-      .where((_Range r) => r.entity.type == KunChatEntityType.blockquote)
-      .expand((_Range r) => <int>[r.start, r.end])
-      .toList();
+// that straddles a quote boundary is cut there. `quotes` must be the quotes
+// that survive nesting: cutting at one that is later dropped leaves a cut
+// with no cause, which the next pass merges away.
+List<_Range> _splitAtQuotes(List<_Range> ranges, List<_Range> quotes) {
+  final List<int> cuts =
+      quotes.expand((_Range r) => <int>[r.start, r.end]).toList();
   return ranges.expand((_Range r) {
-    if (r.entity.type == KunChatEntityType.blockquote) return <_Range>[r];
     final List<int> inner = cuts
         .where((int c) => c > r.start && c < r.end)
         .toList()
@@ -166,7 +165,8 @@ String? _at(String text, int index) =>
 ///    emoji) in half. Pull a blockquote's end in over trailing line breaks.
 /// 2. Merge touching or overlapping runs of one inline format (bold, italic,
 ///    underline, strikethrough, spoiler).
-/// 3. Cut every other entity at the boundaries of a blockquote it straddles,
+/// 3. Settle the blockquotes among themselves (steps 5 and 6, quotes only),
+///    then cut every other entity at the boundaries of a quote that survived,
 ///    so quotes are always outermost.
 /// 4. Pull the ends of an inline format in over line breaks, which draw
 ///    nothing there (a blockquote's end, before step 3).
@@ -227,50 +227,66 @@ List<KunChatEntity> normalizeKunChatEntities(
     return r.start < r.end;
   }
 
-  final List<_Range> queue = _splitAtQuotes(_mergeTouching(ranges))
-      .where(trimmed)
-      .toList()
-    ..sort(_compareRanges);
-  void enqueue(_Range r) {
-    int i = 0;
-    while (i < queue.length && _compareRanges(queue[i], r) <= 0) {
-      i++;
+  List<_Range> nest(List<_Range> ranges) {
+    final List<_Range> queue = ranges.where(trimmed).toList()
+      ..sort(_compareRanges);
+    void enqueue(_Range r) {
+      int i = 0;
+      while (i < queue.length && _compareRanges(queue[i], r) <= 0) {
+        i++;
+      }
+      queue.insert(i, r);
     }
-    queue.insert(i, r);
+
+    final List<_Range> out = <_Range>[];
+    final List<_Range> stack = <_Range>[];
+    while (queue.isNotEmpty) {
+      final _Range r = queue.removeAt(0);
+      while (stack.isNotEmpty && stack[stack.length - 1].end <= r.start) {
+        stack.removeLast();
+      }
+      final _Range? parent = stack.isEmpty ? null : stack[stack.length - 1];
+      if (parent != null && r.end > parent.end) {
+        // Crosses the parent's end: keep the part inside, requeue the rest.
+        final _Range rest =
+            _Range(entity: r.entity, start: parent.end, end: r.end);
+        if (trimmed(rest)) enqueue(rest);
+        r.end = parent.end;
+        if (!trimmed(r)) continue;
+        // Shorter now, it may sort after entities still waiting.
+        if (queue.isNotEmpty && _compareRanges(r, queue[0]) > 0) {
+          enqueue(r);
+          continue;
+        }
+      }
+      final bool blocked = stack.any(
+        (_Range a) =>
+            _leafTypes.contains(a.entity.type) ||
+            a.entity.type == r.entity.type ||
+            (_linkTypes.contains(a.entity.type) &&
+                _linkTypes.contains(r.entity.type)),
+      );
+      if (blocked) continue;
+      stack.add(r);
+      out.add(r);
+    }
+    return out;
   }
 
-  final List<_Range> out = <_Range>[];
-  final List<_Range> stack = <_Range>[];
-  while (queue.isNotEmpty) {
-    final _Range r = queue.removeAt(0);
-    while (stack.isNotEmpty && stack[stack.length - 1].end <= r.start) {
-      stack.removeLast();
-    }
-    final _Range? parent = stack.isEmpty ? null : stack[stack.length - 1];
-    if (parent != null && r.end > parent.end) {
-      // Crosses the parent's end: keep the part inside, requeue the rest.
-      final _Range rest =
-          _Range(entity: r.entity, start: parent.end, end: r.end);
-      if (trimmed(rest)) enqueue(rest);
-      r.end = parent.end;
-      if (!trimmed(r)) continue;
-      // Shorter now, it may sort after entities still waiting.
-      if (queue.isNotEmpty && _compareRanges(r, queue[0]) > 0) {
-        enqueue(r);
-        continue;
-      }
-    }
-    final bool blocked = stack.any(
-      (_Range a) =>
-          _leafTypes.contains(a.entity.type) ||
-          a.entity.type == r.entity.type ||
-          (_linkTypes.contains(a.entity.type) &&
-              _linkTypes.contains(r.entity.type)),
-    );
-    if (blocked) continue;
-    stack.add(r);
-    out.add(r);
-  }
+  // Everything else is cut at the quotes' boundaries, so only a quote can
+  // hold a quote: nesting the quotes alone settles which ones survive.
+  final List<_Range> quotes = nest(
+    ranges
+        .where((_Range r) => r.entity.type == KunChatEntityType.blockquote)
+        .toList(),
+  );
+  final List<_Range> inline = _mergeTouching(
+    ranges
+        .where((_Range r) => r.entity.type != KunChatEntityType.blockquote)
+        .toList(),
+  );
+  final List<_Range> out =
+      nest(<_Range>[...quotes, ..._splitAtQuotes(inline, quotes)]);
 
   return out
       .map((_Range r) => _cleanEntity(r.entity, r.start, r.end - r.start))

@@ -467,8 +467,11 @@ class _LitAtom extends _Atom {
 }
 
 class _MarkAtom extends _Atom {
-  _MarkAtom(this.s);
+  _MarkAtom(this.s, {this.closer = false});
   final String s;
+  // The parser jumps over it without a line-start check: a pair's closing
+  // marker, and a link's `](`…`)` (whose target atoms are `url`).
+  final bool closer;
 }
 
 class _FormatNode {
@@ -558,7 +561,8 @@ String formatKunChatMarkdown(String text, List<KunChatEntity>? entities) {
   }
 
   final List<_Atom> atoms = <_Atom>[];
-  void mark(String s) => atoms.add(_MarkAtom(s));
+  void mark(String s, [bool closer = false]) =>
+      atoms.add(_MarkAtom(s, closer: closer));
   void lit(String ch, _Context ctx, bool inLabel) =>
       atoms.add(_LitAtom(ch: ch, ctx: ctx, inLabel: inLabel));
   int quoteDepth = 0;
@@ -597,7 +601,7 @@ String formatKunChatMarkdown(String text, List<KunChatEntity>? entities) {
     if (pair != null) {
       mark(pair);
       walk(node, inLabel);
-      mark(pair);
+      mark(pair, true);
     } else if (e.type == KunChatEntityType.code) {
       mark('`');
       emitRaw(node.start, node.end, _Context.code);
@@ -615,7 +619,7 @@ String formatKunChatMarkdown(String text, List<KunChatEntity>? entities) {
         e.type == KunChatEntityType.mention) {
       mark('[');
       walk(node, true);
-      mark('](');
+      mark('](', true);
       final String target =
           e.type == KunChatEntityType.mention ? 'mention:${e.userId}' : e.url!;
       // JS `for (const ch of target)` yields Unicode code points, not UTF-16
@@ -623,7 +627,7 @@ String formatKunChatMarkdown(String text, List<KunChatEntity>? entities) {
       for (final int rune in target.runes) {
         lit(String.fromCharCode(rune), _Context.url, false);
       }
-      mark(')');
+      mark(')', true);
     } else if (e.type == KunChatEntityType.blockquote) {
       mark('> ');
       quoteDepth++;
@@ -696,10 +700,6 @@ bool _beforeSpecial(
       (_lastNonBackslash(out) == c || _rawCharFrom(atoms, j + 1) == c);
 }
 
-/// Where the parser checks for a quote prefix and a leading `>`.
-bool _atTextLineStart(String out) =>
-    out.isEmpty || out.endsWith('\n') || out == '> ' || out.endsWith('\n> ');
-
 String _serialize(List<_Atom> atoms) {
   // Which literals need a backslash.
   for (int i = 0; i < atoms.length; i++) {
@@ -740,17 +740,31 @@ String _serialize(List<_Atom> atoms) {
     }
   }
 
+  // The parser's `atLineStart`, tracked over the atoms rather than read off
+  // the output: a line break that ends a link label is followed in the source
+  // by `](…)`, and the parser checks the line start after it. Reading the
+  // output lost the text after `[⏎](mention:12)` when it began `\>` or `>`.
+  // After a `> ` prefix the parser checks only the very next character.
+  bool lineStart = true;
+  bool afterPrefix = false;
   String out = '';
   int i = 0;
   while (i < atoms.length) {
     final _Atom a = atoms[i];
+    final bool skipped =
+        a is _MarkAtom ? a.closer : (a as _LitAtom).ctx == _Context.url;
+    final bool checked = lineStart && !skipped;
+    final bool leading = afterPrefix || checked;
+    afterPrefix = false;
+    if (!skipped) lineStart = false;
     if (a is _MarkAtom) {
       out += a.s;
+      afterPrefix = checked && a.s == '> ';
       i++;
       continue;
     }
     final _LitAtom lit = a as _LitAtom;
-    if (lit.ctx == _Context.text && _atTextLineStart(out)) {
+    if (lit.ctx == _Context.text && leading) {
       int j = i;
       while (_isLit(_atomAt(atoms, j), r'\', _Context.text)) {
         j++;
@@ -768,6 +782,7 @@ String _serialize(List<_Atom> atoms) {
       continue;
     }
     out += lit.escape ? '\\${lit.ch}' : lit.ch;
+    if (lit.ctx == _Context.text && lit.ch == '\n') lineStart = true;
     i++;
   }
   return out;

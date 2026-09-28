@@ -49,11 +49,15 @@ void main() {
 
     int albumToleranceUsed = 0;
     final List<String> mismatches = <String>[];
+    final Map<String, int> familyCases = <String, int>{};
+    final Map<String, int> familyMismatches = <String, int>{};
 
     for (int i = 0; i < lines.length; i++) {
       final Map<String, dynamic> caseMap =
           jsonDecode(lines[i]) as Map<String, dynamic>;
       final String fn = caseMap['fn'] as String;
+      final String family = caseMap['family'] as String? ?? fn;
+      familyCases[family] = (familyCases[family] ?? 0) + 1;
       final Map<String, dynamic> input = caseMap['in'] as Map<String, dynamic>;
       final Object? expected = caseMap['out'];
       try {
@@ -147,17 +151,25 @@ void main() {
             throw StateError('unknown fn $fn');
         }
       } catch (error) {
-        mismatches.add(
-          'line ${i + 1} $fn\n  in: ${jsonEncode(input)}\n'
-          '  expected: ${jsonEncode(expected)}\n  error: $error',
-        );
-        if (mismatches.length >= 5) break;
+        familyMismatches[family] = (familyMismatches[family] ?? 0) + 1;
+        if (mismatches.length < 5) {
+          mismatches.add(
+            'line ${i + 1} $fn family=$family\n  in: ${jsonEncode(input)}\n'
+            '  expected: ${jsonEncode(expected)}\n  error: $error',
+          );
+        }
       }
     }
 
+    // ignore: avoid_print
+    print('fixture family cases: $familyCases');
+    // ignore: avoid_print
+    print('fixture family mismatches: $familyMismatches');
     if (mismatches.isNotEmpty) {
+      final int total =
+          familyMismatches.values.fold<int>(0, (int a, int b) => a + b);
       fail(
-        '${mismatches.length} fixture mismatch(es), first few:\n'
+        '$total fixture mismatch(es) by family $familyMismatches, first few:\n'
         '${mismatches.join('\n\n')}',
       );
     }

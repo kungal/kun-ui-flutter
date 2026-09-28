@@ -30,23 +30,23 @@ void parses(
   );
 }
 
-int _toInt32(double x) {
-  if (x.isNaN || x.isInfinite) return 0;
-  final int sign = x.isNegative ? -1 : 1;
-  final double mag = x.abs().floorToDouble();
-  int n = (mag % 4294967296.0).toInt();
-  if (sign < 0 && n != 0) n = 4294967296 - n;
-  if (n >= 2147483648) n -= 4294967296;
-  return n;
+int _toInt32(int x) {
+  final int u = x & 0xFFFFFFFF;
+  return u >= 0x80000000 ? u - 0x100000000 : u;
 }
 
+int _imul(int a, int b) => _toInt32(_toInt32(a) * _toInt32(b));
+
+// mulberry32. The LCG this replaced, `seed * 1103515245 + 12345` in doubles,
+// overflowed the 53-bit mantissa and cycled after about 10,000 draws, so the
+// random tests replayed the same few hundred cases.
 double Function() rng(int seed) {
-  int s = seed;
+  int s = _toInt32(seed);
   return () {
-    // JS `&` ToInt32s the IEEE-754 product. Dart `int` multiply is exact, so
-    // without this the ported tests draw a different sequence.
-    s = _toInt32(s.toDouble() * 1103515245.0 + 12345.0) & 0x7fffffff;
-    return s / 0x7fffffff;
+    s = _toInt32(s + 0x6d2b79f5);
+    int t = _imul(s ^ ((s & 0xFFFFFFFF) >> 15), 1 | s);
+    t = _toInt32(t + _imul(t ^ ((t & 0xFFFFFFFF) >> 7), 61 | t)) ^ t;
+    return ((t ^ ((t & 0xFFFFFFFF) >> 14)) & 0xFFFFFFFF) / 4294967296;
   };
 }
 
@@ -299,6 +299,69 @@ void main() {
           'bold', <KunChatEntity>[e(KunChatEntityType.bold, 0, 4)]),
       '**bold**',
     );
+  });
+
+  test('a link label ending in a line break leaves the next line to the parser',
+      () {
+    // The parser checks for `> ` and `\\>` after the label's `](…)`, where the
+    // new line's text begins, so the writer escapes there too.
+    final List<(String, List<KunChatEntity>, String)> cases =
+        <(String, List<KunChatEntity>, String)>[
+      (
+        'a\n\\>b',
+        <KunChatEntity>[e(KunChatEntityType.mention, 1, 1, userId: '12')],
+        'a[\n](mention:12)\\\\>b',
+      ),
+      (
+        ')\n>',
+        <KunChatEntity>[
+          e(KunChatEntityType.blockquote, 0, 1),
+          e(KunChatEntityType.blockquote, 1, 2),
+          e(KunChatEntityType.mention, 1, 1, userId: '12'),
+        ],
+        '> )[\n](mention:12)\\>',
+      ),
+      (
+        'a\n> b',
+        <KunChatEntity>[
+          e(KunChatEntityType.textLink, 0, 2, url: 'https://a'),
+        ],
+        '[a\n](https://a)\\> b',
+      ),
+      // a quote that starts there is read as one
+      (
+        'a\nb',
+        <KunChatEntity>[
+          e(KunChatEntityType.mention, 0, 2, userId: '1'),
+          e(KunChatEntityType.blockquote, 2, 1),
+        ],
+        '[a\n](mention:1)> b',
+      ),
+      // inside a quote the `> ` prefix sits in the label, and the check is spent
+      (
+        'x\n\\>y',
+        <KunChatEntity>[
+          e(KunChatEntityType.blockquote, 0, 5),
+          e(KunChatEntityType.mention, 0, 2, userId: '1'),
+        ],
+        '> [x\n> ](mention:1)\\>y',
+      ),
+    ];
+    for (final (String text, List<KunChatEntity> entities, String source)
+        in cases) {
+      expect(formatKunChatMarkdown(text, entities), source);
+      final List<KunChatEntity> kept = normalizeKunChatEntities(text, entities)
+          .where(
+            (KunChatEntity x) =>
+                !(x.type == KunChatEntityType.blockquote && x.offset == 1),
+          )
+          .toList();
+      expect(
+        parseKunChatMarkdown(source),
+        KunChatFormattedText(text: text, entities: kept),
+        reason: source,
+      );
+    }
   });
 
   test('format drops url entities and quotes that are not whole lines', () {

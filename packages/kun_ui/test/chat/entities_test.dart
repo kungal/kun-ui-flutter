@@ -26,23 +26,23 @@ KunChatEntity e(
       language: language,
     );
 
-int _toInt32(double x) {
-  if (x.isNaN || x.isInfinite) return 0;
-  final int sign = x.isNegative ? -1 : 1;
-  final double mag = x.abs().floorToDouble();
-  int n = (mag % 4294967296.0).toInt();
-  if (sign < 0 && n != 0) n = 4294967296 - n;
-  if (n >= 2147483648) n -= 4294967296;
-  return n;
+int _toInt32(int x) {
+  final int u = x & 0xFFFFFFFF;
+  return u >= 0x80000000 ? u - 0x100000000 : u;
 }
 
+int _imul(int a, int b) => _toInt32(_toInt32(a) * _toInt32(b));
+
+// mulberry32. The LCG this replaced, `seed * 1103515245 + 12345` in doubles,
+// overflowed the 53-bit mantissa and cycled after about 10,000 draws, so the
+// random tests replayed the same few hundred cases.
 double Function() rng(int seed) {
-  int s = seed;
+  int s = _toInt32(seed);
   return () {
-    // JS `&` ToInt32s the IEEE-754 product. Dart `int` multiply is exact, so
-    // without this the ported tests draw a different sequence.
-    s = _toInt32(s.toDouble() * 1103515245.0 + 12345.0) & 0x7fffffff;
-    return s / 0x7fffffff;
+    s = _toInt32(s + 0x6d2b79f5);
+    int t = _imul(s ^ ((s & 0xFFFFFFFF) >> 15), 1 | s);
+    t = _toInt32(t + _imul(t ^ ((t & 0xFFFFFFFF) >> 7), 61 | t)) ^ t;
+    return ((t ^ ((t & 0xFFFFFFFF) >> 14)) & 0xFFFFFFFF) / 4294967296;
   };
 }
 
@@ -219,6 +219,40 @@ void main() {
     );
   });
 
+  test('a quote that does not survive nesting cuts nothing', () {
+    // The quote at 5 is inside the one at 2 and is dropped, so the spoiler must
+    // not keep a cut at 5: a second pass would have merged it away.
+    const String text = '中中b*bab';
+    final List<KunChatEntity> once =
+        normalizeKunChatEntities(text, <KunChatEntity>[
+      e(KunChatEntityType.blockquote, 2, 8),
+      e(KunChatEntityType.url, 6, 2),
+      e(KunChatEntityType.blockquote, 5, 5),
+      e(KunChatEntityType.spoiler, 1, 6),
+    ]);
+    expect(once, <KunChatEntity>[
+      e(KunChatEntityType.spoiler, 1, 1),
+      e(KunChatEntityType.blockquote, 2, 5),
+      e(KunChatEntityType.spoiler, 2, 5),
+      e(KunChatEntityType.url, 6, 1),
+    ]);
+    expect(normalizeKunChatEntities(text, once), once);
+    // Crossing quotes: the second keeps only its part past the first.
+    expect(
+      normalizeKunChatEntities('abcdefgh', <KunChatEntity>[
+        e(KunChatEntityType.blockquote, 0, 5),
+        e(KunChatEntityType.blockquote, 3, 5),
+        e(KunChatEntityType.bold, 1, 6),
+      ]),
+      <KunChatEntity>[
+        e(KunChatEntityType.blockquote, 0, 5),
+        e(KunChatEntityType.bold, 1, 4),
+        e(KunChatEntityType.blockquote, 5, 3),
+        e(KunChatEntityType.bold, 5, 2),
+      ],
+    );
+  });
+
   test('quotes stay outermost; formats lose line breaks at their ends', () {
     const String text = 'ab\ncd';
     expect(
@@ -274,13 +308,13 @@ void main() {
       return xs[i < xs.length ? i : xs.length - 1];
     }
 
-    for (int round = 0; round < 3000; round++) {
+    for (int round = 0; round < 20000; round++) {
       final String text = List<String>.generate(
         (r() * 16).floor(),
         (_) => pick(chars),
       ).join();
       final List<KunChatEntity> entities = List<KunChatEntity>.generate(
-        (r() * 6).floor(),
+        (r() * 8).floor(),
         (_) {
           final KunChatEntityType type = pick(types);
           return e(
