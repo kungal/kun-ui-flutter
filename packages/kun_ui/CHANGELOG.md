@@ -1,5 +1,17 @@
 # Changelog
 
+## 0.17.1
+
+A clearer error from the kungal app's integration. There are no API changes.
+
+- **`KunChatMessageList` names a duplicated message.** When `messages` holds
+  the same message twice, debug builds now fail with an error that gives
+  both seqs and the shared row key. It also explains the usual causes: a
+  page merged twice, or a pending message kept after the server confirmed
+  it. Before, the list failed with the scroll view's own
+  `indexOf(child) > index` assertion, which named no message. Release
+  builds are unaffected.
+
 ## 0.17.0
 
 Built on kun-ui 2.51.0. The last three chat components, which complete the
