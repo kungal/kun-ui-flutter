@@ -1,5 +1,35 @@
 # Changelog
 
+## 0.18.0
+
+Built on kun-ui 2.52.0 (from 2.51.0), taking in the fixes for bugs this
+port reported upstream and the chat media URL. Nothing here is a breaking
+API change. The generated packages now require 2.52.0 or later.
+
+- **Photos show their served URL.** `KunChatPhoto` gains an optional
+  `url` (NextMoe chat spec 1.1.0). Without a `resolveMediaUrl`,
+  `KunChatBubble`, `KunChatMessageList`'s lightbox and
+  `KunChatPinnedBar`'s thumbnail show `media.url`. A resolver still wins,
+  so an app can keep serving a smaller preview.
+- **Chat core fixes, ported from kun-ui 2.51.1.**
+  - `normalizeKunChatEntities` gives the same result when run twice,
+    even for overlapping blockquotes.
+  - `formatKunChatMarkdown` no longer loses a backslash on a line that
+    starts with `\>` after a link label ending in a line break. What
+    `parseKunChatMarkdown` produces is unchanged.
+  - The fixture that checks the Dart port against the web gained cases
+    aimed at these paths. Its random cases had never reached them.
+- **`KunDatePicker` writes its trigger in the picker's language.** The
+  trigger text now uses the calendar locale, so a custom `format` with
+  `MMMM` or `EEEE` shows month and weekday names in that language
+  ("2026 九月 27日 星期日" under zh-CN). The default formats are
+  numeric and look the same.
+- **`KunDatePicker` shows the active cell.** After a key opens the panel
+  or an arrow key moves through the grid, the active cell draws the
+  focus-ring look in the picker's colour. Before, a keyboard user saw
+  nothing move until the page turned. A tap or click inside the panel
+  hides it again.
+
 ## 0.17.1
 
 A clearer error from the kungal app's integration. There are no API changes.
