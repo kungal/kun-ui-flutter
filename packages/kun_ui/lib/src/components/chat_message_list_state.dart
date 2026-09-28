@@ -82,6 +82,7 @@ class _KunChatMessageListState extends State<KunChatMessageList>
   bool _olderPending = false;
   bool _newerPending = false;
   bool _appResumed = true;
+  bool _shown = true;
   bool _readScheduled = false;
   int _readUpTo = 0;
   String? _lastKey;
@@ -146,6 +147,14 @@ class _KunChatMessageListState extends State<KunChatMessageList>
   @override
   void didChangeDependencies() {
     super.didChangeDependencies();
+    final bool shown =
+        TickerMode.valuesOf(context).enabled && Visibility.of(context);
+    if (shown != _shown) {
+      _shown = shown;
+      if (shown) {
+        _scheduleRead();
+      }
+    }
     _fab.duration = kunMotion(context, KunDurations.base);
     _fab.reverseDuration = kunMotion(context, KunDurations.exit);
   }
@@ -429,7 +438,7 @@ class _KunChatMessageListState extends State<KunChatMessageList>
     if (incoming.length > _kAnnounceCap) {
       incoming.removeRange(0, incoming.length - _kAnnounceCap);
     }
-    if (incoming.isNotEmpty) {
+    if (incoming.isNotEmpty && _canBeSeen) {
       final KunMessages catalog = KunMessagesScope.of(context);
       final Map<String, KunChatUser> users = kunChatUserMap(widget.users);
       for (final KunChatMessage m in incoming) {
@@ -815,8 +824,24 @@ class _KunChatMessageListState extends State<KunChatMessageList>
     WidgetsBinding.instance.ensureVisualUpdate();
   }
 
+  // Offstage, IndexedStack and a router's inactive branch still lay the
+  // list out, so its rows pass the viewport test while nobody can see them.
+  // Counting them sent read receipts for unseen messages.
+  bool get _canBeSeen => _appResumed && _shown && !_offstage();
+
+  bool _offstage() {
+    for (RenderObject? node = context.findRenderObject();
+        node != null;
+        node = node.parent) {
+      if (node is RenderOffstage && node.offstage) {
+        return true;
+      }
+    }
+    return false;
+  }
+
   void _flushRead() {
-    if (!_appResumed) {
+    if (!_canBeSeen) {
       return;
     }
     _collectVisible();

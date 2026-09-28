@@ -273,10 +273,12 @@ Future<void> pumpList(
   bool reducedMotion = false,
   double height = 400,
   Duration groupWindow = const Duration(minutes: 10),
+  Widget Function(Widget list)? around,
 }) async {
+  final Widget Function(Widget list) host = around ?? (Widget list) => list;
   await tester.pumpWidget(
     wrap(
-      KunChatMessageList(
+      host(KunChatMessageList(
         key: const ValueKey<String>('KunChatMessageList.host'),
         controller: controller,
         currentUserId: currentUserId,
@@ -312,7 +314,7 @@ Future<void> pumpList(
         onRead: onRead,
         onRetry: onRetry,
         onUserTap: onUserTap,
-      ),
+      )),
       navigated: navigated,
       reducedMotion: reducedMotion,
       height: height,
@@ -892,6 +894,71 @@ void main() {
     final int first = reads.last;
     await tester.pump();
     expect(reads.last, first);
+  });
+
+  testWidgets('9b a hidden list reports no reads and catches up when shown', (
+    WidgetTester tester,
+  ) async {
+    final List<KunChatMessage> incoming = <KunChatMessage>[
+      for (int i = 1; i <= 4; i++)
+        msg(id: '$i', seq: i, senderId: 'her', text: 'unseen $i'),
+    ];
+    for (final (String name, Widget Function(Widget) hidden) in <(
+      String,
+      Widget Function(Widget),
+    )>[
+      ('TickerMode', (Widget list) => TickerMode(enabled: false, child: list)),
+      ('Offstage', (Widget list) => Offstage(child: list)),
+      (
+        'IndexedStack',
+        (Widget list) => IndexedStack(
+              index: 1,
+              children: <Widget>[list, const SizedBox.shrink()],
+            ),
+      ),
+    ]) {
+      final List<int> reads = <int>[];
+      await pumpList(
+        tester,
+        messages: const <KunChatMessage>[],
+        lastReadSeq: 0,
+        onRead: reads.add,
+        around: hidden,
+      );
+      await pumpList(
+        tester,
+        messages: incoming,
+        lastReadSeq: 0,
+        onRead: reads.add,
+        around: hidden,
+      );
+      await tester.pump();
+      await tester.pump();
+      expect(reads, isEmpty, reason: name);
+      await tester.pumpWidget(const SizedBox.shrink());
+    }
+
+    final List<int> reads = <int>[];
+    await pumpList(
+      tester,
+      messages: incoming,
+      lastReadSeq: 0,
+      onRead: reads.add,
+      around: (Widget list) => TickerMode(enabled: false, child: list),
+    );
+    await tester.pump();
+    expect(reads, isEmpty);
+    await pumpList(
+      tester,
+      messages: incoming,
+      lastReadSeq: 0,
+      onRead: reads.add,
+      around: (Widget list) => TickerMode(enabled: true, child: list),
+    );
+    await tester.pump();
+    await tester.pump();
+    expect(reads, isNotEmpty);
+    expect(reads.last, 4);
   });
 
   testWidgets('10 unread, service, group avatar and bubble wiring', (
