@@ -414,7 +414,9 @@ class _KunTextareaState extends State<KunTextarea>
                     alignment: Alignment.topLeft,
                     child: Text(
                       widget.placeholder!,
-                      style: textStyle.copyWith(color: scheme.neutral.shade400),
+                      style: textStyle.copyWith(
+                        color: scheme.foregroundMuted,
+                      ),
                     ),
                   ),
                 ),
@@ -575,7 +577,7 @@ class _KunTextareaState extends State<KunTextarea>
                     ),
                     TextSpan(
                       text: '*',
-                      style: TextStyle(color: danger.solid),
+                      style: TextStyle(color: danger.text),
                     ),
                   ],
                 ],
@@ -592,7 +594,7 @@ class _KunTextareaState extends State<KunTextarea>
             const SizedBox(height: KunSpacing.unit),
             Text(
               widget.error!,
-              style: KunText.sm.copyWith(color: danger.solid),
+              style: KunText.sm.copyWith(color: danger.text),
             ),
           ] else if (widget.description?.isNotEmpty ?? false) ...[
             const SizedBox(height: KunSpacing.unit),

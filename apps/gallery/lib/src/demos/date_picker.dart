@@ -15,7 +15,7 @@ Widget _mono(BuildContext context, String text) {
     text,
     style: KunText.xs
         .merge(KunFontFamilies.monoStyle)
-        .copyWith(color: scheme.neutral.shade500),
+        .copyWith(color: scheme.foregroundMuted),
   );
 }
 

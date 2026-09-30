@@ -196,7 +196,7 @@ Widget _caption(BuildContext context, String text) {
   final KunColorScheme scheme = KunTheme.of(context).colors;
   return Text(
     text.toUpperCase(),
-    style: KunText.xs.copyWith(color: scheme.neutral.shade500),
+    style: KunText.xs.copyWith(color: scheme.foregroundMuted),
   );
 }
 
@@ -533,7 +533,7 @@ class _CustomOptionSelectState extends State<_CustomOptionSelect> {
                     maxLines: 1,
                     overflow: TextOverflow.ellipsis,
                     style: KunText.xs.copyWith(
-                      color: scheme.neutral.shade500,
+                      color: scheme.foregroundMuted,
                     ),
                   ),
                 ],
@@ -574,7 +574,7 @@ class _MultipleSelectState extends State<_MultipleSelect> {
         SizedBox(height: KunSpacing.unit * 2),
         Text(
           '值: ${_values.isEmpty ? '—' : _values.join(', ')}',
-          style: KunText.sm.copyWith(color: scheme.neutral.shade500),
+          style: KunText.sm.copyWith(color: scheme.foregroundMuted),
         ),
       ],
     );
@@ -647,12 +647,12 @@ class _AsyncSelectState extends State<_AsyncSelect> {
         SizedBox(height: KunSpacing.unit * 2),
         Text(
           '已选 ${_values.length} 项：${_values.isEmpty ? '—' : _values.join('、')}',
-          style: KunText.sm.copyWith(color: scheme.neutral.shade500),
+          style: KunText.sm.copyWith(color: scheme.foregroundMuted),
         ),
         SizedBox(height: KunSpacing.unit),
         Text(
           '选中一项后再搜别的词——标签不会丢，组件为当前选中的值保留了最后一次见到的 option。',
-          style: KunText.xs.copyWith(color: scheme.neutral.shade500),
+          style: KunText.xs.copyWith(color: scheme.foregroundMuted),
         ),
       ],
     );
@@ -756,7 +756,7 @@ class _FilterBarState extends State<_FilterBar> {
             child: Center(
               child: Text(
                 '没有符合条件的作品',
-                style: KunText.sm.copyWith(color: scheme.neutral.shade500),
+                style: KunText.sm.copyWith(color: scheme.foregroundMuted),
               ),
             ),
           )
@@ -796,7 +796,7 @@ class _FilterBarState extends State<_FilterBar> {
                               Text(
                                 '${work.year} · ${work.platform} · ${work.tags.join('／')}',
                                 style: KunText.xs.copyWith(
-                                  color: scheme.neutral.shade500,
+                                  color: scheme.foregroundMuted,
                                 ),
                               ),
                             ],

@@ -661,7 +661,7 @@ class _KunChatComposerState extends State<KunChatComposer>
                 alignment: Alignment.centerLeft,
                 child: Text(
                   placeholder,
-                  style: fieldStyle.copyWith(color: scheme.neutral.shade400),
+                  style: fieldStyle.copyWith(color: scheme.foregroundMuted),
                 ),
               ),
             ),
@@ -867,7 +867,7 @@ class _KunChatComposerState extends State<KunChatComposer>
                       maxLines: 1,
                       overflow: TextOverflow.ellipsis,
                       style: KunText.sm.copyWith(
-                        color: scheme.primary.solid,
+                        color: scheme.primary.text,
                         fontWeight: KunFontWeights.semibold,
                       ),
                     ),

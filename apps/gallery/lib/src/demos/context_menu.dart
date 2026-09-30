@@ -138,7 +138,7 @@ class _AreaState extends State<_Area> {
                 Text(
                   widget.hint,
                   textAlign: TextAlign.center,
-                  style: KunText.sm.copyWith(color: scheme.neutral.shade500),
+                  style: KunText.sm.copyWith(color: scheme.foregroundMuted),
                 ),
                 if (_lastKey != null)
                   Text(

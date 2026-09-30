@@ -345,7 +345,7 @@ class _KunReactionState extends State<KunReaction>
     if (widget.color == KunUIColor.neutral) {
       return scheme.foreground;
     }
-    return widget.color.scaleOf(scheme).solid;
+    return widget.color.scaleOf(scheme).text;
   }
 
   @override

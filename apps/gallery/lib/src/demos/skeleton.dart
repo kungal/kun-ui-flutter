@@ -160,8 +160,7 @@ class _SkeletonLoadedState extends State<_SkeletonLoaded> {
                     ),
                     Text(
                       'loaded 为 true 时渲染默认插槽。',
-                      style:
-                          KunText.sm.copyWith(color: scheme.neutral.shade500),
+                      style: KunText.sm.copyWith(color: scheme.foregroundMuted),
                     ),
                   ],
                 ),

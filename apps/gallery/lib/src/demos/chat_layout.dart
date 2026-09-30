@@ -523,7 +523,7 @@ class _LayoutAppDemoState extends State<_LayoutAppDemo> {
                     child: Text(
                       '选择一个对话开始聊天',
                       style: KunText.sm.copyWith(
-                        color: scheme.neutral.shade500,
+                        color: scheme.foregroundMuted,
                       ),
                     ),
                   ),

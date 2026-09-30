@@ -31,7 +31,7 @@ class _KunSelectField<T, O extends KunSelectOption<T>> extends StatelessWidget {
           const SizedBox(height: KunSpacing.unit),
           Text(
             widget.error!,
-            style: KunText.sm.copyWith(color: scheme.danger.solid),
+            style: KunText.sm.copyWith(color: scheme.danger.text),
           ),
         ] else if (widget.description?.isNotEmpty ?? false) ...[
           const SizedBox(height: KunSpacing.unit),
@@ -111,7 +111,7 @@ class _KunSelectTrigger<T, O extends KunSelectOption<T>>
         maxLines: 1,
         overflow: TextOverflow.ellipsis,
         style: textStyle.copyWith(
-          color: hasSelection ? scheme.foreground : scheme.neutral.shade400,
+          color: hasSelection ? scheme.foreground : scheme.foregroundMuted,
         ),
       );
     }

@@ -102,7 +102,7 @@ class _UserChipNavigationState extends State<_UserChipNavigation> {
           if (_href != null)
             Text(
               _href!,
-              style: KunText.sm.copyWith(color: scheme.neutral.shade500),
+              style: KunText.sm.copyWith(color: scheme.foregroundMuted),
             ),
         ],
       ),

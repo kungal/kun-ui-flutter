@@ -191,7 +191,7 @@ void main() {
     expect(find.text('Optional'), findsNothing);
     expect(
       tester.widget<Text>(find.text('Required')).style!.color,
-      theme.colors.danger.solid,
+      theme.colors.danger.text,
     );
   });
 

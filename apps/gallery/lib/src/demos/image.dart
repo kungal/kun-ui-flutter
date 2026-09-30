@@ -35,7 +35,7 @@ Widget _caption(BuildContext context, String text) {
   return Text(
     text,
     style: KunText.sm.copyWith(
-      color: KunTheme.of(context).colors.neutral.shade500,
+      color: KunTheme.of(context).colors.foregroundMuted,
     ),
   );
 }
@@ -349,7 +349,7 @@ class _FallbackDemoState extends State<_FallbackDemo> {
           ),
           Text(
             _log.isEmpty ? 'waiting…' : _log.join('\n'),
-            style: KunText.xs.copyWith(color: scheme.neutral.shade500),
+            style: KunText.xs.copyWith(color: scheme.foregroundMuted),
           ),
         ],
       ),

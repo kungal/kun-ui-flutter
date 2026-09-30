@@ -526,7 +526,7 @@ class _KunChatBubbleState extends State<KunChatBubble> {
     final Color surface =
         widget.own ? scheme.primary.shade100 : scheme.content1;
     final Color metaColor =
-        widget.own ? scheme.primary.shade600 : scheme.foregroundMuted;
+        widget.own ? scheme.primary.text : scheme.foregroundMuted;
     final String time = formatKunChatTime(widget.message.createdAt, locale);
     final String fullTime = formatKunChatFullTime(
       widget.message.createdAt,
@@ -881,9 +881,9 @@ class _SenderName extends StatelessWidget {
   Widget build(BuildContext context) {
     final TextStyle style = KunText.sm.copyWith(
       fontWeight: KunFontWeights.semibold,
-      color: scheme.primary.solid,
+      color: scheme.primary.text,
       decoration: hovered && !sender.deleted ? TextDecoration.underline : null,
-      decorationColor: scheme.primary.solid,
+      decorationColor: scheme.primary.text,
     );
     final Widget name = Text(
       sender.name,
@@ -1059,7 +1059,7 @@ class _ReplyPreview extends StatelessWidget {
                       overflow: TextOverflow.ellipsis,
                       style: KunText.sm.copyWith(
                         fontWeight: KunFontWeights.semibold,
-                        color: scheme.primary.solid,
+                        color: scheme.primary.text,
                       ),
                     ),
                   ],

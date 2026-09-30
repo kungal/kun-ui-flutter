@@ -227,7 +227,7 @@ class _SwipeDemoState extends State<_SwipeDemo> {
                   ),
                   child: Text(
                     _log.isEmpty ? '在触屏上左右滑动这一行' : _log,
-                    style: KunText.xs.copyWith(color: scheme.neutral.shade500),
+                    style: KunText.xs.copyWith(color: scheme.foregroundMuted),
                   ),
                 ),
               ],

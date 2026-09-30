@@ -203,7 +203,7 @@ void main() {
     );
   });
 
-  testWidgets('inactive is foregroundMuted; on is the scale solid',
+  testWidgets('inactive is foregroundMuted; on is the scale text',
       (tester) async {
     await tester.pumpWidget(wrap(heart()));
     await tester.pumpAndSettle();
@@ -211,7 +211,7 @@ void main() {
 
     await tester.pumpWidget(wrap(heart(value: true)));
     await tester.pumpAndSettle();
-    expect(iconColorOf(tester), KunColors.light.danger.solid);
+    expect(iconColorOf(tester), KunColors.light.danger.text);
   });
 
   testWidgets('neutral paints foreground; activeColor wins', (tester) async {

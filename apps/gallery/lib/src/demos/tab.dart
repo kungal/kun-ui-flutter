@@ -21,7 +21,7 @@ Widget _caption(BuildContext context, String text) {
   final KunColorScheme scheme = KunTheme.of(context).colors;
   return Text(
     text.toUpperCase(),
-    style: KunText.xs.copyWith(color: scheme.neutral.shade500),
+    style: KunText.xs.copyWith(color: scheme.foregroundMuted),
   );
 }
 

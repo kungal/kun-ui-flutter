@@ -71,7 +71,7 @@ class _PickerDemoState extends State<_PickerDemo> {
             style: KunText.xs.copyWith(
               fontFamily: KunFontFamilies.mono,
               fontFamilyFallback: KunFontFamilies.monoFallback,
-              color: scheme.neutral.shade500,
+              color: scheme.foregroundMuted,
             ),
           ),
         ],
