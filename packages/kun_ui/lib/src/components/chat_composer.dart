@@ -117,6 +117,7 @@ class KunChatComposer extends StatefulWidget {
     this.suffix,
     this.controller,
     this.focusNode,
+    this.contentInsertionConfiguration,
   })  : assert(maxRows > 0),
         assert(maxLength > 0),
         assert(
@@ -218,6 +219,11 @@ class KunChatComposer extends StatefulWidget {
   /// Lets the caller move focus to the field. The caller owns the node
   /// and disposes it.
   final FocusNode? focusNode;
+
+  /// Lets Gboard insert images, GIFs and stickers through `commitContent`.
+  /// Flutter-only: on the web the browser handles paste and insertion. Null
+  /// changes nothing.
+  final ContentInsertionConfiguration? contentInsertionConfiguration;
 
   @override
   State<KunChatComposer> createState() => _KunChatComposerState();
@@ -694,6 +700,7 @@ class _KunChatComposerState extends State<KunChatComposer>
             onSelectionChanged: _handleSelectionChanged,
             onSelectionHandleTapped: _handleSelectionHandleTapped,
             onChanged: _handleChanged,
+            contentInsertionConfiguration: widget.contentInsertionConfiguration,
             onSubmitted: (_) {
               if (!_isComposing && _sendsOnEnter) {
                 _submit();

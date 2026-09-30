@@ -100,6 +100,7 @@ class KunInput extends StatefulWidget {
     this.focusNode,
     this.textInputAction,
     this.onSubmitted,
+    this.contentInsertionConfiguration,
   }) : assert(
           controller == null || value == '',
           'Pass the text through the controller instead of [value].',
@@ -193,6 +194,11 @@ class KunInput extends StatefulWidget {
   /// Called with the field's text when the user submits from the keyboard:
   /// the soft keyboard's action key, or Enter on a hardware keyboard.
   final ValueChanged<String>? onSubmitted;
+
+  /// Lets Gboard insert images, GIFs and stickers through `commitContent`.
+  /// Flutter-only: on the web the browser handles paste and insertion. Null
+  /// changes nothing.
+  final ContentInsertionConfiguration? contentInsertionConfiguration;
 
   @override
   State<KunInput> createState() => _KunInputState();
@@ -490,6 +496,7 @@ class _KunInputState extends State<KunInput>
       onSelectionHandleTapped: _handleSelectionHandleTapped,
       onChanged: _handleChanged,
       onSubmitted: widget.onSubmitted,
+      contentInsertionConfiguration: widget.contentInsertionConfiguration,
       rendererIgnoresPointer: true,
     );
 

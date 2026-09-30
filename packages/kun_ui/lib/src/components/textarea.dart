@@ -53,6 +53,7 @@ class KunTextarea extends StatefulWidget {
     this.autofocus = false,
     this.controller,
     this.focusNode,
+    this.contentInsertionConfiguration,
   })  : assert(rows > 0),
         assert(maxLength == null || maxLength > 0),
         assert(
@@ -137,6 +138,11 @@ class KunTextarea extends StatefulWidget {
   /// the field can take focus. The field sets [FocusNode.canRequestFocus] on
   /// the node, as Flutter's own text fields do.
   final FocusNode? focusNode;
+
+  /// Lets Gboard insert images, GIFs and stickers through `commitContent`.
+  /// Flutter-only: on the web the browser handles paste and insertion. Null
+  /// changes nothing.
+  final ContentInsertionConfiguration? contentInsertionConfiguration;
 
   @override
   State<KunTextarea> createState() => _KunTextareaState();
@@ -461,6 +467,8 @@ class _KunTextareaState extends State<KunTextarea>
                 LengthLimitingTextInputFormatter(widget.maxLength),
               ],
               onChanged: _handleChanged,
+              contentInsertionConfiguration:
+                  widget.contentInsertionConfiguration,
               rendererIgnoresPointer: true,
               // EditableText swaps the inherited behavior for one with
               // scrollbars whenever it is multiline, so a ScrollConfiguration
