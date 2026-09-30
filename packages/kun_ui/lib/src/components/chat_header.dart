@@ -210,7 +210,7 @@ class _KunChatHeaderState extends State<KunChatHeader> {
           )
         : DefaultTextStyle.merge(
             style: KunText.xs.copyWith(
-              color: scheme.neutral.shade500,
+              color: scheme.foregroundMuted,
               height: 16 / 12,
               leadingDistribution: TextLeadingDistribution.even,
             ),

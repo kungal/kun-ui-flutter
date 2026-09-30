@@ -479,10 +479,10 @@ class _KunChatConversationItemState extends State<KunChatConversationItem>
         widget.selected ? scheme.primary.onSolid : scheme.foreground;
     final Color metaColor = widget.selected
         ? scheme.primary.onSolid.withValues(alpha: 0.8)
-        : scheme.neutral.shade500;
+        : scheme.foregroundMuted;
     final Color previewColor = widget.selected
         ? scheme.primary.onSolid.withValues(alpha: 0.85)
-        : scheme.neutral.shade500;
+        : scheme.foregroundMuted;
     final Color typingColor =
         widget.selected ? scheme.primary.onSolid : scheme.primary.solid;
 

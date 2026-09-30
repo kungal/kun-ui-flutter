@@ -526,7 +526,7 @@ class _KunChatBubbleState extends State<KunChatBubble> {
     final Color surface =
         widget.own ? scheme.primary.shade100 : scheme.content1;
     final Color metaColor =
-        widget.own ? scheme.primary.shade600 : scheme.neutral.shade500;
+        widget.own ? scheme.primary.shade600 : scheme.foregroundMuted;
     final String time = formatKunChatTime(widget.message.createdAt, locale);
     final String fullTime = formatKunChatFullTime(
       widget.message.createdAt,
@@ -1309,7 +1309,7 @@ class _ContextCard extends StatelessWidget {
                     Icon(
                       KunIcons.externalLink,
                       size: KunText.xs.fontSize,
-                      color: scheme.neutral.shade500,
+                      color: scheme.foregroundMuted,
                     ),
                     const SizedBox(width: KunSpacing.unit),
                     Text(
@@ -1317,7 +1317,7 @@ class _ContextCard extends StatelessWidget {
                       maxLines: 1,
                       overflow: TextOverflow.ellipsis,
                       style: KunText.xs.copyWith(
-                        color: scheme.neutral.shade500,
+                        color: scheme.foregroundMuted,
                       ),
                     ),
                   ],

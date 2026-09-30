@@ -198,10 +198,11 @@ void main() {
     );
   });
 
-  testWidgets('inactive is neutral 500; on is the scale solid', (tester) async {
+  testWidgets('inactive is foregroundMuted; on is the scale solid',
+      (tester) async {
     await tester.pumpWidget(wrap(heart()));
     await tester.pumpAndSettle();
-    expect(iconColorOf(tester), KunColors.light.neutral.shade500);
+    expect(iconColorOf(tester), KunColors.light.foregroundMuted);
 
     await tester.pumpWidget(wrap(heart(value: true)));
     await tester.pumpAndSettle();

@@ -352,7 +352,7 @@ class _KunReactionState extends State<KunReaction>
     final KunColorScheme scheme = KunTheme.of(context).colors;
     final _KunReactionMetrics metrics = _KunReactionMetrics.of(widget.size);
     final Color target =
-        widget.value ? _onColor(scheme) : scheme.neutral.shade500;
+        widget.value ? _onColor(scheme) : scheme.foregroundMuted;
     final String resolvedLabel =
         widget.label ?? KunMessagesScope.of(context).reaction.label;
     final String accessibleName =

@@ -518,7 +518,7 @@ class _KunTextareaState extends State<KunTextarea>
                 widget.maxLength == null
                     ? '${_countText.characters.length}'
                     : '${_countText.characters.length}/${widget.maxLength}',
-                style: KunText.xs.copyWith(color: scheme.neutral.shade500),
+                style: KunText.xs.copyWith(color: scheme.foregroundMuted),
               ),
             ),
           ),
@@ -584,7 +584,7 @@ class _KunTextareaState extends State<KunTextarea>
             const SizedBox(height: KunSpacing.unit),
             Text(
               widget.description!,
-              style: KunText.sm.copyWith(color: scheme.neutral.shade500),
+              style: KunText.sm.copyWith(color: scheme.foregroundMuted),
             ),
           ],
         ],

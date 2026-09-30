@@ -1476,7 +1476,7 @@ class _KunChatMessageListState extends State<KunChatMessageList>
               vertical: KunSpacing.unit * 10,
             ),
             child: DefaultTextStyle(
-              style: KunText.sm.copyWith(color: scheme.neutral.shade500),
+              style: KunText.sm.copyWith(color: scheme.foregroundMuted),
               textAlign: TextAlign.center,
               child: widget.empty ?? Text(catalog.chat.empty),
             ),

@@ -769,7 +769,7 @@ class _KunChatComposerState extends State<KunChatComposer>
                   child: Text(
                     widget.disabledText,
                     textAlign: TextAlign.center,
-                    style: KunText.sm.copyWith(color: scheme.neutral.shade500),
+                    style: KunText.sm.copyWith(color: scheme.foregroundMuted),
                   ),
                 )
               else
@@ -932,7 +932,7 @@ class _KunChatComposerState extends State<KunChatComposer>
   Widget _buildCounter(KunColorScheme scheme, KunChatComposerStrings strings) {
     final int remaining = _remaining;
     final Color color =
-        remaining < 0 ? scheme.danger.solid : scheme.neutral.shade500;
+        remaining < 0 ? scheme.danger.solid : scheme.foregroundMuted;
     final String description = remaining < 0
         ? strings.overLimit(count: -remaining)
         : strings.remaining(count: remaining);

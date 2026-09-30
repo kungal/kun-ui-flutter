@@ -53,7 +53,7 @@ class KunNull extends StatelessWidget {
             ),
           Text(
             resolvedDescription,
-            style: TextStyle(color: scheme.neutral.shade500),
+            style: TextStyle(color: scheme.foregroundMuted),
           ),
         ],
       ),

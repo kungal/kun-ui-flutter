@@ -445,7 +445,7 @@ class _KunCheckBoxGroupItemState<T> extends State<_KunCheckBoxGroupItem<T>> {
             padding: EdgeInsets.only(top: descriptionGap),
             child: Text(
               widget.option.description!,
-              style: KunText.xs.copyWith(color: scheme.neutral.shade500),
+              style: KunText.xs.copyWith(color: scheme.foregroundMuted),
             ),
           ),
       ],

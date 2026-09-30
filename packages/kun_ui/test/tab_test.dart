@@ -209,7 +209,7 @@ void main() {
     await tester.tap(find.text('Home'));
     expect(seen, isEmpty);
     expect(resolvedOf(tester, 'Home').color, KunColors.light.primary.solid);
-    expect(resolvedOf(tester, 'Docs').color, KunColors.light.neutral.shade500);
+    expect(resolvedOf(tester, 'Docs').color, KunColors.light.foregroundMuted);
   });
 
   testWidgets('disabled item and group block taps, dim, and set cursors',
@@ -499,7 +499,7 @@ void main() {
     );
     await tester.pumpAndSettle();
     expect(resolvedOf(tester, 'Home').color, KunColors.light.primary.solid);
-    expect(resolvedOf(tester, 'Docs').color, KunColors.light.neutral.shade500);
+    expect(resolvedOf(tester, 'Docs').color, KunColors.light.foregroundMuted);
 
     final gesture = await tester.createGesture(kind: PointerDeviceKind.mouse);
     await gesture.addPointer(location: Offset.zero);
@@ -508,7 +508,7 @@ void main() {
     await tester.pump();
     await tester.pump(KunDurations.base ~/ 2);
     final Color mid = resolvedOf(tester, 'Docs').color!;
-    expect(mid, isNot(KunColors.light.neutral.shade500));
+    expect(mid, isNot(KunColors.light.foregroundMuted));
     expect(mid, isNot(KunColors.light.foreground));
     await tester.pump(KunDurations.base);
     expect(resolvedOf(tester, 'Docs').color, KunColors.light.foreground);
@@ -1388,7 +1388,7 @@ void main() {
     await tester.pump();
     expect(tester.getRect(indicator).left, tester.getRect(tabOf('docs')).left);
     expect(resolvedOf(tester, 'Docs').color, KunColors.light.primary.solid);
-    expect(resolvedOf(tester, 'Home').color, KunColors.light.neutral.shade500);
+    expect(resolvedOf(tester, 'Home').color, KunColors.light.foregroundMuted);
   });
 
   testWidgets('a selection past the edge starts scrolled into view',
@@ -1531,7 +1531,7 @@ void main() {
     );
   });
 
-  testWidgets('hovering a disabled tab keeps neutral 500', (tester) async {
+  testWidgets('hovering a disabled tab keeps foregroundMuted', (tester) async {
     await tester.pumpWidget(
       wrap(
         KunTab(
@@ -1545,7 +1545,7 @@ void main() {
       ),
     );
     await tester.pumpAndSettle();
-    expect(resolvedOf(tester, 'Docs').color, KunColors.light.neutral.shade500);
+    expect(resolvedOf(tester, 'Docs').color, KunColors.light.foregroundMuted);
 
     final TestGesture gesture =
         await tester.createGesture(kind: PointerDeviceKind.mouse);
@@ -1554,7 +1554,7 @@ void main() {
     await gesture.moveTo(tester.getCenter(find.text('Docs')));
     await tester.pump();
     await tester.pump(KunDurations.base);
-    expect(resolvedOf(tester, 'Docs').color, KunColors.light.neutral.shade500);
+    expect(resolvedOf(tester, 'Docs').color, KunColors.light.foregroundMuted);
   });
 
   testWidgets('a disabled strip sets the forbidden cursor on every tab',

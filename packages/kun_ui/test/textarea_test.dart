@@ -129,7 +129,7 @@ void main() {
     );
     expect(find.text('3/10'), findsOneWidget);
     expect(resolved(tester, '3/10').fontSize, KunText.xs.fontSize);
-    expect(resolved(tester, '3/10').color, KunColors.light.neutral.shade500);
+    expect(resolved(tester, '3/10').color, KunColors.light.foregroundMuted);
 
     await tester.pumpWidget(
       wrap(

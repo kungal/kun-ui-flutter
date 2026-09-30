@@ -659,7 +659,7 @@ class _KunTabState<T extends KunTabItem> extends State<KunTab<T>>
   }
 
   Color _unselectedTextColor(KunColorScheme scheme, {required bool hovered}) {
-    return hovered ? scheme.foreground : scheme.neutral.shade500;
+    return hovered ? scheme.foreground : scheme.foregroundMuted;
   }
 
   BorderRadius? _tabRadius() {

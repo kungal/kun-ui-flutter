@@ -125,7 +125,7 @@ void main() {
     expect(style.color, KunColors.light.foreground);
   });
 
-  testWidgets('description uses text-sm and neutral 500', (tester) async {
+  testWidgets('description uses text-sm and foregroundMuted', (tester) async {
     await tester.pumpWidget(
       wrap(
         const KunUserChip(
@@ -137,7 +137,7 @@ void main() {
     );
     final TextStyle style = styleOf(tester, 'admin');
     expect(style.fontSize, KunText.sm.fontSize);
-    expect(style.color, KunColors.light.neutral.shade500);
+    expect(style.color, KunColors.light.foregroundMuted);
   });
 
   testWidgets('empty name and null user both read unknownUser', (tester) async {

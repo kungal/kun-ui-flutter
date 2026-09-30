@@ -367,7 +367,7 @@ void main() {
     expect(find.text('Helper'), findsOneWidget);
     expect(
       resolvedOf(tester, 'Helper').color,
-      KunColors.light.neutral.shade500,
+      KunColors.light.foregroundMuted,
     );
     expect(resolvedOf(tester, 'Helper').fontSize, KunText.sm.fontSize);
   });

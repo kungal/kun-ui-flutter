@@ -83,7 +83,7 @@ class KunDivider extends StatelessWidget {
                 ? const EdgeInsets.symmetric(horizontal: KunSpacing.unit * 4)
                 : const EdgeInsets.symmetric(vertical: KunSpacing.unit * 4),
             child: DefaultTextStyle.merge(
-              style: KunText.sm.copyWith(color: scheme.neutral.shade500),
+              style: KunText.sm.copyWith(color: scheme.foregroundMuted),
               softWrap: horizontal ? false : null,
               child: child!,
             ),

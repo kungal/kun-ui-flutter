@@ -1613,8 +1613,8 @@ void main() {
     expect(resolvedOf(tester, 'Frameworks').fontWeight, KunFontWeights.medium);
     expect(resolvedOf(tester, 'Frameworks').color,
         KunColors.light.neutral.shade700);
-    expect(resolvedOf(tester, 'Pick some').color,
-        KunColors.light.neutral.shade500);
+    expect(
+        resolvedOf(tester, 'Pick some').color, KunColors.light.foregroundMuted);
     expect(find.text('Vue'), findsOneWidget);
 
     await tester.pumpWidget(

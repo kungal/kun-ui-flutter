@@ -34,7 +34,7 @@ class _KunSelectPopup<T, O extends KunSelectOption<T>> extends StatelessWidget {
         child: Text(
           widget.noResultText ?? KunMessagesScope.of(context).select.noResult,
           textAlign: TextAlign.center,
-          style: KunText.sm.copyWith(color: scheme.neutral.shade400),
+          style: KunText.sm.copyWith(color: scheme.foregroundMuted),
         ),
       );
     } else {

@@ -76,7 +76,7 @@ class KunUserChip extends StatelessWidget {
               if (description.isNotEmpty)
                 Text(
                   description,
-                  style: KunText.sm.copyWith(color: scheme.neutral.shade500),
+                  style: KunText.sm.copyWith(color: scheme.foregroundMuted),
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis,
                 ),

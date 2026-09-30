@@ -98,12 +98,12 @@ void main() {
     );
   });
 
-  testWidgets('the description is the light-scheme neutral 500',
+  testWidgets('the description is the light-scheme foregroundMuted',
       (tester) async {
     await tester.pumpWidget(wrap(const KunNull()));
     expect(
       resolvedStyle(tester).color,
-      KunColors.light.neutral.shade500,
+      KunColors.light.foregroundMuted,
     );
   });
 }

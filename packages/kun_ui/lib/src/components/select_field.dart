@@ -37,7 +37,7 @@ class _KunSelectField<T, O extends KunSelectOption<T>> extends StatelessWidget {
           const SizedBox(height: KunSpacing.unit),
           Text(
             widget.description!,
-            style: KunText.sm.copyWith(color: scheme.neutral.shade500),
+            style: KunText.sm.copyWith(color: scheme.foregroundMuted),
           ),
         ],
       ],

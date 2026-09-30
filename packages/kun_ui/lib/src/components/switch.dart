@@ -243,7 +243,7 @@ class _KunSwitchState extends State<KunSwitch> {
           const SizedBox(height: KunSpacing.unit),
           Text(
             widget.description!,
-            style: KunText.sm.copyWith(color: scheme.neutral.shade500),
+            style: KunText.sm.copyWith(color: scheme.foregroundMuted),
           ),
         ],
       ],

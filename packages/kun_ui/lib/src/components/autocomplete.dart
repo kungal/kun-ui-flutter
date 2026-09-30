@@ -518,7 +518,7 @@ class _KunAutocompleteState<T extends KunAutocompleteOption>
         child: Text(
           widget.noResultText ?? messages.autocomplete.noResult,
           textAlign: TextAlign.center,
-          style: KunText.sm.copyWith(color: scheme.neutral.shade400),
+          style: KunText.sm.copyWith(color: scheme.foregroundMuted),
         ),
       );
     } else {
