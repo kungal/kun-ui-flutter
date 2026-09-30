@@ -1,7 +1,9 @@
 import 'dart:async';
 import 'dart:math' as math;
 
+import 'package:flutter/foundation.dart';
 import 'package:flutter/rendering.dart';
+import 'package:flutter/scheduler.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter/widgets.dart';
 import 'package:kun_ui_icons/kun_ui_icons.dart';
@@ -23,6 +25,37 @@ const Duration _kSlide = Duration(milliseconds: 150);
 
 /// The highlight's pop (web `kun-page-pop`, 340ms).
 const Duration _kPop = Duration(milliseconds: 340);
+
+/// How long staying numbers FLIP to their new slots (web `.kun-page-num-move`).
+const Duration _kMove = Duration(milliseconds: 150);
+
+/// How long an entering number fades in (web `.kun-page-num-enter-active`).
+const Duration _kEnter = Duration(milliseconds: 150);
+
+/// How long a leaving number fades out (web `.kun-page-num-leave-active`).
+const Duration _kLeave = Duration(milliseconds: 120);
+
+String _pageNumId(Widget child) => (child.key! as ValueKey<String>).value;
+
+RenderBox _drawnControl(RenderBox pageBox) {
+  RenderStack? firstStack(RenderObject node) {
+    RenderStack? found;
+    node.visitChildren((RenderObject child) {
+      if (found != null) {
+        return;
+      }
+      if (child is RenderStack) {
+        found = child;
+      } else {
+        found = firstStack(child);
+      }
+    });
+    return found;
+  }
+
+  final RenderStack? drawn = firstStack(pageBox);
+  return drawn != null && drawn.hasSize ? drawn : pageBox;
+}
 
 class _PageItem {
   const _PageItem.page(this.page) : key = 'p$page';
@@ -76,6 +109,7 @@ class KunPagination extends StatefulWidget {
 
 class _KunPaginationState extends State<KunPagination> {
   final GlobalKey _rowKey = GlobalKey(debugLabel: 'KunPagination.pages');
+  final GlobalKey _numsKey = GlobalKey(debugLabel: 'KunPagination.nums');
   final Map<int, GlobalKey> _pageKeys = <int, GlobalKey>{};
 
   late int _windowPage;
@@ -84,6 +118,10 @@ class _KunPaginationState extends State<KunPagination> {
   int _popKey = 0;
   String _jumpText = '';
   Timer? _phaseTimer;
+  // AnimatedPositioned only learns the new slot post-frame, so the pill
+  // trailed the number FLIP. While true, [_PageStack] paints it on the
+  // current page's visual slot — the same shift as the number.
+  bool _rideIndicator = false;
   final FocusNode _jumpFocus = FocusNode();
   final ScrollController _scroll = ScrollController();
   final GlobalKey _stripKey = GlobalKey(debugLabel: 'KunPagination.strip');
@@ -117,6 +155,7 @@ class _KunPaginationState extends State<KunPagination> {
       _popKey++;
       _phaseTimer?.cancel();
       _phaseTimer = null;
+      _rideIndicator = false;
       final bool lead =
           (widget.currentPage - oldWidget.currentPage).abs() == 1 &&
               _isCentered(widget.currentPage) &&
@@ -130,7 +169,10 @@ class _KunPaginationState extends State<KunPagination> {
           if (!mounted) {
             return;
           }
-          setState(() => _windowPage = widget.currentPage);
+          setState(() {
+            _windowPage = widget.currentPage;
+            _rideIndicator = true;
+          });
         });
       } else {
         _windowPage = widget.currentPage;
@@ -224,25 +266,15 @@ class _KunPaginationState extends State<KunPagination> {
     // KunButton's layout box is the padded tap target on phones; the web
     // measures the drawn control. The first RenderStack inside is that
     // drawn box.
-    RenderBox measured = pageBox;
-    RenderStack? drawn;
-    void findStack(RenderObject child) {
-      if (drawn != null) {
-        return;
-      }
-      if (child is RenderStack) {
-        drawn = child;
-        return;
-      }
-      child.visitChildren(findStack);
-    }
-
-    pageBox.visitChildren(findStack);
-    if (drawn != null && drawn!.hasSize) {
-      measured = drawn!;
-    }
-    _reveal(pageBox);
-    final Offset origin = measured.localToGlobal(Offset.zero, ancestor: rowBox);
+    final RenderBox measured = _drawnControl(pageBox);
+    // localToGlobal follows the FLIP paint shift; the web reads offsetLeft
+    // (the settled slot) so the pill slides in lockstep with the numbers.
+    final RenderObject? nums = _numsKey.currentContext?.findRenderObject();
+    final Offset flipShift =
+        nums is _RenderPageNumRow ? nums.paintShiftOf(measured) : Offset.zero;
+    _reveal(pageBox, flipShift);
+    final Offset origin =
+        measured.localToGlobal(Offset.zero, ancestor: rowBox) - flipShift;
     final Rect next = origin & measured.size;
     if (_indicator == next) {
       return;
@@ -253,7 +285,7 @@ class _KunPaginationState extends State<KunPagination> {
   // Padded to the touch minimum, the buttons outgrow a phone's width where
   // the web's 32px ones fit, so the strip scrolls and keeps the current page
   // in view.
-  void _reveal(RenderBox page) {
+  void _reveal(RenderBox page, Offset flipShift) {
     final RenderObject? strip = _stripKey.currentContext?.findRenderObject();
     if (_revealedPage == widget.currentPage ||
         !_scroll.hasClients ||
@@ -265,7 +297,8 @@ class _KunPaginationState extends State<KunPagination> {
       return;
     }
     final double centre =
-        page.localToGlobal(page.size.center(Offset.zero), ancestor: strip).dx;
+        page.localToGlobal(page.size.center(Offset.zero), ancestor: strip).dx -
+            flipShift.dx;
     final double target = (centre - position.viewportDimension / 2)
         .clamp(0, position.maxScrollExtent);
     final Duration duration = kunMotion(context, KunDurations.fast);
@@ -377,9 +410,11 @@ class _KunPaginationState extends State<KunPagination> {
       child: const Icon(KunIcons.chevronRight),
     );
 
-    final Widget numbers = Stack(
+    final Widget numbers = _PageStack(
       key: _rowKey,
       clipBehavior: Clip.none,
+      ride: _rideIndicator,
+      pageKey: _keyFor(widget.currentPage),
       children: <Widget>[
         if (showIndicator)
           AnimatedPositioned(
@@ -403,44 +438,52 @@ class _KunPaginationState extends State<KunPagination> {
               ),
             ),
           ),
-        Row(
-          mainAxisSize: MainAxisSize.min,
-          spacing: KunSpacing.unit,
+        _PageNumRow(
+          key: _numsKey,
+          gap: KunSpacing.unit,
+          moveDuration: kunMotion(context, _kMove),
+          enterDuration: kunMotion(context, _kEnter),
+          leaveDuration: kunMotion(context, _kLeave),
           children: <Widget>[
             for (final _PageItem item in items)
-              if (item.page != null)
-                Semantics(
-                  selected: widget.currentPage == item.page ? true : null,
-                  button: true,
-                  enabled: !widget.isLoading,
-                  label: messages.pagination.page(page: item.page!),
-                  onTap: widget.isLoading ? null : () => _change(item.page!),
-                  child: ExcludeSemantics(
-                    child: KunButton(
-                      key: _keyFor(item.page!),
-                      variant: widget.currentPage == item.page && !showIndicator
-                          ? KunUIVariant.solid
-                          : KunUIVariant.light,
-                      size: KunUISize.sm,
-                      disabled: widget.isLoading,
-                      onPressed: () => _change(item.page!),
-                      child: Text(
-                        '${item.page}',
-                        style: widget.currentPage == item.page && showIndicator
-                            ? TextStyle(color: onSolid)
-                            : null,
+              KeyedSubtree(
+                key: ValueKey<String>(item.key),
+                child: item.page != null
+                    ? Semantics(
+                        selected: widget.currentPage == item.page ? true : null,
+                        button: true,
+                        enabled: !widget.isLoading,
+                        label: messages.pagination.page(page: item.page!),
+                        onTap:
+                            widget.isLoading ? null : () => _change(item.page!),
+                        child: ExcludeSemantics(
+                          child: KunButton(
+                            key: _keyFor(item.page!),
+                            variant: widget.currentPage == item.page &&
+                                    !showIndicator
+                                ? KunUIVariant.solid
+                                : KunUIVariant.light,
+                            size: KunUISize.sm,
+                            disabled: widget.isLoading,
+                            onPressed: () => _change(item.page!),
+                            child: Text(
+                              '${item.page}',
+                              style: widget.currentPage == item.page &&
+                                      showIndicator
+                                  ? TextStyle(color: onSolid)
+                                  : null,
+                            ),
+                          ),
+                        ),
+                      )
+                    : Padding(
+                        key: ValueKey<String>(item.key),
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: KunSpacing.unit * 2,
+                        ),
+                        child: const Text('...'),
                       ),
-                    ),
-                  ),
-                )
-              else
-                Padding(
-                  key: ValueKey<String>(item.key),
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: KunSpacing.unit * 2,
-                  ),
-                  child: const Text('...'),
-                ),
+              ),
           ],
         ),
       ],
@@ -618,5 +661,739 @@ class _PagePopState extends State<_PagePop>
   @override
   Widget build(BuildContext context) {
     return ScaleTransition(scale: _scale, child: widget.child);
+  }
+}
+
+class _NumEntry {
+  _NumEntry({required this.id, required this.widget});
+
+  final String id;
+  Widget widget;
+  bool leaving = false;
+  Offset shiftFrom = Offset.zero;
+  double opacityFrom = 1;
+  double opacityTo = 1;
+
+  Offset shiftAt(Duration elapsed, Duration move) {
+    if (shiftFrom == Offset.zero || move == Duration.zero) {
+      return Offset.zero;
+    }
+    final double t =
+        (elapsed.inMicroseconds / move.inMicroseconds).clamp(0.0, 1.0);
+    return Offset.lerp(
+      shiftFrom,
+      Offset.zero,
+      KunEasing.standard.transform(t),
+    )!;
+  }
+
+  double opacityAt(Duration elapsed, Duration leave, Duration enter) {
+    if (opacityFrom == opacityTo) {
+      return opacityTo;
+    }
+    final Duration duration = leaving ? leave : enter;
+    if (duration == Duration.zero) {
+      return opacityTo;
+    }
+    final double t =
+        (elapsed.inMicroseconds / duration.inMicroseconds).clamp(0.0, 1.0);
+    return opacityFrom +
+        (opacityTo - opacityFrom) * KunEasing.standard.transform(t);
+  }
+}
+
+// Vue TransitionGroup: in-flow is the settled window, leaving items take no
+// space, and the FLIP is a paint-only shift so the pill still measures the
+// slot — putting the shift in layout offset made it track a mid-move number.
+class _PageNumRow extends StatefulWidget {
+  const _PageNumRow({
+    required this.gap,
+    required this.moveDuration,
+    required this.enterDuration,
+    required this.leaveDuration,
+    required this.children,
+    super.key,
+  });
+
+  final double gap;
+  final Duration moveDuration;
+  final Duration enterDuration;
+  final Duration leaveDuration;
+  final List<Widget> children;
+
+  @override
+  State<_PageNumRow> createState() => _PageNumRowState();
+}
+
+class _PageNumRowState extends State<_PageNumRow>
+    with SingleTickerProviderStateMixin {
+  late final Ticker _ticker;
+  final List<_NumEntry> _entries = <_NumEntry>[];
+  Duration _elapsed = Duration.zero;
+
+  @override
+  void initState() {
+    super.initState();
+    _ticker = createTicker(_tick);
+    _replace(widget.children);
+  }
+
+  @override
+  void dispose() {
+    _ticker.dispose();
+    super.dispose();
+  }
+
+  @override
+  void didUpdateWidget(_PageNumRow oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    final List<String> nextIds = <String>[
+      for (final Widget child in widget.children) _pageNumId(child),
+    ];
+    final List<String> flowIds = <String>[
+      for (final _NumEntry entry in _entries)
+        if (!entry.leaving) entry.id,
+    ];
+    if (listEquals(flowIds, nextIds)) {
+      final Map<String, Widget> next = <String, Widget>{
+        for (final Widget child in widget.children) _pageNumId(child): child,
+      };
+      for (final _NumEntry entry in _entries) {
+        final Widget? child = next[entry.id];
+        if (child != null) {
+          entry.widget = child;
+        }
+      }
+      if (_jumps && _entries.any((_NumEntry entry) => entry.leaving)) {
+        _jumpToRest();
+      }
+      return;
+    }
+    _flipTo(widget.children);
+  }
+
+  bool get _jumps =>
+      widget.moveDuration == Duration.zero &&
+      widget.enterDuration == Duration.zero &&
+      widget.leaveDuration == Duration.zero;
+
+  void _replace(List<Widget> children) {
+    _entries
+      ..clear()
+      ..addAll(<_NumEntry>[
+        for (final Widget child in children)
+          _NumEntry(id: _pageNumId(child), widget: child),
+      ]);
+  }
+
+  void _jumpToRest() {
+    _ticker.stop();
+    _elapsed = Duration.zero;
+    _entries.removeWhere((_NumEntry entry) => entry.leaving);
+    for (final _NumEntry entry in _entries) {
+      entry.shiftFrom = Offset.zero;
+      entry.opacityFrom = 1;
+      entry.opacityTo = 1;
+      entry.leaving = false;
+    }
+  }
+
+  void _flipTo(List<Widget> children) {
+    final _RenderPageNumRow? render =
+        context.findRenderObject() as _RenderPageNumRow?;
+    final Map<String, Offset> first =
+        render?.visualPositions() ?? <String, Offset>{};
+    final Map<String, Widget> nextById = <String, Widget>{
+      for (final Widget child in children) _pageNumId(child): child,
+    };
+    final Map<String, _NumEntry> oldById = <String, _NumEntry>{
+      for (final _NumEntry entry in _entries) entry.id: entry,
+    };
+    final bool jump = _jumps;
+    final List<_NumEntry> next = <_NumEntry>[];
+    for (final Widget child in children) {
+      final String id = _pageNumId(child);
+      final _NumEntry? old = oldById[id];
+      if (old != null) {
+        old.widget = child;
+        old.leaving = false;
+        old.opacityFrom = jump
+            ? 1
+            : old.opacityAt(
+                _elapsed,
+                widget.leaveDuration,
+                widget.enterDuration,
+              );
+        old.opacityTo = 1;
+        next.add(old);
+      } else {
+        next.add(
+          _NumEntry(id: id, widget: child)
+            ..opacityFrom = jump ? 1 : 0
+            ..opacityTo = 1,
+        );
+      }
+    }
+    if (!jump) {
+      for (int i = 0; i < _entries.length; i++) {
+        final _NumEntry old = _entries[i];
+        if (nextById.containsKey(old.id)) {
+          continue;
+        }
+        old.leaving = true;
+        old.opacityFrom = old.opacityAt(
+          _elapsed,
+          widget.leaveDuration,
+          widget.enterDuration,
+        );
+        old.opacityTo = 0;
+        old.shiftFrom = Offset.zero;
+        // Appended at the end, a leaver painted over the numbers sliding
+        // across it; Vue leaves the node at its old index, under them.
+        next.insert(i == 0 ? 0 : next.indexOf(_entries[i - 1]) + 1, old);
+      }
+    }
+    _entries
+      ..clear()
+      ..addAll(next);
+    _elapsed = Duration.zero;
+    _ticker.stop();
+    if (jump) {
+      render?.pendingFirst = null;
+      for (final _NumEntry entry in _entries) {
+        entry.shiftFrom = Offset.zero;
+        entry.opacityFrom = entry.opacityTo;
+      }
+      return;
+    }
+    render?.pendingFirst = first;
+    _ticker.start();
+  }
+
+  void _onInverted(Map<String, Offset> shifts) {
+    for (final _NumEntry entry in _entries) {
+      entry.shiftFrom =
+          entry.leaving ? Offset.zero : (shifts[entry.id] ?? Offset.zero);
+    }
+  }
+
+  void _tick(Duration elapsed) {
+    if (!mounted) {
+      return;
+    }
+    _elapsed = elapsed;
+    final bool dropLeavers = elapsed >= widget.leaveDuration &&
+        _entries.any((_NumEntry entry) => entry.leaving);
+    setState(() {
+      if (dropLeavers) {
+        _entries.removeWhere((_NumEntry entry) => entry.leaving);
+      }
+    });
+    final bool motionDone = elapsed >= widget.moveDuration &&
+        elapsed >= widget.enterDuration &&
+        elapsed >= widget.leaveDuration;
+    if (motionDone) {
+      _ticker.stop();
+      _elapsed = Duration.zero;
+      for (final _NumEntry entry in _entries) {
+        entry.shiftFrom = Offset.zero;
+        entry.opacityFrom = entry.opacityTo;
+      }
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return _PageNumTree(
+      gap: widget.gap,
+      textDirection: Directionality.of(context),
+      onInverted: _onInverted,
+      children: <Widget>[
+        for (final _NumEntry entry in _entries)
+          _PageNumSlot(
+            key: ValueKey<String>(entry.id),
+            id: entry.id,
+            leaving: entry.leaving,
+            shift: entry.shiftAt(_elapsed, widget.moveDuration),
+            child: Opacity(
+              opacity: entry.opacityAt(
+                _elapsed,
+                widget.leaveDuration,
+                widget.enterDuration,
+              ),
+              child: IgnorePointer(
+                ignoring: entry.leaving,
+                child: ExcludeSemantics(
+                  excluding: entry.leaving,
+                  child: entry.widget,
+                ),
+              ),
+            ),
+          ),
+      ],
+    );
+  }
+}
+
+class _PageNumParentData extends ContainerBoxParentData<RenderBox> {
+  String id = '';
+  bool leaving = false;
+  Offset shift = Offset.zero;
+}
+
+class _PageNumSlot extends ParentDataWidget<_PageNumParentData> {
+  const _PageNumSlot({
+    required this.id,
+    required this.leaving,
+    required this.shift,
+    required super.child,
+    super.key,
+  });
+
+  final String id;
+  final bool leaving;
+  final Offset shift;
+
+  @override
+  void applyParentData(RenderObject renderObject) {
+    final _PageNumParentData data =
+        renderObject.parentData! as _PageNumParentData;
+    bool needsLayout = false;
+    bool needsPaint = false;
+    if (data.id != id) {
+      data.id = id;
+      needsPaint = true;
+    }
+    if (data.leaving != leaving) {
+      data.leaving = leaving;
+      needsLayout = true;
+    }
+    if (data.shift != shift) {
+      data.shift = shift;
+      needsPaint = true;
+    }
+    if (needsLayout || needsPaint) {
+      final RenderObject? parent = renderObject.parent;
+      if (parent is RenderObject) {
+        if (needsLayout) {
+          parent.markNeedsLayout();
+        }
+        if (needsPaint) {
+          parent.markNeedsPaint();
+        }
+      }
+    }
+  }
+
+  @override
+  Type get debugTypicalAncestorWidgetClass => _PageNumTree;
+}
+
+class _PageNumTree extends MultiChildRenderObjectWidget {
+  const _PageNumTree({
+    required this.gap,
+    required this.textDirection,
+    required this.onInverted,
+    required super.children,
+  });
+
+  final double gap;
+  final TextDirection textDirection;
+  final ValueChanged<Map<String, Offset>> onInverted;
+
+  @override
+  RenderObject createRenderObject(BuildContext context) {
+    return _RenderPageNumRow(
+      gap: gap,
+      textDirection: textDirection,
+      onInverted: onInverted,
+    );
+  }
+
+  @override
+  void updateRenderObject(
+    BuildContext context,
+    covariant _RenderPageNumRow renderObject,
+  ) {
+    renderObject
+      ..gap = gap
+      ..textDirection = textDirection
+      ..onInverted = onInverted;
+  }
+}
+
+class _RenderPageNumRow extends RenderBox
+    with
+        ContainerRenderObjectMixin<RenderBox, _PageNumParentData>,
+        RenderBoxContainerDefaultsMixin<RenderBox, _PageNumParentData> {
+  _RenderPageNumRow({
+    required double gap,
+    required TextDirection textDirection,
+    required this.onInverted,
+  })  : _gap = gap,
+        _textDirection = textDirection;
+
+  double _gap;
+  double get gap => _gap;
+  set gap(double value) {
+    if (_gap == value) {
+      return;
+    }
+    _gap = value;
+    markNeedsLayout();
+  }
+
+  TextDirection _textDirection;
+  TextDirection get textDirection => _textDirection;
+  set textDirection(TextDirection value) {
+    if (_textDirection == value) {
+      return;
+    }
+    _textDirection = value;
+    markNeedsLayout();
+  }
+
+  ValueChanged<Map<String, Offset>> onInverted;
+  Map<String, Offset>? pendingFirst;
+
+  @override
+  void setupParentData(RenderBox child) {
+    if (child.parentData is! _PageNumParentData) {
+      child.parentData = _PageNumParentData();
+    }
+  }
+
+  Map<String, Offset> visualPositions() {
+    final Map<String, Offset> positions = <String, Offset>{};
+    RenderBox? child = firstChild;
+    while (child != null) {
+      final _PageNumParentData data = child.parentData! as _PageNumParentData;
+      if (data.id.isNotEmpty) {
+        positions[data.id] = data.offset + data.shift;
+      }
+      child = childAfter(child);
+    }
+    return positions;
+  }
+
+  Offset paintShiftOf(RenderObject descendant) {
+    RenderObject node = descendant;
+    while (true) {
+      final RenderObject? parent = node.parent;
+      if (parent == null) {
+        return Offset.zero;
+      }
+      if (parent == this) {
+        final ParentData? data = node.parentData;
+        if (data is _PageNumParentData) {
+          return data.shift;
+        }
+        return Offset.zero;
+      }
+      node = parent;
+    }
+  }
+
+  @override
+  void performLayout() {
+    final List<RenderBox> flow = <RenderBox>[];
+    final List<RenderBox> gone = <RenderBox>[];
+    RenderBox? child = firstChild;
+    while (child != null) {
+      final _PageNumParentData data = child.parentData! as _PageNumParentData;
+      child.layout(constraints.loosen(), parentUsesSize: true);
+      if (data.leaving) {
+        gone.add(child);
+      } else {
+        flow.add(child);
+      }
+      child = childAfter(child);
+    }
+
+    double width = 0;
+    double height = 0;
+    for (final RenderBox box in flow) {
+      height = math.max(height, box.size.height);
+      width += box.size.width;
+    }
+    if (flow.isNotEmpty) {
+      width += gap * (flow.length - 1);
+    }
+    size = constraints.constrain(Size(width, height));
+
+    if (textDirection == TextDirection.ltr) {
+      double x = 0;
+      for (final RenderBox box in flow) {
+        final _PageNumParentData data = box.parentData! as _PageNumParentData;
+        data.offset = Offset(x, (size.height - box.size.height) / 2);
+        x += box.size.width + gap;
+      }
+    } else {
+      double x = size.width;
+      for (final RenderBox box in flow) {
+        x -= box.size.width;
+        final _PageNumParentData data = box.parentData! as _PageNumParentData;
+        data.offset = Offset(x, (size.height - box.size.height) / 2);
+        x -= gap;
+      }
+    }
+
+    if (pendingFirst != null) {
+      final Map<String, Offset> first = pendingFirst!;
+      pendingFirst = null;
+      final Map<String, Offset> shifts = <String, Offset>{};
+      for (final RenderBox box in flow) {
+        final _PageNumParentData data = box.parentData! as _PageNumParentData;
+        final Offset? origin = first[data.id];
+        data.shift = origin == null ? Offset.zero : origin - data.offset;
+        shifts[data.id] = data.shift;
+      }
+      for (final RenderBox box in gone) {
+        final _PageNumParentData data = box.parentData! as _PageNumParentData;
+        data.offset = first[data.id] ?? data.offset;
+        data.shift = Offset.zero;
+        shifts[data.id] = Offset.zero;
+      }
+      onInverted(shifts);
+    }
+  }
+
+  @override
+  Size computeDryLayout(BoxConstraints constraints) {
+    double width = 0;
+    double height = 0;
+    int n = 0;
+    RenderBox? child = firstChild;
+    while (child != null) {
+      final _PageNumParentData data = child.parentData! as _PageNumParentData;
+      if (!data.leaving) {
+        final Size childSize = child.getDryLayout(constraints.loosen());
+        height = math.max(height, childSize.height);
+        width += childSize.width;
+        n++;
+      }
+      child = childAfter(child);
+    }
+    if (n > 0) {
+      width += gap * (n - 1);
+    }
+    return constraints.constrain(Size(width, height));
+  }
+
+  @override
+  double computeMinIntrinsicWidth(double height) {
+    double sum = 0;
+    int n = 0;
+    RenderBox? child = firstChild;
+    while (child != null) {
+      final _PageNumParentData data = child.parentData! as _PageNumParentData;
+      if (!data.leaving) {
+        sum += child.getMinIntrinsicWidth(height);
+        n++;
+      }
+      child = childAfter(child);
+    }
+    return n == 0 ? 0 : sum + gap * (n - 1);
+  }
+
+  @override
+  double computeMaxIntrinsicWidth(double height) {
+    double sum = 0;
+    int n = 0;
+    RenderBox? child = firstChild;
+    while (child != null) {
+      final _PageNumParentData data = child.parentData! as _PageNumParentData;
+      if (!data.leaving) {
+        sum += child.getMaxIntrinsicWidth(height);
+        n++;
+      }
+      child = childAfter(child);
+    }
+    return n == 0 ? 0 : sum + gap * (n - 1);
+  }
+
+  @override
+  double computeMinIntrinsicHeight(double width) {
+    double maxH = 0;
+    RenderBox? child = firstChild;
+    while (child != null) {
+      final _PageNumParentData data = child.parentData! as _PageNumParentData;
+      if (!data.leaving) {
+        maxH = math.max(maxH, child.getMinIntrinsicHeight(double.infinity));
+      }
+      child = childAfter(child);
+    }
+    return maxH;
+  }
+
+  @override
+  double computeMaxIntrinsicHeight(double width) {
+    double maxH = 0;
+    RenderBox? child = firstChild;
+    while (child != null) {
+      final _PageNumParentData data = child.parentData! as _PageNumParentData;
+      if (!data.leaving) {
+        maxH = math.max(maxH, child.getMaxIntrinsicHeight(double.infinity));
+      }
+      child = childAfter(child);
+    }
+    return maxH;
+  }
+
+  @override
+  void paint(PaintingContext context, Offset offset) {
+    RenderBox? child = firstChild;
+    while (child != null) {
+      final _PageNumParentData data = child.parentData! as _PageNumParentData;
+      context.paintChild(child, offset + data.offset + data.shift);
+      child = childAfter(child);
+    }
+  }
+
+  @override
+  void applyPaintTransform(RenderBox child, Matrix4 transform) {
+    final _PageNumParentData data = child.parentData! as _PageNumParentData;
+    final Offset origin = data.offset + data.shift;
+    transform.translateByDouble(origin.dx, origin.dy, 0, 1);
+  }
+
+  @override
+  bool hitTest(BoxHitTestResult result, {required Offset position}) {
+    if (hitTestChildren(result, position: position)) {
+      result.add(BoxHitTestEntry(this, position));
+      return true;
+    }
+    return false;
+  }
+
+  @override
+  bool hitTestChildren(BoxHitTestResult result, {required Offset position}) {
+    RenderBox? child = lastChild;
+    while (child != null) {
+      final _PageNumParentData data = child.parentData! as _PageNumParentData;
+      if (!data.leaving) {
+        final bool isHit = result.addWithPaintOffset(
+          offset: data.offset + data.shift,
+          position: position,
+          hitTest: (BoxHitTestResult result, Offset transformed) {
+            return child!.hitTest(result, position: transformed);
+          },
+        );
+        if (isHit) {
+          return true;
+        }
+      }
+      child = childBefore(child);
+    }
+    return false;
+  }
+
+  @override
+  void visitChildrenForSemantics(RenderObjectVisitor visitor) {
+    RenderBox? child = firstChild;
+    while (child != null) {
+      final _PageNumParentData data = child.parentData! as _PageNumParentData;
+      if (!data.leaving) {
+        visitor(child);
+      }
+      child = childAfter(child);
+    }
+  }
+}
+
+class _PageStack extends Stack {
+  const _PageStack({
+    required this.ride,
+    required this.pageKey,
+    super.key,
+    super.clipBehavior,
+    super.children,
+  });
+
+  final bool ride;
+  final GlobalKey pageKey;
+
+  @override
+  RenderStack createRenderObject(BuildContext context) {
+    return _RenderPageStack(
+      ride: ride,
+      pageKey: pageKey,
+      alignment: alignment,
+      textDirection: textDirection ?? Directionality.maybeOf(context),
+      fit: fit,
+      clipBehavior: clipBehavior,
+    );
+  }
+
+  @override
+  void updateRenderObject(
+    BuildContext context,
+    covariant _RenderPageStack renderObject,
+  ) {
+    renderObject
+      ..ride = ride
+      ..pageKey = pageKey
+      ..alignment = alignment
+      ..textDirection = textDirection ?? Directionality.maybeOf(context)
+      ..fit = fit
+      ..clipBehavior = clipBehavior;
+  }
+}
+
+class _RenderPageStack extends RenderStack {
+  _RenderPageStack({
+    required bool ride,
+    required GlobalKey pageKey,
+    super.alignment,
+    super.textDirection,
+    super.fit,
+    super.clipBehavior,
+  })  : _ride = ride,
+        _pageKey = pageKey;
+
+  bool _ride;
+  set ride(bool value) {
+    if (_ride == value) {
+      return;
+    }
+    _ride = value;
+    markNeedsPaint();
+  }
+
+  GlobalKey _pageKey;
+  set pageKey(GlobalKey value) {
+    if (_pageKey == value) {
+      return;
+    }
+    _pageKey = value;
+    markNeedsPaint();
+  }
+
+  Offset _childOffset(StackParentData data) {
+    if (!_ride || !data.isPositioned) {
+      return data.offset;
+    }
+    final RenderObject? page = _pageKey.currentContext?.findRenderObject();
+    if (page is! RenderBox || !page.hasSize) {
+      return data.offset;
+    }
+    return _drawnControl(page).localToGlobal(Offset.zero, ancestor: this);
+  }
+
+  @override
+  void paintStack(PaintingContext context, Offset offset) {
+    RenderBox? child = firstChild;
+    while (child != null) {
+      final StackParentData data = child.parentData! as StackParentData;
+      context.paintChild(child, offset + _childOffset(data));
+      child = data.nextSibling;
+    }
+  }
+
+  @override
+  void applyPaintTransform(RenderObject child, Matrix4 transform) {
+    final StackParentData data = child.parentData! as StackParentData;
+    final Offset origin = _childOffset(data);
+    transform.translateByDouble(origin.dx, origin.dy, 0, 1);
   }
 }
