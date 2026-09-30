@@ -34,7 +34,20 @@ or later.
     `padded` or `shrinkWrap`. Set `shrinkWrap` to get the old layout back.
   - Covered in this release: `KunButton` (every size, text and icon-only,
     and so `KunNavItem`, `KunModal`'s ×, the alert buttons and the lightbox
-    chrome).
+    chrome), and the chat chrome: the composer's attach, send and text
+    field, `KunChatHeader`'s back button and title, `KunChatPinnedBar`'s
+    unpin, and `KunChatMessageList`'s scroll-to-bottom button. Padded, the
+    composer grows from 56 to 64; the header and the pinned bar keep their
+    height, and the scroll button's circle stays where it was.
+  - Kept at the web's density, by decision: message rows and everything
+    inside a message (avatars, sender names, reply quotes, spoilers, link
+    previews, the code block's copy button, reaction chips and the retry
+    button), because padding them would change every bubble. Popup
+    content (select and dropdown rows, date cells, the reaction picker)
+    and the composer attachment's remove button are not covered yet.
+  - `KunChatBubble`'s retry button is now one accessibility node,
+    labelled and tappable. Its tooltip had split it in two: a labelled
+    button with no action, and a tap named only by the tooltip.
 - **A `KunAvatar` frame that fails to load draws nothing.** The frame's
   image had no `errorBuilder`. A failed load (an offline phone, a bad URL)
   reported an exception and, in debug builds, painted Flutter's error box
