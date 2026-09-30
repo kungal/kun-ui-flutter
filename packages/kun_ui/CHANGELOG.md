@@ -15,6 +15,14 @@
   own node, `semanticLabel` or not. Null, the default, reports no state.
 - **`kunMotion` and `kunReducedMotion` are exported.** An app's own
   animation can follow the same reduced-motion rule as KunUI's.
+- **`KunChatLayout(resizable: true)` with `onBack` no longer trips a
+  semantics assertion when the window crosses md.** The back scope was
+  added only while narrow, so every md crossing remounted the whole
+  layout. The split pane's `LayoutBuilder` then rebuilt the app's
+  GlobalKey panes during layout, and with semantics on, the framework's
+  geometry assertion (`identical(childRenderObject, parentRenderObject)`)
+  fired. The scope now stays at every width, and a resizable layout keeps
+  unkeyed pane state across md too. Reported by the kungal app.
 
 ## 0.22.0
 

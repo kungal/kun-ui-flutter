@@ -314,6 +314,78 @@ void main() {
     );
   });
 
+  testWidgets('crossing md with onBack trips no semantics assertion', (
+    WidgetTester tester,
+  ) async {
+    final SemanticsHandle handle = tester.ensureSemantics();
+    for (final bool resizable in <bool>[false, true]) {
+      final GlobalKey listKey = GlobalKey();
+      final GlobalKey chatKey = GlobalKey();
+      Future<void> pump(Size size) => tester.pumpWidget(
+            popWrap(
+              KunChatLayout(
+                resizable: resizable,
+                showConversation: true,
+                onBack: () {},
+                sidebar: KeyedSubtree(
+                  key: listKey,
+                  child: ListView(
+                    children: const <Widget>[_Alive(label: 'list')],
+                  ),
+                ),
+                child: KeyedSubtree(
+                  key: chatKey,
+                  child: const Column(
+                    children: <Widget>[
+                      _Alive(label: 'chat'),
+                      KunInput(value: '', autofocus: true),
+                    ],
+                  ),
+                ),
+              ),
+              size: size,
+            ),
+          );
+
+      await pump(desktop);
+      await pump(phone);
+      await tester.pumpAndSettle();
+      await pump(desktop);
+      await tester.pumpAndSettle();
+      expect(tester.takeException(), isNull, reason: 'resizable $resizable');
+      await tester.pumpWidget(const SizedBox());
+    }
+    handle.dispose();
+  });
+
+  testWidgets('a resizable layout keeps unkeyed panes across md', (
+    WidgetTester tester,
+  ) async {
+    Future<void> pump(Size size) => tester.pumpWidget(
+          popWrap(
+            KunChatLayout(
+              resizable: true,
+              showConversation: true,
+              onBack: () {},
+              sidebar: const _Alive(label: 'list'),
+              child: const _Alive(label: 'chat'),
+            ),
+            size: size,
+          ),
+        );
+
+    await pump(desktop);
+    await tester.tap(find.text('list:0'));
+    await tester.tap(find.text('chat:0'));
+    await tester.pump();
+    await pump(phone);
+    await tester.pumpAndSettle();
+    await pump(desktop);
+    await tester.pumpAndSettle();
+    expect(find.text('list:1'), findsOneWidget);
+    expect(find.text('chat:1'), findsOneWidget);
+  });
+
   testWidgets('onBack fires only when narrow and showing the conversation', (
     WidgetTester tester,
   ) async {

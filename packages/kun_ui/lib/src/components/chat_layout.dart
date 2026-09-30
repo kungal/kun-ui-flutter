@@ -156,19 +156,7 @@ class KunChatLayout extends StatelessWidget {
       );
     }
 
-    final Widget clipped = ClipRect(child: body);
-    if (onBack != null && narrow && showConversation) {
-      return PopScope(
-        canPop: false,
-        onPopInvokedWithResult: (bool didPop, Object? result) {
-          if (!didPop) {
-            onBack!();
-          }
-        },
-        child: clipped,
-      );
-    }
-    return clipped;
+    return _backScope(narrow, ClipRect(child: body));
   }
 
   Widget _buildResizable(BuildContext context, bool narrow) {
@@ -192,19 +180,25 @@ class KunChatLayout extends StatelessWidget {
         ],
       ),
     );
-    final Widget clipped = ClipRect(child: body);
-    if (onBack != null && narrow && showConversation) {
-      return PopScope(
-        canPop: false,
-        onPopInvokedWithResult: (bool didPop, Object? result) {
-          if (!didPop) {
-            onBack!();
-          }
-        },
-        child: clipped,
-      );
-    }
-    return clipped;
+    return _backScope(narrow, ClipRect(child: body));
+  }
+
+  // The scope stays in the tree at every width. Added only while narrow, it
+  // remounted the body on every md crossing: KunSplitPane's LayoutBuilder
+  // then rebuilt the app's GlobalKey panes during layout, which tripped the
+  // semantics geometry assertion, and unkeyed pane state was lost.
+  Widget _backScope(bool narrow, Widget child) {
+    final VoidCallback? back = onBack;
+    final bool intercepts = back != null && narrow && showConversation;
+    return PopScope(
+      canPop: !intercepts,
+      onPopInvokedWithResult: (bool didPop, Object? result) {
+        if (!didPop && intercepts) {
+          back();
+        }
+      },
+      child: child,
+    );
   }
 }
 
