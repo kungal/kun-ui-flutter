@@ -187,6 +187,26 @@ void main() {
     );
   });
 
+  testWidgets('the text selection bar meets the platform on phones',
+      (tester) async {
+    await expectRowHeights(
+      tester,
+      child: const KunSelectionArea(child: Text('hello world')),
+      open: (WidgetTester tester) async {
+        await tester.longPressAt(
+            tester.getTopLeft(find.text('hello world')) + const Offset(8, 8));
+        await tester.pumpAndSettle();
+      },
+      row: find
+          .ancestor(of: find.text('复制'), matching: find.byType(GestureDetector))
+          .first,
+      under: <Case>[
+        for (final Case c in cases(32))
+          if (c.$1 != TargetPlatform.linux) c,
+      ],
+    );
+  });
+
   testWidgets('KunSelect options meet the platform on phones', (tester) async {
     await expectRowHeights(
       tester,

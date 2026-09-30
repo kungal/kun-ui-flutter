@@ -10,6 +10,7 @@ import '../locale/messages.dart';
 import '../theme/theme.dart';
 import 'design.dart';
 import 'motion.dart';
+import 'tap_target.dart';
 import 'variant_style.dart';
 
 // Material `_kHandleSize` in material/text_selection.dart.
@@ -538,6 +539,9 @@ class _KunTextSelectionMenuRowState extends State<_KunTextSelectionMenuRow> {
     );
     final bool lit = _hovered || _pressed;
     final Widget visuals = Container(
+      constraints: BoxConstraints(
+        minHeight: kunMinTapTargetSize(context).height,
+      ),
       decoration: BoxDecoration(
         color: lit ? style.hoverOverlay : null,
         borderRadius: BorderRadius.circular(KunRadius.md),
@@ -546,13 +550,17 @@ class _KunTextSelectionMenuRowState extends State<_KunTextSelectionMenuRow> {
         horizontal: KunSpacing.unit * 3,
         vertical: KunSpacing.unit * 1.5,
       ),
-      child: Text(
-        widget.label,
-        maxLines: 1,
-        overflow: TextOverflow.ellipsis,
-        style: KunText.sm.copyWith(
-          color: style.foreground,
-          fontWeight: KunFontWeights.medium,
+      child: Align(
+        widthFactor: 1,
+        heightFactor: 1,
+        child: Text(
+          widget.label,
+          maxLines: 1,
+          overflow: TextOverflow.ellipsis,
+          style: KunText.sm.copyWith(
+            color: style.foreground,
+            fontWeight: KunFontWeights.medium,
+          ),
         ),
       ),
     );

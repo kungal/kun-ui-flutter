@@ -1,5 +1,13 @@
 # Changelog
 
+## 0.25.0
+
+- **The text selection bar's buttons are 48dp tall on phones** (44pt on
+  iOS). It is the bar that `KunSelectionArea`, `KunInput` and
+  `KunTextarea` show above a selection. They were 32dp, measured on a
+  Pixel. As with the popup rows in 0.22.0, the button itself grows and
+  `KunThemeData.tapTargetSize` decides.
+
 ## 0.24.0
 
 - **`KunSelectionArea`** makes read-only text selectable, as a browser does

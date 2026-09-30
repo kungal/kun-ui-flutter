@@ -998,7 +998,9 @@ guidance by default on touch platforms.
   row.
   - A row of `KunDropdown`, `KunContextMenu` (submenus included),
     `KunChatMessageMenu`, `KunSelect`'s popup and `KunCommandPalette` takes
-    the theme's minimum as its minimum height. Its content is centred, and
+    the theme's minimum as its minimum height. So does a button on the text
+    selection bar, which is 32dp tall on a Pixel otherwise; it was added
+    after 0.24.0. Its content is centred, and
     its hover, focus and active fill covers the whole row.
   - This is the one place the drawn size grows instead of the layout box.
     Rows stack with no margin between them, so a `KunTapTarget` around each
