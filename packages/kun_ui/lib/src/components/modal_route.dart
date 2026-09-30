@@ -577,6 +577,10 @@ class _KunModalPageState extends State<_KunModalPage>
     if (modal.child != null) {
       column.add(modal.child!);
     }
+    final EdgeInsets closeOutset = kunTapTargetOutset(
+      context,
+      Size.square(KunControlMetrics.of(KunUISize.md).square),
+    );
     final Widget stack = Stack(
       children: <Widget>[
         Padding(
@@ -611,9 +615,11 @@ class _KunModalPageState extends State<_KunModalPage>
             ),
           ),
         if (modal.isShowCloseButton)
+          // The web's 4px corner is 1px short of a 48dp box's margin, and
+          // the panel clipped the node to 47: flush wins over the last pixel.
           Positioned(
-            top: KunSpacing.unit * 1,
-            right: KunSpacing.unit * 1,
+            top: math.max(0, KunSpacing.unit * 1 - closeOutset.top),
+            right: math.max(0, KunSpacing.unit * 1 - closeOutset.right),
             child: KunButton(
               variant: KunUIVariant.light,
               color: KunUIColor.neutral,

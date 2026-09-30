@@ -1,5 +1,41 @@
 # Changelog
 
+## 0.19.0
+
+Built on kun-ui 2.53.0 (from 2.52.0). Two accessibility changes measured by
+the kungal app: controls meet the platform's minimum touch target on phones,
+and secondary text clears WCAG AA. The generated packages now require 2.53.0
+or later.
+
+- **Secondary text uses `KunColorScheme.foregroundMuted`.** This is the new
+  kun-ui token: `neutral.shade600` in light mode and `neutral.shade500` in
+  dark. Descriptions, helper text, character counts, empty states, divider
+  labels, unselected tab labels, the inactive `KunReaction`, and chat
+  timestamps, previews and subtitles all move to it, as they do on the web.
+  - In light mode that text was `shade500` (3.33:1 on the page background)
+    or `shade400` (2.31:1), both below AA. It is now 5.03:1, and 5.53:1 on
+    cards. Dark mode looks exactly as before.
+  - Placeholders, disabled text, outside-month days and icons keep their
+    steps.
+  - For your own secondary text, use `scheme.foregroundMuted` instead of
+    `scheme.neutral.shade500`. No single neutral step clears AA on both
+    pages, because the ramp is mirrored with `shade500` fixed.
+  - `KunColorScheme`'s constructor gains a required `foregroundMuted`. Only
+    a scheme built by hand has to pass it.
+- **Touch targets meet the platform on phones.** On Android, Fuchsia and
+  iOS, a pressable control now takes at least a 48×48 layout box (44×44 on
+  iOS). Its drawn size is unchanged: the control sits centred in the box,
+  and a tap in the margin presses it. Desktop keeps the web's sizes.
+  - **Your layouts on phones get looser.** A 38-tall md button now takes 48
+    of height, so rows and columns of controls spread out. A bar of fixed
+    height that holds a control shorter than the minimum is not overflowed:
+    the parent's limit wins, and the control keeps its drawn size.
+  - `KunThemeData.tapTargetSize` chooses: `adaptive` (the default),
+    `padded` or `shrinkWrap`. Set `shrinkWrap` to get the old layout back.
+  - Covered in this release: `KunButton` (every size, text and icon-only,
+    and so `KunNavItem`, `KunModal`'s ×, the alert buttons and the lightbox
+    chrome).
+
 ## 0.18.1
 
 A privacy fix from the kungal app. There are no API changes.

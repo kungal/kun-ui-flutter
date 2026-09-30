@@ -73,6 +73,7 @@ export 'src/components/user_chip.dart';
 export 'src/config/config.dart';
 export 'src/foundation/control_metrics.dart';
 export 'src/foundation/selection_metrics.dart';
+export 'src/foundation/tap_target.dart' show KunTapTargetSize;
 export 'src/foundation/design.dart';
 export 'src/foundation/variant_style.dart';
 export 'src/locale/messages.dart';

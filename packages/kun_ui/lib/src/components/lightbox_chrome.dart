@@ -43,6 +43,10 @@ class _LightboxChrome extends StatelessWidget {
     // covers the status and navigation bars, which hid the close button and
     // the toolbar on a phone.
     final EdgeInsets bars = MediaQuery.viewPaddingOf(context);
+    EdgeInsets outset(KunUISize size) => kunTapTargetOutset(
+          context,
+          Size.square(KunControlMetrics.of(size).square),
+        );
     return _PassThroughStack(
       children: <Widget>[
         if (many)
@@ -72,8 +76,8 @@ class _LightboxChrome extends StatelessWidget {
             ),
           ),
         Positioned(
-          top: bars.top + KunSpacing.unit * 4,
-          right: bars.right + KunSpacing.unit * 4,
+          top: bars.top + KunSpacing.unit * 4 - outset(KunUISize.lg).top,
+          right: bars.right + KunSpacing.unit * 4 - outset(KunUISize.lg).right,
           child: _iconButton(
             size: KunUISize.lg,
             rounded: KunUIRounded.lg,
@@ -85,8 +89,8 @@ class _LightboxChrome extends StatelessWidget {
         ),
         if (many && wide) ...<Widget>[
           Positioned(
-            left: bars.left + KunSpacing.unit * 4,
-            top: _navTop(context),
+            left: bars.left + KunSpacing.unit * 4 - outset(KunUISize.xl).left,
+            top: _navTop(context) - outset(KunUISize.xl).top,
             child: _iconButton(
               size: KunUISize.xl,
               rounded: KunUIRounded.lg,
@@ -97,8 +101,9 @@ class _LightboxChrome extends StatelessWidget {
             ),
           ),
           Positioned(
-            right: bars.right + KunSpacing.unit * 4,
-            top: _navTop(context),
+            right:
+                bars.right + KunSpacing.unit * 4 - outset(KunUISize.xl).right,
+            top: _navTop(context) - outset(KunUISize.xl).top,
             child: _iconButton(
               size: KunUISize.xl,
               rounded: KunUIRounded.lg,
@@ -361,7 +366,21 @@ class _LightboxChrome extends StatelessWidget {
     if (!glass) {
       return button;
     }
-    return _glass(radius: BorderRadius.circular(rounded.radius), child: button);
+    return MergeSemantics(
+      child: KunTapTarget(
+        child: _glass(
+          radius: BorderRadius.circular(rounded.radius),
+          child: Builder(
+            builder: (context) => KunTheme(
+              data: KunTheme.of(context).copyWith(
+                tapTargetSize: KunTapTargetSize.shrinkWrap,
+              ),
+              child: button,
+            ),
+          ),
+        ),
+      ),
+    );
   }
 }
 

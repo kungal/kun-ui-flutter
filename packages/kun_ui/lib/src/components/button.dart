@@ -4,6 +4,7 @@ import 'package:kun_ui_tokens/kun_ui_tokens.dart';
 import '../foundation/control_metrics.dart';
 import '../foundation/design.dart';
 import '../foundation/motion.dart';
+import '../foundation/tap_target.dart';
 import '../foundation/variant_style.dart';
 import '../theme/theme.dart';
 import 'spinner.dart';
@@ -249,54 +250,57 @@ class _KunButtonState extends State<KunButton> {
       button: true,
       enabled: !_inactive,
       label: widget.semanticLabel,
-      child: FocusableActionDetector(
-        enabled: _canPress,
-        onShowFocusHighlight: (value) => setState(() => _focused = value),
-        actions: {
-          ActivateIntent: CallbackAction<ActivateIntent>(
-            onInvoke: (_) {
-              _handleActivate();
-              return null;
-            },
-          ),
-          // Flutter web binds Enter to ButtonActivateIntent alone, so with
-          // only ActivateIntent a focused button ignored Enter in a browser.
-          ButtonActivateIntent: CallbackAction<ButtonActivateIntent>(
-            onInvoke: (_) {
-              _handleActivate();
-              return null;
-            },
-          ),
-        },
-        // Hover through a plain MouseRegion, NOT the detector's
-        // onShowHoverHighlight: that callback is gated on the focus highlight
-        // mode (suppressed entirely under touch), while the web's `:hover`
-        // has no such coupling — a touch device simply never hovers.
-        child: MouseRegion(
-          cursor: _inactive
-              ? SystemMouseCursors.forbidden
-              : (_canPress ? SystemMouseCursors.click : MouseCursor.defer),
-          onEnter: (_) => setState(() => _hovered = true),
-          onExit: (_) => setState(() => _hovered = false),
-          child: GestureDetector(
-            behavior: HitTestBehavior.opaque,
-            onTapDown:
-                _canPress ? (_) => setState(() => _pressed = true) : null,
-            onTapUp: _canPress ? (_) => setState(() => _pressed = false) : null,
-            onTapCancel:
-                _canPress ? () => setState(() => _pressed = false) : null,
-            onTap: _canPress ? _handleActivate : null,
-            child: AnimatedScale(
-              scale: _pressed ? 0.97 : 1, // web active:scale-[0.97]
-              duration: kunMotion(context, KunDefaultTransition.duration),
-              curve: KunDefaultTransition.curve,
-              child: AnimatedOpacity(
-                // Web: hover:opacity-80 on every variant; disabled/loading
-                // opacity-50.
-                opacity: _inactive ? 0.5 : (_hovered ? 0.8 : 1),
+      child: KunTapTarget(
+        child: FocusableActionDetector(
+          enabled: _canPress,
+          onShowFocusHighlight: (value) => setState(() => _focused = value),
+          actions: {
+            ActivateIntent: CallbackAction<ActivateIntent>(
+              onInvoke: (_) {
+                _handleActivate();
+                return null;
+              },
+            ),
+            // Flutter web binds Enter to ButtonActivateIntent alone, so with
+            // only ActivateIntent a focused button ignored Enter in a browser.
+            ButtonActivateIntent: CallbackAction<ButtonActivateIntent>(
+              onInvoke: (_) {
+                _handleActivate();
+                return null;
+              },
+            ),
+          },
+          // Hover through a plain MouseRegion, NOT the detector's
+          // onShowHoverHighlight: that callback is gated on the focus highlight
+          // mode (suppressed entirely under touch), while the web's `:hover`
+          // has no such coupling — a touch device simply never hovers.
+          child: MouseRegion(
+            cursor: _inactive
+                ? SystemMouseCursors.forbidden
+                : (_canPress ? SystemMouseCursors.click : MouseCursor.defer),
+            onEnter: (_) => setState(() => _hovered = true),
+            onExit: (_) => setState(() => _hovered = false),
+            child: GestureDetector(
+              behavior: HitTestBehavior.opaque,
+              onTapDown:
+                  _canPress ? (_) => setState(() => _pressed = true) : null,
+              onTapUp:
+                  _canPress ? (_) => setState(() => _pressed = false) : null,
+              onTapCancel:
+                  _canPress ? () => setState(() => _pressed = false) : null,
+              onTap: _canPress ? _handleActivate : null,
+              child: AnimatedScale(
+                scale: _pressed ? 0.97 : 1, // web active:scale-[0.97]
                 duration: kunMotion(context, KunDefaultTransition.duration),
                 curve: KunDefaultTransition.curve,
-                child: withRing,
+                child: AnimatedOpacity(
+                  // Web: hover:opacity-80 on every variant; disabled/loading
+                  // opacity-50.
+                  opacity: _inactive ? 0.5 : (_hovered ? 0.8 : 1),
+                  duration: kunMotion(context, KunDefaultTransition.duration),
+                  curve: KunDefaultTransition.curve,
+                  child: withRing,
+                ),
               ),
             ),
           ),

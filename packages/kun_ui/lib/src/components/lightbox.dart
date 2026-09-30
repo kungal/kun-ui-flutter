@@ -16,6 +16,7 @@ import '../foundation/control_metrics.dart';
 import '../foundation/design.dart';
 import '../foundation/dismiss_layers.dart';
 import '../foundation/motion.dart';
+import '../foundation/tap_target.dart';
 import '../locale/messages.dart';
 import '../theme/theme.dart';
 import 'button.dart';

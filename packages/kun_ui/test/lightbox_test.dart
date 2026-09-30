@@ -313,6 +313,33 @@ class _FailingImageProvider extends ImageProvider<_FailingImageProvider> {
 }
 
 void main() {
+  testWidgets('a padded glass button keeps its glass and its corner', (
+    WidgetTester tester,
+  ) async {
+    Finder close() => find.ancestor(
+          of: find.byIcon(KunIcons.x),
+          matching: find.byType(KunButton),
+        );
+    final SemanticsHandle handle = tester.ensureSemantics();
+    debugDefaultTargetPlatformOverride = TargetPlatform.linux;
+    await _pumpOpen(tester);
+    final Rect compact = tester.getRect(close());
+    expect(compact.size, const Size.square(46));
+
+    debugDefaultTargetPlatformOverride = TargetPlatform.android;
+    await _pumpOpen(tester);
+    expect(tester.getRect(close()), compact);
+    expect(
+      tester.getSemantics(find.byIcon(KunIcons.x)).rect.size,
+      const Size.square(48),
+    );
+    await tester.tapAt(compact.topRight + const Offset(0.5, -0.5));
+    await tester.pumpAndSettle();
+    expect(find.byIcon(KunIcons.x), findsNothing);
+    debugDefaultTargetPlatformOverride = null;
+    handle.dispose();
+  });
+
   testWidgets('opens and closes through isOpen', (WidgetTester tester) async {
     setView(tester, const Size(1024, 768));
     final GlobalKey<_HostState> key = GlobalKey<_HostState>();

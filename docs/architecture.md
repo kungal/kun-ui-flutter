@@ -925,6 +925,51 @@ because the target is an Android app used with TalkBack:
 - each actionable node carries a name. A test walks every chat
   component for unnamed actionable nodes.
 
+### Touch targets meet the platform on phones (decided 2026-09-29)
+
+The kungal app's accessibility guard measured `KunButton(isIconOnly: true)`
+at 38×38 against Android's 48dp minimum. A census of every gallery demo
+showed the icon button was one case of many. Only `xl` buttons cleared 48:
+inputs are 38 tall, the select's value node 20, a switch row 24, a checkbox
+row 20, a chip's × 14, a tab 36. The web shares these sizes. They clear
+WCAG 2.2 AA's 24px target minimum, but not the platform guidance on phones,
+which is 48dp on Android and 44pt on iOS. The maintainer chose to meet that
+guidance by default on touch platforms.
+
+- **The drawn control keeps the web's size; the layout box grows.** Flutter
+  cannot give a widget a hit area larger than its layout box, because every
+  ancestor rejects a point outside its own size before the widget sees it.
+  0.14.0 found this the hard way, when an inflated hit test on the date
+  picker's × was dead code. So a padded control claims more room and draws
+  itself, unchanged, in the middle. Material (`MaterialTapTargetSize.padded`)
+  and Cupertino (`CupertinoButton.minSize`) do the same. A semantics rect
+  inflated past a small hit box was rejected: the guideline would pass while
+  a finger still missed.
+- **`KunThemeData.tapTargetSize` decides, per theme.** It defaults to
+  `adaptive`, which is `padded` on Android, Fuchsia and iOS and `shrinkWrap`
+  on desktop and for the web's own sizes. `padded` is 48×48, or 44×44 on
+  iOS. The values are the SDK's `kMinInteractiveDimension` and
+  `kMinInteractiveDimensionCupertino`, which only `material.dart` and
+  `cupertino.dart` export. They are therefore restated in
+  `tap_target.dart`, and a test holds them equal to the SDK's.
+- **Two primitives, both in `foundation/tap_target.dart`.**
+  - `KunTapTarget` is for a control that is one target. It is transcribed
+    from Material's `_InputPadding`: the box grows, the control is centred,
+    and a hit in the margin goes to the control's centre. The node's
+    `Semantics` sits outside it, so the node's rect, which is what a screen
+    reader and the guidelines measure, is the padded box.
+  - `KunTapBand` is for a drawn box that holds several targets: a field and
+    its clear button, a tab strip, a closable chip. It paints the background
+    at the content's own height (its minimum intrinsic height), centred, and
+    lays the content out at the padded height. Each column that fills that
+    height owns the band above and below it. Anything else falls through to
+    the detector around the band. A target column carries no vertical
+    padding of its own: the padding that sets the drawn height lives inside
+    the column that is not a target.
+- **The web is not asked to follow.** A coarse-pointer hit area on the web
+  can be a pseudo-element that costs no layout, so it would not change the
+  design. Whether kun-ui wants one is its own question, raised separately.
+
 ### Reduced motion collapses every transition (decided 2026-09-17)
 
 kun-ui's base stylesheet sets every transition and animation to 0.01ms

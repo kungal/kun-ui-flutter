@@ -2,6 +2,7 @@ import 'package:flutter/widgets.dart';
 import 'package:kun_ui_tokens/kun_ui_tokens.dart';
 
 import '../foundation/design.dart';
+import '../foundation/tap_target.dart';
 import 'breakpoints.dart';
 
 /// The KunUI theme configuration.
@@ -18,30 +19,35 @@ class KunThemeData {
     required this.brightness,
     this.rounded = KunUIRounded.md,
     this.breakpoints = const KunBreakpoints(),
+    this.tapTargetSize = KunTapTargetSize.adaptive,
   });
 
   /// The light theme — the generated scheme the web ships on `:root`.
   factory KunThemeData.light({
     KunUIRounded rounded = KunUIRounded.md,
     KunBreakpoints breakpoints = const KunBreakpoints(),
+    KunTapTargetSize tapTargetSize = KunTapTargetSize.adaptive,
   }) =>
       KunThemeData(
         colors: KunColors.light,
         brightness: Brightness.light,
         rounded: rounded,
         breakpoints: breakpoints,
+        tapTargetSize: tapTargetSize,
       );
 
   /// The dark theme — the generated scheme the web ships on `.kun-dark-mode`.
   factory KunThemeData.dark({
     KunUIRounded rounded = KunUIRounded.md,
     KunBreakpoints breakpoints = const KunBreakpoints(),
+    KunTapTargetSize tapTargetSize = KunTapTargetSize.adaptive,
   }) =>
       KunThemeData(
         colors: KunColors.dark,
         brightness: Brightness.dark,
         rounded: rounded,
         breakpoints: breakpoints,
+        tapTargetSize: tapTargetSize,
       );
 
   /// The generated color scheme ([KunColors.light] or [KunColors.dark]
@@ -59,18 +65,25 @@ class KunThemeData {
   /// The responsive breakpoints.
   final KunBreakpoints breakpoints;
 
+  /// How much room a pressable control claims beyond what it draws. The
+  /// default, [KunTapTargetSize.adaptive], meets the platform's minimum
+  /// touch target on phones and keeps the web's sizes on desktop.
+  final KunTapTargetSize tapTargetSize;
+
   /// A copy with the given fields replaced.
   KunThemeData copyWith({
     KunColorScheme? colors,
     Brightness? brightness,
     KunUIRounded? rounded,
     KunBreakpoints? breakpoints,
+    KunTapTargetSize? tapTargetSize,
   }) =>
       KunThemeData(
         colors: colors ?? this.colors,
         brightness: brightness ?? this.brightness,
         rounded: rounded ?? this.rounded,
         breakpoints: breakpoints ?? this.breakpoints,
+        tapTargetSize: tapTargetSize ?? this.tapTargetSize,
       );
 
   @override
@@ -79,10 +92,12 @@ class KunThemeData {
       identical(other.colors, colors) &&
       other.brightness == brightness &&
       other.rounded == rounded &&
-      other.breakpoints == breakpoints;
+      other.breakpoints == breakpoints &&
+      other.tapTargetSize == tapTargetSize;
 
   @override
-  int get hashCode => Object.hash(colors, brightness, rounded, breakpoints);
+  int get hashCode =>
+      Object.hash(colors, brightness, rounded, breakpoints, tapTargetSize);
 }
 
 /// Provides a [KunThemeData] to every KunUI widget below it.

@@ -361,6 +361,41 @@ void main() {
     expect(find.byIcon(KunIcons.x), findsNothing);
   });
 
+  testWidgets('a padded close button sits flush in the corner', (
+    WidgetTester tester,
+  ) async {
+    Finder drawn() => find
+        .descendant(
+          of: find.ancestor(
+            of: find.byIcon(KunIcons.x),
+            matching: find.byType(KunButton),
+          ),
+          matching: find.byType(Stack),
+        )
+        .first;
+    final SemanticsHandle handle = tester.ensureSemantics();
+    await _pumpOpen(
+      tester,
+      theme: KunThemeData.light(tapTargetSize: KunTapTargetSize.shrinkWrap),
+    );
+    final Rect compact = tester.getRect(drawn());
+    final Offset compactCorner = tester.getTopRight(panel) - compact.topRight;
+
+    await _pumpOpen(
+      tester,
+      theme: KunThemeData.light(tapTargetSize: KunTapTargetSize.padded),
+    );
+    final Rect padded = tester.getRect(drawn());
+    expect(padded.size, compact.size);
+    expect(compactCorner, const Offset(4, -4));
+    expect(tester.getTopRight(panel) - padded.topRight, const Offset(5, -5));
+    expect(
+      tester.getSemantics(find.byIcon(KunIcons.x)).rect.size,
+      const Size.square(48),
+    );
+    handle.dispose();
+  });
+
   testWidgets('close button semantic label follows the messages scope',
       (WidgetTester tester) async {
     await _pumpOpen(tester);

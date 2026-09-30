@@ -24,6 +24,15 @@ Widget wrapWebKeys(Widget child) => Shortcuts(
       child: wrap(child),
     );
 
+// What the button draws; on a touch platform its layout box is the larger
+// tap target around it.
+Finder drawnBox([Finder? button]) => find
+    .descendant(
+      of: button ?? find.byType(KunButton),
+      matching: find.byType(Stack),
+    )
+    .first;
+
 void main() {
   testWidgets('tap fires onPressed', (tester) async {
     var presses = 0;
@@ -83,7 +92,7 @@ void main() {
         ),
       );
       expect(
-        tester.getSize(find.byType(KunButton)).height,
+        tester.getSize(drawnBox()).height,
         entry.value,
         reason: '${entry.key} text button height',
       );
@@ -100,7 +109,7 @@ void main() {
         ),
       );
       expect(
-        tester.getSize(find.byType(KunButton)),
+        tester.getSize(drawnBox()),
         Size.square(entry.value),
         reason: '${entry.key} icon-only square',
       );
@@ -169,7 +178,7 @@ void main() {
         ),
       ),
     );
-    expect(tester.getSize(find.byType(KunButton)), const Size(300, 38));
+    expect(tester.getSize(drawnBox()), const Size(300, 38));
 
     await tester.pumpWidget(
       wrap(
@@ -258,7 +267,7 @@ void main() {
     await tester.pump();
     await tester.pump();
 
-    final Rect button = tester.getRect(find.byType(KunButton));
+    final Rect button = tester.getRect(drawnBox());
     final Iterable<Element> bands = find
         .descendant(
           of: find.descendant(
