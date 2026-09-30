@@ -1025,6 +1025,32 @@ class _KunChatMessageMenuRow extends StatefulWidget {
 class _KunChatMessageMenuRowState extends State<_KunChatMessageMenuRow> {
   bool _hovered = false;
 
+  // The web tints a row on :hover only; the focus tint is ours, for the
+  // arrow keys. A touch-opened menu focuses its first row too, and the tint
+  // then read as a pre-selected item, so it follows the keyboard highlight
+  // mode as KunUI's focus rings do.
+  bool get _focusVisible =>
+      widget.focusNode.hasFocus &&
+      FocusManager.instance.highlightMode == FocusHighlightMode.traditional;
+
+  void _onHighlightMode(FocusHighlightMode mode) {
+    if (mounted && widget.focusNode.hasFocus) {
+      setState(() {});
+    }
+  }
+
+  @override
+  void initState() {
+    super.initState();
+    FocusManager.instance.addHighlightModeListener(_onHighlightMode);
+  }
+
+  @override
+  void dispose() {
+    FocusManager.instance.removeHighlightModeListener(_onHighlightMode);
+    super.dispose();
+  }
+
   @override
   Widget build(BuildContext context) {
     final _ResolvedAction item = widget.item;
@@ -1034,7 +1060,7 @@ class _KunChatMessageMenuRowState extends State<_KunChatMessageMenuRow> {
       variant: KunUIVariant.light,
       color: item.color,
     );
-    final bool lit = !item.disabled && (_hovered || widget.focusNode.hasFocus);
+    final bool lit = !item.disabled && (_hovered || _focusVisible);
 
     final Widget row = Container(
       constraints: BoxConstraints(

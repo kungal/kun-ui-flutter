@@ -161,6 +161,32 @@ void main() {
     expect(item.label, 'A');
   });
 
+  testWidgets('a menu opened after a touch does not tint its focused row',
+      (tester) async {
+    Color? tint(String key) {
+      final BoxDecoration decoration = tester
+          .widget<Container>(
+            find
+                .descendant(of: row(key), matching: find.byType(Container))
+                .first,
+          )
+          .decoration! as BoxDecoration;
+      return decoration.color;
+    }
+
+    setView(tester, const Size(800, 600));
+    await tester.tapAt(const Offset(4, 4));
+    await pumpHost(tester, const _Host(position: Offset(120, 80)));
+    expect(focused(tester, 'edit'), isTrue);
+    expect(tint('edit'), isNull);
+
+    await tester.sendKeyEvent(LogicalKeyboardKey.arrowDown);
+    await tester.pump();
+    expect(focused(tester, 'move'), isTrue);
+    expect(tint('move'), isNotNull);
+    expect(tint('edit'), isNull);
+  });
+
   testWidgets('opens at the given position', (tester) async {
     setView(tester, const Size(800, 600));
     await pumpHost(tester, const _Host(position: Offset(120, 80)));

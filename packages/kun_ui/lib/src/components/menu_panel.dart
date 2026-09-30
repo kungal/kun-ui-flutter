@@ -695,6 +695,32 @@ class KunMenuRow extends StatefulWidget {
 class _KunMenuRowState extends State<KunMenuRow> {
   bool _hovered = false;
 
+  // The web tints a row on :hover only; the focus tint is ours, for the
+  // arrow keys. A touch-opened menu focuses its first row too, and the tint
+  // then read as a pre-selected item, so it follows the keyboard highlight
+  // mode as KunUI's focus rings do.
+  bool get _focusVisible =>
+      widget.focusNode.hasFocus &&
+      FocusManager.instance.highlightMode == FocusHighlightMode.traditional;
+
+  void _onHighlightMode(FocusHighlightMode mode) {
+    if (mounted && widget.focusNode.hasFocus) {
+      setState(() {});
+    }
+  }
+
+  @override
+  void initState() {
+    super.initState();
+    FocusManager.instance.addHighlightModeListener(_onHighlightMode);
+  }
+
+  @override
+  void dispose() {
+    FocusManager.instance.removeHighlightModeListener(_onHighlightMode);
+    super.dispose();
+  }
+
   void _activate() {
     if (widget.disabled) {
       return;
@@ -714,8 +740,8 @@ class _KunMenuRowState extends State<KunMenuRow> {
     // The web's `light` cell defines only `hover:`, so the menu adds a focus
     // tint of the same 20% — a row reached by the arrow keys has to look
     // exactly like one reached by the pointer. `aria-expanded` uses it too.
-    final bool lit = !widget.disabled &&
-        (_hovered || widget.focusNode.hasFocus || widget.expanded);
+    final bool lit =
+        !widget.disabled && (_hovered || _focusVisible || widget.expanded);
     final String? shortcut = item.shortcut;
     final String? hint = shortcut == null || shortcut.isEmpty
         ? null

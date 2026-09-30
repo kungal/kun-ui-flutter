@@ -7,6 +7,19 @@
   `KunTextarea` show above a selection. They were 32dp, measured on a
   Pixel. As with the popup rows in 0.22.0, the button itself grows and
   `KunThemeData.tapTargetSize` decides.
+- **A button in a stretched row keeps its face centred on phones.** In a
+  horizontal `KunScrollShadow`, whose row is stretched to its tallest
+  child, a `KunButton` drew its 34dp face at the top of its 48dp box.
+  Beside it, a `KunSelect` sat centred, about 7dp lower. The kungal app
+  measured this in its filter bar on a Pixel. A padded control now absorbs
+  a stretch up to the tap-target size and draws itself centred. A stretch
+  beyond that still stretches it, as a flex row does on the web.
+- **A menu opened by touch no longer shows its first row as selected.**
+  `KunContextMenu` focuses its first row when it opens, and the row drew
+  its focus tint, which read as a pre-selected item after a long press.
+  The focus tint of `KunContextMenu`, `KunDropdown` and
+  `KunChatMessageMenu` rows now follows the keyboard highlight mode, like
+  KunUI's focus rings: it shows once a key is pressed.
 
 ## 0.24.0
 
