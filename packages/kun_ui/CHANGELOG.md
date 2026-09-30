@@ -43,6 +43,13 @@
   measured this in its filter bar on a Pixel. A padded control now absorbs
   a stretch up to the tap-target size and draws itself centred. A stretch
   beyond that still stretches it, as a flex row does on the web.
+- **A `KunTooltip` hidden below sm (`hideOnMobile`) no longer describes its
+  trigger.** The web renders no tooltip there and so no `aria-describedby`.
+  The port kept the description on phones, where TalkBack could read an
+  icon button's name and then its identical tooltip. On wider screens the
+  trigger and the tooltip still merge into one node: the button's label,
+  plus the tooltip as its description. Crossing sm does not remount the
+  child.
 - **A menu opened by touch no longer shows its first row as selected.**
   `KunContextMenu` focuses its first row when it opens, and the row drew
   its focus tint, which read as a pre-selected item after a long press.

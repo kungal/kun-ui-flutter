@@ -275,6 +275,41 @@ void main() {
     semantics.dispose();
   });
 
+  testWidgets('below sm a hidden tooltip describes nothing; the child stays',
+      (tester) async {
+    final SemanticsHandle semantics = tester.ensureSemantics();
+    setView(tester, const Size(800, 600));
+    Widget tree({bool hideOnMobile = true}) => wrap(
+          KunTooltip(
+            text: 'Share',
+            hideOnMobile: hideOnMobile,
+            child: KunButton(
+              isIconOnly: true,
+              semanticLabel: 'Share',
+              onPressed: () {},
+              child: const Icon(KunIcons.x),
+            ),
+          ),
+        );
+    SemanticsData data() =>
+        tester.getSemantics(find.byType(KunButton)).getSemanticsData();
+    await tester.pumpWidget(tree());
+    expect(data().label, 'Share');
+    final Element before = tester.element(find.byType(KunButton));
+    expect(data().tooltip, 'Share');
+
+    setView(tester, const Size(390, 800));
+    await tester.pump();
+    expect(data().tooltip, isEmpty);
+    expect(data().label, 'Share');
+    expect(data().flagsCollection.isButton, isTrue);
+    expect(identical(tester.element(find.byType(KunButton)), before), isTrue);
+
+    await tester.pumpWidget(tree(hideOnMobile: false));
+    expect(data().tooltip, 'Share');
+    semantics.dispose();
+  });
+
   testWidgets('a KunButton child inside a node carries the tooltip itself',
       (tester) async {
     final SemanticsHandle handle = tester.ensureSemantics();

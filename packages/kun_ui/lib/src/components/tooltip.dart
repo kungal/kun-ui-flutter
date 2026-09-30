@@ -332,10 +332,16 @@ class _KunTooltipState extends State<KunTooltip>
   @override
   Widget build(BuildContext context) {
     final String description = _accessibleText;
+    // Below sm the web renders no tooltip and so no aria-describedby; the
+    // description stayed on phones and TalkBack could read the name twice.
+    // The wrapper depends only on the text, so crossing sm keeps the child.
     final Widget trigger = description.isEmpty
         ? widget.child
         : MergeSemantics(
-            child: Semantics(tooltip: description, child: widget.child),
+            child: Semantics(
+              tooltip: _suppressed ? null : description,
+              child: widget.child,
+            ),
           );
     return PopScope(
       canPop: !_visible,
