@@ -1550,6 +1550,53 @@ void main() {
     expect(chip.right, lessThan(field.right));
   });
 
+  testWidgets('chips on one line keep the single-line height in a scroll row',
+      (WidgetTester tester) async {
+    const List<KunSelectOption<String>> platforms = <KunSelectOption<String>>[
+      KunSelectOption<String>(value: 'pc', label: 'PC'),
+      KunSelectOption<String>(value: 'switch', label: 'Switch'),
+    ];
+    for (final KunTapTargetSize size in KunTapTargetSize.values) {
+      await tester.pumpWidget(
+        wrap(
+          theme: KunThemeData.light(tapTargetSize: size),
+          Center(
+            child: KunScrollShadow(
+              children: <Widget>[
+                KunSelect<String, KunSelectOption<String>>(
+                  key: const ValueKey<String>('single'),
+                  options: platforms,
+                  value: 'pc',
+                  onChanged: (_) {},
+                  size: KunUISize.sm,
+                  fullWidth: false,
+                ),
+                KunSelect<String, KunSelectOption<String>>.multiple(
+                  key: const ValueKey<String>('multiple'),
+                  options: platforms,
+                  values: const <String>['pc', 'switch'],
+                  onValuesChanged: (_) {},
+                  size: KunUISize.sm,
+                  fullWidth: false,
+                ),
+              ],
+            ),
+          ),
+        ),
+      );
+      double height(String key) => tester
+          .getSize(
+            find.descendant(
+              of: find.byKey(ValueKey<String>(key)),
+              matching: trigger,
+            ),
+          )
+          .height;
+      expect(find.text('Switch'), findsOneWidget);
+      expect(height('multiple'), height('single'), reason: '$size');
+    }
+  });
+
   testWidgets('styling: fill, border, radius, heights, chips, copy',
       (WidgetTester tester) async {
     await tester.pumpWidget(

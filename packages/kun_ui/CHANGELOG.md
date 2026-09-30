@@ -5,6 +5,28 @@
 Built on kun-ui 2.56.0 (from 2.53.0). The generated packages now require
 2.56.0 or later.
 
+- **Text meets WCAG AA contrast in both themes.** The kungal app measured
+  primary text at 4.18:1, a flat primary chip at 3.98:1 and the KunSelect
+  placeholder at 2.53:1. kun-ui 2.56.0 adds `KunColorScale.text`, one per
+  hue, held at 4.5:1 on the page, on cards and on the hue's 20% tint.
+  - The bordered, light and flat variants draw their text in it, so
+    buttons, chips, badges and menu rows follow. So do the selected tab,
+    the active reaction and the chosen option icon of a checkbox or radio
+    group.
+  - Form error text and required asterisks use `danger.text`.
+  - Placeholders and an empty KunSelect or KunDatePicker trigger use
+    `foregroundMuted`.
+  - In the chat, sender names, bar titles, links, mentions, typing, status
+    and draft marks, and the own bubble's time use `primary.text`.
+  - Fills, borders, focus rings, checkmarks, spinners, disabled text and
+    outside-month days keep their colours, as on the web.
+  - Your own text in a hue should use `scale.text`, not `scale.solid`.
+- **A multi-select `KunSelect` with chips on one line is as tall as a
+  single select in a horizontal `KunScrollShadow`.** Two sm chips grew the
+  trigger from 34 to 44. Flutter's `Wrap` reports a max intrinsic width
+  without its spacing, and at an unbounded width the trigger measured the
+  chips at that width, as two lines. Reported by the kungal app, whose
+  filter bar sets a single and a multiple select side by side.
 - **Menus get separators, shortcut hints and one level of submenu.**
   `KunContextMenu` and `KunDropdown` share one list, as the web's do.
   - `items` takes `KunMenuEntry`s: a `KunContextMenuItem` or a

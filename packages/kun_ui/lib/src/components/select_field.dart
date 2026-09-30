@@ -76,7 +76,8 @@ class _KunSelectTrigger<T, O extends KunSelectOption<T>>
       // lays each child out at its own maxWidth, and a LayoutBuilder asserted
       // when a horizontal KunScrollShadow's IntrinsicHeight row asked the
       // field its height.
-      content = Wrap(
+      content = _KunChipRowIntrinsics(
+          child: Wrap(
         spacing: KunSpacing.unit,
         runSpacing: KunSpacing.unit,
         crossAxisAlignment: WrapCrossAlignment.center,
@@ -104,7 +105,7 @@ class _KunSelectTrigger<T, O extends KunSelectOption<T>>
               ),
             ),
         ],
-      );
+      ));
     } else {
       content = Text(
         triggerText,
@@ -450,4 +451,22 @@ class _KunSelectIconButtonState extends State<_KunSelectIconButton> {
       child: button,
     );
   }
+}
+
+// RenderWrap's max intrinsic width leaves out `spacing`. At an unbounded
+// width (a horizontal KunScrollShadow) the trigger's row sizes the chips at
+// that width, so two chips that fit on one line were asked their height 4px
+// too narrow, measured two runs, and the trigger grew from 34 to 44.
+class _KunChipRowIntrinsics extends SingleChildRenderObjectWidget {
+  const _KunChipRowIntrinsics({required Widget super.child});
+
+  @override
+  RenderObject createRenderObject(BuildContext context) =>
+      _RenderKunChipRowIntrinsics();
+}
+
+class _RenderKunChipRowIntrinsics extends RenderProxyBox {
+  @override
+  double computeMaxIntrinsicWidth(double height) =>
+      child?.getDryLayout(const BoxConstraints()).width ?? 0;
 }
