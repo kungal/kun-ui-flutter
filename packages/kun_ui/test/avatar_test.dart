@@ -174,6 +174,26 @@ FadeTransition? imageFadeOf(WidgetTester tester) {
   return tester.widget<FadeTransition>(fade);
 }
 
+Future<EdgeInsets> outsetOf(
+  WidgetTester tester,
+  KunAvatar avatar, {
+  KunThemeData? data,
+}) async {
+  late EdgeInsets outset;
+  await tester.pumpWidget(
+    wrap(
+      Builder(
+        builder: (BuildContext context) {
+          outset = avatar.tapTargetOutset(context);
+          return avatar;
+        },
+      ),
+      data: data,
+    ),
+  );
+  return outset;
+}
+
 void main() {
   setUp(debugResetKunAvatarWarning);
 
@@ -203,6 +223,7 @@ void main() {
         Size.square(entry.value),
         reason: entry.key.name,
       );
+      expect(entry.key.side, entry.value, reason: entry.key.name);
     }
   });
 
@@ -517,6 +538,85 @@ void main() {
         ),
       );
       expect(tester.getSize(find.byType(KunAvatar)), const Size.square(24));
+    },
+    variant: TargetPlatformVariant.only(TargetPlatform.linux),
+  );
+
+  testWidgets(
+    'tapTargetOutset is the margin a linked avatar lays out with',
+    (tester) async {
+      final double target =
+          defaultTargetPlatform == TargetPlatform.iOS ? 44 : 48;
+      for (final KunAvatarSize size in KunAvatarSize.values) {
+        final EdgeInsets outset = await outsetOf(
+          tester,
+          KunAvatar(
+            user: const KunUser(id: 42, name: 'Kun', avatar: ''),
+            size: size,
+          ),
+        );
+        final Rect box = tester.getRect(find.byType(KunAvatar));
+        final Rect picture = tester.getRect(
+          find.descendant(
+            of: find.byType(KunAvatar),
+            matching: find.byType(ClipOval),
+          ),
+        );
+        final double margin = size.side < target ? (target - size.side) / 2 : 0;
+        expect(outset, EdgeInsets.all(margin), reason: size.name);
+        expect(picture.left - box.left, outset.left, reason: size.name);
+        expect(box.right - picture.right, outset.right, reason: size.name);
+        expect(picture.top - box.top, outset.top, reason: size.name);
+        expect(box.bottom - picture.bottom, outset.bottom, reason: size.name);
+      }
+    },
+    variant: const TargetPlatformVariant(
+      <TargetPlatform>{TargetPlatform.android, TargetPlatform.iOS},
+    ),
+  );
+
+  testWidgets(
+    'tapTargetOutset is zero for an avatar that is not a link or not padded',
+    (tester) async {
+      const KunUser user = KunUser(id: 42, name: 'Kun', avatar: '');
+      for (final KunAvatar avatar in const <KunAvatar>[
+        KunAvatar(user: user, size: KunAvatarSize.sm, isNavigation: false),
+        KunAvatar(
+          user: KunUser(id: 0, name: 'Kun', avatar: ''),
+          size: KunAvatarSize.sm,
+        ),
+        KunAvatar(user: null, size: KunAvatarSize.sm),
+      ]) {
+        expect(await outsetOf(tester, avatar), EdgeInsets.zero);
+      }
+      expect(
+        await outsetOf(
+          tester,
+          const KunAvatar(user: user, size: KunAvatarSize.sm),
+          data: KunThemeData.light(
+            tapTargetSize: KunTapTargetSize.shrinkWrap,
+          ),
+        ),
+        EdgeInsets.zero,
+      );
+      expect(tester.getSize(find.byType(KunAvatar)), const Size.square(24));
+    },
+    variant: TargetPlatformVariant.only(TargetPlatform.android),
+  );
+
+  testWidgets(
+    'tapTargetOutset is zero for a linked avatar on desktop',
+    (tester) async {
+      expect(
+        await outsetOf(
+          tester,
+          const KunAvatar(
+            user: KunUser(id: 42, name: 'Kun', avatar: ''),
+            size: KunAvatarSize.sm,
+          ),
+        ),
+        EdgeInsets.zero,
+      );
     },
     variant: TargetPlatformVariant.only(TargetPlatform.linux),
   );

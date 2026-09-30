@@ -100,7 +100,22 @@ enum KunAvatarSize {
   originalSm,
 
   /// Web `original` — `size-40`.
-  original,
+  original;
+
+  /// Side of the drawn square in logical pixels, the web's `size-N`. A
+  /// linked avatar on a phone lays out larger than this; see
+  /// [KunAvatar.tapTargetOutset].
+  double get side =>
+      KunSpacing.unit *
+      switch (this) {
+        KunAvatarSize.xs => 4,
+        KunAvatarSize.sm => 6,
+        KunAvatarSize.md => 8,
+        KunAvatarSize.lg => 10,
+        KunAvatarSize.xl => 12,
+        KunAvatarSize.originalSm => 24,
+        KunAvatarSize.original => 40,
+      };
 }
 
 /// How [KunUser.avatarDecoration] is drawn.
@@ -168,6 +183,20 @@ class KunAvatar extends StatefulWidget {
   /// always gets the still image.
   final KunAvatarDecorationMode decoration;
 
+  bool get _isLink => isNavigation && user != null && user!.id != 0;
+
+  /// How far this avatar's layout box reaches past the drawn picture on
+  /// each side under the nearest [KunTheme].
+  ///
+  /// Zero unless the avatar is a link and [KunThemeData.tapTargetSize] pads
+  /// it, which by default happens on phones only. For an avatar placed by
+  /// its drawn edge, such as the first item of a row whose text below starts
+  /// at the same x, subtract it from the padding before and the gap after,
+  /// and the picture stays where the web draws it.
+  EdgeInsets tapTargetOutset(BuildContext context) => _isLink
+      ? kunTapTargetOutset(context, Size.square(size.side))
+      : EdgeInsets.zero;
+
   @override
   State<KunAvatar> createState() => _KunAvatarState();
 }
@@ -179,20 +208,7 @@ class _KunAvatarState extends State<KunAvatar> {
   bool _focused = false;
   bool _fallbackScheduled = false;
 
-  bool get _isLink =>
-      widget.isNavigation && widget.user != null && widget.user!.id != 0;
-
-  double get _side =>
-      KunSpacing.unit *
-      switch (widget.size) {
-        KunAvatarSize.xs => 4,
-        KunAvatarSize.sm => 6,
-        KunAvatarSize.md => 8,
-        KunAvatarSize.lg => 10,
-        KunAvatarSize.xl => 12,
-        KunAvatarSize.originalSm => 24,
-        KunAvatarSize.original => 40,
-      };
+  bool get _isLink => widget._isLink;
 
   @override
   void didUpdateWidget(KunAvatar oldWidget) {
@@ -315,7 +331,7 @@ class _KunAvatarState extends State<KunAvatar> {
     final String? pictureLabel = widget.user == null
         ? KunMessagesScope.of(context).avatar.unknownUser
         : (widget.user!.name.isEmpty ? null : widget.user!.name);
-    final double side = _side;
+    final double side = widget.size.side;
     final String? frameUrl = _frameUrl(context);
 
     Widget picture = Image(

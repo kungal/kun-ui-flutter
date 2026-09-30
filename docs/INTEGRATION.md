@@ -173,6 +173,26 @@ KunUIConfigScope(
 - `imageProvider` turns every image URL KunUI loads into an
   `ImageProvider`. It defaults to `NetworkImage`; pass your cache's provider
   here instead of wrapping each widget.
+- On a phone, an avatar that links to its user lays out larger than it
+  draws, 48×48 on Android, so a finger can hit it. At the start of a row
+  whose text below starts at the same x, the picture then sits indented by
+  the margin. `avatar.tapTargetOutset(context)` is that margin on each side,
+  zero on desktop and for an avatar that is not a link. Subtract it from the
+  padding before the avatar and the gap after it, and the picture stays where
+  the web draws it. `KunAvatarSize.side` is the drawn square, for anything
+  else that has to match an avatar's size.
+
+  ```dart
+  final avatar = KunAvatar(user: reply.user, size: KunAvatarSize.sm);
+  final outset = avatar.tapTargetOutset(context);
+  Padding(
+    padding: EdgeInsets.only(left: KunSpacing.unit * 4 - outset.left),
+    child: Row(
+      spacing: KunSpacing.unit * 3 - outset.right,
+      children: [avatar, Text(reply.user.name)],
+    ),
+  );
+  ```
 
 ## Images
 
