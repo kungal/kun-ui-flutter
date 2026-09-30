@@ -128,6 +128,14 @@ cd <worktree> && CURSOR_OUT_ROOT="$CURSOR_OUT_ROOT" setsid nohup \
 disown
 ```
 
+**Run `flutter pub get` in a new worktree before dispatching.** Without
+`.dart_tool/package_config.json`, `dart format` cannot see the packages'
+`sdk: ^3.6.0` and formats every file in the newest (tall) style. On
+2026-09-30 the hover-page executor's first `dart format .` ran before any
+flutter command had created the file, and it rewrote 113 files. The later
+runs in the short style could not undo it, and 88 files outside the task's
+paths were left to restore by hand.
+
 Then wait on the process with Monitor, not with a sleep loop:
 `while pgrep -f 'dispatch-cursor/[d]ispatch.sh <slug>' >/dev/null; do sleep 5; done`.
 
