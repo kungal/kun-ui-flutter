@@ -67,6 +67,7 @@ export 'src/components/scroll_shadow.dart';
 export 'src/components/select.dart';
 export 'src/components/skeleton.dart';
 export 'src/components/spinner.dart';
+export 'src/components/split_pane.dart';
 export 'src/components/switch.dart';
 export 'src/components/tab.dart';
 export 'src/components/textarea.dart';

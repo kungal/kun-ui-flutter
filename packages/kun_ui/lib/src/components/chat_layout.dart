@@ -2,6 +2,7 @@ import 'package:flutter/widgets.dart';
 import 'package:kun_ui_tokens/kun_ui_tokens.dart';
 
 import '../theme/theme.dart';
+import 'split_pane.dart';
 
 /// Web `sidebarWidth` default `22rem`.
 const double _kSidebarWidth = 352;
@@ -23,6 +24,12 @@ class KunChatLayout extends StatelessWidget {
     super.key,
     this.showConversation = false,
     this.sidebarWidth = _kSidebarWidth,
+    this.resizable = false,
+    this.sidebarSize = _kSidebarWidth,
+    this.onSidebarSizeChanged,
+    this.sidebarMinSize = 280,
+    this.sidebarMaxSize = 480,
+    this.onSidebarResizeEnd,
     this.child,
     this.empty,
     this.sidebar,
@@ -33,11 +40,33 @@ class KunChatLayout extends StatelessWidget {
   /// `md` up both panes show.
   final bool showConversation;
 
-  /// Width of the list pane from `md` up, in logical pixels. The web default
-  /// is `22rem` (352). Not part of the web contract: upstream lists
-  /// `sidebarWidth` as web-only ("the capability crosses as a plain double
-  /// in the Flutter layout").
+  /// Width of the list pane from `md` up, in logical pixels, when
+  /// [resizable] is false. The web default is `22rem` (352). Not part of
+  /// the web contract: upstream lists `sidebarWidth` as web-only ("the
+  /// capability crosses as a plain double in the Flutter layout").
   final double sidebarWidth;
+
+  /// Let the reader drag the divider between the list and the conversation
+  /// (or move it with the arrow keys), through [KunSplitPane].
+  final bool resizable;
+
+  /// Width of the list pane in px while [resizable]. Persist it from
+  /// [onSidebarResizeEnd]. A new value from the parent, different from the
+  /// previous widget's, replaces the internal width.
+  final double sidebarSize;
+
+  /// Called on every pointer move while dragging the list divider, and on
+  /// each key press that changes the width. The web's `update:sidebarSize`.
+  final ValueChanged<double>? onSidebarSizeChanged;
+
+  /// Narrowest the list can be dragged, in px. Only with [resizable].
+  final double sidebarMinSize;
+
+  /// Widest the list can be dragged, in px. Only with [resizable].
+  final double sidebarMaxSize;
+
+  /// A drag or a key press on the divider finished with this list width.
+  final ValueChanged<double>? onSidebarResizeEnd;
 
   /// The open conversation (web default slot).
   final Widget? child;
@@ -74,7 +103,9 @@ class KunChatLayout extends StatelessWidget {
         final bool narrow = width < KunTheme.of(context).breakpoints.md;
         return _KunChatLayoutScope(
           narrow: narrow,
-          child: _buildPanes(context, narrow),
+          child: resizable
+              ? _buildResizable(context, narrow)
+              : _buildPanes(context, narrow),
         );
       },
     );
@@ -125,6 +156,42 @@ class KunChatLayout extends StatelessWidget {
       );
     }
 
+    final Widget clipped = ClipRect(child: body);
+    if (onBack != null && narrow && showConversation) {
+      return PopScope(
+        canPop: false,
+        onPopInvokedWithResult: (bool didPop, Object? result) {
+          if (!didPop) {
+            onBack!();
+          }
+        },
+        child: clipped,
+      );
+    }
+    return clipped;
+  }
+
+  Widget _buildResizable(BuildContext context, bool narrow) {
+    final Widget sidebarPane = sidebar ?? const SizedBox.shrink();
+    final Widget conversation = child ?? const SizedBox.shrink();
+    final Widget emptyPane = empty ?? const SizedBox.shrink();
+    final Widget body = KunSplitPane(
+      size: sidebarSize,
+      onSizeChanged: onSidebarSizeChanged,
+      onResizeEnd: onSidebarResizeEnd,
+      minSize: sidebarMinSize,
+      maxSize: sidebarMaxSize,
+      stackBelow: KunSplitStackBelow.md,
+      showPane: showConversation ? KunSplitSide.end : KunSplitSide.start,
+      start: sidebarPane,
+      end: Stack(
+        fit: StackFit.expand,
+        children: <Widget>[
+          _KeepAlive(visible: showConversation, child: conversation),
+          _KeepAlive(visible: !showConversation, child: emptyPane),
+        ],
+      ),
+    );
     final Widget clipped = ClipRect(child: body);
     if (onBack != null && narrow && showConversation) {
       return PopScope(

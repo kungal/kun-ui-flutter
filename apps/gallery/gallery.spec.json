@@ -543,12 +543,20 @@
           "builder": "chatLayoutApp",
           "shows": [
             "props.showConversation",
+            "props.resizable",
+            "props.sidebarSize",
+            "props.sidebarMinSize",
+            "props.sidebarMaxSize",
             "slots.default",
             "slots.empty",
             "slots.sidebar"
           ]
         }
-      ]
+      ],
+      "undemoable": {
+        "events.sidebar-resize-end": "A callback has no appearance of its own; the widget tests fire onSidebarResizeEnd at the end of a drag.",
+        "events.update:sidebarSize": "A callback has no appearance of its own; the widget tests fire onSidebarSizeChanged on each move."
+      }
     },
     "KunChatMessageList": {
       "source": "demos/chat_message_list.dart",
@@ -2228,6 +2236,48 @@
           "shows": []
         }
       ]
+    },
+    "KunSplitPane": {
+      "source": "demos/split_pane.dart",
+      "demos": [
+        {
+          "slug": "basic",
+          "title": "List detail",
+          "builder": "splitPaneBasic",
+          "shows": [
+            "props.size",
+            "props.snapPoints",
+            "props.snapThreshold",
+            "slots.start",
+            "slots.end",
+            "events.update:size",
+            "events.resize-end"
+          ]
+        },
+        {
+          "slug": "aside",
+          "title": "Aside",
+          "builder": "splitPaneAside",
+          "shows": [
+            "props.primary",
+            "props.minSize",
+            "props.maxSize"
+          ]
+        },
+        {
+          "slug": "stacked",
+          "title": "Stacked",
+          "builder": "splitPaneStacked",
+          "shows": [
+            "props.stackBelow",
+            "props.showPane"
+          ]
+        }
+      ],
+      "undemoable": {
+        "props.ariaLabel": "An accessible name has no visual form. Every demo uses the locale default, and what is announced is asserted by the widget tests.",
+        "props.step": "A keyboard step has no appearance of its own; the widget tests fire the arrows, Shift, Home and End."
+      }
     },
     "KunSwitch": {
       "source": "demos/switch.dart",

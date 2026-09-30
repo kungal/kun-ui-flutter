@@ -1145,10 +1145,54 @@ const ComponentCoverage _kunChatLayout = ComponentCoverage(
   entries: <CoverageEntry>[
     CoverageEntry(
       section: 'props',
+      contractName: 'resizable',
+      status: CoverageStatus.shown,
+      dartName: 'resizable',
+      shownBy: 'App',
+    ),
+    CoverageEntry(
+      section: 'props',
       contractName: 'showConversation',
       status: CoverageStatus.shown,
       dartName: 'showConversation',
       shownBy: 'App',
+    ),
+    CoverageEntry(
+      section: 'props',
+      contractName: 'sidebarMaxSize',
+      status: CoverageStatus.shown,
+      dartName: 'sidebarMaxSize',
+      shownBy: 'App',
+    ),
+    CoverageEntry(
+      section: 'props',
+      contractName: 'sidebarMinSize',
+      status: CoverageStatus.shown,
+      dartName: 'sidebarMinSize',
+      shownBy: 'App',
+    ),
+    CoverageEntry(
+      section: 'props',
+      contractName: 'sidebarSize',
+      status: CoverageStatus.shown,
+      dartName: 'sidebarSize',
+      shownBy: 'App',
+    ),
+    CoverageEntry(
+      section: 'events',
+      contractName: 'sidebar-resize-end',
+      status: CoverageStatus.noVisualForm,
+      dartName: 'onSidebarResizeEnd',
+      reason:
+          'A callback has no appearance of its own; the widget tests fire onSidebarResizeEnd at the end of a drag.',
+    ),
+    CoverageEntry(
+      section: 'events',
+      contractName: 'update:sidebarSize',
+      status: CoverageStatus.noVisualForm,
+      dartName: 'onSidebarSizeChanged',
+      reason:
+          'A callback has no appearance of its own; the widget tests fire onSidebarSizeChanged on each move.',
     ),
     CoverageEntry(
       section: 'slots',
@@ -3878,6 +3922,116 @@ const ComponentCoverage _kunSkeleton = ComponentCoverage(
 /// The contract coverage page for KunSkeleton.
 Widget kunSkeletonContract(BuildContext context) =>
     const CoveragePage(coverage: _kunSkeleton);
+
+const ComponentCoverage _kunSplitPane = ComponentCoverage(
+  name: 'KunSplitPane',
+  entries: <CoverageEntry>[
+    CoverageEntry(
+      section: 'props',
+      contractName: 'ariaLabel',
+      status: CoverageStatus.noVisualForm,
+      dartName: 'semanticLabel',
+      reason:
+          'An accessible name has no visual form. Every demo uses the locale default, and what is announced is asserted by the widget tests.',
+    ),
+    CoverageEntry(
+      section: 'props',
+      contractName: 'maxSize',
+      status: CoverageStatus.shown,
+      dartName: 'maxSize',
+      shownBy: 'Aside',
+    ),
+    CoverageEntry(
+      section: 'props',
+      contractName: 'minSize',
+      status: CoverageStatus.shown,
+      dartName: 'minSize',
+      shownBy: 'Aside',
+    ),
+    CoverageEntry(
+      section: 'props',
+      contractName: 'primary',
+      status: CoverageStatus.shown,
+      dartName: 'primary',
+      shownBy: 'Aside',
+    ),
+    CoverageEntry(
+      section: 'props',
+      contractName: 'showPane',
+      status: CoverageStatus.shown,
+      dartName: 'showPane',
+      shownBy: 'Stacked',
+    ),
+    CoverageEntry(
+      section: 'props',
+      contractName: 'size',
+      status: CoverageStatus.shown,
+      dartName: 'size',
+      shownBy: 'List detail',
+    ),
+    CoverageEntry(
+      section: 'props',
+      contractName: 'snapPoints',
+      status: CoverageStatus.shown,
+      dartName: 'snapPoints',
+      shownBy: 'List detail',
+    ),
+    CoverageEntry(
+      section: 'props',
+      contractName: 'snapThreshold',
+      status: CoverageStatus.shown,
+      dartName: 'snapThreshold',
+      shownBy: 'List detail',
+    ),
+    CoverageEntry(
+      section: 'props',
+      contractName: 'stackBelow',
+      status: CoverageStatus.shown,
+      dartName: 'stackBelow',
+      shownBy: 'Stacked',
+    ),
+    CoverageEntry(
+      section: 'props',
+      contractName: 'step',
+      status: CoverageStatus.noVisualForm,
+      dartName: 'step',
+      reason:
+          'A keyboard step has no appearance of its own; the widget tests fire the arrows, Shift, Home and End.',
+    ),
+    CoverageEntry(
+      section: 'events',
+      contractName: 'resize-end',
+      status: CoverageStatus.shown,
+      dartName: 'onResizeEnd',
+      shownBy: 'List detail',
+    ),
+    CoverageEntry(
+      section: 'events',
+      contractName: 'update:size',
+      status: CoverageStatus.shown,
+      dartName: 'onSizeChanged',
+      shownBy: 'List detail',
+    ),
+    CoverageEntry(
+      section: 'slots',
+      contractName: 'end',
+      status: CoverageStatus.shown,
+      dartName: 'end',
+      shownBy: 'List detail',
+    ),
+    CoverageEntry(
+      section: 'slots',
+      contractName: 'start',
+      status: CoverageStatus.shown,
+      dartName: 'start',
+      shownBy: 'List detail',
+    ),
+  ],
+);
+
+/// The contract coverage page for KunSplitPane.
+Widget kunSplitPaneContract(BuildContext context) =>
+    const CoveragePage(coverage: _kunSplitPane);
 
 const ComponentCoverage _kunSwitch = ComponentCoverage(
   name: 'KunSwitch',

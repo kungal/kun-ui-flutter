@@ -234,9 +234,16 @@
     "KunChatLayout": {
       "widget": "KunChatLayout",
       "props": {
-        "showConversation": "showConversation"
+        "resizable": "resizable",
+        "showConversation": "showConversation",
+        "sidebarMaxSize": "sidebarMaxSize",
+        "sidebarMinSize": "sidebarMinSize",
+        "sidebarSize": "sidebarSize"
       },
-      "events": {},
+      "events": {
+        "sidebar-resize-end": "onSidebarResizeEnd",
+        "update:sidebarSize": "onSidebarSizeChanged"
+      },
       "slots": {
         "default": "child",
         "empty": "empty",
@@ -840,6 +847,23 @@
       "slots": {
         "default": "child"
       }
+    },
+    "KunSplitPane": {
+      "widget": "KunSplitPane",
+      "props": {
+        "ariaLabel": "semanticLabel",
+        "maxSize": "maxSize",
+        "minSize": "minSize",
+        "primary": "primary",
+        "showPane": "showPane",
+        "size": "size",
+        "snapPoints": "snapPoints",
+        "snapThreshold": "snapThreshold",
+        "stackBelow": "stackBelow",
+        "step": "step"
+      },
+      "events": { "resize-end": "onResizeEnd", "update:size": "onSizeChanged" },
+      "slots": { "end": "end", "start": "start" }
     },
     "KunSwitch": {
       "widget": "KunSwitch",
