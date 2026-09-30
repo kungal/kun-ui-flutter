@@ -181,6 +181,12 @@ KunUIConfigScope(
   padding before the avatar and the gap after it, and the picture stays where
   the web draws it. `KunAvatarSize.side` is the drawn square, for anything
   else that has to match an avatar's size.
+- A dense row of small linked avatars, such as the likers under a rating,
+  grows by that margin per avatar: six `xs` avatars need 288 wide on
+  Android and overflowed a phone in the kungal app. Where the row cannot
+  give each one 48, pass `isNavigation: false` and make the row one target
+  that opens the full list. Do the same for an avatar inside a row that is
+  already a link.
 
   ```dart
   final avatar = KunAvatar(user: reply.user, size: KunAvatarSize.sm);
