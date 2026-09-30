@@ -17,8 +17,12 @@ const List<KunRadioOption<String>> options = <KunRadioOption<String>>[
   KunRadioOption<String>(value: 'max', label: 'Max'),
 ];
 
-Widget wrap(Widget child) => KunTheme(
-      data: KunThemeData.light(),
+Widget wrap(
+  Widget child, {
+  KunTapTargetSize tapTargetSize = KunTapTargetSize.adaptive,
+}) =>
+    KunTheme(
+      data: KunThemeData.light(tapTargetSize: tapTargetSize),
       child: Directionality(
         textDirection: TextDirection.ltr,
         child: Center(child: SizedBox(width: 400, child: child)),
@@ -283,5 +287,82 @@ void main() {
         tester.getSemantics(find.text('Team')).getSemanticsData();
     expect(team.flagsCollection.isEnabled, Tristate.isFalse);
     semantics.dispose();
+  });
+
+  testWidgets('every variant pads the option, not the drawn card',
+      (tester) async {
+    for (final variant in KunRadioVariant.values) {
+      Size? drawn;
+      for (final size in [
+        KunTapTargetSize.padded,
+        KunTapTargetSize.shrinkWrap,
+      ]) {
+        await tester.pumpWidget(
+          wrap(
+            KunRadioGroup<String>(
+              value: null,
+              options: options,
+              variant: variant,
+              onChanged: (_) {},
+            ),
+            tapTargetSize: size,
+          ),
+        );
+        await tester.pumpAndSettle();
+        final free = tester.getSize(option('free'));
+        final mark = tester.getSize(
+          find
+              .descendant(
+                of: option('free'),
+                matching: find.byType(AnimatedContainer),
+              )
+              .first,
+        );
+        if (size == KunTapTargetSize.padded) {
+          expect(free.height, greaterThanOrEqualTo(48), reason: variant.name);
+          expect(free.width, greaterThanOrEqualTo(48), reason: variant.name);
+          drawn = mark;
+        } else {
+          expect(mark, drawn, reason: variant.name);
+        }
+      }
+    }
+  });
+
+  testWidgets('a tap in the band chooses the option', (tester) async {
+    String? value;
+    await tester.pumpWidget(
+      wrap(
+        KunRadioGroup<String>(
+          value: value,
+          options: options,
+          onChanged: (next) => value = next,
+        ),
+      ),
+    );
+    await tester.pumpAndSettle();
+    final drawn = tester.getRect(option('free'));
+    await tester.tapAt(Offset(drawn.center.dx, drawn.top + 2));
+    expect(value, 'free');
+  });
+
+  testWidgets('options meet the Android guideline in every variant',
+      (tester) async {
+    final handle = tester.ensureSemantics();
+    for (final variant in KunRadioVariant.values) {
+      await tester.pumpWidget(
+        wrap(
+          KunRadioGroup<String>(
+            value: null,
+            options: options,
+            variant: variant,
+            onChanged: (_) {},
+          ),
+        ),
+      );
+      await tester.pumpAndSettle();
+      await expectLater(tester, meetsGuideline(androidTapTargetGuideline));
+    }
+    handle.dispose();
   });
 }

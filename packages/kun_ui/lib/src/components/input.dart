@@ -1,3 +1,5 @@
+import 'dart:math' as math;
+
 import 'package:flutter/foundation.dart' show defaultTargetPlatform;
 import 'package:flutter/services.dart' show TextInputAction;
 import 'package:flutter/widgets.dart';
@@ -8,6 +10,7 @@ import '../foundation/control_metrics.dart';
 import '../foundation/design.dart';
 import '../foundation/field_ring.dart';
 import '../foundation/motion.dart';
+import '../foundation/tap_target.dart';
 import '../foundation/text_selection.dart';
 import '../locale/messages.dart';
 import '../theme/theme.dart';
@@ -449,26 +452,15 @@ class _KunInputState extends State<KunInput>
     final danger = KunUIColor.danger.scaleOf(scheme);
     final ringColor = (_invalid ? danger : widget.color.scaleOf(scheme)).solid;
 
-    final trailing = <Widget>[
-      if (widget.suffix != null) widget.suffix!,
-      if (_showClear)
-        _KunInputIconButton(
-          icon: KunIcons.circleX,
-          semanticLabel: messages.input.clear,
-          scheme: scheme,
-          onPressed: _clear,
-        ),
-      if (_showReveal)
-        _KunInputIconButton(
-          icon: _revealed ? KunIcons.eyeOff : KunIcons.eye,
-          semanticLabel:
-              _revealed ? messages.input.hide : messages.input.reveal,
-          scheme: scheme,
-          onPressed: () => setState(() => _revealed = !_revealed),
-        ),
-    ];
-
     final textStyle = metrics.textStyle.copyWith(color: scheme.foreground);
+    const double iconSize = KunSpacing.unit * 4;
+    final double slotWidth =
+        math.max(iconSize, kunMinTapTargetSize(context).width);
+    final bool hasTrailing = widget.suffix != null || _showClear || _showReveal;
+    final double leftPad =
+        widget.prefix != null ? KunSpacing.unit * 3 : metrics.horizontalPadding;
+    final double rightPad =
+        hasTrailing ? KunSpacing.unit * 3 : metrics.horizontalPadding;
 
     final editable = EditableText(
       key: editableTextKey,
@@ -503,86 +495,114 @@ class _KunInputState extends State<KunInput>
 
     final field = Row(
       children: [
+        IgnorePointer(
+          child: Padding(
+            padding: const EdgeInsets.symmetric(vertical: 1),
+            child: Padding(
+              padding: EdgeInsets.symmetric(
+                vertical: metrics.verticalPadding,
+              ),
+              child: SizedBox(width: 0, height: metrics.lineHeight),
+            ),
+          ),
+        ),
+        SizedBox(width: leftPad),
         if (widget.prefix != null) ...[
           widget.prefix!,
-          // web pl-10, less pl-3 and the size-4 icon
           const SizedBox(width: KunSpacing.unit * (10 - 3 - 4)),
         ],
         Expanded(
-          child: Stack(
-            children: [
-              // Emptiness is the controller's, not `widget.value`: composing
-              // text never reaches `onChanged`, so a field holding `ni hao`
-              // mid-pinyin still has an empty `value` and painted its
-              // placeholder under the composing text. Measured on a Pixel 10
-              // Pro with Gboard's inline composing on.
-              if (widget.placeholder?.isNotEmpty ?? false)
-                Positioned.fill(
-                  child: IgnorePointer(
-                    child: ValueListenableBuilder<TextEditingValue>(
-                      valueListenable: _effectiveController,
-                      builder: (context, value, child) =>
-                          value.text.isEmpty ? child! : const SizedBox.shrink(),
-                      child: Align(
-                        alignment: Alignment.centerLeft,
-                        child: Text(
-                          widget.placeholder!,
-                          style: textStyle.copyWith(
-                            color: scheme.neutral.shade400,
+          child: Padding(
+            padding: EdgeInsets.symmetric(vertical: metrics.verticalPadding),
+            child: Stack(
+              children: [
+                // Emptiness is the controller's, not `widget.value`: composing
+                // text never reaches `onChanged`, so a field holding `ni hao`
+                // mid-pinyin still has an empty `value` and painted its
+                // placeholder under the composing text. Measured on a Pixel 10
+                // Pro with Gboard's inline composing on.
+                if (widget.placeholder?.isNotEmpty ?? false)
+                  Positioned.fill(
+                    child: IgnorePointer(
+                      child: ValueListenableBuilder<TextEditingValue>(
+                        valueListenable: _effectiveController,
+                        builder: (context, value, child) => value.text.isEmpty
+                            ? child!
+                            : const SizedBox.shrink(),
+                        child: Align(
+                          alignment: Alignment.centerLeft,
+                          child: Text(
+                            widget.placeholder!,
+                            style: textStyle.copyWith(
+                              color: scheme.neutral.shade400,
+                            ),
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
                           ),
-                          maxLines: 1,
-                          overflow: TextOverflow.ellipsis,
                         ),
                       ),
                     ),
                   ),
-                ),
-              editable,
-            ],
+                editable,
+              ],
+            ),
           ),
         ),
-        if (trailing.isNotEmpty) ...[
-          const SizedBox(width: KunSpacing.unit * 3),
-          for (var i = 0; i < trailing.length; i++) ...[
-            if (i > 0) const SizedBox(width: KunSpacing.unit),
-            trailing[i],
-          ],
-        ],
+        if (hasTrailing) const SizedBox(width: KunSpacing.unit * 3),
+        if (widget.suffix != null) widget.suffix!,
+        if (widget.suffix != null && (_showClear || _showReveal))
+          const SizedBox(width: KunSpacing.unit),
+        if (_showClear)
+          SizedBox(
+            width: slotWidth,
+            height: double.infinity,
+            child: _KunInputIconButton(
+              icon: KunIcons.circleX,
+              semanticLabel: messages.input.clear,
+              scheme: scheme,
+              onPressed: _clear,
+            ),
+          ),
+        if (_showClear && _showReveal) const SizedBox(width: KunSpacing.unit),
+        if (_showReveal)
+          SizedBox(
+            width: slotWidth,
+            height: double.infinity,
+            child: _KunInputIconButton(
+              icon: _revealed ? KunIcons.eyeOff : KunIcons.eye,
+              semanticLabel:
+                  _revealed ? messages.input.hide : messages.input.reveal,
+              scheme: scheme,
+              onPressed: () => setState(() => _revealed = !_revealed),
+            ),
+          ),
+        SizedBox(width: rightPad),
       ],
     );
 
-    Widget box = TweenAnimationBuilder<BoxShadow>(
-      tween: KunFieldRingTween(
-        end: kunFieldRing(ringColor, visible: _focused && !widget.disabled),
-      ),
-      duration: kunMotion(context, KunDurations.fast),
-      curve: KunEasing.standard,
-      builder: (context, ring, child) {
-        return Container(
-          padding: EdgeInsets.fromLTRB(
-            widget.prefix != null
-                ? KunSpacing.unit * 3
-                : metrics.horizontalPadding,
-            metrics.verticalPadding,
-            trailing.isNotEmpty
-                ? KunSpacing.unit * 3
-                : metrics.horizontalPadding,
-            metrics.verticalPadding,
-          ),
-          decoration: BoxDecoration(
-            color: scheme.content1,
-            border: Border.all(
-              color: _invalid ? danger.shade300 : scheme.border,
+    Widget box = KunTapBand(
+      background: TweenAnimationBuilder<BoxShadow>(
+        tween: KunFieldRingTween(
+          end: kunFieldRing(ringColor, visible: _focused && !widget.disabled),
+        ),
+        duration: kunMotion(context, KunDurations.fast),
+        curve: KunEasing.standard,
+        builder: (context, ring, child) {
+          return Container(
+            decoration: BoxDecoration(
+              color: scheme.content1,
+              border: Border.all(
+                color: _invalid ? danger.shade300 : scheme.border,
+              ),
+              borderRadius: radius,
+              boxShadow: [
+                ring,
+                ...KunShadows.sm,
+              ],
             ),
-            borderRadius: radius,
-            boxShadow: [
-              ring,
-              ...KunShadows.sm,
-            ],
-          ),
-          child: child,
-        );
-      },
+          );
+        },
+      ),
       child: field,
     );
 
@@ -680,21 +700,27 @@ class _KunInputIconButtonState extends State<_KunInputIconButton> {
   @override
   Widget build(BuildContext context) {
     return Semantics(
+      container: true,
       button: true,
       label: widget.semanticLabel,
+      onTap: widget.onPressed,
       child: MouseRegion(
         cursor: SystemMouseCursors.click,
         onEnter: (_) => setState(() => _hovered = true),
         onExit: (_) => setState(() => _hovered = false),
         child: GestureDetector(
           behavior: HitTestBehavior.opaque,
+          excludeFromSemantics: true,
           onTap: widget.onPressed,
-          child: Icon(
-            widget.icon,
-            size: KunSpacing.unit * 4,
-            color: _hovered
-                ? widget.scheme.neutral.shade600
-                : widget.scheme.neutral.shade400,
+          child: Align(
+            alignment: AlignmentDirectional.centerEnd,
+            child: Icon(
+              widget.icon,
+              size: KunSpacing.unit * 4,
+              color: _hovered
+                  ? widget.scheme.neutral.shade600
+                  : widget.scheme.neutral.shade400,
+            ),
           ),
         ),
       ),

@@ -13,6 +13,7 @@ import '../foundation/design.dart';
 import '../foundation/focus_outline.dart';
 import '../foundation/motion.dart';
 import '../foundation/outer_shadow.dart';
+import '../foundation/tap_target.dart';
 import '../theme/theme.dart';
 
 /// Visual style of a [KunTab] strip.
@@ -465,7 +466,7 @@ class _KunTabState<T extends KunTabItem> extends State<KunTab<T>>
       }
       return Rect.fromLTWH(
         origin.dx,
-        listObject.size.height - _underlineThickness,
+        origin.dy + tabSize.height - _underlineThickness,
         tabSize.width,
         _underlineThickness,
       );
@@ -810,13 +811,34 @@ class _KunTabState<T extends KunTabItem> extends State<KunTab<T>>
     }
 
     if (framed) {
-      body = Container(
-        padding: const EdgeInsets.all(KunSpacing.unit * 1),
-        decoration: BoxDecoration(
-          color: filled ? scheme.content2.withValues(alpha: 0.3) : null,
-          border: Border.all(color: scheme.border),
-          borderRadius: BorderRadius.circular(KunRadius.lg),
-        ),
+      final BoxDecoration frameDecoration = BoxDecoration(
+        color: filled ? scheme.content2.withValues(alpha: 0.3) : null,
+        border: Border.all(color: scheme.border),
+        borderRadius: BorderRadius.circular(KunRadius.lg),
+      );
+      if (_isVertical) {
+        body = Container(
+          padding: const EdgeInsets.all(KunSpacing.unit * 1),
+          decoration: frameDecoration,
+          child: body,
+        );
+      } else {
+        body = KunTapBand(
+          background: DecoratedBox(decoration: frameDecoration),
+          child: _ExtraMinHeight(
+            extra: (KunSpacing.unit * 1 + 1) * 2,
+            child: Padding(
+              padding: const EdgeInsets.symmetric(
+                horizontal: KunSpacing.unit * 1 + 1,
+              ),
+              child: body,
+            ),
+          ),
+        );
+      }
+    } else if (!_isVertical) {
+      body = KunTapBand(
+        background: const SizedBox.expand(),
         child: body,
       );
     }
@@ -965,18 +987,6 @@ class _KunTabState<T extends KunTabItem> extends State<KunTab<T>>
       tab = Opacity(opacity: 0.5, child: tab);
     }
 
-    tab = GestureDetector(
-      behavior: HitTestBehavior.opaque,
-      excludeFromSemantics: true,
-      onTap: itemEnabled
-          ? () {
-              _focusNodes[index].requestFocus();
-              _select(item);
-            }
-          : null,
-      child: tab,
-    );
-
     tab = MouseRegion(
       cursor: !itemEnabled
           ? SystemMouseCursors.forbidden
@@ -995,22 +1005,36 @@ class _KunTabState<T extends KunTabItem> extends State<KunTab<T>>
       child: tab,
     );
 
-    tab = Semantics(
-      container: true,
-      role: _isNav ? null : SemanticsRole.tab,
-      selected: _isNav ? (selected ? true : null) : selected,
-      enabled: itemEnabled,
-      onTap: itemEnabled ? () => _select(item) : null,
-      child: tab,
-    );
-
-    return KeyedSubtree(
+    tab = KeyedSubtree(
       key: ValueKey<String>('KunTab.${item.value}'),
       child: KeyedSubtree(
         key: _tabKeys[index],
         child: tab,
       ),
     );
+
+    tab = GestureDetector(
+      behavior: HitTestBehavior.opaque,
+      excludeFromSemantics: true,
+      onTap: itemEnabled
+          ? () {
+              _focusNodes[index].requestFocus();
+              _select(item);
+            }
+          : null,
+      child: _isVertical ? tab : Align(child: tab),
+    );
+
+    tab = Semantics(
+      container: true,
+      role: _isNav ? null : SemanticsRole.tab,
+      selected: _isNav ? (selected ? true : null) : selected,
+      enabled: itemEnabled,
+      onTap: itemEnabled ? () => _select(item) : null,
+      child: _isVertical ? KunTapTarget(child: tab) : tab,
+    );
+
+    return tab;
   }
 
   Widget _buildChevron({
@@ -1400,9 +1424,21 @@ class _RenderKunTabRow extends RenderBox
     if (position) {
       double x = 0;
       for (int i = 0; i < n; i++) {
+        Size laid = sizes[i];
+        if ((laid.height - size.height).abs() > 0.5) {
+          laid = layouter(
+            children[i],
+            BoxConstraints(
+              minWidth: widths[i],
+              maxWidth: widths[i],
+              minHeight: size.height,
+              maxHeight: size.height,
+            ),
+          );
+        }
         final _KunTabRowParentData parentData =
             children[i].parentData! as _KunTabRowParentData;
-        parentData.offset = Offset(x, (size.height - sizes[i].height) / 2);
+        parentData.offset = Offset(x, (size.height - laid.height) / 2);
         x += widths[i] + gap;
       }
     }
@@ -1489,4 +1525,43 @@ class _RenderKunTabRow extends RenderBox
   double? computeDistanceToActualBaseline(TextBaseline baseline) {
     return defaultComputeDistanceToHighestActualBaseline(baseline);
   }
+}
+
+class _ExtraMinHeight extends SingleChildRenderObjectWidget {
+  const _ExtraMinHeight({required this.extra, super.child});
+
+  final double extra;
+
+  @override
+  RenderObject createRenderObject(BuildContext context) =>
+      _RenderExtraMinHeight(extra);
+
+  @override
+  void updateRenderObject(
+    BuildContext context,
+    _RenderExtraMinHeight renderObject,
+  ) {
+    renderObject.extra = extra;
+  }
+}
+
+class _RenderExtraMinHeight extends RenderProxyBox {
+  _RenderExtraMinHeight(this._extra);
+
+  double _extra;
+  set extra(double value) {
+    if (_extra == value) {
+      return;
+    }
+    _extra = value;
+    markNeedsLayout();
+  }
+
+  @override
+  double computeMinIntrinsicHeight(double width) =>
+      super.computeMinIntrinsicHeight(width) + _extra;
+
+  @override
+  double computeMaxIntrinsicHeight(double width) =>
+      super.computeMaxIntrinsicHeight(width) + _extra;
 }

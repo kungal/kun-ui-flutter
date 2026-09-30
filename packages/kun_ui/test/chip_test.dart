@@ -3,8 +3,12 @@ import 'package:flutter/widgets.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:kun_ui/kun_ui.dart';
 
-Widget wrap(Widget child) => KunTheme(
-      data: KunThemeData.light(),
+Widget wrap(
+  Widget child, {
+  KunTapTargetSize tapTargetSize = KunTapTargetSize.adaptive,
+}) =>
+    KunTheme(
+      data: KunThemeData.light(tapTargetSize: tapTargetSize),
       child: Directionality(
         textDirection: TextDirection.ltr,
         child: Center(child: child),
@@ -82,6 +86,7 @@ void main() {
   });
 
   testWidgets('closable renders the x and fires onClose', (tester) async {
+    final semantics = tester.ensureSemantics();
     var closes = 0;
     await tester.pumpWidget(
       wrap(
@@ -93,8 +98,9 @@ void main() {
       ),
     );
     expect(find.byIcon(KunIcons.x), findsOneWidget);
-    await tester.tap(find.byIcon(KunIcons.x));
+    await tester.tap(find.bySemanticsLabel(KunMessages.zhCN.chip.remove));
     expect(closes, 1);
+    semantics.dispose();
   });
 
   testWidgets('no x without closable', (tester) async {
@@ -180,5 +186,88 @@ void main() {
     expect(closes, 1);
     await tester.sendKeyEvent(LogicalKeyboardKey.enter);
     expect(closes, 2);
+  });
+
+  testWidgets('closable pads height and keeps the glyph', (tester) async {
+    final handle = tester.ensureSemantics();
+    Offset? glyphFromRight;
+    Size? drawn;
+    for (final size in [
+      KunTapTargetSize.padded,
+      KunTapTargetSize.shrinkWrap,
+    ]) {
+      await tester.pumpWidget(
+        wrap(
+          KunChip(
+            size: KunUISize.md,
+            closable: true,
+            onClose: () {},
+            child: const Text('tag'),
+          ),
+          tapTargetSize: size,
+        ),
+      );
+      final chip = tester.getRect(find.byType(KunChip));
+      final glyph = tester.getRect(find.byIcon(KunIcons.x));
+      final box = tester.getSize(
+        find.descendant(
+          of: find.byType(KunChip),
+          matching: find.byType(DecoratedBox),
+        ),
+      );
+      if (size == KunTapTargetSize.padded) {
+        expect(chip.height, 48);
+        expect(
+          tester
+              .getSemantics(find.bySemanticsLabel(KunMessages.zhCN.chip.remove))
+              .rect
+              .shortestSide,
+          greaterThanOrEqualTo(48),
+        );
+        drawn = box;
+        glyphFromRight =
+            Offset(chip.right - glyph.right, glyph.center.dy - chip.center.dy);
+      } else {
+        expect(chip.height, 30);
+        expect(box, drawn);
+        expect(
+          Offset(chip.right - glyph.right, glyph.center.dy - chip.center.dy),
+          glyphFromRight,
+        );
+      }
+    }
+    handle.dispose();
+  });
+
+  testWidgets('a tap in the band above the × closes the chip', (tester) async {
+    var closes = 0;
+    await tester.pumpWidget(
+      wrap(
+        KunChip(
+          closable: true,
+          onClose: () => closes++,
+          child: const Text('tag'),
+        ),
+      ),
+    );
+    final glyph = tester.getRect(find.byIcon(KunIcons.x));
+    final chip = tester.getRect(find.byType(KunChip));
+    await tester.tapAt(Offset(glyph.center.dx, chip.top + 2));
+    expect(closes, 1);
+  });
+
+  testWidgets('a closable chip meets the Android guideline', (tester) async {
+    final handle = tester.ensureSemantics();
+    await tester.pumpWidget(
+      wrap(
+        KunChip(
+          closable: true,
+          onClose: () {},
+          child: const Text('a longer tag'),
+        ),
+      ),
+    );
+    await expectLater(tester, meetsGuideline(androidTapTargetGuideline));
+    handle.dispose();
   });
 }

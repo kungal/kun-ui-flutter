@@ -7,6 +7,7 @@ import '../foundation/design.dart';
 import '../foundation/field_ring.dart';
 import '../foundation/motion.dart';
 import '../foundation/selection_metrics.dart';
+import '../foundation/tap_target.dart';
 import '../theme/theme.dart';
 
 /// One choice in a [KunRadioGroup].
@@ -393,6 +394,7 @@ class _KunRadioItemState<T> extends State<_KunRadioItem<T>> {
     };
 
     return Semantics(
+      container: true,
       inMutuallyExclusiveGroup: true,
       checked: chosen,
       enabled: !disabled,
@@ -401,24 +403,28 @@ class _KunRadioItemState<T> extends State<_KunRadioItem<T>> {
       onTap: disabled
           ? null
           : () => widget.state._select(widget.option, widget.index),
-      child: ExcludeSemantics(
-        child: Focus(
-          focusNode: widget.focusNode,
-          canRequestFocus: !disabled,
-          skipTraversal: !widget.tabbable,
-          onKeyEvent: (FocusNode node, KeyEvent event) =>
-              widget.state._onKey(event, widget.index),
-          child: MouseRegion(
-            cursor:
-                disabled ? SystemMouseCursors.basic : SystemMouseCursors.click,
-            onEnter: (_) => setState(() => _hovered = true),
-            onExit: (_) => setState(() => _hovered = false),
-            child: GestureDetector(
-              behavior: HitTestBehavior.opaque,
-              onTap: disabled
-                  ? null
-                  : () => widget.state._select(widget.option, widget.index),
-              child: Opacity(opacity: disabled ? 0.5 : 1, child: body),
+      child: KunTapTarget(
+        child: ExcludeSemantics(
+          child: Focus(
+            focusNode: widget.focusNode,
+            canRequestFocus: !disabled,
+            skipTraversal: !widget.tabbable,
+            onKeyEvent: (FocusNode node, KeyEvent event) =>
+                widget.state._onKey(event, widget.index),
+            child: MouseRegion(
+              cursor: disabled
+                  ? SystemMouseCursors.basic
+                  : SystemMouseCursors.click,
+              onEnter: (_) => setState(() => _hovered = true),
+              onExit: (_) => setState(() => _hovered = false),
+              child: GestureDetector(
+                behavior: HitTestBehavior.opaque,
+                excludeFromSemantics: true,
+                onTap: disabled
+                    ? null
+                    : () => widget.state._select(widget.option, widget.index),
+                child: Opacity(opacity: disabled ? 0.5 : 1, child: body),
+              ),
             ),
           ),
         ),

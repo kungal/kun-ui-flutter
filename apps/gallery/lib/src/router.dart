@@ -65,8 +65,14 @@ class GalleryRouterDelegate extends RouterDelegate<GalleryRoute>
   @override
   Widget build(BuildContext context) {
     final KunThemeData theme = _route.theme == GalleryTheme.dark
-        ? KunThemeData.dark(rounded: _route.rounded)
-        : KunThemeData.light(rounded: _route.rounded);
+        ? KunThemeData.dark(
+            rounded: _route.rounded,
+            tapTargetSize: _route.tapTarget ?? KunTapTargetSize.adaptive,
+          )
+        : KunThemeData.light(
+            rounded: _route.rounded,
+            tapTargetSize: _route.tapTarget ?? KunTapTargetSize.adaptive,
+          );
     final Widget page;
     if (_route.isIndex) {
       page = GalleryIndex(route: _route);

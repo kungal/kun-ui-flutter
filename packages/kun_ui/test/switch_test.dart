@@ -1,10 +1,15 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter/widgets.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:kun_ui/kun_ui.dart';
 
-Widget wrap(Widget child) => KunTheme(
-      data: KunThemeData.light(),
+Widget wrap(
+  Widget child, {
+  KunTapTargetSize tapTargetSize = KunTapTargetSize.adaptive,
+}) =>
+    KunTheme(
+      data: KunThemeData.light(tapTargetSize: tapTargetSize),
       child: Directionality(
         textDirection: TextDirection.ltr,
         child: Center(child: child),
@@ -416,5 +421,80 @@ void main() {
       ),
     );
     semantics.dispose();
+  });
+
+  testWidgets('padded grows the layout box, not the track', (tester) async {
+    await tester.pumpWidget(
+      wrap(
+        KunSwitch(value: true, onChanged: (_) {}),
+        tapTargetSize: KunTapTargetSize.padded,
+      ),
+    );
+    await tester.pumpAndSettle();
+    expect(tester.getSize(trackFinder), const Size(44, 24));
+    expect(tester.getSize(find.byType(KunSwitch)), const Size.square(48));
+    expect(
+      tester.getCenter(trackFinder),
+      tester.getCenter(find.byType(KunSwitch)),
+    );
+
+    await tester.pumpWidget(
+      wrap(
+        KunSwitch(value: true, onChanged: (_) {}),
+        tapTargetSize: KunTapTargetSize.shrinkWrap,
+      ),
+    );
+    await tester.pumpAndSettle();
+    expect(tester.getSize(find.byType(KunSwitch)), const Size(44, 24));
+  });
+
+  testWidgets('a tap in the band toggles the switch', (tester) async {
+    var value = false;
+    await tester.pumpWidget(
+      wrap(
+        KunSwitch(
+          value: value,
+          onChanged: (next) => value = next,
+        ),
+      ),
+    );
+    final drawn = tester.getRect(trackFinder);
+    await tester.tapAt(Offset(drawn.center.dx, drawn.top - 3));
+    expect(value, isTrue);
+  });
+
+  testWidgets('the switch meets the Android and iOS guidelines',
+      (tester) async {
+    final handle = tester.ensureSemantics();
+    await tester.pumpWidget(
+      wrap(
+        Wrap(
+          spacing: 16,
+          runSpacing: 16,
+          children: [
+            for (final size in KunUISize.values)
+              KunSwitch(
+                value: false,
+                size: size,
+                label: size.name,
+                onChanged: (_) {},
+              ),
+          ],
+        ),
+      ),
+    );
+    await expectLater(tester, meetsGuideline(androidTapTargetGuideline));
+
+    debugDefaultTargetPlatformOverride = TargetPlatform.iOS;
+    await tester.pumpWidget(
+      wrap(
+        KunSwitch(value: false, label: 'Notify', onChanged: (_) {}),
+        tapTargetSize: KunTapTargetSize.padded,
+      ),
+    );
+    expect(tester.getSize(find.byType(KunSwitch)).shortestSide, 44);
+    await expectLater(tester, meetsGuideline(iOSTapTargetGuideline));
+    debugDefaultTargetPlatformOverride = null;
+    handle.dispose();
   });
 }

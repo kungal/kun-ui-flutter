@@ -75,34 +75,49 @@ class _KunDatePickerTrigger extends StatelessWidget {
       ),
     );
 
-    Widget box = TweenAnimationBuilder<BoxShadow>(
-      tween: KunFieldRingTween(
-        end: kunFieldRing(ringScale.solid, visible: state._showTriggerRing),
+    final Size minTap = kunMinTapTargetSize(context);
+    final double slotWidth = math.max(em, minTap.width);
+    final double hPad = metrics.horizontalPadding;
+
+    Widget box = KunTapBand(
+      background: TweenAnimationBuilder<BoxShadow>(
+        tween: KunFieldRingTween(
+          end: kunFieldRing(ringScale.solid, visible: state._showTriggerRing),
+        ),
+        duration: kunMotion(context, KunDefaultTransition.duration),
+        curve: KunDefaultTransition.curve,
+        builder: (BuildContext context, BoxShadow ring, Widget? child) {
+          return Container(
+            key: const ValueKey<String>('KunDatePicker.trigger'),
+            width: widget.fullWidth ? double.infinity : null,
+            decoration: BoxDecoration(
+              color: scheme.content1,
+              border: Border.all(color: borderColor),
+              borderRadius: radius,
+              boxShadow: <BoxShadow>[
+                ring,
+                ...KunShadows.sm,
+              ],
+            ),
+          );
+        },
       ),
-      duration: kunMotion(context, KunDefaultTransition.duration),
-      curve: KunDefaultTransition.curve,
-      builder: (BuildContext context, BoxShadow ring, Widget? child) {
-        return Container(
-          key: const ValueKey<String>('KunDatePicker.trigger'),
-          width: widget.fullWidth ? double.infinity : null,
-          padding: metrics.padding,
-          decoration: BoxDecoration(
-            color: scheme.content1,
-            border: Border.all(color: borderColor),
-            borderRadius: radius,
-            boxShadow: <BoxShadow>[
-              ring,
-              ...KunShadows.sm,
-            ],
-          ),
-          child: child,
-        );
-      },
       child: Row(
         mainAxisSize: widget.fullWidth ? MainAxisSize.max : MainAxisSize.min,
         crossAxisAlignment: CrossAxisAlignment.center,
         spacing: KunSpacing.unit * 2,
         children: [
+          IgnorePointer(
+            child: Padding(
+              padding: const EdgeInsets.symmetric(vertical: 1),
+              child: Padding(
+                padding:
+                    EdgeInsets.symmetric(vertical: metrics.verticalPadding),
+                child: SizedBox(width: 0, height: metrics.lineHeight),
+              ),
+            ),
+          ),
+          SizedBox(width: hPad),
           if (widget.icon != null)
             Icon(
               widget.icon,
@@ -136,7 +151,17 @@ class _KunDatePickerTrigger extends StatelessWidget {
               onCollapse: widget.disabled || !state._isOpen
                   ? null
                   : () => state._close(),
-              child: ExcludeSemantics(child: content),
+              child: ConstrainedBox(
+                constraints: BoxConstraints(minWidth: minTap.width),
+                child: SizedBox(
+                  height: double.infinity,
+                  child: Align(
+                    alignment: AlignmentDirectional.centerStart,
+                    widthFactor: widget.fullWidth ? null : 1,
+                    child: ExcludeSemantics(child: content),
+                  ),
+                ),
+              ),
             ),
           ),
           Row(
@@ -144,16 +169,21 @@ class _KunDatePickerTrigger extends StatelessWidget {
             spacing: KunSpacing.unit * 2,
             children: [
               if (showClear)
-                ExcludeSemantics(
-                  child: KeyedSubtree(
-                    key: state._clearKey,
-                    child: Icon(
-                      KunIcons.x,
-                      key: const ValueKey<String>('KunDatePicker.clear'),
-                      size: em,
-                      color: state._clearHovered
-                          ? scheme.neutral.shade800
-                          : scheme.neutral.shade500,
+                SizedBox(
+                  key: state._clearKey,
+                  width: slotWidth,
+                  height: double.infinity,
+                  child: ExcludeSemantics(
+                    child: Align(
+                      alignment: AlignmentDirectional.centerEnd,
+                      child: Icon(
+                        KunIcons.x,
+                        key: const ValueKey<String>('KunDatePicker.clear'),
+                        size: em,
+                        color: state._clearHovered
+                            ? scheme.neutral.shade800
+                            : scheme.neutral.shade500,
+                      ),
                     ),
                   ),
                 ),
@@ -166,6 +196,7 @@ class _KunDatePickerTrigger extends StatelessWidget {
               ),
             ],
           ),
+          SizedBox(width: hPad),
         ],
       ),
     );

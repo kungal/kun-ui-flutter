@@ -4,6 +4,7 @@ import 'package:kun_ui_tokens/kun_ui_tokens.dart';
 import '../foundation/design.dart';
 import '../foundation/field_ring.dart';
 import '../foundation/motion.dart';
+import '../foundation/tap_target.dart';
 import '../theme/theme.dart';
 
 class _KunSwitchSize {
@@ -184,43 +185,45 @@ class _KunSwitchState extends State<KunSwitch> {
         toggled: widget.value,
         enabled: !widget.disabled,
         onTap: _canToggle ? _toggle : null,
-        child: FocusableActionDetector(
-          enabled: _canToggle,
-          onShowFocusHighlight: (value) => setState(() => _focused = value),
-          actions: {
-            ActivateIntent: CallbackAction<ActivateIntent>(
-              onInvoke: (_) {
-                _toggle();
-                return null;
-              },
-            ),
-          },
-          child: MouseRegion(
-            cursor: widget.disabled
-                ? SystemMouseCursors.forbidden
-                : (_canToggle ? SystemMouseCursors.click : MouseCursor.defer),
-            child: GestureDetector(
-              behavior: HitTestBehavior.opaque,
-              excludeFromSemantics: true,
-              onTap: _canToggle ? _toggle : null,
-              child: Row(
-                mainAxisSize: MainAxisSize.min,
-                crossAxisAlignment: CrossAxisAlignment.center,
-                children: [
-                  track,
-                  if (widget.label?.isNotEmpty ?? false) ...[
-                    SizedBox(width: sizeRow.gap),
-                    Text(
-                      widget.label!,
-                      style: sizeRow.text.copyWith(
-                        fontWeight: KunFontWeights.medium,
-                        color: widget.disabled
-                            ? scheme.neutral.shade400
-                            : scheme.foreground,
+        child: KunTapTarget(
+          child: FocusableActionDetector(
+            enabled: _canToggle,
+            onShowFocusHighlight: (value) => setState(() => _focused = value),
+            actions: {
+              ActivateIntent: CallbackAction<ActivateIntent>(
+                onInvoke: (_) {
+                  _toggle();
+                  return null;
+                },
+              ),
+            },
+            child: MouseRegion(
+              cursor: widget.disabled
+                  ? SystemMouseCursors.forbidden
+                  : (_canToggle ? SystemMouseCursors.click : MouseCursor.defer),
+              child: GestureDetector(
+                behavior: HitTestBehavior.opaque,
+                excludeFromSemantics: true,
+                onTap: _canToggle ? _toggle : null,
+                child: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  crossAxisAlignment: CrossAxisAlignment.center,
+                  children: [
+                    track,
+                    if (widget.label?.isNotEmpty ?? false) ...[
+                      SizedBox(width: sizeRow.gap),
+                      Text(
+                        widget.label!,
+                        style: sizeRow.text.copyWith(
+                          fontWeight: KunFontWeights.medium,
+                          color: widget.disabled
+                              ? scheme.neutral.shade400
+                              : scheme.foreground,
+                        ),
                       ),
-                    ),
+                    ],
                   ],
-                ],
+                ),
               ),
             ),
           ),

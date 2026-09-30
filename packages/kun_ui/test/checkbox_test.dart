@@ -1,13 +1,18 @@
 import 'dart:ui' show CheckedState, Tristate;
 
+import 'package:flutter/foundation.dart';
 import 'package:flutter/rendering.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter/widgets.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:kun_ui/kun_ui.dart';
 
-Widget wrap(Widget child) => KunTheme(
-      data: KunThemeData.light(),
+Widget wrap(
+  Widget child, {
+  KunTapTargetSize tapTargetSize = KunTapTargetSize.adaptive,
+}) =>
+    KunTheme(
+      data: KunThemeData.light(tapTargetSize: tapTargetSize),
       child: Directionality(
         textDirection: TextDirection.ltr,
         child: Center(child: child),
@@ -238,5 +243,82 @@ void main() {
     expect(data.flagsCollection.isEnabled, Tristate.isTrue);
     expect(data.label, 'Remember me');
     semantics.dispose();
+  });
+
+  testWidgets('padded grows the layout box, not the mark', (tester) async {
+    await tester.pumpWidget(
+      wrap(
+        KunCheckBox(onChanged: (_) {}),
+        tapTargetSize: KunTapTargetSize.padded,
+      ),
+    );
+    await tester.pumpAndSettle();
+    expect(tester.getSize(box),
+        Size.square(KunSelectionMetrics.of(KunUISize.md).box));
+    expect(tester.getSize(find.byType(KunCheckBox)), const Size.square(48));
+
+    await tester.pumpWidget(
+      wrap(
+        KunCheckBox(onChanged: (_) {}),
+        tapTargetSize: KunTapTargetSize.shrinkWrap,
+      ),
+    );
+    await tester.pumpAndSettle();
+    expect(
+      tester.getSize(find.byType(KunCheckBox)),
+      Size.square(KunSelectionMetrics.of(KunUISize.md).box),
+    );
+  });
+
+  testWidgets('a tap in the band toggles the checkbox', (tester) async {
+    var value = false;
+    await tester.pumpWidget(
+      wrap(
+        KunCheckBox(
+          value: value,
+          onChanged: (next) => value = next,
+        ),
+      ),
+    );
+    await tester.pumpAndSettle();
+    final drawn = tester.getRect(box);
+    await tester.tapAt(Offset(drawn.center.dx, drawn.top - 3));
+    expect(value, isTrue);
+  });
+
+  testWidgets('the checkbox meets the Android and iOS guidelines',
+      (tester) async {
+    final handle = tester.ensureSemantics();
+    await tester.pumpWidget(
+      wrap(
+        Wrap(
+          spacing: 16,
+          runSpacing: 16,
+          children: [
+            for (final size in KunUISize.values)
+              KunCheckBox(
+                size: size,
+                label: size.name,
+                onChanged: (_) {},
+              ),
+          ],
+        ),
+      ),
+    );
+    await tester.pumpAndSettle();
+    await expectLater(tester, meetsGuideline(androidTapTargetGuideline));
+
+    debugDefaultTargetPlatformOverride = TargetPlatform.iOS;
+    await tester.pumpWidget(
+      wrap(
+        KunCheckBox(label: 'Remember me', onChanged: (_) {}),
+        tapTargetSize: KunTapTargetSize.padded,
+      ),
+    );
+    await tester.pumpAndSettle();
+    expect(tester.getSize(find.byType(KunCheckBox)).height, 44);
+    await expectLater(tester, meetsGuideline(iOSTapTargetGuideline));
+    debugDefaultTargetPlatformOverride = null;
+    handle.dispose();
   });
 }

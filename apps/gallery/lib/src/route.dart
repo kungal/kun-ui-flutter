@@ -22,6 +22,7 @@ class GalleryRoute {
     this.theme = GalleryTheme.light,
     this.lang = KunMessages.zhCN,
     this.rounded = KunUIRounded.md,
+    this.tapTarget,
   });
 
   /// Component slug (`kunbutton`), or null on the index.
@@ -41,6 +42,9 @@ class GalleryRoute {
 
   /// The theme-wide corner radius the page's [KunThemeData] is built with.
   final KunUIRounded rounded;
+
+  /// Overrides [KunThemeData.tapTargetSize]. Null keeps the theme default.
+  final KunTapTargetSize? tapTarget;
 
   /// Whether this address is the index (`#/`).
   bool get isIndex => component == null && demo == null && extra.isEmpty;
@@ -74,11 +78,22 @@ class GalleryRoute {
       'full' => KunUIRounded.full,
       _ => KunUIRounded.md,
     };
+    final KunTapTargetSize? tapTarget =
+        switch (source.queryParameters['tapTarget']) {
+      'padded' => KunTapTargetSize.padded,
+      'shrinkWrap' => KunTapTargetSize.shrinkWrap,
+      _ => null,
+    };
     final List<String> segments = source.pathSegments
         .where((String segment) => segment.isNotEmpty)
         .toList();
     if (segments.isEmpty) {
-      return GalleryRoute(theme: theme, lang: lang, rounded: rounded);
+      return GalleryRoute(
+        theme: theme,
+        lang: lang,
+        rounded: rounded,
+        tapTarget: tapTarget,
+      );
     }
     return GalleryRoute(
       component: segments[0],
@@ -87,6 +102,7 @@ class GalleryRoute {
       theme: theme,
       lang: lang,
       rounded: rounded,
+      tapTarget: tapTarget,
     );
   }
 
@@ -102,6 +118,10 @@ class GalleryRoute {
     if (theme == GalleryTheme.dark) query['theme'] = 'dark';
     if (lang.code != 'zh-CN') query['lang'] = lang.code;
     if (rounded != KunUIRounded.md) query['rounded'] = rounded.name;
+    if (tapTarget == KunTapTargetSize.padded) query['tapTarget'] = 'padded';
+    if (tapTarget == KunTapTargetSize.shrinkWrap) {
+      query['tapTarget'] = 'shrinkWrap';
+    }
     return Uri(
       path: path,
       queryParameters: query.isEmpty ? null : query,
@@ -114,6 +134,7 @@ class GalleryRoute {
     GalleryTheme? theme,
     KunMessages? lang,
     KunUIRounded? rounded,
+    KunTapTargetSize? tapTarget,
   }) =>
       GalleryRoute(
         component: component,
@@ -122,6 +143,7 @@ class GalleryRoute {
         theme: theme ?? this.theme,
         lang: lang ?? this.lang,
         rounded: rounded ?? this.rounded,
+        tapTarget: tapTarget ?? this.tapTarget,
       );
 
   @override
@@ -135,7 +157,8 @@ class GalleryRoute {
       listEquals(other.extra, extra) &&
       other.theme == theme &&
       other.lang.code == lang.code &&
-      other.rounded == rounded;
+      other.rounded == rounded &&
+      other.tapTarget == tapTarget;
 
   @override
   int get hashCode => Object.hash(
@@ -145,5 +168,6 @@ class GalleryRoute {
         theme,
         lang.code,
         rounded,
+        tapTarget,
       );
 }

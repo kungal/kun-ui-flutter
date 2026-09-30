@@ -8,8 +8,6 @@ import 'package:kun_ui_gallery/src/registry.g.dart';
 /// Components the touch-target sweep has not reached yet. Each one leaves
 /// this set in the change that pads it.
 const Set<String> pending = <String>{
-  'kunautocomplete',
-  'kunbadge',
   'kunchatbubble',
   'kunchatcomposer',
   'kunchatheader',
@@ -18,22 +16,13 @@ const Set<String> pending = <String>{
   'kunchatpinnedbar',
   'kunchatreactionpicker',
   'kunchattext',
-  'kuncheckbox',
-  'kuncheckboxgroup',
-  'kunchip',
-  'kundatepicker',
-  'kuninput',
-  'kunloading',
-  'kunradiogroup',
-  'kunreaction',
-  'kunselect',
-  'kunswitch',
-  'kuntab',
-  'kuntooltip',
 };
 
 /// Demos that stay below the minimum by decision, with the reason.
-const Map<String, String> exempt = <String, String>{};
+const Map<String, String> exempt = <String, String>{
+  'kuntab/align':
+      'items measured 31 wide; widening them would change the drawn tab strip',
+};
 
 void main() {
   for (final GalleryComponent component in galleryComponents) {

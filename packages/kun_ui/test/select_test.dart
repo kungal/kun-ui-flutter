@@ -7,8 +7,11 @@ import 'package:flutter/widgets.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:kun_ui/kun_ui.dart';
 import 'package:kun_ui/src/foundation/dismiss_layers.dart';
+import 'package:kun_ui/src/foundation/tap_target.dart';
 
 Finder get trigger => find.byKey(const ValueKey<String>('KunSelect.trigger'));
+Finder get triggerLayout =>
+    find.ancestor(of: trigger, matching: find.byType(KunTapBand));
 Finder get popup => find.byKey(const ValueKey<String>('KunSelect.popup'));
 Finder get popupFade =>
     find.byKey(const ValueKey<String>('KunSelect.popupFade'));
@@ -91,7 +94,7 @@ TextStyle resolvedOf(WidgetTester tester, String text) {
 }
 
 Future<void> openByTap(WidgetTester tester) async {
-  await tester.tap(trigger);
+  await tester.tap(chevron);
   await tester.pump();
   await tester.pump(KunDurations.base);
 }
@@ -419,17 +422,17 @@ void main() {
       ),
     );
     expect(popup, findsNothing);
-    await tester.tap(trigger);
+    await tester.tap(triggerLayout);
     await tester.pump();
     await tester.pump(KunDurations.base);
     expect(popup, findsOneWidget);
-    await tester.tap(trigger);
+    await tester.tap(triggerLayout);
     await tester.pump();
     await tester.pump(KunDurations.exit);
     await tester.pump();
     expect(popup, findsNothing);
 
-    await tester.tap(trigger);
+    await tester.tap(triggerLayout);
     await tester.pump();
     await tester.pump(KunDurations.base);
     expect(
@@ -1244,7 +1247,7 @@ void main() {
 
     await tester.enterText(find.byType(EditableText), 'zzz');
     await tester.pump();
-    await tester.tap(trigger);
+    await tester.tap(triggerLayout);
     await tester.pumpAndSettle();
     final int afterClose = debounceKey.currentState!.searches.length;
     await tester.pump(const Duration(milliseconds: 300));
@@ -1284,7 +1287,7 @@ void main() {
         ),
       ),
     );
-    await tester.tap(trigger);
+    await tester.tap(triggerLayout);
     await tester.pump();
     await tester.pump(KunDurations.base);
     expect(find.text('Nothing here'), findsOneWidget);
@@ -1354,7 +1357,7 @@ void main() {
       ),
     );
     await openByTap(tester);
-    final Rect triggerRect = tester.getRect(trigger);
+    final Rect triggerRect = tester.getRect(triggerLayout);
     final Rect popupRect = tester.getRect(popup);
     expect(popupRect.left, closeTo(triggerRect.left, 0.5));
     expect(popupRect.top, closeTo(triggerRect.bottom + 4, 0.5));
@@ -1375,7 +1378,7 @@ void main() {
       ),
     );
     await openByTap(tester);
-    final Rect lowTrigger = tester.getRect(trigger);
+    final Rect lowTrigger = tester.getRect(triggerLayout);
     final Rect flipped = tester.getRect(popup);
     expect(flipped.bottom, closeTo(lowTrigger.top - 4, 1));
 
@@ -1441,7 +1444,7 @@ void main() {
     );
     await openByTap(tester);
     expect(tester.getRect(popup).width,
-        greaterThan(tester.getRect(trigger).width));
+        greaterThan(tester.getRect(triggerLayout).width));
 
     setView(tester, const Size(360, 600));
     await tester.pumpWidget(
@@ -1477,7 +1480,7 @@ void main() {
     );
     await openByTap(tester);
     expect(tester.getRect(popup).bottom,
-        lessThanOrEqualTo(tester.getRect(trigger).top + 1));
+        lessThanOrEqualTo(tester.getRect(triggerLayout).top + 1));
 
     tester.view.viewInsets = FakeViewPadding.zero;
     final ScrollController page = ScrollController();
@@ -1504,11 +1507,11 @@ void main() {
     );
     await openByTap(tester);
     final double gap =
-        tester.getRect(popup).top - tester.getRect(trigger).bottom;
+        tester.getRect(popup).top - tester.getRect(triggerLayout).bottom;
     page.jumpTo(40);
     await tester.pump();
     expect(
-      tester.getRect(popup).top - tester.getRect(trigger).bottom,
+      tester.getRect(popup).top - tester.getRect(triggerLayout).bottom,
       closeTo(gap, 1),
     );
   });
@@ -1713,7 +1716,7 @@ void main() {
         ),
       ),
     );
-    await tester.tap(trigger);
+    await tester.tap(triggerLayout);
     await tester.pump();
     await tester.pump(KunDurations.base ~/ 2);
     final FadeTransition fade = tester.widget<FadeTransition>(popupFade);
@@ -1736,7 +1739,7 @@ void main() {
         ),
       ),
     );
-    await tester.tap(trigger);
+    await tester.tap(triggerLayout);
     await tester.pump();
     await tester.pump();
     await tester.pump(KunDurations.base ~/ 2);
@@ -1746,7 +1749,7 @@ void main() {
     );
     await tester.pumpAndSettle();
 
-    await tester.tap(trigger);
+    await tester.tap(triggerLayout);
     await tester.pump();
     await tester.pump(KunDurations.exit ~/ 2);
     expect(popup, findsOneWidget);
@@ -1769,11 +1772,11 @@ void main() {
         },
       ),
     );
-    await tester.tap(trigger);
+    await tester.tap(triggerLayout);
     await tester.pump();
     expect(tester.widget<FadeTransition>(popupFade).opacity.value, 1);
     expect(tester.widget<Transform>(popupScale).transform.storage[0], 1);
-    await tester.tap(trigger);
+    await tester.tap(triggerLayout);
     await tester.pump();
     await tester.pump();
     expect(popup, findsNothing);
@@ -1802,7 +1805,7 @@ void main() {
     await tester.pumpAndSettle();
     expect(
         find.byKey(const ValueKey<String>('KunModal.panel')), findsOneWidget);
-    await tester.tap(trigger);
+    await tester.tap(triggerLayout);
     await tester.pumpAndSettle();
     expect(popup, findsOneWidget);
     expect(
@@ -1819,7 +1822,7 @@ void main() {
     expect(
         find.byKey(const ValueKey<String>('KunModal.panel')), findsOneWidget);
 
-    await tester.tap(trigger);
+    await tester.tap(triggerLayout);
     await tester.pumpAndSettle();
     await tester.sendKeyEvent(LogicalKeyboardKey.escape);
     await tester.pumpAndSettle();
@@ -1832,7 +1835,7 @@ void main() {
 
     await tester.tap(find.text('Open'));
     await tester.pumpAndSettle();
-    await tester.tap(trigger);
+    await tester.tap(triggerLayout);
     await tester.pumpAndSettle();
     expect(popup, findsOneWidget);
     await tester.sendKeyEvent(LogicalKeyboardKey.tab);
@@ -2116,7 +2119,7 @@ void main() {
       top: 16,
       options: two,
     );
-    final double triggerH = tester.getRect(trigger).height;
+    final double triggerH = tester.getRect(triggerLayout).height;
     await openByTap(tester);
     final double h = tester.getRect(popup).height;
     expect(h, lessThan(150));
@@ -2124,7 +2127,7 @@ void main() {
     final double fitViewH = 400 + 4 + triggerH + 4 + 150;
     await pumpPlaced(view: Size(800, fitViewH), top: 404, options: two);
     await openByTap(tester);
-    final Rect fitTrigger = tester.getRect(trigger);
+    final Rect fitTrigger = tester.getRect(triggerLayout);
     final Rect fitPopup = tester.getRect(popup);
     final double fitBelow = fitViewH - fitTrigger.bottom - 4;
     final double fitAbove = fitTrigger.top - 4;
@@ -2139,7 +2142,7 @@ void main() {
       options: two,
     );
     await openByTap(tester);
-    final Rect onlyTrigger = tester.getRect(trigger);
+    final Rect onlyTrigger = tester.getRect(triggerLayout);
     final Rect onlyPopup = tester.getRect(popup);
     expect(h, greaterThan((onlyAboveViewH - onlyTrigger.bottom - 4) - 8));
     expect(onlyPopup.bottom, closeTo(onlyTrigger.top - 4, 1));
@@ -2150,7 +2153,7 @@ void main() {
       options: two,
     );
     await openByTap(tester);
-    final Rect bandTrigger = tester.getRect(trigger);
+    final Rect bandTrigger = tester.getRect(triggerLayout);
     final Rect bandPopup = tester.getRect(popup);
     final double bandBelow =
         (400 + 4 + triggerH + 4 + h) - bandTrigger.bottom - 4;
@@ -2162,7 +2165,7 @@ void main() {
     const double neitherTop = 90;
     await pumpPlaced(view: neitherView, top: neitherTop, options: many);
     await openByTap(tester);
-    final Rect neitherTrigger = tester.getRect(trigger);
+    final Rect neitherTrigger = tester.getRect(triggerLayout);
     final Rect neitherPopup = tester.getRect(popup);
     final double neitherBelow = 200 - neitherTrigger.bottom - 4;
     final double neitherAbove = neitherTrigger.top - 4;
@@ -2448,6 +2451,98 @@ void main() {
     await tester.pump();
     expect(node.hasFocus, isTrue);
     semantics.dispose();
+  });
+
+  testWidgets('padded grows the trigger, not the drawn box', (tester) async {
+    Size? drawn;
+    final handle = tester.ensureSemantics();
+    for (final size in [
+      KunTapTargetSize.padded,
+      KunTapTargetSize.shrinkWrap,
+    ]) {
+      await tester.pumpWidget(
+        wrap(
+          const Center(
+            child: SizedBox(
+              width: 320,
+              child: _Host(initial: 'vue', clearable: true),
+            ),
+          ),
+          theme: KunThemeData.light(tapTargetSize: size),
+        ),
+      );
+      final box = tester.getSize(trigger);
+      if (size == KunTapTargetSize.padded) {
+        expect(box.height, KunControlMetrics.of(KunUISize.md).square);
+        drawn = box;
+        expect(
+          tester
+              .getSemantics(
+                  find.bySemanticsLabel(KunMessages.zhCN.select.clear))
+              .rect
+              .shortestSide,
+          greaterThanOrEqualTo(48),
+        );
+      } else {
+        expect(box, drawn);
+      }
+    }
+    handle.dispose();
+  });
+
+  testWidgets('the band above the value opens, the band above clear clears',
+      (tester) async {
+    final GlobalKey<_HostState> key = GlobalKey<_HostState>();
+    await tester.pumpWidget(
+      wrap(
+        Center(
+          child: SizedBox(
+            width: 320,
+            child: _Host(
+              key: key,
+              initial: 'vue',
+              clearable: true,
+            ),
+          ),
+        ),
+      ),
+    );
+    final drawn = tester.getRect(trigger);
+    await tester.tapAt(Offset(drawn.left + 24, drawn.top - 3));
+    await tester.pump();
+    await tester.pump(KunDurations.base);
+    expect(popup, findsOneWidget);
+
+    await tester.sendKeyEvent(LogicalKeyboardKey.escape);
+    await tester.pumpAndSettle();
+    expect(popup, findsNothing);
+
+    await tester.tapAt(
+      Offset(
+        tester.getRect(find.byIcon(KunIcons.circleX)).center.dx,
+        drawn.top - 3,
+      ),
+    );
+    await tester.pump();
+    expect(key.currentState!.value, isNull);
+    expect(popup, findsNothing);
+  });
+
+  testWidgets('the trigger and clear meet the Android guideline',
+      (tester) async {
+    final handle = tester.ensureSemantics();
+    await tester.pumpWidget(
+      wrap(
+        const Center(
+          child: SizedBox(
+            width: 320,
+            child: _Host(initial: 'vue', clearable: true, label: 'Framework'),
+          ),
+        ),
+      ),
+    );
+    await expectLater(tester, meetsGuideline(androidTapTargetGuideline));
+    handle.dispose();
   });
 }
 

@@ -8,6 +8,7 @@ import '../foundation/control_metrics.dart';
 import '../foundation/design.dart';
 import '../foundation/field_ring.dart';
 import '../foundation/motion.dart';
+import '../foundation/tap_target.dart';
 import '../foundation/text_selection.dart';
 import '../theme/theme.dart';
 
@@ -470,37 +471,50 @@ class _KunTextareaState extends State<KunTextarea>
       ],
     );
 
-    Widget box = TweenAnimationBuilder<BoxShadow>(
-      tween: KunFieldRingTween(
-        end: kunFieldRing(ringColor, visible: _focused && !widget.disabled),
+    Widget box = KunTapBand(
+      background: TweenAnimationBuilder<BoxShadow>(
+        tween: KunFieldRingTween(
+          end: kunFieldRing(ringColor, visible: _focused && !widget.disabled),
+        ),
+        duration: kunMotion(context, KunDurations.fast),
+        curve: KunEasing.standard,
+        builder: (context, ring, child) {
+          return Container(
+            padding: EdgeInsets.symmetric(
+              horizontal: metrics.horizontalPadding,
+              vertical: metrics.verticalPadding,
+            ),
+            decoration: BoxDecoration(
+              color: scheme.content1,
+              border: Border.all(
+                color: _hasError ? danger.shade300 : scheme.border,
+              ),
+              borderRadius: radius,
+              boxShadow: [
+                ring,
+                if (!widget.disabled) ...KunShadows.sm,
+              ],
+            ),
+          );
+        },
       ),
-      duration: kunMotion(context, KunDurations.fast),
-      curve: KunEasing.standard,
-      builder: (context, ring, child) {
-        return Container(
-          constraints: widget.autoGrow && widget.maxHeight != null
-              ? BoxConstraints(maxHeight: widget.maxHeight!)
-              : null,
+      child: Align(
+        child: Padding(
           padding: EdgeInsets.symmetric(
             horizontal: metrics.horizontalPadding,
-            vertical: metrics.verticalPadding,
+            vertical: metrics.verticalPadding + 1,
           ),
-          decoration: BoxDecoration(
-            color: scheme.content1,
-            border: Border.all(
-              color: _hasError ? danger.shade300 : scheme.border,
-            ),
-            borderRadius: radius,
-            boxShadow: [
-              ring,
-              if (!widget.disabled) ...KunShadows.sm,
-            ],
-          ),
-          child: child,
-        );
-      },
-      child: inner,
+          child: inner,
+        ),
+      ),
     );
+
+    if (widget.autoGrow && widget.maxHeight != null) {
+      box = ConstrainedBox(
+        constraints: BoxConstraints(maxHeight: widget.maxHeight!),
+        child: box,
+      );
+    }
 
     if (widget.disabled) {
       box = Opacity(opacity: 0.6, child: box);

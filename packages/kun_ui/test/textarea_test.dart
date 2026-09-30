@@ -3,8 +3,12 @@ import 'package:flutter/widgets.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:kun_ui/kun_ui.dart';
 
-Widget wrap(Widget child) => KunTheme(
-      data: KunThemeData.light(),
+Widget wrap(
+  Widget child, {
+  KunTapTargetSize tapTargetSize = KunTapTargetSize.adaptive,
+}) =>
+    KunTheme(
+      data: KunThemeData.light(tapTargetSize: tapTargetSize),
       child: Directionality(
         textDirection: TextDirection.ltr,
         child: Overlay(
@@ -694,6 +698,40 @@ void main() {
     await tester.pump();
     expect(find.text('2/10'), findsOneWidget);
     controller.dispose();
+  });
+
+  testWidgets('the smallest box is padded when it is shorter than the minimum',
+      (tester) async {
+    await tester.pumpWidget(
+      wrap(
+        const KunTextarea(size: KunUISize.xs, rows: 1),
+        tapTargetSize: KunTapTargetSize.shrinkWrap,
+      ),
+    );
+    final drawn = tester.getSize(boxFinder);
+    expect(drawn.height, lessThan(48));
+
+    await tester.pumpWidget(
+      wrap(
+        const KunTextarea(size: KunUISize.xs, rows: 1),
+        tapTargetSize: KunTapTargetSize.padded,
+      ),
+    );
+    expect(tester.getSize(boxFinder), drawn);
+    expect(tester.getSize(find.byType(KunTextarea)).height, 48);
+  });
+
+  testWidgets('a tap in the band focuses the textarea', (tester) async {
+    await tester.pumpWidget(
+      wrap(const KunTextarea(size: KunUISize.xs, rows: 1)),
+    );
+    final drawn = tester.getRect(boxFinder);
+    await tester.tapAt(Offset(drawn.left + 24, drawn.top - 3));
+    await tester.pump();
+    expect(
+      tester.widget<EditableText>(find.byType(EditableText)).focusNode.hasFocus,
+      isTrue,
+    );
   });
 }
 

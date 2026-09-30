@@ -7,9 +7,12 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:kun_ui/kun_ui.dart';
 import 'package:kun_ui/src/foundation/dismiss_layers.dart';
 import 'package:kun_ui/src/foundation/focus_outline.dart';
+import 'package:kun_ui/src/foundation/tap_target.dart';
 
 Finder get trigger =>
     find.byKey(const ValueKey<String>('KunDatePicker.trigger'));
+Finder get triggerLayout =>
+    find.ancestor(of: trigger, matching: find.byType(KunTapBand));
 Finder get panel => find.byKey(const ValueKey<String>('KunDatePicker.panel'));
 Finder get panelFade =>
     find.byKey(const ValueKey<String>('KunDatePicker.panelFade'));
@@ -82,7 +85,7 @@ Widget wrapWebKeys(Widget child) => wrap(
     );
 
 Future<void> openByTap(WidgetTester tester) async {
-  await tester.tap(trigger);
+  await tester.tap(triggerLayout);
   await tester.pump();
   await tester.pump(KunDurations.base);
 }
@@ -362,7 +365,7 @@ void main() {
         ),
       ),
     );
-    await tester.tap(trigger);
+    await tester.tap(triggerLayout);
     await tester.pump();
     final FocusNode node = Focus.of(tester.element(trigger));
     expect(node.hasFocus, isTrue);
@@ -400,7 +403,7 @@ void main() {
       ),
     );
     changed = null;
-    await tester.tap(trigger);
+    await tester.tap(triggerLayout);
     await tester.pump();
     await tester.pump(KunDurations.base);
     await tester.sendKeyEvent(LogicalKeyboardKey.enter);
@@ -429,7 +432,7 @@ void main() {
         ),
       ),
     );
-    await tester.tap(trigger);
+    await tester.tap(triggerLayout);
     await tester.pump();
     await tester.sendKeyEvent(LogicalKeyboardKey.escape);
     await tester.pump();
@@ -554,6 +557,9 @@ void main() {
               value: DateTime(2026, 6, 14),
               onChanged: (DateTime? next) => changed = next,
             ),
+          ),
+          theme: KunThemeData.light(
+            tapTargetSize: KunTapTargetSize.shrinkWrap,
           ),
         ),
       );
@@ -953,7 +959,7 @@ void main() {
         ),
       ),
     );
-    await tester.tap(trigger);
+    await tester.tap(triggerLayout);
     await tester.pump();
     await tester.sendKeyEvent(LogicalKeyboardKey.escape);
     await tester.pump();
@@ -1077,7 +1083,7 @@ void main() {
         ),
       ),
     );
-    await tester.tap(trigger);
+    await tester.tap(triggerLayout);
     await tester.pump();
     expect(panel, findsNothing);
     Focus.of(tester.element(trigger)).requestFocus();
@@ -1101,10 +1107,97 @@ void main() {
         },
       ),
     );
-    await tester.tap(trigger);
+    await tester.tap(triggerLayout);
     await tester.pump();
     expect(tester.widget<FadeTransition>(panelFade).opacity.value, 1);
     expect(tester.widget<Transform>(panelScale).transform.storage[0], 1);
+  });
+
+  testWidgets('padded grows the trigger, not the drawn box', (tester) async {
+    Size? drawn;
+    Offset? iconFromRight;
+    for (final size in [
+      KunTapTargetSize.padded,
+      KunTapTargetSize.shrinkWrap,
+    ]) {
+      await tester.pumpWidget(
+        wrap(
+          SizedBox(
+            width: 320,
+            child: _Host(value: DateTime(2026, 6, 14)),
+          ),
+          theme: KunThemeData.light(tapTargetSize: size),
+        ),
+      );
+      final box = tester.getSize(trigger);
+      final icon = tester.getRect(clearIcon);
+      final boxRect = tester.getRect(trigger);
+      if (size == KunTapTargetSize.padded) {
+        expect(box.height, KunControlMetrics.of(KunUISize.md).square);
+        drawn = box;
+        iconFromRight = Offset(
+          boxRect.right - icon.right,
+          icon.center.dy - boxRect.center.dy,
+        );
+      } else {
+        expect(box, drawn);
+        expect(
+          Offset(
+            boxRect.right - icon.right,
+            icon.center.dy - boxRect.center.dy,
+          ),
+          iconFromRight,
+        );
+      }
+    }
+  });
+
+  testWidgets('the band above the value opens, the band above clear clears',
+      (tester) async {
+    DateTime? changed = DateTime(2026, 6, 14);
+    await tester.pumpWidget(
+      wrap(
+        SizedBox(
+          width: 320,
+          child: _Host(
+            value: DateTime(2026, 6, 14),
+            onChanged: (DateTime? next) => changed = next,
+          ),
+        ),
+      ),
+    );
+    final drawn = tester.getRect(trigger);
+    await tester.tapAt(Offset(drawn.left + 24, drawn.top - 3));
+    await tester.pump();
+    await tester.pump(KunDurations.base);
+    expect(panel, findsOneWidget);
+
+    await tester.tapAt(drawn.center);
+    await tester.pump();
+    await tester.pump(KunDurations.exit);
+    expect(panel, findsNothing);
+
+    changed = DateTime(2026, 6, 14);
+    await tester.tapAt(
+      Offset(tester.getRect(clearIcon).center.dx, drawn.top - 3),
+    );
+    await tester.pump();
+    expect(changed, isNull);
+    expect(panel, findsNothing);
+  });
+
+  testWidgets('the trigger meets the Android guideline', (tester) async {
+    final handle = tester.ensureSemantics();
+    await tester.pumpWidget(
+      wrap(
+        SizedBox(
+          width: 320,
+          child: _Host(value: DateTime(2026, 6, 14), label: 'Date'),
+        ),
+      ),
+    );
+    await expectLater(tester, meetsGuideline(androidTapTargetGuideline));
+    handle.dispose();
   });
 }
 
