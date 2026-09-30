@@ -1,13 +1,15 @@
 import 'dart:async';
 import 'dart:math' as math;
 
-import 'package:flutter/foundation.dart' show clampDouble;
+import 'package:flutter/foundation.dart' show clampDouble, kIsWeb;
+import 'package:flutter/services.dart';
 import 'package:flutter/widgets.dart';
 import 'package:kun_ui_tokens/kun_ui_tokens.dart';
 
 import '../foundation/control_metrics.dart';
 import '../foundation/design.dart';
 import '../foundation/motion.dart';
+import '../foundation/shortcut.dart';
 import '../foundation/spinner_painter.dart';
 import '../locale/messages.dart';
 import '../theme/theme.dart';
@@ -39,6 +41,15 @@ double _shadowMarginOf(List<BoxShadow> shadows) {
 /// machine mirror Flutter's Material `RefreshIndicator`; this widget never
 /// imports it. The disc is KunUI's floating surface and the ring is the
 /// spinner geometry.
+///
+/// A mouse wheel never overscrolls, so on a desktop the pull cannot happen.
+/// There the browser's reload keys refresh instead: F5, and ⌘R on Apple or
+/// Ctrl+R elsewhere, while the indicator's route is on top and its
+/// [TickerMode] is enabled. Every such indicator on that route refreshes, so
+/// keep pages that are out of view under a disabled [TickerMode], as
+/// `KunChatLayout` does. Flutter web leaves those keys to the browser, which
+/// reloads the page. [KunRefreshIndicatorState.show] refreshes from code,
+/// for a refresh button.
 class KunRefreshIndicator extends StatefulWidget {
   /// Creates a pull-to-refresh wrapper around [child].
   const KunRefreshIndicator({
@@ -80,10 +91,12 @@ class KunRefreshIndicator extends StatefulWidget {
   final String? semanticLabel;
 
   @override
-  State<KunRefreshIndicator> createState() => _KunRefreshIndicatorState();
+  State<KunRefreshIndicator> createState() => KunRefreshIndicatorState();
 }
 
-class _KunRefreshIndicatorState extends State<KunRefreshIndicator>
+/// The state of a [KunRefreshIndicator]; reach it with a
+/// `GlobalKey<KunRefreshIndicatorState>` to call [show].
+class KunRefreshIndicatorState extends State<KunRefreshIndicator>
     with TickerProviderStateMixin {
   late final AnimationController _positionController;
   late final AnimationController _scaleController;
@@ -94,6 +107,8 @@ class _KunRefreshIndicatorState extends State<KunRefreshIndicator>
   _RefreshStatus? _status;
   bool? _isIndicatorAtTop;
   double? _dragOffset;
+  Future<void> _pendingRefresh = Future<void>.value();
+  ModalRoute<Object?>? _route;
 
   static final Animatable<double> _kDragSizeFactorLimitTween =
       Tween<double>(begin: 0.0, end: _kDragSizeFactorLimit);
@@ -112,14 +127,65 @@ class _KunRefreshIndicatorState extends State<KunRefreshIndicator>
       vsync: this,
       duration: kunSpinnerPeriod,
     );
+    if (!kIsWeb) {
+      HardwareKeyboard.instance.addHandler(_onGlobalKey);
+    }
+  }
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    _route = ModalRoute.of(context);
   }
 
   @override
   void dispose() {
+    if (!kIsWeb) {
+      HardwareKeyboard.instance.removeHandler(_onGlobalKey);
+    }
     _positionController.dispose();
     _scaleController.dispose();
     _spinController.dispose();
     super.dispose();
+  }
+
+  /// Shows the indicator and runs [KunRefreshIndicator.onRefresh], as a
+  /// completed pull does.
+  ///
+  /// The returned [Future] completes when that refresh has finished. While a
+  /// refresh is already running, it returns that refresh's [Future].
+  Future<void> show() {
+    if (_status != _RefreshStatus.refresh && _status != _RefreshStatus.snap) {
+      setState(() {
+        if (_status == null) {
+          _start(AxisDirection.down);
+        }
+        _show();
+      });
+    }
+    return _pendingRefresh;
+  }
+
+  bool _onGlobalKey(KeyEvent event) {
+    if (event is! KeyDownEvent || !mounted) {
+      return false;
+    }
+    if (!(_route?.isCurrent ?? true) || !TickerMode.valuesOf(context).enabled) {
+      return false;
+    }
+    final HardwareKeyboard keyboard = HardwareKeyboard.instance;
+    final bool mod = kunShortcutPlatform() == KunShortcutPlatform.apple
+        ? keyboard.isMetaPressed && !keyboard.isControlPressed
+        : keyboard.isControlPressed && !keyboard.isMetaPressed;
+    final bool reload = event.logicalKey == LogicalKeyboardKey.f5 ||
+        (event.logicalKey == LogicalKeyboardKey.keyR &&
+            mod &&
+            !keyboard.isAltPressed);
+    if (!reload) {
+      return false;
+    }
+    unawaited(show());
+    return true;
   }
 
   double _spinnerOpacity() {
@@ -292,6 +358,8 @@ class _KunRefreshIndicatorState extends State<KunRefreshIndicator>
   void _show() {
     assert(_status != _RefreshStatus.refresh);
     assert(_status != _RefreshStatus.snap);
+    final Completer<void> completer = Completer<void>();
+    _pendingRefresh = completer.future;
     _status = _RefreshStatus.snap;
     _positionController
         .animateTo(
@@ -308,10 +376,13 @@ class _KunRefreshIndicatorState extends State<KunRefreshIndicator>
         });
         final Future<void> refreshResult = widget.onRefresh();
         refreshResult.whenComplete(() {
+          completer.complete();
           if (mounted && _status == _RefreshStatus.refresh) {
             unawaited(_dismiss(_RefreshStatus.done));
           }
         });
+      } else if (!completer.isCompleted) {
+        completer.complete();
       }
     });
   }

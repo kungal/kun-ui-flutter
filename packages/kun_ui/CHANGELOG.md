@@ -15,6 +15,19 @@
   own node, `semanticLabel` or not. Null, the default, reports no state.
 - **`kunMotion` and `kunReducedMotion` are exported.** An app's own
   animation can follow the same reduced-motion rule as KunUI's.
+- **`KunRefreshIndicator` refreshes on F5 and Mod+R on a desktop.** A
+  mouse wheel never overscrolls, so the pull could not start there, and a
+  desktop user had no way to refresh.
+  - F5, and ⌘R on Apple or Ctrl+R elsewhere, run the same sequence as a
+    completed pull: the indicator shows, `onRefresh` runs, and it hides
+    when the Future completes. This is the browser's reload key.
+  - It works while the indicator's route is on top and its `TickerMode` is
+    enabled. Every such indicator refreshes, so keep pages out of view
+    under a disabled `TickerMode`.
+  - Flutter web leaves the keys to the browser, which reloads the page.
+  - `KunRefreshIndicatorState.show()`, reached through a `GlobalKey`,
+    refreshes from code, for example from a refresh button. The Future it
+    returns completes with the refresh.
 - **`KunChatLayout(resizable: true)` with `onBack` no longer trips a
   semantics assertion when the window crosses md.** The back scope was
   added only while narrow, so every md crossing remounted the whole

@@ -1,6 +1,7 @@
 import 'dart:async';
 
 import 'package:flutter/foundation.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter/widgets.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:kun_ui/kun_ui.dart';
@@ -403,5 +404,152 @@ void main() {
     await tester.pump(KunDurations.exit);
     await tester.pump(KunDurations.exit);
     expectNoForbiddenChrome(tester);
+  });
+
+  testWidgets('F5 and Mod+R refresh on a desktop, as a browser reloads',
+      (tester) async {
+    int calls = 0;
+    Completer<void> pending = Completer<void>();
+    Future<void> press(LogicalKeyboardKey key,
+        {LogicalKeyboardKey? mod}) async {
+      if (mod != null) {
+        await tester.sendKeyDownEvent(mod);
+      }
+      await tester.sendKeyEvent(key);
+      if (mod != null) {
+        await tester.sendKeyUpEvent(mod);
+      }
+      await tester.pump();
+      await tester.pump(KunDurations.fast);
+      await tester.pump(const Duration(milliseconds: 16));
+    }
+
+    Future<void> finish() async {
+      pending.complete();
+      await tester.pumpAndSettle();
+      pending = Completer<void>();
+    }
+
+    try {
+      debugDefaultTargetPlatformOverride = TargetPlatform.linux;
+      await tester.pumpWidget(
+        wrap(
+          refreshList(
+            onRefresh: () {
+              calls++;
+              return pending.future;
+            },
+          ),
+        ),
+      );
+
+      await press(LogicalKeyboardKey.f5);
+      expect(calls, 1);
+      expect(spinnerPaint, findsOneWidget);
+      await finish();
+      expect(spinnerPaint, findsNothing);
+
+      await press(LogicalKeyboardKey.keyR, mod: LogicalKeyboardKey.controlLeft);
+      expect(calls, 2);
+      await finish();
+      await press(LogicalKeyboardKey.keyR, mod: LogicalKeyboardKey.metaLeft);
+      expect(calls, 2);
+      await press(LogicalKeyboardKey.keyR);
+      expect(calls, 2);
+
+      debugDefaultTargetPlatformOverride = TargetPlatform.macOS;
+      await press(LogicalKeyboardKey.keyR, mod: LogicalKeyboardKey.metaLeft);
+      expect(calls, 3);
+      await finish();
+      await press(LogicalKeyboardKey.keyR, mod: LogicalKeyboardKey.controlLeft);
+      expect(calls, 3);
+    } finally {
+      debugDefaultTargetPlatformOverride = null;
+    }
+  });
+
+  testWidgets('a covered route or a disabled TickerMode keeps the keys',
+      (tester) async {
+    int calls = 0;
+    await tester.pumpWidget(
+      wrap(
+        TickerMode(
+          enabled: false,
+          child: refreshList(onRefresh: () async => calls++),
+        ),
+      ),
+    );
+    await tester.sendKeyEvent(LogicalKeyboardKey.f5);
+    await tester.pumpAndSettle();
+    expect(calls, 0);
+
+    final GlobalKey<NavigatorState> navigator = GlobalKey<NavigatorState>();
+    await tester.pumpWidget(
+      wrap(
+        WidgetsApp(
+          navigatorKey: navigator,
+          color: KunColors.black,
+          home: refreshList(onRefresh: () async => calls++),
+          pageRouteBuilder: <T>(RouteSettings settings, WidgetBuilder b) =>
+              PageRouteBuilder<T>(
+            settings: settings,
+            pageBuilder: (BuildContext context, _, __) => b(context),
+          ),
+        ),
+      ),
+    );
+    await tester.sendKeyEvent(LogicalKeyboardKey.f5);
+    await tester.pumpAndSettle();
+    expect(calls, 1);
+
+    unawaited(
+      navigator.currentState!.push(
+        PageRouteBuilder<void>(
+          pageBuilder: (BuildContext context, _, __) => const SizedBox(),
+        ),
+      ),
+    );
+    await tester.pumpAndSettle();
+    await tester.sendKeyEvent(LogicalKeyboardKey.f5);
+    await tester.pumpAndSettle();
+    expect(calls, 1);
+  });
+
+  testWidgets('show() refreshes from code and completes with the refresh',
+      (tester) async {
+    final GlobalKey<KunRefreshIndicatorState> key =
+        GlobalKey<KunRefreshIndicatorState>();
+    final Completer<void> pending = Completer<void>();
+    int calls = 0;
+    await tester.pumpWidget(
+      wrap(
+        KunRefreshIndicator(
+          key: key,
+          onRefresh: () {
+            calls++;
+            return pending.future;
+          },
+          child: ListView(
+            children: const <Widget>[SizedBox(height: 200, child: Text('A'))],
+          ),
+        ),
+      ),
+    );
+
+    bool finished = false;
+    final Future<void> done = key.currentState!.show();
+    unawaited(done.then((_) => finished = true));
+    await tester.pump();
+    expect(spinnerPaint, findsOneWidget);
+    await tester.pump(KunDurations.fast);
+    await tester.pump(const Duration(milliseconds: 16));
+    expect(calls, 1);
+    expect(identical(key.currentState!.show(), done), isTrue);
+    expect(calls, 1);
+
+    pending.complete();
+    await tester.pumpAndSettle();
+    expect(finished, isTrue);
+    expect(spinnerPaint, findsNothing);
   });
 }
