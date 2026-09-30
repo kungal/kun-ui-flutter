@@ -29,57 +29,78 @@ class _PressableRows extends StatefulWidget {
 }
 
 class _PressableRowsState extends State<_PressableRows> {
-  String _last = 'Click, right-click, long-press, or Tab and press Enter.';
+  String _last = 'Click, right-click, long-press, or Tab and press Enter or '
+      'Shift+F10.';
+  String? _menuFor;
+  Offset _menuAt = Offset.zero;
+
+  static const List<KunContextMenuItem> _actions = <KunContextMenuItem>[
+    KunContextMenuItem(key: 'open', label: 'Open', icon: KunIcons.arrowRight),
+    KunContextMenuItem(key: 'copy', label: 'Copy link', icon: KunIcons.copy),
+    KunContextMenuItem(
+      key: 'report',
+      label: 'Report',
+      icon: KunIcons.x,
+      color: KunUIColor.danger,
+    ),
+  ];
+
+  void _openMenu(String topic, Offset at) => setState(() {
+        _menuFor = topic;
+        _menuAt = at;
+      });
 
   @override
   Widget build(BuildContext context) {
     final KunColorScheme scheme = KunTheme.of(context).colors;
-    return SizedBox(
-      width: KunSpacing.unit * 100,
-      child: Column(
-        mainAxisSize: MainAxisSize.min,
-        crossAxisAlignment: CrossAxisAlignment.stretch,
-        children: <Widget>[
-          for (final String topic in _topics)
-            KunPressable(
-              onTap: () => setState(() => _last = 'Opened "$topic"'),
-              onSecondaryTap: (Offset at) => setState(
-                () => _last = 'Menu for "$topic" at ${_point(at)}',
+    return KunContextMenu(
+      visible: _menuFor != null,
+      position: _menuAt,
+      items: _actions,
+      onSelected: (KunContextMenuItem item) =>
+          setState(() => _last = '${item.label}: "$_menuFor"'),
+      onClose: () => setState(() => _menuFor = null),
+      child: SizedBox(
+        width: KunSpacing.unit * 100,
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: <Widget>[
+            for (final String topic in _topics)
+              KunPressable(
+                onTap: () => setState(() => _last = 'Opened "$topic"'),
+                onSecondaryTap: (Offset at) => _openMenu(topic, at),
+                onLongPress: (Offset at) => _openMenu(topic, at),
+                builder: (BuildContext context, KunPressableState state) {
+                  return Container(
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: KunSpacing.unit * 3,
+                      vertical: KunSpacing.unit * 3,
+                    ),
+                    decoration: BoxDecoration(
+                      color: state.hovered || state.pressed
+                          ? scheme.neutral.shade100
+                              .withValues(alpha: KunColors.globalOpacity)
+                          : scheme.neutral.shade100.withValues(alpha: 0),
+                      borderRadius: BorderRadius.circular(KunRadius.md),
+                    ),
+                    child: Text(
+                      topic,
+                      style: KunText.sm.copyWith(color: scheme.foreground),
+                    ),
+                  );
+                },
               ),
-              onLongPress: (Offset at) => setState(
-                () => _last = 'Long press on "$topic" at ${_point(at)}',
-              ),
-              builder: (BuildContext context, KunPressableState state) {
-                return Container(
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: KunSpacing.unit * 3,
-                    vertical: KunSpacing.unit * 3,
-                  ),
-                  decoration: BoxDecoration(
-                    color: state.hovered || state.pressed
-                        ? scheme.neutral.shade100
-                            .withValues(alpha: KunColors.globalOpacity)
-                        : scheme.neutral.shade100.withValues(alpha: 0),
-                    borderRadius: BorderRadius.circular(KunRadius.md),
-                  ),
-                  child: Text(
-                    topic,
-                    style: KunText.sm.copyWith(color: scheme.foreground),
-                  ),
-                );
-              },
+            const SizedBox(height: KunSpacing.unit * 4),
+            Text(
+              _last,
+              style: KunText.xs.copyWith(color: scheme.foregroundMuted),
             ),
-          const SizedBox(height: KunSpacing.unit * 4),
-          Text(
-            _last,
-            style: KunText.xs.copyWith(color: scheme.foregroundMuted),
-          ),
-        ],
+          ],
+        ),
       ),
     );
   }
-
-  static String _point(Offset at) => '(${at.dx.round()}, ${at.dy.round()})';
 }
 
 class _PressableStates extends StatelessWidget {

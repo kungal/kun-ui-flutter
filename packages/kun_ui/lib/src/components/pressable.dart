@@ -5,6 +5,7 @@ import '../foundation/design.dart';
 import '../foundation/focus_outline.dart';
 import '../foundation/tap_target.dart';
 import '../theme/theme.dart';
+import 'context_menu.dart';
 
 /// What a [KunPressable] is doing, handed to its builder.
 @immutable
@@ -57,7 +58,7 @@ class KunPressableState {
 /// drawn content. On phones the content sits in a [KunTapTarget], so a
 /// small pressable still meets the platform's minimum.
 ///
-/// For a menu, open a `KunContextMenu` from [onSecondaryTap] on a desktop
+/// For a menu, open a [KunContextMenu] from [onSecondaryTap] on a desktop
 /// and from [onLongPress] on a phone: both hand over the global position
 /// the menu opens at.
 class KunPressable extends StatefulWidget {

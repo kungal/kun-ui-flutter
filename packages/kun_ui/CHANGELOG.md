@@ -18,6 +18,17 @@
   - Not part of the web contract, because the web needs no such component.
   - On Flutter web, call `BrowserContextMenu.disableContextMenu()` once, or
     the browser's own menu opens too.
+- **`KunContextMenu`**, ported from the web: a menu at a point, controlled
+  by `visible` and `position`. It is clamped into the view with `padding`
+  as the margin, uses the dropdown's panel and rows, and handles the arrow
+  keys, Home, End, Enter, Space and Escape. Focus moves to the first
+  enabled row on open and back on close, an `href` item goes through
+  `KunUIConfig.navigate`, and `onClose` fires for every close.
+  - Open it from `KunPressable`'s `onSecondaryTap` (desktop) and
+    `onLongPress` (touch). The gallery's pressable page does both.
+  - **`KunDropdownItem` is now a typedef of `KunContextMenuItem`,** as it
+    is on the web, so one command list renders the right-click, long-press
+    and ⋯ menus. Existing code compiles unchanged.
 - **`KunChatLayout` chooses one pane or two from its own width, not the
   window's.** The web's `md:` is a viewport query. A chat opened beside an
   app's side rail took the two-pane layout in a 768 window with 679 to
