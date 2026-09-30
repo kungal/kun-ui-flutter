@@ -15,7 +15,10 @@ Widget wrap(Widget child, {Size size = phone}) {
         data: KunThemeData.light(),
         child: Directionality(
           textDirection: TextDirection.ltr,
-          child: SizedBox(width: size.width, height: 400, child: child),
+          child: Align(
+            alignment: Alignment.topLeft,
+            child: SizedBox(width: size.width, height: 400, child: child),
+          ),
         ),
       ),
     ),
@@ -31,7 +34,10 @@ Widget popWrap(Widget child, {Size size = phone}) {
         messages: KunMessages.en,
         child: KunTheme(
           data: KunThemeData.light(),
-          child: SizedBox(width: size.width, height: 400, child: child),
+          child: Align(
+            alignment: Alignment.topLeft,
+            child: SizedBox(width: size.width, height: 400, child: child),
+          ),
         ),
       ),
     ),
@@ -96,6 +102,93 @@ List<String> unnamedActionable(SemanticsNode root) {
 }
 
 void main() {
+  Widget sized(Size window, double layoutWidth, Widget child) => MediaQuery(
+        data: MediaQueryData(size: window),
+        child: KunMessagesScope(
+          messages: KunMessages.en,
+          child: KunTheme(
+            data: KunThemeData.light(),
+            child: Directionality(
+              textDirection: TextDirection.ltr,
+              child: Align(
+                alignment: Alignment.topLeft,
+                child: SizedBox(width: layoutWidth, height: 400, child: child),
+              ),
+            ),
+          ),
+        ),
+      );
+
+  testWidgets('the layout measures its own width, not the window', (
+    WidgetTester tester,
+  ) async {
+    bool? narrow;
+    final Widget layout = KunChatLayout(
+      showConversation: true,
+      sidebar: const Text('sidebar'),
+      child: Builder(
+        builder: (BuildContext context) {
+          narrow = KunChatLayout.narrowOf(context);
+          return const Text('conversation');
+        },
+      ),
+    );
+
+    // A 1000 window whose content area beside a side rail is 700 wide.
+    await tester.pumpWidget(sized(desktop, 700, layout));
+    expect(narrow, isTrue);
+    expect(find.text('sidebar'), findsNothing);
+    expect(find.text('conversation'), findsOneWidget);
+
+    await tester.pumpWidget(sized(phone, 780, layout));
+    expect(narrow, isFalse);
+    expect(find.text('sidebar'), findsOneWidget);
+
+    await tester.pumpWidget(
+      sized(
+        desktop,
+        700,
+        Builder(
+          builder: (BuildContext context) {
+            narrow = KunChatLayout.narrowOf(context);
+            return const SizedBox();
+          },
+        ),
+      ),
+    );
+    expect(narrow, isNull);
+  });
+
+  testWidgets("the header's mobile back follows the layout", (
+    WidgetTester tester,
+  ) async {
+    const KunChatUser haru = KunChatUser(
+      id: '1002',
+      name: 'Haru',
+      avatar: 'https://example.test/haru.webp',
+    );
+    Widget chat(Size window, double width) => sized(
+          window,
+          width,
+          const KunChatLayout(
+            showConversation: true,
+            sidebar: Text('sidebar'),
+            child: KunChatHeader(user: haru),
+          ),
+        );
+
+    await tester.pumpWidget(chat(desktop, 700));
+    expect(find.byIcon(KunIcons.arrowLeft), findsOneWidget);
+
+    await tester.pumpWidget(chat(phone, 780));
+    expect(find.byIcon(KunIcons.arrowLeft), findsNothing);
+
+    await tester.pumpWidget(
+      sized(desktop, 700, const KunChatHeader(user: haru)),
+    );
+    expect(find.byIcon(KunIcons.arrowLeft), findsNothing);
+  });
+
   testWidgets('wide shows the sidebar and empty when closed', (
     WidgetTester tester,
   ) async {

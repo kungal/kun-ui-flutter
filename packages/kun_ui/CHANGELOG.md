@@ -1,5 +1,17 @@
 # Changelog
 
+## 0.20.0
+
+- **`KunChatLayout` chooses one pane or two from its own width, not the
+  window's.** The web's `md:` is a viewport query. A chat opened beside an
+  app's side rail took the two-pane layout in a 768 window with 679 to
+  fill, and the conversation was left 327 wide. The layout now measures the
+  width it is given, and `KunChatLayout.narrowOf(context)` tells anything
+  inside it which layout it chose. `KunChatHeader`'s `back: mobile` follows
+  it, and falls back to the window width only outside a chat layout. An
+  app's own pane logic should read `narrowOf` too, so the two never
+  disagree. Requested by the kungal app, whose desktop keeps a side rail.
+
 ## 0.19.0
 
 Built on kun-ui 2.53.0 (from 2.52.0). Two accessibility changes measured by

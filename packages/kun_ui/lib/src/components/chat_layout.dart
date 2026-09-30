@@ -9,6 +9,11 @@ const double _kSidebarWidth = 352;
 /// Two panes from `md` up — conversation list beside the open conversation —
 /// and one at a time below it, switched by [showConversation].
 ///
+/// `md` is measured on the width the layout is given, not the window's: the
+/// web's `md:` is a viewport query, and a chat opened beside an app's side
+/// rail took the two-pane layout at a 768 window with 679 to fill, leaving
+/// the conversation 327. Read the decision with [narrowOf].
+///
 /// The sidebar and [child] stay in the tree when a phone switches panes, so
 /// the list's scroll position survives. Hidden panes use [Offstage] plus
 /// [TickerMode].
@@ -49,10 +54,33 @@ class KunChatLayout extends StatelessWidget {
   /// else it does nothing. Not part of the web contract.
   final VoidCallback? onBack;
 
+  /// Whether the nearest [KunChatLayout] shows one pane at a time: the width
+  /// it was given is below the theme's `md` breakpoint. Null outside a chat
+  /// layout.
+  ///
+  /// [KunChatHeader]'s [KunChatHeaderBack.mobile] follows it, and so should an
+  /// app's own pane logic, so the two never disagree. Not part of the web
+  /// contract.
+  static bool? narrowOf(BuildContext context) =>
+      context.dependOnInheritedWidgetOfExactType<_KunChatLayoutScope>()?.narrow;
+
   @override
   Widget build(BuildContext context) {
-    final bool narrow =
-        MediaQuery.sizeOf(context).width < KunTheme.of(context).breakpoints.md;
+    return LayoutBuilder(
+      builder: (BuildContext context, BoxConstraints constraints) {
+        final double width = constraints.hasBoundedWidth
+            ? constraints.maxWidth
+            : MediaQuery.sizeOf(context).width;
+        final bool narrow = width < KunTheme.of(context).breakpoints.md;
+        return _KunChatLayoutScope(
+          narrow: narrow,
+          child: _buildPanes(context, narrow),
+        );
+      },
+    );
+  }
+
+  Widget _buildPanes(BuildContext context, bool narrow) {
     final KunColorScheme scheme = KunTheme.of(context).colors;
     final Widget sidebarPane = sidebar ?? const SizedBox.shrink();
     final Widget conversation = child ?? const SizedBox.shrink();
@@ -111,6 +139,16 @@ class KunChatLayout extends StatelessWidget {
     }
     return clipped;
   }
+}
+
+class _KunChatLayoutScope extends InheritedWidget {
+  const _KunChatLayoutScope({required this.narrow, required super.child});
+
+  final bool narrow;
+
+  @override
+  bool updateShouldNotify(_KunChatLayoutScope oldWidget) =>
+      narrow != oldWidget.narrow;
 }
 
 class _KeepAlive extends StatelessWidget {

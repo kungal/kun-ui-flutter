@@ -14,6 +14,7 @@ import '../foundation/tap_target.dart';
 import '../locale/messages.dart';
 import '../theme/theme.dart';
 import 'avatar.dart';
+import 'chat_layout.dart';
 import 'chat_shared.dart';
 import 'chat_typing.dart';
 
@@ -34,7 +35,9 @@ enum KunChatHeaderBack {
   /// Never show the back button.
   never,
 
-  /// Show the back button only below the theme's `md` viewport width.
+  /// Show the back button only while the enclosing [KunChatLayout] shows one
+  /// pane at a time ([KunChatLayout.narrowOf]). Outside a chat layout, below
+  /// the theme's `md` window width.
   mobile,
 }
 
@@ -61,8 +64,8 @@ class KunChatHeader extends StatefulWidget {
   /// Avatar URL, e.g. a group photo. Defaults to [user]'s.
   final String? avatar;
 
-  /// The back button: [KunChatHeaderBack.mobile] below the `md` breakpoint
-  /// only.
+  /// The back button: [KunChatHeaderBack.mobile] only while the chat shows
+  /// one pane at a time.
   final KunChatHeaderBack back;
 
   /// A direct chat says "typing…"; a group names who is typing.
@@ -124,8 +127,9 @@ class _KunChatHeaderState extends State<KunChatHeader> {
       case KunChatHeaderBack.never:
         return false;
       case KunChatHeaderBack.mobile:
-        return MediaQuery.sizeOf(context).width <
-            KunTheme.of(context).breakpoints.md;
+        return KunChatLayout.narrowOf(context) ??
+            MediaQuery.sizeOf(context).width <
+                KunTheme.of(context).breakpoints.md;
     }
   }
 
