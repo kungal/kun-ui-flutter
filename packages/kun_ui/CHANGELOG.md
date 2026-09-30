@@ -1,5 +1,17 @@
 # Changelog
 
+## 0.26.2
+
+- **`KunAvatar.tapTargetOutset(context)`** is how far a linked avatar's
+  layout box reaches past the drawn picture on each side: 12 for a `sm`
+  avatar on Android since 0.26.1, and zero on desktop, under
+  `KunTapTargetSize.shrinkWrap` and for an avatar that is not a link.
+  Subtract it from the padding before the avatar and the gap after it,
+  and an avatar at the start of a row lines up with the text below it
+  again, as on the web.
+- **`KunAvatarSize.side`** is the drawn square in logical pixels (`sm` is
+  24), so an app never restates an avatar's size.
+
 ## 0.26.1
 
 - A `KunAvatar` or `KunUserChip` that links to a user now claims the
