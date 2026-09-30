@@ -49,8 +49,8 @@ class KunPressableState {
 /// The web needs no such component, because the element brings all of it:
 /// the pointer cursor, `:hover`, keyboard focus with the `:focus-visible`
 /// ring, Enter and Space, `contextmenu` on a right-click or Shift+F10, and a
-/// button role. A Flutter [GestureDetector] brings none of them. Not part of
-/// the web contract.
+/// button role, or a link role for an `<a>` ([link]). A Flutter
+/// [GestureDetector] brings none of them. Not part of the web contract.
 ///
 /// [builder] draws the content from a [KunPressableState], so the hover and
 /// press looks come from the app's own tokens. The keyboard focus ring is
@@ -70,6 +70,9 @@ class KunPressable extends StatefulWidget {
     this.onSecondaryTap,
     this.onLongPress,
     this.disabled = false,
+    this.link = false,
+    this.selected,
+    this.expanded,
     this.semanticLabel,
     this.rounded,
     this.focusNode,
@@ -80,7 +83,7 @@ class KunPressable extends StatefulWidget {
   final Widget Function(BuildContext context, KunPressableState state) builder;
 
   /// Called on a tap, and on Enter or Space while focused (the web's
-  /// `click`).
+  /// `click`). A [link] takes Enter only.
   ///
   /// As with `KunButton`, null does not look disabled; it only does nothing.
   final VoidCallback? onTap;
@@ -102,6 +105,21 @@ class KunPressable extends StatefulWidget {
   /// disabled. The look is the builder's, through
   /// [KunPressableState.disabled].
   final bool disabled;
+
+  /// Makes it the web's `<a>` rather than a `<button>`: a screen reader
+  /// announces a link, and Enter activates it but Space does not. In a
+  /// browser, Space on a link scrolls the page.
+  ///
+  /// Where it goes stays in [onTap].
+  final bool link;
+
+  /// The web's `aria-selected` or `aria-pressed`: the chosen one of a set, or
+  /// a toggle that is on. Null reports no selection state.
+  final bool? selected;
+
+  /// The web's `aria-expanded`, for a row that shows or hides a section.
+  /// Null reports no expansion state.
+  final bool? expanded;
 
   /// Accessible name. It replaces whatever the content would read, as
   /// `aria-label` does, nested controls included. Leave it null for a row
@@ -125,6 +143,23 @@ class KunPressable extends StatefulWidget {
 class _KunContextMenuIntent extends Intent {
   const _KunContextMenuIntent();
 }
+
+class _KunLinkActivateIntent extends Intent {
+  const _KunLinkActivateIntent();
+}
+
+const Map<ShortcutActivator, Intent> _kMenuKeys = <ShortcutActivator, Intent>{
+  SingleActivator(LogicalKeyboardKey.f10, shift: true): _KunContextMenuIntent(),
+  SingleActivator(LogicalKeyboardKey.contextMenu): _KunContextMenuIntent(),
+};
+
+// A link takes Enter itself and leaves ActivateIntent unhandled, so Space
+// falls through to the app's shortcuts (a page scroll on the web).
+const Map<ShortcutActivator, Intent> _kLinkKeys = <ShortcutActivator, Intent>{
+  ..._kMenuKeys,
+  SingleActivator(LogicalKeyboardKey.enter): _KunLinkActivateIntent(),
+  SingleActivator(LogicalKeyboardKey.numpadEnter): _KunLinkActivateIntent(),
+};
 
 class _KunPressableState extends State<KunPressable> {
   bool _hovered = false;
@@ -180,7 +215,10 @@ class _KunPressableState extends State<KunPressable> {
 
     return Semantics(
       container: true,
-      button: true,
+      button: !widget.link,
+      link: widget.link,
+      selected: widget.selected,
+      expanded: widget.expanded,
       enabled: _enabled,
       label: widget.semanticLabel,
       excludeSemantics: widget.semanticLabel != null,
@@ -193,25 +231,29 @@ class _KunPressableState extends State<KunPressable> {
           autofocus: widget.autofocus,
           onShowFocusHighlight: (bool value) =>
               setState(() => _focused = value),
-          shortcuts: const <ShortcutActivator, Intent>{
-            SingleActivator(LogicalKeyboardKey.f10, shift: true):
-                _KunContextMenuIntent(),
-            SingleActivator(LogicalKeyboardKey.contextMenu):
-                _KunContextMenuIntent(),
-          },
+          shortcuts: widget.link ? _kLinkKeys : _kMenuKeys,
           actions: <Type, Action<Intent>>{
-            ActivateIntent: CallbackAction<ActivateIntent>(
-              onInvoke: (_) {
-                _activate();
-                return null;
-              },
-            ),
-            ButtonActivateIntent: CallbackAction<ButtonActivateIntent>(
-              onInvoke: (_) {
-                _activate();
-                return null;
-              },
-            ),
+            if (widget.link)
+              _KunLinkActivateIntent: CallbackAction<_KunLinkActivateIntent>(
+                onInvoke: (_) {
+                  _activate();
+                  return null;
+                },
+              )
+            else ...<Type, Action<Intent>>{
+              ActivateIntent: CallbackAction<ActivateIntent>(
+                onInvoke: (_) {
+                  _activate();
+                  return null;
+                },
+              ),
+              ButtonActivateIntent: CallbackAction<ButtonActivateIntent>(
+                onInvoke: (_) {
+                  _activate();
+                  return null;
+                },
+              ),
+            },
             _KunContextMenuIntent: CallbackAction<_KunContextMenuIntent>(
               onInvoke: (_) {
                 _contextMenu(_center());

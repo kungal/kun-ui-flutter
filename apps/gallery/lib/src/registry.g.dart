@@ -661,6 +661,10 @@ const List<GalleryComponent> galleryComponents = <GalleryComponent>[
     demos: <GalleryDemo>[
       GalleryDemo(slug: 'rows', title: 'List rows', builder: pressableRows),
       GalleryDemo(slug: 'states', title: 'States', builder: pressableStates),
+      GalleryDemo(
+          slug: 'selection',
+          title: 'Selected and expanded',
+          builder: pressableSelection),
     ],
   ),
   GalleryComponent(

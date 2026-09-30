@@ -15,6 +15,13 @@ Widget pressableStates(BuildContext context) {
   );
 }
 
+Widget pressableSelection(BuildContext context) {
+  return const Padding(
+    padding: EdgeInsets.all(KunSpacing.unit * 6),
+    child: _PressableSelection(),
+  );
+}
+
 const List<String> _topics = <String>[
   'Which route did you take first?',
   'Patch 1.2 notes',
@@ -68,6 +75,7 @@ class _PressableRowsState extends State<_PressableRows> {
           children: <Widget>[
             for (final String topic in _topics)
               KunPressable(
+                link: true,
                 onTap: () => setState(() => _last = 'Opened "$topic"'),
                 onSecondaryTap: (Offset at) => _openMenu(topic, at),
                 onLongPress: (Offset at) => _openMenu(topic, at),
@@ -160,6 +168,108 @@ class _PressableStates extends StatelessWidget {
         tile('Enabled'),
         tile('Disabled', disabled: true),
       ],
+    );
+  }
+}
+
+const List<String> _answers = <String>['Kyoto', 'Osaka', 'Sapporo'];
+
+class _PressableSelection extends StatefulWidget {
+  const _PressableSelection();
+
+  @override
+  State<_PressableSelection> createState() => _PressableSelectionState();
+}
+
+class _PressableSelectionState extends State<_PressableSelection> {
+  String? _answer;
+  bool _rulesOpen = false;
+
+  @override
+  Widget build(BuildContext context) {
+    final KunColorScheme scheme = KunTheme.of(context).colors;
+    Color fill(KunPressableState state, {bool chosen = false}) => chosen
+        ? scheme.primary.solid.withValues(alpha: 0.2)
+        : scheme.neutral.shade100.withValues(
+            alpha: state.hovered || state.pressed ? KunColors.globalOpacity : 0,
+          );
+
+    return SizedBox(
+      width: KunSpacing.unit * 100,
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        spacing: KunSpacing.unit,
+        children: <Widget>[
+          Text(
+            'Which city hosts the event?',
+            style: KunText.sm.copyWith(
+              color: scheme.foreground,
+              fontWeight: KunFontWeights.medium,
+            ),
+          ),
+          for (final String answer in _answers)
+            KunPressable(
+              selected: _answer == answer,
+              onTap: () => setState(() => _answer = answer),
+              builder: (BuildContext context, KunPressableState state) =>
+                  Container(
+                padding: const EdgeInsets.all(KunSpacing.unit * 3),
+                decoration: BoxDecoration(
+                  color: fill(state, chosen: _answer == answer),
+                  borderRadius: BorderRadius.circular(KunRadius.md),
+                ),
+                child: Text(
+                  answer,
+                  style: KunText.sm.copyWith(
+                    color: _answer == answer
+                        ? scheme.primary.text
+                        : scheme.foreground,
+                  ),
+                ),
+              ),
+            ),
+          const SizedBox(height: KunSpacing.unit * 3),
+          KunPressable(
+            expanded: _rulesOpen,
+            onTap: () => setState(() => _rulesOpen = !_rulesOpen),
+            builder: (BuildContext context, KunPressableState state) =>
+                Container(
+              padding: const EdgeInsets.all(KunSpacing.unit * 3),
+              decoration: BoxDecoration(
+                color: fill(state),
+                borderRadius: BorderRadius.circular(KunRadius.md),
+              ),
+              child: Row(
+                spacing: KunSpacing.unit * 2,
+                children: <Widget>[
+                  Expanded(
+                    child: Text(
+                      'Entry rules',
+                      style: KunText.sm.copyWith(color: scheme.foreground),
+                    ),
+                  ),
+                  Icon(
+                    _rulesOpen ? KunIcons.chevronDown : KunIcons.chevronRight,
+                    size: KunText.base.fontSize,
+                    color: scheme.foregroundMuted,
+                  ),
+                ],
+              ),
+            ),
+          ),
+          if (_rulesOpen)
+            Padding(
+              padding: const EdgeInsets.symmetric(
+                horizontal: KunSpacing.unit * 3,
+              ),
+              child: Text(
+                'One entry per account. Winners are drawn on Sunday.',
+                style: KunText.xs.copyWith(color: scheme.foregroundMuted),
+              ),
+            ),
+        ],
+      ),
     );
   }
 }

@@ -81,6 +81,7 @@ export 'src/foundation/control_metrics.dart';
 export 'src/foundation/selection_metrics.dart';
 export 'src/foundation/tap_target.dart' show KunTapTargetSize;
 export 'src/foundation/design.dart';
+export 'src/foundation/motion.dart' show kunMotion, kunReducedMotion;
 export 'src/foundation/variant_style.dart';
 export 'src/locale/messages.dart';
 export 'src/theme/breakpoints.dart';

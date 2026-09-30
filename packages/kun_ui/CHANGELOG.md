@@ -1,5 +1,21 @@
 # Changelog
 
+## 0.23.0
+
+- **`KunPressable.link`** makes it the web's `<a>` rather than a
+  `<button>`. A screen reader announces a link, and Enter activates it
+  but Space does not. Space falls through to the app's shortcuts, which on
+  the web scroll the page, as a browser does for a link. The kungal app's
+  list rows, cards and text links navigate, so on the web they are links.
+  A `Semantics(link: true)` around a `KunPressable` could not reach its
+  node, and one inside the builder made a node that was both a link and a
+  button.
+- **`KunPressable.selected` and `KunPressable.expanded`** carry the web's
+  `aria-selected` / `aria-pressed` and `aria-expanded` on the pressable's
+  own node, `semanticLabel` or not. Null, the default, reports no state.
+- **`kunMotion` and `kunReducedMotion` are exported.** An app's own
+  animation can follow the same reduced-motion rule as KunUI's.
+
 ## 0.22.0
 
 - **`KunCommandPalette`**, ported from the web: the ⌘K launcher. It owns

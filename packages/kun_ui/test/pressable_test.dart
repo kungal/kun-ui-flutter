@@ -81,6 +81,98 @@ void main() {
     expect(taps, 4);
   });
 
+  testWidgets('a link takes Enter and leaves Space to the page',
+      (tester) async {
+    final SemanticsHandle handle = tester.ensureSemantics();
+    int taps = 0;
+    int fallthrough = 0;
+    await tester.pumpWidget(
+      wrap(
+        Shortcuts(
+          shortcuts: const <ShortcutActivator, Intent>{
+            SingleActivator(LogicalKeyboardKey.space): ActivateIntent(),
+            SingleActivator(LogicalKeyboardKey.enter): ButtonActivateIntent(),
+          },
+          child: Actions(
+            actions: <Type, Action<Intent>>{
+              ActivateIntent: CallbackAction<ActivateIntent>(
+                onInvoke: (_) => fallthrough++,
+              ),
+            },
+            child: KunPressable(
+              link: true,
+              onTap: () => taps++,
+              builder: (BuildContext context, KunPressableState state) =>
+                  const SizedBox(key: content, width: 240, height: 56),
+            ),
+          ),
+        ),
+      ),
+    );
+    final SemanticsData data =
+        tester.getSemantics(find.byType(KunPressable)).getSemanticsData();
+    expect(data.flagsCollection.isLink, isTrue);
+    expect(data.flagsCollection.isButton, isFalse);
+    expect(data.hasAction(SemanticsAction.tap), isTrue);
+
+    await tester.tap(find.byKey(content));
+    expect(taps, 1);
+    await tester.sendKeyEvent(LogicalKeyboardKey.tab);
+    await tester.pump();
+    await tester.sendKeyEvent(LogicalKeyboardKey.enter);
+    await tester.sendKeyEvent(LogicalKeyboardKey.numpadEnter);
+    expect(taps, 3);
+    await tester.sendKeyEvent(LogicalKeyboardKey.space);
+    expect(taps, 3);
+    expect(fallthrough, 1);
+    handle.dispose();
+  });
+
+  testWidgets('selected and expanded reach the node, named or not',
+      (tester) async {
+    final SemanticsHandle handle = tester.ensureSemantics();
+    Future<SemanticsFlags> flags({
+      bool? selected,
+      bool? expanded,
+      String? semanticLabel,
+    }) async {
+      await tester.pumpWidget(
+        wrap(
+          KunPressable(
+            onTap: () {},
+            selected: selected,
+            expanded: expanded,
+            semanticLabel: semanticLabel,
+            builder: (BuildContext context, KunPressableState state) =>
+                const SizedBox(width: 240, height: 56, child: Text('Rules')),
+          ),
+        ),
+      );
+      return tester
+          .getSemantics(find.byType(KunPressable))
+          .getSemanticsData()
+          .flagsCollection;
+    }
+
+    SemanticsFlags f = await flags();
+    expect(f.isSelected, Tristate.none);
+    expect(f.isExpanded, Tristate.none);
+    expect(f.isButton, isTrue);
+
+    f = await flags(selected: true, expanded: false);
+    expect(f.isSelected, Tristate.isTrue);
+    expect(f.isExpanded, Tristate.isFalse);
+
+    f = await flags(
+      selected: false,
+      expanded: true,
+      semanticLabel: 'Entry rules',
+    );
+    expect(f.isSelected, Tristate.isFalse);
+    expect(f.isExpanded, Tristate.isTrue);
+    handle.dispose();
+  });
+
   testWidgets('the builder sees hover, press and keyboard focus',
       (tester) async {
     final List<KunPressableState> states = <KunPressableState>[];
