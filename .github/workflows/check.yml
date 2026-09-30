@@ -33,6 +33,12 @@ jobs:
       - run: flutter test
         working-directory: packages/kun_ui
 
+      # Every gallery demo, on Android and on iOS, meets the platform's
+      # tap-target guideline (docs/architecture.md, "Touch targets meet the
+      # platform on phones").
+      - run: flutter test
+        working-directory: apps/gallery
+
       # The gallery's registry and its contract-coverage pages are emitted
       # from gallery.spec.json and the manifest. Generating fails when a name
       # the manifest claims has neither a demo that shows it nor a recorded
