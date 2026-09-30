@@ -2239,6 +2239,18 @@
         }
       ]
     },
+    "KunSelectionArea": {
+      "contract": false,
+      "source": "demos/selection_area.dart",
+      "demos": [
+        {
+          "slug": "basic",
+          "title": "Selectable text",
+          "builder": "selectionAreaBasic",
+          "shows": []
+        }
+      ]
+    },
     "KunSkeleton": {
       "source": "demos/skeleton.dart",
       "demos": [

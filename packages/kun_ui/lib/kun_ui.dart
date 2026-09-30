@@ -66,6 +66,7 @@ export 'src/components/refresh_indicator.dart';
 export 'src/components/scrollbar.dart';
 export 'src/components/scroll_shadow.dart';
 export 'src/components/select.dart';
+export 'src/components/selection_area.dart' show KunSelectionArea;
 export 'src/components/skeleton.dart';
 export 'src/components/spinner.dart';
 export 'src/components/split_pane.dart';

@@ -203,10 +203,40 @@ Widget kunTextSelectionContextMenu(
     );
   }
 
+  return _kunSelectionMenu(
+    captureFrom: editableTextState.context,
+    items: editableTextState.contextMenuButtonItems,
+    anchors: editableTextState.contextMenuAnchors,
+  );
+}
+
+/// [SelectableRegion.contextMenuBuilder] for KunSelectionArea.
+///
+/// Flutter does not offer a [SystemContextMenu] path for a selectable
+/// region: [SystemContextMenu.isSupportedByField] and
+/// [SystemContextMenu.editableText] take an [EditableTextState], and
+/// [SystemContextMenu.isSupportedByField] is false for a read-only field
+/// because there is no active [TextInputConnection].
+Widget kunSelectableRegionContextMenu(
+  BuildContext context,
+  SelectableRegionState selectableRegionState,
+) {
+  return _kunSelectionMenu(
+    captureFrom: selectableRegionState.context,
+    items: selectableRegionState.contextMenuButtonItems,
+    anchors: selectableRegionState.contextMenuAnchors,
+  );
+}
+
+Widget _kunSelectionMenu({
+  required BuildContext captureFrom,
+  required List<ContextMenuButtonItem> items,
+  required TextSelectionToolbarAnchors anchors,
+}) {
   final CapturedThemes themes = InheritedTheme.capture(
-    from: editableTextState.context,
+    from: captureFrom,
     to: Navigator.maybeOf(
-      editableTextState.context,
+      captureFrom,
       rootNavigator: true,
     )?.context,
   );
@@ -216,7 +246,7 @@ Widget kunTextSelectionContextMenu(
         final KunThemeData theme = KunTheme.of(capturedContext);
         final KunMessages messages = KunMessagesScope.of(capturedContext);
         final List<_KunTextSelectionMenuEntry> entries = _menuEntries(
-          editableTextState.contextMenuButtonItems,
+          items,
           messages.textSelection,
         );
         if (entries.isEmpty) {
@@ -233,7 +263,7 @@ Widget kunTextSelectionContextMenu(
         return _KunTextSelectionMenu(
           theme: theme,
           entries: entries,
-          anchors: editableTextState.contextMenuAnchors,
+          anchors: anchors,
           touchBar: touchBar,
         );
       },
