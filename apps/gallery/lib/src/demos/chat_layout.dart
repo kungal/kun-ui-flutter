@@ -35,6 +35,7 @@ class _LayoutAppDemoState extends State<_LayoutAppDemo> {
   late final List<_Conv> _conversations;
   String? _openId = 'direct';
   String? _lastOpen = 'direct';
+  double _sidebarSize = 320;
   String _draft = '';
   KunChatMessage? _replyTo;
   KunChatReplyQuote? _quote;
@@ -503,6 +504,10 @@ class _LayoutAppDemoState extends State<_LayoutAppDemo> {
             child: ClipRRect(
               borderRadius: BorderRadius.circular(KunRadius.lg),
               child: KunChatLayout(
+                resizable: true,
+                sidebarSize: _sidebarSize,
+                onSidebarSizeChanged: (double value) =>
+                    setState(() => _sidebarSize = value),
                 showConversation: _openId != null,
                 onBack: () => setState(() => _openId = null),
                 sidebar: ColoredBox(

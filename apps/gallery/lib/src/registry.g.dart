@@ -50,6 +50,7 @@ import 'demos/scroll_shadow.dart';
 import 'demos/select.dart';
 import 'demos/skeleton.dart';
 import 'demos/spinner.dart';
+import 'demos/split_pane.dart';
 import 'demos/switch.dart';
 import 'demos/tab.dart';
 import 'demos/textarea.dart';
@@ -763,6 +764,17 @@ const List<GalleryComponent> galleryComponents = <GalleryComponent>[
     name: 'KunSpinner',
     demos: <GalleryDemo>[
       GalleryDemo(slug: 'sizes', title: 'Sizes', builder: spinnerSizes),
+    ],
+  ),
+  GalleryComponent(
+    slug: 'kunsplitpane',
+    name: 'KunSplitPane',
+    demos: <GalleryDemo>[
+      GalleryDemo(slug: 'basic', title: 'List detail', builder: splitPaneBasic),
+      GalleryDemo(slug: 'aside', title: 'Aside', builder: splitPaneAside),
+      GalleryDemo(slug: 'stacked', title: 'Stacked', builder: splitPaneStacked),
+      GalleryDemo(
+          slug: 'contract', title: 'Contract', builder: kunSplitPaneContract),
     ],
   ),
   GalleryComponent(
