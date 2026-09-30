@@ -7,6 +7,7 @@ import '../foundation/design.dart';
 import '../foundation/focus_outline.dart';
 import '../foundation/link_menu.dart';
 import '../foundation/motion.dart';
+import '../foundation/tap_target.dart';
 import '../locale/messages.dart';
 import '../theme/theme.dart';
 import 'pulse.dart';
@@ -132,6 +133,12 @@ void debugResetKunAvatarWarning() {
 /// [KunUser.id] that is not 0, a tap opens the profile through
 /// [KunUIConfigScope]. A null [user], or a user whose id is 0, always shows
 /// the picture and is never a link.
+///
+/// A link claims the minimum touch target on phones
+/// ([KunThemeData.tapTargetSize]): its layout box grows to 48×48 on Android
+/// and 44×44 on iOS, with the picture drawn unchanged in the middle, and a
+/// tap anywhere in the box opens the profile. An avatar that is not a link
+/// is always the listed square.
 class KunAvatar extends StatefulWidget {
   /// Creates an avatar.
   const KunAvatar({
@@ -432,50 +439,52 @@ class _KunAvatarState extends State<KunAvatar> {
         key: _linkMenu,
         url: url,
         capturePointers: false,
-        child: FocusableActionDetector(
-          onShowFocusHighlight: (bool value) =>
-              setState(() => _focused = value),
-          actions: <Type, Action<Intent>>{
-            ActivateIntent: CallbackAction<ActivateIntent>(
-              onInvoke: (_) {
-                _open();
-                return null;
-              },
-            ),
-            ButtonActivateIntent: CallbackAction<ButtonActivateIntent>(
-              onInvoke: (_) {
-                _open();
-                return null;
-              },
-            ),
-          },
-          child: MouseRegion(
-            cursor: SystemMouseCursors.click,
-            onEnter: (_) => setState(() => _hovered = true),
-            onExit: (_) => setState(() => _hovered = false),
-            child: GestureDetector(
-              behavior: HitTestBehavior.opaque,
-              onTap: _open,
-              onSecondaryTapUp: linkMenuActive
-                  ? (TapUpDetails details) =>
-                      _linkMenu.currentState?.openAt(details.globalPosition)
-                  : null,
-              onLongPressStart: linkMenuActive
-                  ? (LongPressStartDetails details) => _linkMenu.currentState
-                      ?.openFromLongPress(details.globalPosition)
-                  : null,
-              child: AnimatedScale(
-                scale: _hovered ? 1.1 : 1,
-                duration: kunMotion(context, KunDurations.fast),
-                curve: KunEasing.standard,
-                child: KunFocusOutline(
-                  visible: _focused,
-                  color: KunUIColor.primary
-                      .scaleOf(KunTheme.of(context).colors)
-                      .solid
-                      .withValues(alpha: 0.5),
-                  circle: true,
-                  child: body,
+        child: KunTapTarget(
+          child: FocusableActionDetector(
+            onShowFocusHighlight: (bool value) =>
+                setState(() => _focused = value),
+            actions: <Type, Action<Intent>>{
+              ActivateIntent: CallbackAction<ActivateIntent>(
+                onInvoke: (_) {
+                  _open();
+                  return null;
+                },
+              ),
+              ButtonActivateIntent: CallbackAction<ButtonActivateIntent>(
+                onInvoke: (_) {
+                  _open();
+                  return null;
+                },
+              ),
+            },
+            child: MouseRegion(
+              cursor: SystemMouseCursors.click,
+              onEnter: (_) => setState(() => _hovered = true),
+              onExit: (_) => setState(() => _hovered = false),
+              child: GestureDetector(
+                behavior: HitTestBehavior.opaque,
+                onTap: _open,
+                onSecondaryTapUp: linkMenuActive
+                    ? (TapUpDetails details) =>
+                        _linkMenu.currentState?.openAt(details.globalPosition)
+                    : null,
+                onLongPressStart: linkMenuActive
+                    ? (LongPressStartDetails details) => _linkMenu.currentState
+                        ?.openFromLongPress(details.globalPosition)
+                    : null,
+                child: AnimatedScale(
+                  scale: _hovered ? 1.1 : 1,
+                  duration: kunMotion(context, KunDurations.fast),
+                  curve: KunEasing.standard,
+                  child: KunFocusOutline(
+                    visible: _focused,
+                    color: KunUIColor.primary
+                        .scaleOf(KunTheme.of(context).colors)
+                        .solid
+                        .withValues(alpha: 0.5),
+                    circle: true,
+                    child: body,
+                  ),
                 ),
               ),
             ),

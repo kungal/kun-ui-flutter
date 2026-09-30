@@ -1,4 +1,5 @@
 import 'package:flutter/foundation.dart';
+import 'package:flutter/semantics.dart';
 import 'package:flutter/widgets.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:kun_ui_gallery/main.dart';
@@ -27,6 +28,34 @@ const Map<String, String> exempt = <String, String>{
   'kunchattext/spoiler': 'spoiler in chat text',
 };
 
+// The SDK's guideline skips every link, after WCAG's exception for a link
+// in a sentence. That hid a linked KunAvatar drawn at 24dp: a standalone
+// link has no sentence to excuse it. A link span in text keeps the
+// exception, and it is the only link node with a key, which RenderParagraph
+// and RenderEditable give each span they assemble.
+class _LinkTapTargetGuideline extends MinimumTapTargetGuideline {
+  const _LinkTapTargetGuideline({required super.size, required super.link});
+
+  @override
+  bool shouldSkipNode(SemanticsNode node) {
+    final SemanticsData data = node.getSemanticsData();
+    return (!data.hasAction(SemanticsAction.tap) &&
+            !data.hasAction(SemanticsAction.longPress)) ||
+        data.flagsCollection.isHidden ||
+        (data.flagsCollection.isLink && node.key != null);
+  }
+}
+
+const _LinkTapTargetGuideline _android = _LinkTapTargetGuideline(
+  size: Size(48, 48),
+  link: 'https://support.google.com/accessibility/android/answer/7101858',
+);
+
+const _LinkTapTargetGuideline _iOS = _LinkTapTargetGuideline(
+  size: Size(44, 44),
+  link: 'https://developer.apple.com/design/human-interface-guidelines/buttons',
+);
+
 void main() {
   for (final GalleryComponent component in galleryComponents) {
     for (final GalleryDemo demo in component.demos) {
@@ -50,9 +79,7 @@ void main() {
             await expectLater(
               tester,
               meetsGuideline(
-                defaultTargetPlatform == TargetPlatform.iOS
-                    ? iOSTapTargetGuideline
-                    : androidTapTargetGuideline,
+                defaultTargetPlatform == TargetPlatform.iOS ? _iOS : _android,
               ),
             );
           }

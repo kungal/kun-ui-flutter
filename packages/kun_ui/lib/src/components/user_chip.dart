@@ -5,6 +5,7 @@ import '../config/config.dart';
 import '../foundation/design.dart';
 import '../foundation/focus_outline.dart';
 import '../foundation/link_menu.dart';
+import '../foundation/tap_target.dart';
 import '../locale/messages.dart';
 import '../theme/theme.dart';
 import 'avatar.dart';
@@ -19,6 +20,11 @@ import 'avatar.dart';
 /// The web chip is a block and spans its container; this one is as wide as
 /// its content. In a narrower parent both lines truncate with an ellipsis
 /// on one line each.
+///
+/// A link claims the minimum touch target on phones
+/// ([KunThemeData.tapTargetSize]): a chip drawn shorter than 48 (44 on iOS)
+/// gets a taller layout box with the chip drawn unchanged in the middle,
+/// and a tap anywhere in the box opens the profile.
 class KunUserChip extends StatelessWidget {
   /// Creates a user chip.
   const KunUserChip({
@@ -153,43 +159,45 @@ class _KunUserChipLinkState extends State<_KunUserChipLink> {
         key: _linkMenu,
         url: widget.url,
         capturePointers: false,
-        child: FocusableActionDetector(
-          onShowFocusHighlight: (bool value) =>
-              setState(() => _focused = value),
-          actions: <Type, Action<Intent>>{
-            ActivateIntent: CallbackAction<ActivateIntent>(
-              onInvoke: (_) {
-                widget.onOpen();
-                return null;
-              },
-            ),
-            ButtonActivateIntent: CallbackAction<ButtonActivateIntent>(
-              onInvoke: (_) {
-                widget.onOpen();
-                return null;
-              },
-            ),
-          },
-          child: MouseRegion(
-            cursor: SystemMouseCursors.click,
-            child: GestureDetector(
-              behavior: HitTestBehavior.opaque,
-              onTap: widget.onOpen,
-              onSecondaryTapUp: linkMenuActive
-                  ? (TapUpDetails details) =>
-                      _linkMenu.currentState?.openAt(details.globalPosition)
-                  : null,
-              onLongPressStart: linkMenuActive
-                  ? (LongPressStartDetails details) => _linkMenu.currentState
-                      ?.openFromLongPress(details.globalPosition)
-                  : null,
-              child: KunFocusOutline(
-                visible: _focused,
-                color: KunUIColor.primary
-                    .scaleOf(KunTheme.of(context).colors)
-                    .solid
-                    .withValues(alpha: 0.5),
-                child: widget.child,
+        child: KunTapTarget(
+          child: FocusableActionDetector(
+            onShowFocusHighlight: (bool value) =>
+                setState(() => _focused = value),
+            actions: <Type, Action<Intent>>{
+              ActivateIntent: CallbackAction<ActivateIntent>(
+                onInvoke: (_) {
+                  widget.onOpen();
+                  return null;
+                },
+              ),
+              ButtonActivateIntent: CallbackAction<ButtonActivateIntent>(
+                onInvoke: (_) {
+                  widget.onOpen();
+                  return null;
+                },
+              ),
+            },
+            child: MouseRegion(
+              cursor: SystemMouseCursors.click,
+              child: GestureDetector(
+                behavior: HitTestBehavior.opaque,
+                onTap: widget.onOpen,
+                onSecondaryTapUp: linkMenuActive
+                    ? (TapUpDetails details) =>
+                        _linkMenu.currentState?.openAt(details.globalPosition)
+                    : null,
+                onLongPressStart: linkMenuActive
+                    ? (LongPressStartDetails details) => _linkMenu.currentState
+                        ?.openFromLongPress(details.globalPosition)
+                    : null,
+                child: KunFocusOutline(
+                  visible: _focused,
+                  color: KunUIColor.primary
+                      .scaleOf(KunTheme.of(context).colors)
+                      .solid
+                      .withValues(alpha: 0.5),
+                  child: widget.child,
+                ),
               ),
             ),
           ),

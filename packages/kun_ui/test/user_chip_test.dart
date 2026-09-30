@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter/gestures.dart';
 import 'package:flutter/rendering.dart';
 import 'package:flutter/services.dart';
@@ -180,6 +181,73 @@ void main() {
     await tester.tap(find.byType(KunUserChip));
     expect(hrefs, <String>['/user/42/info']);
   });
+
+  testWidgets(
+    'a linked chip claims the touch target height and draws unchanged',
+    (tester) async {
+      final double target =
+          defaultTargetPlatform == TargetPlatform.iOS ? 44 : 48;
+      const KunUser user = KunUser(id: 42, name: 'Kun', avatar: '');
+      await tester.pumpWidget(
+        wrap(
+          const KunUserChip(
+            user: user,
+            description: 'click',
+            isNavigation: false,
+          ),
+        ),
+      );
+      final Size drawn = tester.getSize(find.byType(KunUserChip));
+      expect(drawn.height, lessThan(target));
+
+      final List<String> hrefs = <String>[];
+      final SemanticsHandle semantics = tester.ensureSemantics();
+      await tester.pumpWidget(
+        wrap(
+          const KunUserChip(user: user, description: 'click'),
+          config: KunUIConfig(
+            navigate: (BuildContext context, String href) => hrefs.add(href),
+          ),
+        ),
+      );
+      final Rect box = tester.getRect(find.byType(KunUserChip));
+      final Rect row = tester.getRect(
+        find
+            .descendant(
+              of: find.byType(KunUserChip),
+              matching: find.byType(Row),
+            )
+            .first,
+      );
+      expect(box.size, Size(drawn.width, target));
+      expect(row.size, drawn);
+      expect(row.center, box.center);
+      expect(
+        tester.getSemantics(find.byType(KunUserChip)).rect.size,
+        box.size,
+      );
+      await tester.tapAt(box.topCenter + const Offset(0, 1));
+      expect(hrefs, <String>['/user/42/info']);
+      semantics.dispose();
+    },
+    variant: const TargetPlatformVariant(
+      <TargetPlatform>{TargetPlatform.android, TargetPlatform.iOS},
+    ),
+  );
+
+  testWidgets(
+    'a linked chip keeps its drawn size on desktop',
+    (tester) async {
+      const KunUser user = KunUser(id: 42, name: 'Kun', avatar: '');
+      await tester.pumpWidget(
+        wrap(const KunUserChip(user: user, isNavigation: false)),
+      );
+      final Size drawn = tester.getSize(find.byType(KunUserChip));
+      await tester.pumpWidget(wrap(const KunUserChip(user: user)));
+      expect(tester.getSize(find.byType(KunUserChip)), drawn);
+    },
+    variant: TargetPlatformVariant.only(TargetPlatform.linux),
+  );
 
   testWidgets('the inner avatar is not a link and does not scale on hover',
       (tester) async {

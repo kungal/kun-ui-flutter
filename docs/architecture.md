@@ -1012,6 +1012,14 @@ guidance by default on touch platforms.
   renders every demo on Android and iOS and requires the platform's
   guideline, except for the demos in its `exempt` map, each with its reason.
   Every demo, exempt or not, must also meet `labeledTapTargetGuideline`.
+  The gate measures links too. Flutter's `MinimumTapTargetGuideline` skips
+  every link node, after WCAG's exception for a link in a sentence, and so
+  from 0.19.0 to 0.26.0 it never measured a linked `KunAvatar` or
+  `KunUserChip`. The kungal app found a 24dp avatar in the header of every
+  reply on a topic page (0.26.1 pads both). A standalone link has no
+  sentence to excuse it, so the gate skips only the link spans that
+  `RenderParagraph` and `RenderEditable` assemble for text. Those are the
+  only link nodes with a key.
   The gate does not compare semantics trees. When the forms sweep added a
   `MergeSemantics` to `KunCheckBox`, the description merged into the label,
   so the node read "At most one a month.\nMarketing email" and read the

@@ -442,6 +442,85 @@ void main() {
     expect(hrefs, <String>['/u/42']);
   });
 
+  testWidgets(
+    'a linked avatar claims the touch target and draws the picture unchanged',
+    (tester) async {
+      final double target =
+          defaultTargetPlatform == TargetPlatform.iOS ? 44 : 48;
+      final List<String> hrefs = <String>[];
+      final SemanticsHandle semantics = tester.ensureSemantics();
+      await tester.pumpWidget(
+        wrap(
+          const KunAvatar(
+            user: KunUser(id: 42, name: 'Kun', avatar: ''),
+            size: KunAvatarSize.sm,
+          ),
+          config: KunUIConfig(
+            navigate: (BuildContext context, String href) => hrefs.add(href),
+          ),
+        ),
+      );
+      final Rect box = tester.getRect(find.byType(KunAvatar));
+      final Rect picture = tester.getRect(
+        find.descendant(
+          of: find.byType(KunAvatar),
+          matching: find.byType(ClipOval),
+        ),
+      );
+      expect(box.size, Size.square(target));
+      expect(picture.size, const Size.square(24));
+      expect(picture.center, box.center);
+      expect(
+        tester.getSemantics(find.byType(KunAvatar)).rect.size,
+        Size.square(target),
+      );
+      await tester.tapAt(box.topLeft + const Offset(1, 1));
+      expect(hrefs, <String>['/user/42/info']);
+      semantics.dispose();
+    },
+    variant: const TargetPlatformVariant(
+      <TargetPlatform>{TargetPlatform.android, TargetPlatform.iOS},
+    ),
+  );
+
+  testWidgets(
+    'an avatar that is not a link keeps the listed square on a phone',
+    (tester) async {
+      for (final KunAvatar avatar in const <KunAvatar>[
+        KunAvatar(
+          user: KunUser(id: 42, name: 'Kun', avatar: ''),
+          size: KunAvatarSize.sm,
+          isNavigation: false,
+        ),
+        KunAvatar(
+          user: KunUser(id: 0, name: 'Kun', avatar: ''),
+          size: KunAvatarSize.sm,
+        ),
+        KunAvatar(user: null, size: KunAvatarSize.sm),
+      ]) {
+        await tester.pumpWidget(wrap(avatar));
+        expect(tester.getSize(find.byType(KunAvatar)), const Size.square(24));
+      }
+    },
+    variant: TargetPlatformVariant.only(TargetPlatform.android),
+  );
+
+  testWidgets(
+    'a linked avatar keeps the listed square on desktop',
+    (tester) async {
+      await tester.pumpWidget(
+        wrap(
+          const KunAvatar(
+            user: KunUser(id: 42, name: 'Kun', avatar: ''),
+            size: KunAvatarSize.sm,
+          ),
+        ),
+      );
+      expect(tester.getSize(find.byType(KunAvatar)), const Size.square(24));
+    },
+    variant: TargetPlatformVariant.only(TargetPlatform.linux),
+  );
+
   testWidgets('isNavigation false and a null user never navigate',
       (tester) async {
     final List<String> hrefs = <String>[];
