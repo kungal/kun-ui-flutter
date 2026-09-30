@@ -15,6 +15,15 @@ import '../theme/theme.dart';
 import 'button.dart';
 import 'input.dart';
 
+/// How long the highlight leads before the window shifts (web `PHASE_MS`).
+const Duration _kPhase = Duration(milliseconds: 150);
+
+/// The highlight's slide (web `.kun-page-indicator` transition, 150ms).
+const Duration _kSlide = Duration(milliseconds: 150);
+
+/// The highlight's pop (web `kun-page-pop`, 340ms).
+const Duration _kPop = Duration(milliseconds: 340);
+
 class _PageItem {
   const _PageItem.page(this.page) : key = 'p$page';
 
@@ -116,7 +125,7 @@ class _KunPaginationState extends State<KunPagination> {
               !kunReducedMotion(context);
       if (lead) {
         _scheduleMeasure();
-        _phaseTimer = Timer(kunMotion(context, KunDurations.fast), () {
+        _phaseTimer = Timer(kunMotion(context, _kPhase), () {
           _phaseTimer = null;
           if (!mounted) {
             return;
@@ -341,7 +350,7 @@ class _KunPaginationState extends State<KunPagination> {
     final Color onSolid = scheme.primary.onSolid;
     final List<_PageItem> items = _displayedPages();
     final bool showIndicator = _hasMounted && _indicator != null;
-    final Duration slide = kunMotion(context, KunDurations.fast);
+    final Duration slide = kunMotion(context, _kSlide);
 
     if (_hasMounted) {
       _scheduleMeasure();
@@ -569,7 +578,7 @@ class _PagePopState extends State<_PagePop>
   @override
   void initState() {
     super.initState();
-    _controller = AnimationController(vsync: this, duration: KunDurations.slow);
+    _controller = AnimationController(vsync: this, duration: _kPop);
     _scale = TweenSequence<double>(<TweenSequenceItem<double>>[
       TweenSequenceItem<double>(
         tween: Tween<double>(begin: 1, end: 1.1),
@@ -589,7 +598,7 @@ class _PagePopState extends State<_PagePop>
   @override
   void didChangeDependencies() {
     super.didChangeDependencies();
-    _controller.duration = kunMotion(context, KunDurations.slow);
+    _controller.duration = kunMotion(context, _kPop);
     if (!_started) {
       _started = true;
       if (kunReducedMotion(context)) {
