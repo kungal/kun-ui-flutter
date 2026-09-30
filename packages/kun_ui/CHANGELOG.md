@@ -2,6 +2,10 @@
 
 ## 0.20.0
 
+Still on kun-ui 2.53.0. Desktop pieces the kungal app asked for: a
+pressable row that opens a context menu, a hover card, pagination, and a
+chat layout that picks one pane or two from its own width.
+
 - **`KunPressable`: what a browser gives every `<button>`, without a look
   of its own.** For list rows, cards and tiles an app draws itself, in
   place of a bare `GestureDetector`.
