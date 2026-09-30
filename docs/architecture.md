@@ -1128,6 +1128,40 @@ widget, and its menu is `KunContextMenu`.
   them even without `onSecondaryTap` and swallow them doing nothing. It
   now binds them only when it has one.
 
+### KunUI links carry the browser's link menu (decided 2026-09-30)
+
+A browser gives every `<a href>` a menu: Copy link and Open in new tab on a
+right-click, Copy link address and Share on a long press in Android Chrome.
+Native Flutter gives a link nothing, and the kungal app has 40
+`KunPressable(linkUrl:)` rows. It is platform behaviour, like the region,
+so it is decided here: the app describes the menu once, as
+`KunUIConfig.linkMenu`, and every KunUI link opens it.
+
+- **One host, unexported.** `foundation/link_menu.dart` holds
+  `KunLinkMenuHost`, which owns the `KunContextMenu`, and
+  `kunLinkMenuClaims`. `KunPressable`, `KunAvatar`, `KunUserChip`,
+  `KunNavItem` and `KunTab` wrap their link in it. A widget that already
+  has a gesture detector keeps the pointers on it and only calls the host.
+- **A widget's own handler wins**, and the innermost link wins inside a
+  `KunContextMenuRegion`, as the link's menu wins over the page's in a
+  browser.
+- **Claiming nothing is the default.** With no `linkMenu`, no items, or on
+  Flutter web, where the browser keeps its own menu, a link has no
+  gesture, no vibration and no screen-reader action. The host stays
+  mounted either way, so the config never changes the tree.
+- **The long press is the link node's own action.** No node is added, and
+  the widgets keep the semantics they shipped with. The first build also
+  gave `KunAvatar`, `KunUserChip`, `KunNavItem` and `KunTab` a
+  `linkUrl`. On Android a non-empty `linkUrl` turns the node from a button
+  into URLSpan text, and the URL here is an app path like `/user/12/info`,
+  so TalkBack's Links menu would have fired an intent nothing can open. Only
+  `KunPressable` carries a `linkUrl`, and only when the app passes one.
+- **An `href` is parsed with `Uri.tryParse`.** One that does not parse
+  gets no menu, rather than an exception in `build`.
+- Chat text links, mentions, the chat link preview and the `href` rows of
+  menus are not wired yet. A menu inside a menu is not wanted, and the
+  chat ones wait for a request.
+
 ### Haptics follow Flutter's own widgets (decided 2026-09-30)
 
 A browser gives no tactile feedback, but Android and iOS native controls

@@ -3,6 +3,7 @@ import 'package:kun_ui_tokens/kun_ui_tokens.dart';
 
 import '../config/config.dart';
 import '../foundation/design.dart';
+import '../foundation/link_menu.dart';
 import 'button.dart';
 
 /// One destination of an app shell's navigation, implementing the web
@@ -111,17 +112,41 @@ class KunNavItem extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final String? href = this.href;
+    final Widget item = KunButton(
+      fullWidth: true,
+      variant: current ? KunUIVariant.flat : KunUIVariant.light,
+      color: current ? color : KunUIColor.neutral,
+      disabled: disabled,
+      onPressed: () => _handlePressed(context),
+      child: stacked ? _stackedBody() : _inlineBody(),
+    );
+    Widget body = item;
+    if (href != null && href.isNotEmpty) {
+      final Uri? url = kunLinkUri(href);
+      body = KunLinkMenuHost(
+        url: url,
+        enabled: !disabled,
+        child: Builder(
+          builder: (BuildContext context) {
+            final KunLinkMenuHostState host = KunLinkMenuHost.of(context);
+            // Not host.isActive: this Builder is the host's unchanged child
+            // and does not rebuild with it, so a linkMenu set after mount
+            // never reached the semantics action.
+            final bool active =
+                !disabled && url != null && kunLinkMenuClaims(context, url);
+            return Semantics(
+              onLongPress: active ? host.openFromLongPressAtCenter : null,
+              child: item,
+            );
+          },
+        ),
+      );
+    }
     return MergeSemantics(
       child: Semantics(
         selected: current ? true : null,
-        child: KunButton(
-          fullWidth: true,
-          variant: current ? KunUIVariant.flat : KunUIVariant.light,
-          color: current ? color : KunUIColor.neutral,
-          disabled: disabled,
-          onPressed: () => _handlePressed(context),
-          child: stacked ? _stackedBody() : _inlineBody(),
-        ),
+        child: body,
       ),
     );
   }

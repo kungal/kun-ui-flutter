@@ -4,6 +4,7 @@ import 'package:flutter/widgets.dart';
 import '../foundation/design.dart';
 import '../foundation/feedback.dart';
 import '../foundation/focus_outline.dart';
+import '../foundation/link_menu.dart';
 import '../foundation/tap_target.dart';
 import '../theme/theme.dart';
 import 'context_menu.dart';
@@ -177,6 +178,7 @@ const Map<ShortcutActivator, Intent> _kLinkActivateKeys =
 };
 
 class _KunPressableState extends State<KunPressable> {
+  final GlobalKey<KunLinkMenuHostState> _linkMenu = GlobalKey();
   bool _hovered = false;
   bool _pressed = false;
   bool _focused = false;
@@ -184,6 +186,11 @@ class _KunPressableState extends State<KunPressable> {
   bool get _enabled => !widget.disabled;
 
   bool get _isLink => widget.link || widget.linkUrl != null;
+
+  bool get _linkMenuActive {
+    final Uri? url = widget.linkUrl;
+    return _enabled && url != null && kunLinkMenuClaims(context, url);
+  }
 
   Offset _center() {
     final RenderBox box = context.findRenderObject()! as RenderBox;
@@ -197,9 +204,23 @@ class _KunPressableState extends State<KunPressable> {
   }
 
   void _contextMenu(Offset position) {
-    if (_enabled) {
-      widget.onSecondaryTap?.call(position);
+    if (!_enabled) {
+      return;
     }
+    if (widget.onSecondaryTap != null) {
+      widget.onSecondaryTap!(position);
+      return;
+    }
+    _linkMenu.currentState?.openAt(position);
+  }
+
+  void _longPress(Offset position) {
+    kunLongPressFeedback(context);
+    if (widget.onLongPress != null) {
+      widget.onLongPress!(position);
+      return;
+    }
+    _linkMenu.currentState?.openAt(position);
   }
 
   void _setPressed(bool value) {
@@ -221,14 +242,109 @@ class _KunPressableState extends State<KunPressable> {
   Widget build(BuildContext context) {
     final KunThemeData theme = KunTheme.of(context);
     final bool canTap = _enabled && widget.onTap != null;
-    final bool canMenu = _enabled && widget.onSecondaryTap != null;
-    final bool canLongPress = _enabled && widget.onLongPress != null;
+    final bool canMenu =
+        _enabled && (widget.onSecondaryTap != null || _linkMenuActive);
+    final bool canLongPress =
+        _enabled && (widget.onLongPress != null || _linkMenuActive);
     final KunPressableState state = KunPressableState(
       hovered: _hovered,
       pressed: _pressed,
       focused: _focused,
       disabled: widget.disabled,
     );
+
+    Widget body = KunTapTarget(
+      child: FocusableActionDetector(
+        enabled: canTap || canMenu || canLongPress,
+        focusNode: widget.focusNode,
+        autofocus: widget.autofocus,
+        onShowFocusHighlight: (bool value) => setState(() => _focused = value),
+        shortcuts: <ShortcutActivator, Intent>{
+          if (_isLink) ..._kLinkActivateKeys,
+          if (canMenu) ..._kMenuKeys,
+        },
+        actions: <Type, Action<Intent>>{
+          if (_isLink)
+            _KunLinkActivateIntent: CallbackAction<_KunLinkActivateIntent>(
+              onInvoke: (_) {
+                _activate();
+                return null;
+              },
+            )
+          else ...<Type, Action<Intent>>{
+            ActivateIntent: CallbackAction<ActivateIntent>(
+              onInvoke: (_) {
+                _activate();
+                return null;
+              },
+            ),
+            ButtonActivateIntent: CallbackAction<ButtonActivateIntent>(
+              onInvoke: (_) {
+                _activate();
+                return null;
+              },
+            ),
+          },
+          if (canMenu)
+            _KunContextMenuIntent: CallbackAction<_KunContextMenuIntent>(
+              onInvoke: (_) {
+                _contextMenu(_center());
+                return null;
+              },
+            ),
+        },
+        child: MouseRegion(
+          cursor: widget.disabled
+              ? SystemMouseCursors.forbidden
+              : (canTap ? SystemMouseCursors.click : MouseCursor.defer),
+          onEnter: (_) {
+            if (_enabled) {
+              setState(() => _hovered = true);
+            }
+          },
+          onExit: (_) => setState(() => _hovered = false),
+          child: GestureDetector(
+            behavior: HitTestBehavior.opaque,
+            excludeFromSemantics: true,
+            onTapDown: canTap ? (_) => _setPressed(true) : null,
+            onTapUp: canTap ? (_) => _setPressed(false) : null,
+            onTapCancel: canTap ? () => _setPressed(false) : null,
+            onTap: canTap ? _activate : null,
+            onSecondaryTapUp: canMenu
+                ? (TapUpDetails details) => _contextMenu(details.globalPosition)
+                : null,
+            onLongPressStart: canLongPress
+                ? (LongPressStartDetails details) {
+                    _setPressed(false);
+                    _longPress(details.globalPosition);
+                  }
+                : null,
+            child: KunFocusOutline(
+              visible: _focused,
+              color: KunUIColor.primary
+                  .scaleOf(theme.colors)
+                  .solid
+                  .withValues(alpha: 0.5),
+              borderRadius: BorderRadius.circular(
+                (widget.rounded ?? theme.rounded).radius,
+              ),
+              child: widget.builder(context, state),
+            ),
+          ),
+        ),
+      ),
+    );
+    final Uri? linkUrl = widget.linkUrl;
+    if (linkUrl != null) {
+      body = KunLinkMenuHost(
+        key: _linkMenu,
+        url: linkUrl,
+        enabled: _enabled,
+        capturePointers: false,
+        captureKeys: false,
+        child: body,
+      );
+    }
 
     return Semantics(
       container: true,
@@ -241,96 +357,8 @@ class _KunPressableState extends State<KunPressable> {
       label: widget.semanticLabel,
       excludeSemantics: widget.semanticLabel != null,
       onTap: canTap ? _activate : null,
-      onLongPress: canLongPress
-          ? () {
-              kunLongPressFeedback(context);
-              widget.onLongPress!(_center());
-            }
-          : null,
-      child: KunTapTarget(
-        child: FocusableActionDetector(
-          enabled: canTap || canMenu || canLongPress,
-          focusNode: widget.focusNode,
-          autofocus: widget.autofocus,
-          onShowFocusHighlight: (bool value) =>
-              setState(() => _focused = value),
-          shortcuts: <ShortcutActivator, Intent>{
-            if (_isLink) ..._kLinkActivateKeys,
-            if (canMenu) ..._kMenuKeys,
-          },
-          actions: <Type, Action<Intent>>{
-            if (_isLink)
-              _KunLinkActivateIntent: CallbackAction<_KunLinkActivateIntent>(
-                onInvoke: (_) {
-                  _activate();
-                  return null;
-                },
-              )
-            else ...<Type, Action<Intent>>{
-              ActivateIntent: CallbackAction<ActivateIntent>(
-                onInvoke: (_) {
-                  _activate();
-                  return null;
-                },
-              ),
-              ButtonActivateIntent: CallbackAction<ButtonActivateIntent>(
-                onInvoke: (_) {
-                  _activate();
-                  return null;
-                },
-              ),
-            },
-            if (canMenu)
-              _KunContextMenuIntent: CallbackAction<_KunContextMenuIntent>(
-                onInvoke: (_) {
-                  _contextMenu(_center());
-                  return null;
-                },
-              ),
-          },
-          child: MouseRegion(
-            cursor: widget.disabled
-                ? SystemMouseCursors.forbidden
-                : (canTap ? SystemMouseCursors.click : MouseCursor.defer),
-            onEnter: (_) {
-              if (_enabled) {
-                setState(() => _hovered = true);
-              }
-            },
-            onExit: (_) => setState(() => _hovered = false),
-            child: GestureDetector(
-              behavior: HitTestBehavior.opaque,
-              excludeFromSemantics: true,
-              onTapDown: canTap ? (_) => _setPressed(true) : null,
-              onTapUp: canTap ? (_) => _setPressed(false) : null,
-              onTapCancel: canTap ? () => _setPressed(false) : null,
-              onTap: canTap ? _activate : null,
-              onSecondaryTapUp: canMenu
-                  ? (TapUpDetails details) =>
-                      _contextMenu(details.globalPosition)
-                  : null,
-              onLongPressStart: canLongPress
-                  ? (LongPressStartDetails details) {
-                      _setPressed(false);
-                      kunLongPressFeedback(context);
-                      widget.onLongPress!(details.globalPosition);
-                    }
-                  : null,
-              child: KunFocusOutline(
-                visible: _focused,
-                color: KunUIColor.primary
-                    .scaleOf(theme.colors)
-                    .solid
-                    .withValues(alpha: 0.5),
-                borderRadius: BorderRadius.circular(
-                  (widget.rounded ?? theme.rounded).radius,
-                ),
-                child: widget.builder(context, state),
-              ),
-            ),
-          ),
-        ),
-      ),
+      onLongPress: canLongPress ? () => _longPress(_center()) : null,
+      child: body,
     );
   }
 }

@@ -677,6 +677,8 @@ const List<GalleryComponent> galleryComponents = <GalleryComponent>[
           slug: 'selection',
           title: 'Selected and expanded',
           builder: pressableSelection),
+      GalleryDemo(
+          slug: 'link-menu', title: 'Link menu', builder: pressableLinkMenu),
     ],
   ),
   GalleryComponent(

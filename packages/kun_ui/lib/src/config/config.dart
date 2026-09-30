@@ -3,12 +3,33 @@ import 'dart:async';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/widgets.dart';
 
+import '../components/menu_panel.dart' show KunContextMenuItem, KunMenuEntry;
+
 /// Carries out a navigation a KunUI widget asks for, such as a tab with an
 /// `href` or a tap on an avatar.
 typedef KunNavigate = FutureOr<void> Function(
   BuildContext context,
   String href,
 );
+
+/// The browser's link menu: Copy link, Open in new tab, Share, and whatever
+/// else the app wants to offer on a KunUI link.
+///
+/// Flutter-only. The web type has no counterpart, because every `<a href>`
+/// already has the browser's menu. Null on [KunUIConfig.linkMenu] leaves
+/// every link as it is.
+@immutable
+class KunLinkMenu {
+  /// Creates a link menu.
+  const KunLinkMenu({required this.items, required this.onSelected});
+
+  /// Rows for [url]. An empty list claims nothing: no gesture, no haptic,
+  /// no semantics action.
+  final List<KunMenuEntry> Function(Uri url) items;
+
+  /// Called when the user chooses [item] for [url].
+  final void Function(KunContextMenuItem item, Uri url) onSelected;
+}
 
 /// Turns an image URL a KunUI widget was given into the [ImageProvider] that
 /// loads it.
@@ -20,7 +41,8 @@ typedef KunImageResolver = ImageProvider Function(String url);
 /// Four of the web type's eight keys live elsewhere or nowhere here:
 /// `rounded` is `KunThemeData.rounded`, `locale` is `KunMessagesScope`, and
 /// `linkComponent` and `iconComponent` have no counterpart, because a link is
-/// a tap that calls [navigate] and an icon is `IconData`.
+/// a tap that calls [navigate] and an icon is `IconData`. [linkMenu] is
+/// Flutter-only: the browser already gives every `<a href>` a menu.
 ///
 /// Provide it with a [KunUIConfigScope]. It is never required: without one,
 /// widgets read [KunUIConfig.fallback].
@@ -32,6 +54,7 @@ class KunUIConfig {
     this.userLinkTemplate = '/user/{id}/info',
     this.avatarFallbackPool = const <String>[],
     this.imageProvider = NetworkImage.new,
+    this.linkMenu,
   });
 
   /// What widgets read when no [KunUIConfigScope] is above them.
@@ -65,6 +88,12 @@ class KunUIConfig {
   /// Resolves every image URL KunUI loads, which is where an app plugs in
   /// its own caching (web `imageComponent`). Defaults to [NetworkImage].
   final KunImageResolver imageProvider;
+
+  /// The browser's link menu, offered on a right-click, a long press, and
+  /// Shift+F10 / the Menu key. Flutter-only: the web type does not need it,
+  /// because every `<a href>` already has the browser's menu. Null leaves
+  /// every link as it is — no gesture, no haptic, no semantics action.
+  final KunLinkMenu? linkMenu;
 
   /// [userLinkTemplate] with its first `{id}` replaced by [id].
   String userLinkFor(int id) => userLinkTemplate.replaceFirst('{id}', '$id');
@@ -102,12 +131,14 @@ class KunUIConfig {
     String? userLinkTemplate,
     List<String>? avatarFallbackPool,
     KunImageResolver? imageProvider,
+    KunLinkMenu? linkMenu,
   }) =>
       KunUIConfig(
         navigate: navigate ?? this.navigate,
         userLinkTemplate: userLinkTemplate ?? this.userLinkTemplate,
         avatarFallbackPool: avatarFallbackPool ?? this.avatarFallbackPool,
         imageProvider: imageProvider ?? this.imageProvider,
+        linkMenu: linkMenu ?? this.linkMenu,
       );
 
   @override
@@ -116,7 +147,8 @@ class KunUIConfig {
       other.navigate == navigate &&
       other.userLinkTemplate == userLinkTemplate &&
       listEquals(other.avatarFallbackPool, avatarFallbackPool) &&
-      other.imageProvider == imageProvider;
+      other.imageProvider == imageProvider &&
+      other.linkMenu == linkMenu;
 
   @override
   int get hashCode => Object.hash(
@@ -124,6 +156,7 @@ class KunUIConfig {
         userLinkTemplate,
         Object.hashAll(avatarFallbackPool),
         imageProvider,
+        linkMenu,
       );
 }
 

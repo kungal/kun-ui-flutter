@@ -4,6 +4,7 @@ import 'package:kun_ui_tokens/kun_ui_tokens.dart';
 import '../config/config.dart';
 import '../foundation/design.dart';
 import '../foundation/focus_outline.dart';
+import '../foundation/link_menu.dart';
 import '../locale/messages.dart';
 import '../theme/theme.dart';
 import 'avatar.dart';
@@ -95,20 +96,35 @@ class KunUserChip extends StatelessWidget {
       config.navigateTo(context, config.userLinkFor(current.id));
     }
 
-    return Semantics(
-      container: true,
-      link: isLink,
+    if (!isLink) {
+      return Semantics(
+        container: true,
+        link: false,
+        label: semanticsLabel,
+        excludeSemantics: true,
+        child: content,
+      );
+    }
+
+    return _KunUserChipLink(
+      url: kunLinkUri(KunUIConfigScope.of(context).userLinkFor(user!.id)),
       label: semanticsLabel,
-      onTap: isLink ? open : null,
-      excludeSemantics: true,
-      child: isLink ? _KunUserChipLink(onOpen: open, child: content) : content,
+      onOpen: open,
+      child: content,
     );
   }
 }
 
 class _KunUserChipLink extends StatefulWidget {
-  const _KunUserChipLink({required this.onOpen, required this.child});
+  const _KunUserChipLink({
+    required this.url,
+    required this.label,
+    required this.onOpen,
+    required this.child,
+  });
 
+  final Uri? url;
+  final String label;
   final VoidCallback onOpen;
   final Widget child;
 
@@ -117,38 +133,65 @@ class _KunUserChipLink extends StatefulWidget {
 }
 
 class _KunUserChipLinkState extends State<_KunUserChipLink> {
+  final GlobalKey<KunLinkMenuHostState> _linkMenu = GlobalKey();
   bool _focused = false;
 
   @override
   Widget build(BuildContext context) {
-    return FocusableActionDetector(
-      onShowFocusHighlight: (bool value) => setState(() => _focused = value),
-      actions: <Type, Action<Intent>>{
-        ActivateIntent: CallbackAction<ActivateIntent>(
-          onInvoke: (_) {
-            widget.onOpen();
-            return null;
+    final Uri? url = widget.url;
+    final bool linkMenuActive = url != null && kunLinkMenuClaims(context, url);
+    return Semantics(
+      container: true,
+      link: true,
+      label: widget.label,
+      onTap: widget.onOpen,
+      onLongPress: linkMenuActive
+          ? () => _linkMenu.currentState?.openFromLongPressAtCenter()
+          : null,
+      excludeSemantics: true,
+      child: KunLinkMenuHost(
+        key: _linkMenu,
+        url: widget.url,
+        capturePointers: false,
+        child: FocusableActionDetector(
+          onShowFocusHighlight: (bool value) =>
+              setState(() => _focused = value),
+          actions: <Type, Action<Intent>>{
+            ActivateIntent: CallbackAction<ActivateIntent>(
+              onInvoke: (_) {
+                widget.onOpen();
+                return null;
+              },
+            ),
+            ButtonActivateIntent: CallbackAction<ButtonActivateIntent>(
+              onInvoke: (_) {
+                widget.onOpen();
+                return null;
+              },
+            ),
           },
-        ),
-        ButtonActivateIntent: CallbackAction<ButtonActivateIntent>(
-          onInvoke: (_) {
-            widget.onOpen();
-            return null;
-          },
-        ),
-      },
-      child: MouseRegion(
-        cursor: SystemMouseCursors.click,
-        child: GestureDetector(
-          behavior: HitTestBehavior.opaque,
-          onTap: widget.onOpen,
-          child: KunFocusOutline(
-            visible: _focused,
-            color: KunUIColor.primary
-                .scaleOf(KunTheme.of(context).colors)
-                .solid
-                .withValues(alpha: 0.5),
-            child: widget.child,
+          child: MouseRegion(
+            cursor: SystemMouseCursors.click,
+            child: GestureDetector(
+              behavior: HitTestBehavior.opaque,
+              onTap: widget.onOpen,
+              onSecondaryTapUp: linkMenuActive
+                  ? (TapUpDetails details) =>
+                      _linkMenu.currentState?.openAt(details.globalPosition)
+                  : null,
+              onLongPressStart: linkMenuActive
+                  ? (LongPressStartDetails details) => _linkMenu.currentState
+                      ?.openFromLongPress(details.globalPosition)
+                  : null,
+              child: KunFocusOutline(
+                visible: _focused,
+                color: KunUIColor.primary
+                    .scaleOf(KunTheme.of(context).colors)
+                    .solid
+                    .withValues(alpha: 0.5),
+                child: widget.child,
+              ),
+            ),
           ),
         ),
       ),

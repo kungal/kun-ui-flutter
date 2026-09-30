@@ -11,6 +11,7 @@ import 'package:kun_ui_tokens/kun_ui_tokens.dart';
 import '../config/config.dart';
 import '../foundation/design.dart';
 import '../foundation/focus_outline.dart';
+import '../foundation/link_menu.dart';
 import '../foundation/motion.dart';
 import '../foundation/outer_shadow.dart';
 import '../foundation/tap_target.dart';
@@ -246,6 +247,8 @@ class _KunTabState<T extends KunTabItem> extends State<KunTab<T>>
   final GlobalKey _viewportKey = GlobalKey();
   final ScrollController _scrollController = ScrollController();
   final List<GlobalKey> _tabKeys = <GlobalKey>[];
+  final List<GlobalKey<KunLinkMenuHostState>> _linkMenuKeys =
+      <GlobalKey<KunLinkMenuHostState>>[];
   final List<FocusNode> _focusNodes = <FocusNode>[];
 
   Rect? _indicatorFrom;
@@ -316,6 +319,12 @@ class _KunTabState<T extends KunTabItem> extends State<KunTab<T>>
     }
     if (_tabKeys.length > widget.items.length) {
       _tabKeys.removeRange(widget.items.length, _tabKeys.length);
+    }
+    while (_linkMenuKeys.length < widget.items.length) {
+      _linkMenuKeys.add(GlobalKey<KunLinkMenuHostState>());
+    }
+    if (_linkMenuKeys.length > widget.items.length) {
+      _linkMenuKeys.removeRange(widget.items.length, _linkMenuKeys.length);
     }
     while (_focusNodes.length < widget.items.length) {
       final FocusNode node = FocusNode(debugLabel: 'KunTab');
@@ -1025,12 +1034,26 @@ class _KunTabState<T extends KunTabItem> extends State<KunTab<T>>
       child: _isVertical ? tab : Align(child: tab),
     );
 
+    final String? href = item.href;
+    final Uri? url = kunLinkUri(href);
+    if (href != null && href.isNotEmpty) {
+      tab = KunLinkMenuHost(
+        key: _linkMenuKeys[index],
+        url: url,
+        enabled: itemEnabled,
+        child: tab,
+      );
+    }
+
     tab = Semantics(
       container: true,
       role: _isNav ? null : SemanticsRole.tab,
       selected: _isNav ? (selected ? true : null) : selected,
       enabled: itemEnabled,
       onTap: itemEnabled ? () => _select(item) : null,
+      onLongPress: itemEnabled && url != null && kunLinkMenuClaims(context, url)
+          ? () => _linkMenuKeys[index].currentState?.openFromLongPressAtCenter()
+          : null,
       child: _isVertical ? KunTapTarget(child: tab) : tab,
     );
 

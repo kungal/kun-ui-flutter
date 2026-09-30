@@ -1868,6 +1868,12 @@
           "title": "Selected and expanded",
           "builder": "pressableSelection",
           "shows": []
+        },
+        {
+          "slug": "link-menu",
+          "title": "Link menu",
+          "builder": "pressableLinkMenu",
+          "shows": []
         }
       ]
     },

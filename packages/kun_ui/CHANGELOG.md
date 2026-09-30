@@ -1,5 +1,33 @@
 # Changelog
 
+## 0.26.0
+
+- **`KunUIConfig.linkMenu`** gives KunUI's links the menu a browser gives
+  every `<a href>`: Copy link, Open in new tab, Share, or whatever the app
+  offers. Set it once with a `KunLinkMenu(items: (url) => …, onSelected:
+  (item, url) => …)`, and each link opens a `KunContextMenu` of
+  `items(url)`.
+  - It opens on a right-click at the pointer, on a long press at the
+    finger (with the long-press vibration), and on Shift+F10 or the Menu
+    key at the link's centre. Screen readers get it as the link's own long
+    press, on the node the link already had.
+  - The links: `KunPressable` with a `linkUrl`, `KunAvatar` and
+    `KunUserChip` when they link to a user, and `KunNavItem` and `KunTab`
+    items with an `href`. Links inside chat text, the chat link preview
+    and the rows of a menu do not have it yet.
+  - A widget's own `onSecondaryTap` or `onLongPress` wins over the link
+    menu. Inside a `KunContextMenuRegion`, a right-click on a link opens
+    the link menu and a right-click beside it opens the region's, as in a
+    browser.
+  - With `linkMenu` null, with `items(url)` empty, or on Flutter web, a
+    link claims nothing: no gesture, no vibration, no screen-reader action,
+    and a surrounding long press still works. Setting it later does not
+    remount anything.
+- **`contentInsertionConfiguration`** on `KunInput`, `KunTextarea` and
+  `KunChatComposer`, passed to the inner `EditableText`. It lets Gboard
+  insert images, GIFs and stickers; without it the keyboard says the app
+  cannot insert them. Null changes nothing.
+
 ## 0.25.0
 
 - **`KunContextMenuRegion`** opens a command menu from a right-click or a

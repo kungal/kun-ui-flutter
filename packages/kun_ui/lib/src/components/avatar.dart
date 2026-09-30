@@ -5,6 +5,7 @@ import 'package:kun_ui_tokens/kun_ui_tokens.dart';
 import '../config/config.dart';
 import '../foundation/design.dart';
 import '../foundation/focus_outline.dart';
+import '../foundation/link_menu.dart';
 import '../foundation/motion.dart';
 import '../locale/messages.dart';
 import '../theme/theme.dart';
@@ -165,6 +166,7 @@ class KunAvatar extends StatefulWidget {
 }
 
 class _KunAvatarState extends State<KunAvatar> {
+  final GlobalKey<KunLinkMenuHostState> _linkMenu = GlobalKey();
   bool _failed = false;
   bool _hovered = false;
   bool _focused = false;
@@ -414,47 +416,67 @@ class _KunAvatarState extends State<KunAvatar> {
       return body;
     }
 
+    final Uri? url = kunLinkUri(config.userLinkFor(widget.user!.id));
+    final bool linkMenuActive = url != null && kunLinkMenuClaims(context, url);
+
     return Semantics(
       container: true,
       link: true,
       label: pictureLabel,
       onTap: _open,
+      onLongPress: linkMenuActive
+          ? () => _linkMenu.currentState?.openFromLongPressAtCenter()
+          : null,
       excludeSemantics: true,
-      child: FocusableActionDetector(
-        onShowFocusHighlight: (bool value) => setState(() => _focused = value),
-        actions: <Type, Action<Intent>>{
-          ActivateIntent: CallbackAction<ActivateIntent>(
-            onInvoke: (_) {
-              _open();
-              return null;
-            },
-          ),
-          ButtonActivateIntent: CallbackAction<ButtonActivateIntent>(
-            onInvoke: (_) {
-              _open();
-              return null;
-            },
-          ),
-        },
-        child: MouseRegion(
-          cursor: SystemMouseCursors.click,
-          onEnter: (_) => setState(() => _hovered = true),
-          onExit: (_) => setState(() => _hovered = false),
-          child: GestureDetector(
-            behavior: HitTestBehavior.opaque,
-            onTap: _open,
-            child: AnimatedScale(
-              scale: _hovered ? 1.1 : 1,
-              duration: kunMotion(context, KunDurations.fast),
-              curve: KunEasing.standard,
-              child: KunFocusOutline(
-                visible: _focused,
-                color: KunUIColor.primary
-                    .scaleOf(KunTheme.of(context).colors)
-                    .solid
-                    .withValues(alpha: 0.5),
-                circle: true,
-                child: body,
+      child: KunLinkMenuHost(
+        key: _linkMenu,
+        url: url,
+        capturePointers: false,
+        child: FocusableActionDetector(
+          onShowFocusHighlight: (bool value) =>
+              setState(() => _focused = value),
+          actions: <Type, Action<Intent>>{
+            ActivateIntent: CallbackAction<ActivateIntent>(
+              onInvoke: (_) {
+                _open();
+                return null;
+              },
+            ),
+            ButtonActivateIntent: CallbackAction<ButtonActivateIntent>(
+              onInvoke: (_) {
+                _open();
+                return null;
+              },
+            ),
+          },
+          child: MouseRegion(
+            cursor: SystemMouseCursors.click,
+            onEnter: (_) => setState(() => _hovered = true),
+            onExit: (_) => setState(() => _hovered = false),
+            child: GestureDetector(
+              behavior: HitTestBehavior.opaque,
+              onTap: _open,
+              onSecondaryTapUp: linkMenuActive
+                  ? (TapUpDetails details) =>
+                      _linkMenu.currentState?.openAt(details.globalPosition)
+                  : null,
+              onLongPressStart: linkMenuActive
+                  ? (LongPressStartDetails details) => _linkMenu.currentState
+                      ?.openFromLongPress(details.globalPosition)
+                  : null,
+              child: AnimatedScale(
+                scale: _hovered ? 1.1 : 1,
+                duration: kunMotion(context, KunDurations.fast),
+                curve: KunEasing.standard,
+                child: KunFocusOutline(
+                  visible: _focused,
+                  color: KunUIColor.primary
+                      .scaleOf(KunTheme.of(context).colors)
+                      .solid
+                      .withValues(alpha: 0.5),
+                  circle: true,
+                  child: body,
+                ),
               ),
             ),
           ),

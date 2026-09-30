@@ -22,6 +22,13 @@ Widget pressableSelection(BuildContext context) {
   );
 }
 
+Widget pressableLinkMenu(BuildContext context) {
+  return const Padding(
+    padding: EdgeInsets.all(KunSpacing.unit * 6),
+    child: _PressableLinkMenu(),
+  );
+}
+
 const List<String> _topics = <String>[
   'Which route did you take first?',
   'Patch 1.2 notes',
@@ -269,6 +276,75 @@ class _PressableSelectionState extends State<_PressableSelection> {
               ),
             ),
         ],
+      ),
+    );
+  }
+}
+
+class _PressableLinkMenu extends StatefulWidget {
+  const _PressableLinkMenu();
+
+  @override
+  State<_PressableLinkMenu> createState() => _PressableLinkMenuState();
+}
+
+class _PressableLinkMenuState extends State<_PressableLinkMenu> {
+  String _last = 'Right-click, long-press, or Tab and press Shift+F10.';
+
+  static const List<KunContextMenuItem> _items = <KunContextMenuItem>[
+    KunContextMenuItem(key: 'copy', label: 'Copy link', icon: KunIcons.copy),
+    KunContextMenuItem(key: 'open', label: 'Open', icon: KunIcons.arrowRight),
+  ];
+
+  @override
+  Widget build(BuildContext context) {
+    final KunColorScheme scheme = KunTheme.of(context).colors;
+    return KunUIConfigScope(
+      config: KunUIConfig(
+        linkMenu: KunLinkMenu(
+          items: (Uri url) => _items,
+          onSelected: (KunContextMenuItem item, Uri url) => setState(
+            () => _last = '${item.label}: $url',
+          ),
+        ),
+      ),
+      child: SizedBox(
+        width: KunSpacing.unit * 100,
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: <Widget>[
+            for (final String topic in _topics)
+              KunPressable(
+                linkUrl: Uri(path: '/topic/${_topics.indexOf(topic) + 1}'),
+                onTap: () => setState(() => _last = 'Opened "$topic"'),
+                builder: (BuildContext context, KunPressableState state) {
+                  return Container(
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: KunSpacing.unit * 3,
+                      vertical: KunSpacing.unit * 3,
+                    ),
+                    decoration: BoxDecoration(
+                      color: state.hovered || state.pressed
+                          ? scheme.neutral.shade100
+                              .withValues(alpha: KunColors.globalOpacity)
+                          : scheme.neutral.shade100.withValues(alpha: 0),
+                      borderRadius: BorderRadius.circular(KunRadius.md),
+                    ),
+                    child: Text(
+                      topic,
+                      style: KunText.sm.copyWith(color: scheme.foreground),
+                    ),
+                  );
+                },
+              ),
+            const SizedBox(height: KunSpacing.unit * 4),
+            Text(
+              _last,
+              style: KunText.xs.copyWith(color: scheme.foregroundMuted),
+            ),
+          ],
+        ),
       ),
     );
   }
