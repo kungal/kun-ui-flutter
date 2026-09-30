@@ -6,10 +6,15 @@ import 'package:kun_ui/kun_ui.dart';
 
 Finder get burst => find.byKey(const ValueKey<String>('KunReaction.burst'));
 
-Widget wrap(Widget child, {bool reducedMotion = false}) => MediaQuery(
+Widget wrap(
+  Widget child, {
+  bool reducedMotion = false,
+  KunTapTargetSize tapTargetSize = KunTapTargetSize.adaptive,
+}) =>
+    MediaQuery(
       data: MediaQueryData(disableAnimations: reducedMotion),
       child: KunTheme(
-        data: KunThemeData.light(),
+        data: KunThemeData.light(tapTargetSize: tapTargetSize),
         child: Directionality(
           textDirection: TextDirection.ltr,
           child: Center(child: child),
@@ -548,5 +553,58 @@ void main() {
       ),
     );
     expect(tester.widget<Icon>(find.byType(Icon)).icon, KunIcons.eye);
+  });
+
+  testWidgets('padded grows the layout box, not the pill', (tester) async {
+    await tester.pumpWidget(
+      wrap(
+        heart(onChanged: (_) {}),
+        tapTargetSize: KunTapTargetSize.padded,
+      ),
+    );
+    final pill = find.byType(AnimatedContainer);
+    final drawn = tester.getSize(pill);
+    expect(tester.getSize(find.byType(KunReaction)).height, 48);
+    expect(tester.getSize(find.byType(KunReaction)).width,
+        greaterThanOrEqualTo(48));
+
+    await tester.pumpWidget(
+      wrap(
+        heart(onChanged: (_) {}),
+        tapTargetSize: KunTapTargetSize.shrinkWrap,
+      ),
+    );
+    expect(tester.getSize(pill), drawn);
+    expect(tester.getSize(find.byType(KunReaction)), drawn);
+  });
+
+  testWidgets('a tap in the band presses the reaction', (tester) async {
+    var value = false;
+    await tester.pumpWidget(
+      wrap(heart(value: value, onChanged: (next) => value = next)),
+    );
+    final drawn = tester.getRect(find.byType(AnimatedContainer));
+    await tester.tapAt(Offset(drawn.center.dx, drawn.top - 3));
+    expect(value, isTrue);
+  });
+
+  testWidgets('the reaction meets the Android guideline', (tester) async {
+    final handle = tester.ensureSemantics();
+    await tester.pumpWidget(
+      wrap(
+        Wrap(
+          spacing: 16,
+          children: [
+            heart(onChanged: (_) {}),
+            heart(
+              child: const KunBadge(child: Text('new')),
+              onChanged: (_) {},
+            ),
+          ],
+        ),
+      ),
+    );
+    await expectLater(tester, meetsGuideline(androidTapTargetGuideline));
+    handle.dispose();
   });
 }

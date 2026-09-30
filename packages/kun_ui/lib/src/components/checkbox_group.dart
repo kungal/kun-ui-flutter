@@ -7,6 +7,7 @@ import '../foundation/design.dart';
 import '../foundation/field_ring.dart';
 import '../foundation/motion.dart';
 import '../foundation/selection_metrics.dart';
+import '../foundation/tap_target.dart';
 import '../theme/theme.dart';
 
 /// One choice in a [KunCheckBoxGroup].
@@ -336,36 +337,41 @@ class _KunCheckBoxGroupItemState<T> extends State<_KunCheckBoxGroupItem<T>> {
     };
 
     return Semantics(
+      container: true,
       checked: chosen,
       enabled: !disabled,
       label: widget.option.label,
       hint: widget.option.description,
       onTap: disabled ? null : () => widget.state._toggle(widget.option),
-      child: ExcludeSemantics(
-        child: Focus(
-          focusNode: _focus,
-          canRequestFocus: !disabled,
-          onKeyEvent: (FocusNode node, KeyEvent event) {
-            if (event is KeyDownEvent &&
-                (event.logicalKey == LogicalKeyboardKey.space ||
-                    event.logicalKey == LogicalKeyboardKey.enter)) {
-              widget.state._toggle(widget.option);
-              return KeyEventResult.handled;
-            }
-            return KeyEventResult.ignored;
-          },
-          child: MouseRegion(
-            cursor:
-                disabled ? SystemMouseCursors.basic : SystemMouseCursors.click,
-            onEnter: (_) => setState(() => _hovered = true),
-            onExit: (_) => setState(() => _hovered = false),
-            child: GestureDetector(
-              behavior: HitTestBehavior.opaque,
-              onTap:
-                  disabled ? null : () => widget.state._toggle(widget.option),
-              child: Opacity(
-                opacity: disabled ? 0.5 : (blocked ? _kBlockedOpacity : 1),
-                child: body,
+      child: KunTapTarget(
+        child: ExcludeSemantics(
+          child: Focus(
+            focusNode: _focus,
+            canRequestFocus: !disabled,
+            onKeyEvent: (FocusNode node, KeyEvent event) {
+              if (event is KeyDownEvent &&
+                  (event.logicalKey == LogicalKeyboardKey.space ||
+                      event.logicalKey == LogicalKeyboardKey.enter)) {
+                widget.state._toggle(widget.option);
+                return KeyEventResult.handled;
+              }
+              return KeyEventResult.ignored;
+            },
+            child: MouseRegion(
+              cursor: disabled
+                  ? SystemMouseCursors.basic
+                  : SystemMouseCursors.click,
+              onEnter: (_) => setState(() => _hovered = true),
+              onExit: (_) => setState(() => _hovered = false),
+              child: GestureDetector(
+                behavior: HitTestBehavior.opaque,
+                excludeFromSemantics: true,
+                onTap:
+                    disabled ? null : () => widget.state._toggle(widget.option),
+                child: Opacity(
+                  opacity: disabled ? 0.5 : (blocked ? _kBlockedOpacity : 1),
+                  child: body,
+                ),
               ),
             ),
           ),

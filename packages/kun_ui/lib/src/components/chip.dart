@@ -1,3 +1,5 @@
+import 'dart:math' as math;
+
 import 'package:flutter/widgets.dart';
 import 'package:kun_ui_icons/kun_ui_icons.dart';
 import 'package:kun_ui_tokens/kun_ui_tokens.dart';
@@ -5,6 +7,7 @@ import 'package:kun_ui_tokens/kun_ui_tokens.dart';
 import '../foundation/control_metrics.dart';
 import '../foundation/design.dart';
 import '../foundation/motion.dart';
+import '../foundation/tap_target.dart';
 import '../foundation/variant_style.dart';
 import '../locale/messages.dart';
 import '../theme/theme.dart';
@@ -91,18 +94,13 @@ class KunChip extends StatelessWidget {
         ),
       );
     }
+    const double closeGlyph = KunSpacing.unit * 3.5;
     if (closable) {
       // The web's gap-1 plus the button's own ml-0.5.
       if (row.isNotEmpty) {
         row.add(const SizedBox(width: KunSpacing.unit * (1 + 0.5)));
       }
-      row.add(
-        _KunChipClose(
-          color: style.foreground,
-          semanticLabel: KunMessagesScope.of(context).chip.remove,
-          onPressed: disabled ? null : onClose,
-        ),
-      );
+      row.add(const SizedBox(width: closeGlyph, height: closeGlyph));
     }
     if (end != null) {
       // gap-1 again, less the close button's -mr-0.5 when there is one.
@@ -112,27 +110,60 @@ class KunChip extends StatelessWidget {
       row.add(end!);
     }
 
-    final Widget chip = Container(
-      // The close button's -mr-0.5 pulls the pill's right edge in when the ×
-      // is the last child — the web's usual case.
-      padding: EdgeInsets.fromLTRB(
-        metrics.horizontalPadding,
-        metrics.verticalPadding,
-        metrics.horizontalPadding -
-            (closable && end == null ? KunSpacing.unit * 0.5 : 0),
-        metrics.verticalPadding,
-      ),
-      decoration: BoxDecoration(
-        color: style.background,
-        border: Border.all(color: style.border),
-        borderRadius: BorderRadius.circular(KunRadius.full),
-        boxShadow: style.shadows,
-      ),
-      child: IconTheme.merge(
-        data: IconThemeData(color: style.foreground, size: metrics.fontSize),
-        child: Row(mainAxisSize: MainAxisSize.min, children: row),
-      ),
+    final EdgeInsets padding = EdgeInsets.fromLTRB(
+      metrics.horizontalPadding,
+      metrics.verticalPadding,
+      metrics.horizontalPadding -
+          (closable && end == null ? KunSpacing.unit * 0.5 : 0),
+      metrics.verticalPadding,
     );
+    final BoxDecoration decoration = BoxDecoration(
+      color: style.background,
+      border: Border.all(color: style.border),
+      borderRadius: BorderRadius.circular(KunRadius.full),
+      boxShadow: style.shadows,
+    );
+    final Widget content = IconTheme.merge(
+      data: IconThemeData(color: style.foreground, size: metrics.fontSize),
+      child: Row(mainAxisSize: MainAxisSize.min, children: row),
+    );
+
+    Widget chip;
+    if (closable) {
+      final Size minTap = kunMinTapTargetSize(context);
+      final bool padded = minTap.width > 0;
+      // A Container's border sits outside its padding. KunTapBand sizes the
+      // background to the child's intrinsic, so without this 1px a closable
+      // chip is 2px shorter than the same label that is not closable and
+      // the × sits 1px left of where the web draws it.
+      final EdgeInsets inner = padding + const EdgeInsets.all(1);
+      chip = KunTapBand(
+        background: DecoratedBox(decoration: decoration),
+        child: Stack(
+          children: <Widget>[
+            Padding(padding: inner, child: content),
+            Positioned(
+              right: padded ? 0 : inner.right,
+              top: 0,
+              bottom: 0,
+              width: math.max(closeGlyph, minTap.width),
+              child: _KunChipClose(
+                color: style.foreground,
+                semanticLabel: KunMessagesScope.of(context).chip.remove,
+                onPressed: disabled ? null : onClose,
+                glyphInset: padded ? inner.right : 0,
+              ),
+            ),
+          ],
+        ),
+      );
+    } else {
+      chip = Container(
+        padding: padding,
+        decoration: decoration,
+        child: content,
+      );
+    }
 
     return MouseRegion(
       cursor: SystemMouseCursors.basic, // web cursor-default
@@ -152,11 +183,13 @@ class _KunChipClose extends StatefulWidget {
   const _KunChipClose({
     required this.color,
     required this.semanticLabel,
+    required this.glyphInset,
     this.onPressed,
   });
 
   final Color color;
   final String semanticLabel;
+  final double glyphInset;
   final VoidCallback? onPressed;
 
   @override
@@ -170,9 +203,11 @@ class _KunChipCloseState extends State<_KunChipClose> {
   @override
   Widget build(BuildContext context) {
     return Semantics(
+      container: true,
       button: true,
       enabled: widget.onPressed != null,
       label: widget.semanticLabel,
+      onTap: widget.onPressed,
       child: FocusableActionDetector(
         enabled: widget.onPressed != null,
         onShowFocusHighlight: (value) => setState(() => _focused = value),
@@ -199,15 +234,24 @@ class _KunChipCloseState extends State<_KunChipClose> {
           onExit: (_) => setState(() => _hovered = false),
           child: GestureDetector(
             behavior: HitTestBehavior.opaque,
+            excludeFromSemantics: true,
             onTap: widget.onPressed,
-            child: AnimatedOpacity(
-              opacity: _hovered || _focused ? 1 : 0.7,
-              duration: kunMotion(context, KunDefaultTransition.duration),
-              curve: KunDefaultTransition.curve,
-              child: Icon(
-                KunIcons.x,
-                size: KunSpacing.unit * 3.5,
-                color: widget.color,
+            child: Align(
+              alignment: AlignmentDirectional.centerEnd,
+              child: Padding(
+                padding: EdgeInsets.only(right: widget.glyphInset),
+                child: AnimatedOpacity(
+                  opacity: _hovered || _focused ? 1 : 0.7,
+                  duration: kunMotion(context, KunDefaultTransition.duration),
+                  curve: KunDefaultTransition.curve,
+                  child: IgnorePointer(
+                    child: Icon(
+                      KunIcons.x,
+                      size: KunSpacing.unit * 3.5,
+                      color: widget.color,
+                    ),
+                  ),
+                ),
               ),
             ),
           ),

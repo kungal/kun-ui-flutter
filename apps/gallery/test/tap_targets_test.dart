@@ -5,26 +5,14 @@ import 'package:kun_ui_gallery/main.dart';
 import 'package:kun_ui_gallery/src/registry.dart';
 import 'package:kun_ui_gallery/src/registry.g.dart';
 
-/// Components the touch-target sweep has not reached yet. Each one leaves
-/// this set in the change that pads it.
-const Set<String> pending = <String>{
-  'kunautocomplete',
-  'kunbadge',
-  'kuncheckbox',
-  'kuncheckboxgroup',
-  'kunchip',
-  'kundatepicker',
-  'kuninput',
-  'kunloading',
-  'kunradiogroup',
-  'kunreaction',
-  'kunselect',
-  'kunswitch',
-  'kuntab',
-  'kuntooltip',
+/// Demos the test cannot render, with the reason.
+const Map<String, String> skipped = <String, String>{
+  'kuntab/align': "its 160-wide columns (the web's w-40) overflow in the "
+      'test font, which draws every glyph 1em wide',
 };
 
-/// Demos that stay below the minimum by decision, with the reason.
+/// Demos that stay below the minimum by decision, with the reason. Their
+/// tappable nodes are still checked for a label.
 const Map<String, String> exempt = <String, String>{
   'kunchatbubble/reply': 'reply quote inside the bubble',
   'kunchatbubble/status': 'retry button inside the bubble',
@@ -41,10 +29,9 @@ const Map<String, String> exempt = <String, String>{
 
 void main() {
   for (final GalleryComponent component in galleryComponents) {
-    if (pending.contains(component.slug)) continue;
     for (final GalleryDemo demo in component.demos) {
       final String path = '${component.slug}/${demo.slug}';
-      if (exempt.containsKey(path)) continue;
+      if (skipped.containsKey(path)) continue;
       testWidgets(
         path,
         (WidgetTester tester) async {
@@ -59,14 +46,17 @@ void main() {
           );
           await tester.pumpWidget(const GalleryApp());
           await tester.pump(const Duration(milliseconds: 500));
-          await expectLater(
-            tester,
-            meetsGuideline(
-              defaultTargetPlatform == TargetPlatform.iOS
-                  ? iOSTapTargetGuideline
-                  : androidTapTargetGuideline,
-            ),
-          );
+          if (!exempt.containsKey(path)) {
+            await expectLater(
+              tester,
+              meetsGuideline(
+                defaultTargetPlatform == TargetPlatform.iOS
+                    ? iOSTapTargetGuideline
+                    : androidTapTargetGuideline,
+              ),
+            );
+          }
+          await expectLater(tester, meetsGuideline(labeledTapTargetGuideline));
           await tester.pumpWidget(const SizedBox());
           await tester.pump(const Duration(minutes: 1));
           handle.dispose();

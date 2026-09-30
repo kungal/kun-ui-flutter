@@ -4,8 +4,12 @@ import 'package:flutter/widgets.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:kun_ui/kun_ui.dart';
 
-Widget wrap(Widget child) => KunTheme(
-      data: KunThemeData.light(),
+Widget wrap(
+  Widget child, {
+  KunTapTargetSize tapTargetSize = KunTapTargetSize.adaptive,
+}) =>
+    KunTheme(
+      data: KunThemeData.light(tapTargetSize: tapTargetSize),
       child: Directionality(
         textDirection: TextDirection.ltr,
         child: Overlay(
@@ -660,6 +664,78 @@ void main() {
     await tester.enterText(find.byType(EditableText), 'galgame');
     await tester.testTextInput.receiveAction(TextInputAction.search);
     expect(submitted, ['galgame']);
+  });
+
+  testWidgets('padded grows the field, not the drawn box', (tester) async {
+    Size? drawn;
+    Offset? iconFromRight;
+    for (final size in [
+      KunTapTargetSize.padded,
+      KunTapTargetSize.shrinkWrap,
+    ]) {
+      await tester.pumpWidget(
+        wrap(
+          const KunInput(value: 'kun', isClearable: true),
+          tapTargetSize: size,
+        ),
+      );
+      final field = tester.getSize(find.byType(KunInput));
+      final box = tester.getSize(boxFinder);
+      final icon = tester.getRect(find.byIcon(KunIcons.circleX));
+      final boxRect = tester.getRect(boxFinder);
+      if (size == KunTapTargetSize.padded) {
+        expect(field.height, 48);
+        expect(box.height, KunControlMetrics.of(KunUISize.md).square);
+        drawn = box;
+        iconFromRight = Offset(
+            boxRect.right - icon.right, icon.center.dy - boxRect.center.dy);
+      } else {
+        expect(field.height, KunControlMetrics.of(KunUISize.md).square);
+        expect(box, drawn);
+        expect(
+          Offset(
+              boxRect.right - icon.right, icon.center.dy - boxRect.center.dy),
+          iconFromRight,
+        );
+      }
+    }
+  });
+
+  testWidgets('the band above the text focuses, the band above clear clears',
+      (tester) async {
+    var value = 'kun';
+    await tester.pumpWidget(
+      wrap(
+        KunInput(
+          value: value,
+          isClearable: true,
+          onChanged: (next) => value = next,
+        ),
+      ),
+    );
+    final drawn = tester.getRect(boxFinder);
+    await tester.tapAt(Offset(drawn.left + 24, drawn.top - 3));
+    await tester.pump();
+    expect(
+      tester.widget<EditableText>(find.byType(EditableText)).focusNode.hasFocus,
+      isTrue,
+    );
+
+    await tester.tapAt(
+      Offset(tester.getRect(find.byIcon(KunIcons.circleX)).center.dx,
+          drawn.top - 3),
+    );
+    await tester.pump();
+    expect(value, '');
+  });
+
+  testWidgets('the field and clear meet the Android guideline', (tester) async {
+    final handle = tester.ensureSemantics();
+    await tester.pumpWidget(
+      wrap(const KunInput(value: 'kun', isClearable: true)),
+    );
+    await expectLater(tester, meetsGuideline(androidTapTargetGuideline));
+    handle.dispose();
   });
 }
 

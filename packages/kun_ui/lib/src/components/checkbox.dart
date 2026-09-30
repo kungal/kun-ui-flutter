@@ -7,6 +7,7 @@ import '../foundation/design.dart';
 import '../foundation/field_ring.dart';
 import '../foundation/motion.dart';
 import '../foundation/selection_metrics.dart';
+import '../foundation/tap_target.dart';
 import '../theme/theme.dart';
 
 /// What shape a [KunCheckBox]'s box takes.
@@ -241,6 +242,7 @@ class _KunCheckBoxState extends State<KunCheckBox>
     );
 
     return Semantics(
+      container: true,
       checked: widget.value,
       mixed: widget.indeterminate,
       // The prop, not the callback: a null callback leaves the checkbox
@@ -252,47 +254,50 @@ class _KunCheckBoxState extends State<KunCheckBox>
       hint: message,
       onTap: _enabled ? _toggle : null,
       child: ExcludeSemantics(
-        child: Focus(
-          focusNode: _focus,
-          onKeyEvent: (FocusNode node, KeyEvent event) {
-            if (event is KeyDownEvent &&
-                event.logicalKey == LogicalKeyboardKey.space) {
-              _toggle();
-              return KeyEventResult.handled;
-            }
-            return KeyEventResult.ignored;
-          },
-          child: MouseRegion(
-            cursor:
-                _enabled ? SystemMouseCursors.click : SystemMouseCursors.basic,
-            onEnter: (_) => setState(() => _hovered = true),
-            onExit: (_) => setState(() => _hovered = false),
-            child: GestureDetector(
-              behavior: HitTestBehavior.opaque,
-              onTap: _enabled ? _toggle : null,
-              child: Opacity(
-                opacity: widget.disabled ? 0.5 : 1,
-                child: Column(
-                  mainAxisSize: MainAxisSize.min,
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: <Widget>[
-                    row,
-                    if (message != null && message.isNotEmpty)
-                      Padding(
-                        padding: const EdgeInsets.only(top: KunSpacing.unit),
-                        child: Text(
-                          message,
-                          style: KunText.sm.copyWith(
-                            color: widget.error != null
-                                ? scheme.danger.solid
-                                : scheme.foregroundMuted,
-                          ),
-                        ),
-                      ),
-                  ],
+        child: Opacity(
+          opacity: widget.disabled ? 0.5 : 1,
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: <Widget>[
+              KunTapTarget(
+                child: Focus(
+                  focusNode: _focus,
+                  onKeyEvent: (FocusNode node, KeyEvent event) {
+                    if (event is KeyDownEvent &&
+                        event.logicalKey == LogicalKeyboardKey.space) {
+                      _toggle();
+                      return KeyEventResult.handled;
+                    }
+                    return KeyEventResult.ignored;
+                  },
+                  child: MouseRegion(
+                    cursor: _enabled
+                        ? SystemMouseCursors.click
+                        : SystemMouseCursors.basic,
+                    onEnter: (_) => setState(() => _hovered = true),
+                    onExit: (_) => setState(() => _hovered = false),
+                    child: GestureDetector(
+                      behavior: HitTestBehavior.opaque,
+                      onTap: _enabled ? _toggle : null,
+                      child: row,
+                    ),
+                  ),
                 ),
               ),
-            ),
+              if (message != null && message.isNotEmpty)
+                Padding(
+                  padding: const EdgeInsets.only(top: KunSpacing.unit),
+                  child: Text(
+                    message,
+                    style: KunText.sm.copyWith(
+                      color: widget.error != null
+                          ? scheme.danger.solid
+                          : scheme.foregroundMuted,
+                    ),
+                  ),
+                ),
+            ],
           ),
         ),
       ),

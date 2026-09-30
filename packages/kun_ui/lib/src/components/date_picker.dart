@@ -1,3 +1,5 @@
+import 'dart:math' as math;
+
 import 'package:flutter/foundation.dart' show defaultTargetPlatform;
 import 'package:flutter/gestures.dart';
 import 'package:flutter/scheduler.dart';
@@ -15,6 +17,7 @@ import '../foundation/dismiss_layers.dart';
 import '../foundation/field_ring.dart';
 import '../foundation/focus_outline.dart';
 import '../foundation/motion.dart';
+import '../foundation/tap_target.dart';
 import '../locale/messages.dart';
 import '../theme/theme.dart';
 import 'button.dart';
@@ -630,17 +633,22 @@ class _KunDatePickerState extends State<KunDatePicker>
   // The web's `-m-1.5 p-1.5` gives the × 6px of hit area on each side and
   // no layout. A hit-test override on the × itself never saw those points:
   // every box between it and the trigger is the glyph's size and rejected
-  // them first. So the trigger, which does contain them, decides.
+  // them first. So the trigger, which does contain them, decides. Under
+  // padded the slot is already the platform minimum; inflating it again
+  // would leave the layout box.
   bool _hitsClear(Offset global) {
     final RenderObject? box = _clearKey.currentContext?.findRenderObject();
     if (box is! RenderBox || !box.hasSize) {
       return false;
     }
-    final Rect rect = MatrixUtils.transformRect(
+    Rect rect = MatrixUtils.transformRect(
       box.getTransformTo(null),
       Offset.zero & box.size,
     );
-    return rect.inflate(KunSpacing.unit * 1.5).contains(global);
+    if (kunMinTapTargetSize(context).height == 0) {
+      rect = rect.inflate(KunSpacing.unit * 1.5);
+    }
+    return rect.contains(global);
   }
 
   void _setClearHovered(bool value) {

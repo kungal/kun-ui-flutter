@@ -11,8 +11,12 @@ import 'package:kun_ui/kun_ui.dart';
 import 'package:kun_ui/src/foundation/focus_outline.dart';
 import 'package:kun_ui/src/foundation/outer_shadow.dart';
 
-Widget wrap(Widget child) => KunTheme(
-      data: KunThemeData.light(),
+Widget wrap(
+  Widget child, {
+  KunTapTargetSize tapTargetSize = KunTapTargetSize.adaptive,
+}) =>
+    KunTheme(
+      data: KunThemeData.light(tapTargetSize: tapTargetSize),
       child: Directionality(
         textDirection: TextDirection.ltr,
         child: Center(child: child),
@@ -562,7 +566,7 @@ void main() {
     expect(bar.height, 2);
     expect(bar.left, tab.left);
     expect(bar.width, tab.width);
-    expect(bar.bottom, tester.getRect(find.byType(KunTab)).bottom);
+    expect(bar.bottom, tester.getRect(tabOf('home')).bottom);
     expect(indicatorDecoration(tester)!.color, KunColors.light.primary.solid);
     expect(
       indicatorDecoration(tester)!.borderRadius,
@@ -1762,6 +1766,122 @@ void main() {
     await tester.pumpAndSettle();
     expect(find.text('Home'), findsOneWidget);
     expect(tester.getSize(tabOf('home')).width, closeTo(shareOf400(), 0.5));
+  });
+
+  testWidgets('indicator size matches shrinkWrap for solid and underlined',
+      (tester) async {
+    for (final variant in <KunTabVariant>[
+      KunTabVariant.solid,
+      KunTabVariant.underlined,
+    ]) {
+      Size? tabSize;
+      Size? barSize;
+      for (final tap in <KunTapTargetSize>[
+        KunTapTargetSize.padded,
+        KunTapTargetSize.shrinkWrap,
+      ]) {
+        await tester.pumpWidget(
+          wrap(
+            _Host(
+              items: homeDocs,
+              variant: variant,
+              disableAnimation: true,
+            ),
+            tapTargetSize: tap,
+          ),
+        );
+        await tester.pumpAndSettle();
+        final Size tab = tester.getSize(tabOf('home'));
+        final Size bar = tester.getSize(indicator);
+        if (tap == KunTapTargetSize.padded) {
+          tabSize = tab;
+          barSize = bar;
+          expect(
+            tester.getSize(find.byType(KunTab)).height,
+            greaterThanOrEqualTo(48),
+            reason: variant.name,
+          );
+        } else {
+          expect(tab, tabSize, reason: variant.name);
+          expect(bar, barSize, reason: variant.name);
+        }
+      }
+    }
+  });
+
+  testWidgets('a tap in the band selects the tab', (tester) async {
+    String? value;
+    await tester.pumpWidget(
+      wrap(
+        _Host(
+          items: homeDocs,
+          disableAnimation: true,
+          onChanged: (String next) => value = next,
+        ),
+      ),
+    );
+    await tester.pumpAndSettle();
+    final Rect tab = tester.getRect(tabOf('docs'));
+    await tester.tapAt(Offset(tab.center.dx, tab.top - 3));
+    expect(value, 'docs');
+  });
+
+  testWidgets('vertical tabs pad each item', (tester) async {
+    await tester.pumpWidget(
+      wrap(
+        _Host(
+          items: homeDocs,
+          orientation: KunTabOrientation.vertical,
+          disableAnimation: true,
+        ),
+        tapTargetSize: KunTapTargetSize.padded,
+      ),
+    );
+    await tester.pumpAndSettle();
+    final handle = tester.ensureSemantics();
+    expect(
+      tester
+          .getSize(
+            find
+                .ancestor(
+                  of: tabOf('home'),
+                  matching: find.byType(Semantics),
+                )
+                .first,
+          )
+          .height,
+      greaterThanOrEqualTo(48),
+    );
+    final Size drawn = tester.getSize(tabOf('home'));
+    await tester.pumpWidget(
+      wrap(
+        _Host(
+          items: homeDocs,
+          orientation: KunTabOrientation.vertical,
+          disableAnimation: true,
+        ),
+        tapTargetSize: KunTapTargetSize.shrinkWrap,
+      ),
+    );
+    await tester.pumpAndSettle();
+    expect(tester.getSize(tabOf('home')), drawn);
+    handle.dispose();
+  });
+
+  testWidgets('horizontal tabs meet the Android guideline', (tester) async {
+    final handle = tester.ensureSemantics();
+    await tester.pumpWidget(
+      wrap(
+        KunTab(
+          items: homeDocsSettings,
+          value: 'home',
+          onChanged: (_) {},
+        ),
+      ),
+    );
+    await tester.pumpAndSettle();
+    await expectLater(tester, meetsGuideline(androidTapTargetGuideline));
+    handle.dispose();
   });
 }
 

@@ -7,6 +7,7 @@ import 'package:kun_ui_tokens/kun_ui_tokens.dart';
 import '../foundation/design.dart';
 import '../foundation/focus_outline.dart';
 import '../foundation/motion.dart';
+import '../foundation/tap_target.dart';
 import '../locale/messages.dart';
 import '../theme/theme.dart';
 
@@ -489,35 +490,37 @@ class _KunReactionState extends State<KunReaction>
         selected: widget.toggle ? widget.value : null,
         label: widget.child == null ? accessibleName : null,
         onTap: widget.disabled ? null : _press,
-        child: FocusableActionDetector(
-          enabled: !widget.disabled,
-          onShowFocusHighlight: (bool value) =>
-              setState(() => _focused = value),
-          actions: <Type, Action<Intent>>{
-            ActivateIntent: CallbackAction<ActivateIntent>(
-              onInvoke: (_) {
-                _press();
-                return null;
-              },
-            ),
-            ButtonActivateIntent: CallbackAction<ButtonActivateIntent>(
-              onInvoke: (_) {
-                _press();
-                return null;
-              },
-            ),
-          },
-          child: MouseRegion(
-            cursor: widget.disabled
-                ? SystemMouseCursors.forbidden
-                : SystemMouseCursors.click,
-            onEnter: (_) => setState(() => _hovered = true),
-            onExit: (_) => setState(() => _hovered = false),
-            child: GestureDetector(
-              behavior: HitTestBehavior.opaque,
-              excludeFromSemantics: true,
-              onTap: widget.disabled ? null : _press,
-              child: pill,
+        child: KunTapTarget(
+          child: FocusableActionDetector(
+            enabled: !widget.disabled,
+            onShowFocusHighlight: (bool value) =>
+                setState(() => _focused = value),
+            actions: <Type, Action<Intent>>{
+              ActivateIntent: CallbackAction<ActivateIntent>(
+                onInvoke: (_) {
+                  _press();
+                  return null;
+                },
+              ),
+              ButtonActivateIntent: CallbackAction<ButtonActivateIntent>(
+                onInvoke: (_) {
+                  _press();
+                  return null;
+                },
+              ),
+            },
+            child: MouseRegion(
+              cursor: widget.disabled
+                  ? SystemMouseCursors.forbidden
+                  : SystemMouseCursors.click,
+              onEnter: (_) => setState(() => _hovered = true),
+              onExit: (_) => setState(() => _hovered = false),
+              child: GestureDetector(
+                behavior: HitTestBehavior.opaque,
+                excludeFromSemantics: true,
+                onTap: widget.disabled ? null : _press,
+                child: pill,
+              ),
             ),
           ),
         ),

@@ -116,34 +116,50 @@ class _KunSelectTrigger<T, O extends KunSelectOption<T>>
       );
     }
 
-    Widget box = TweenAnimationBuilder<BoxShadow>(
-      tween: KunFieldRingTween(
-        end: kunFieldRing(ringScale.solid, visible: state._showTriggerRing),
+    final double iconSize = KunSpacing.unit * 4;
+    final Size minTap = kunMinTapTargetSize(context);
+    final double slotWidth = math.max(iconSize, minTap.width);
+    final double hPad = metrics.horizontalPadding;
+
+    Widget box = KunTapBand(
+      background: TweenAnimationBuilder<BoxShadow>(
+        tween: KunFieldRingTween(
+          end: kunFieldRing(ringScale.solid, visible: state._showTriggerRing),
+        ),
+        duration: kunMotion(context, KunDefaultTransition.duration),
+        curve: KunDefaultTransition.curve,
+        builder: (BuildContext context, BoxShadow ring, Widget? child) {
+          return Container(
+            key: const ValueKey<String>('KunSelect.trigger'),
+            width: widget.fullWidth ? double.infinity : null,
+            decoration: BoxDecoration(
+              color: scheme.content1,
+              border: Border.all(color: borderColor),
+              borderRadius: radius,
+              boxShadow: <BoxShadow>[
+                ring,
+                ...KunShadows.sm,
+              ],
+            ),
+          );
+        },
       ),
-      duration: kunMotion(context, KunDefaultTransition.duration),
-      curve: KunDefaultTransition.curve,
-      builder: (BuildContext context, BoxShadow ring, Widget? child) {
-        return Container(
-          key: const ValueKey<String>('KunSelect.trigger'),
-          width: widget.fullWidth ? double.infinity : null,
-          padding: metrics.padding,
-          decoration: BoxDecoration(
-            color: scheme.content1,
-            border: Border.all(color: borderColor),
-            borderRadius: radius,
-            boxShadow: <BoxShadow>[
-              ring,
-              ...KunShadows.sm,
-            ],
-          ),
-          child: child,
-        );
-      },
       child: Row(
         mainAxisSize: widget.fullWidth ? MainAxisSize.max : MainAxisSize.min,
         crossAxisAlignment: CrossAxisAlignment.center,
         spacing: KunSpacing.unit * 2,
         children: [
+          IgnorePointer(
+            child: Padding(
+              padding: const EdgeInsets.symmetric(vertical: 1),
+              child: Padding(
+                padding:
+                    EdgeInsets.symmetric(vertical: metrics.verticalPadding),
+                child: SizedBox(width: 0, height: metrics.lineHeight),
+              ),
+            ),
+          ),
+          SizedBox(width: hPad),
           if (widget.icon != null)
             Icon(
               widget.icon,
@@ -152,14 +168,6 @@ class _KunSelectTrigger<T, O extends KunSelectOption<T>>
             ),
           Flexible(
             fit: widget.fullWidth ? FlexFit.tight : FlexFit.loose,
-            // The combobox is the value, not the box, as on the web since
-            // kun-ui 2.42.2: the clear button has to be its sibling, or its
-            // label is read into the value.
-            //
-            // Flutter 3.47.2's SemanticsRole.comboBox is `_unimplemented` and
-            // throws `Missing checks for role` when the node is sent, so the
-            // role is omitted; expanded / collapse / expand still match
-            // `:aria-expanded` and the general expandable-node rules.
             child: Semantics(
               container: true,
               explicitChildNodes: true,
@@ -185,24 +193,47 @@ class _KunSelectTrigger<T, O extends KunSelectOption<T>>
               onCollapse: widget.disabled || !state._isOpen
                   ? null
                   : () => state._close(),
+              // The combobox is the value, not the box, as on the web since
+              // kun-ui 2.42.2: the clear button has to be its sibling, or its
+              // label is read into the value.
+              //
+              // Flutter 3.47.2's SemanticsRole.comboBox is `_unimplemented` and
+              // throws `Missing checks for role` when the node is sent, so the
+              // role is omitted; expanded / collapse / expand still match
+              // `:aria-expanded` and the general expandable-node rules.
+              //
               // The web's combobox has no value of its own: a screen reader
               // reads the chips, or the text, painted inside it. Here the
               // painted content is `value`, so leaving it in the tree as well
               // read every chip twice — once in the value, once as a node of
               // its own that the web never had.
-              child: ExcludeSemantics(child: content),
+              child: ConstrainedBox(
+                constraints: BoxConstraints(minWidth: minTap.width),
+                child: SizedBox(
+                  height: double.infinity,
+                  child: Align(
+                    alignment: AlignmentDirectional.centerStart,
+                    widthFactor: widget.fullWidth ? null : 1,
+                    child: ExcludeSemantics(child: content),
+                  ),
+                ),
+              ),
             ),
           ),
           if (widget.clearable && hasSelection && !widget.disabled)
-            _KunSelectIconButton(
-              icon: KunIcons.circleX,
-              size: KunSpacing.unit * 4,
-              semanticLabel: KunMessagesScope.of(context).select.clear,
-              color: scheme.neutral.shade400,
-              hoverColor: scheme.neutral.shade600,
-              onPressed: state._clearByButton,
-              onAbsorbTap: () => state._absorbTriggerTap = true,
-              onAbsorbTapDone: () => state._absorbTriggerTap = false,
+            SizedBox(
+              width: slotWidth,
+              height: double.infinity,
+              child: _KunSelectIconButton(
+                icon: KunIcons.circleX,
+                size: iconSize,
+                semanticLabel: KunMessagesScope.of(context).select.clear,
+                color: scheme.neutral.shade400,
+                hoverColor: scheme.neutral.shade600,
+                onPressed: state._clearByButton,
+                onAbsorbTap: () => state._absorbTriggerTap = true,
+                onAbsorbTapDone: () => state._absorbTriggerTap = false,
+              ),
             ),
           AnimatedRotation(
             key: const ValueKey<String>('KunSelect.chevron'),
@@ -215,6 +246,7 @@ class _KunSelectTrigger<T, O extends KunSelectOption<T>>
               color: textStyle.color,
             ),
           ),
+          SizedBox(width: hPad),
         ],
       ),
     );
@@ -389,11 +421,15 @@ class _KunSelectIconButtonState extends State<_KunSelectIconButton> {
         onPointerCancel: (_) => widget.onAbsorbTapDone(),
         child: GestureDetector(
           behavior: HitTestBehavior.opaque,
+          excludeFromSemantics: true,
           onTap: widget.onPressed,
-          child: Icon(
-            widget.icon,
-            size: widget.size,
-            color: _hovered ? widget.hoverColor : widget.color,
+          child: Align(
+            alignment: AlignmentDirectional.centerEnd,
+            child: Icon(
+              widget.icon,
+              size: widget.size,
+              color: _hovered ? widget.hoverColor : widget.color,
+            ),
           ),
         ),
       ),
@@ -410,6 +446,7 @@ class _KunSelectIconButtonState extends State<_KunSelectIconButton> {
       container: true,
       button: true,
       label: label,
+      onTap: widget.onPressed,
       child: button,
     );
   }

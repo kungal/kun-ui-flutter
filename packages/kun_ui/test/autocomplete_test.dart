@@ -15,8 +15,12 @@ Finder get list => find.byKey(const ValueKey<String>('KunAutocomplete.list'));
 Finder row(String value) =>
     find.byKey(ValueKey<String>('KunAutocomplete.option.$value'));
 
-Widget wrap(Widget child) => KunTheme(
-      data: KunThemeData.light(),
+Widget wrap(
+  Widget child, {
+  KunTapTargetSize tapTargetSize = KunTapTargetSize.adaptive,
+}) =>
+    KunTheme(
+      data: KunThemeData.light(tapTargetSize: tapTargetSize),
       child: WidgetsApp(
         color: KunColors.black,
         debugShowCheckedModeBanner: false,
@@ -347,5 +351,28 @@ void main() {
     await tester.pumpWidget(wrap(const SizedBox.shrink()));
     await tester.pumpAndSettle();
     expect(KunDismissLayers.debugLayers, isEmpty);
+  });
+
+  testWidgets('the field inherits KunInput tap-target padding', (tester) async {
+    await tester.pumpWidget(
+      wrap(
+        const Host(),
+        tapTargetSize: KunTapTargetSize.padded,
+      ),
+    );
+    final padded = tester.getSize(find.byType(KunInput));
+    await tester.pumpWidget(
+      wrap(
+        const Host(),
+        tapTargetSize: KunTapTargetSize.shrinkWrap,
+      ),
+    );
+    final shrink = tester.getSize(find.byType(KunInput));
+    expect(
+      padded.height - shrink.height,
+      KunControlMetrics.of(KunUISize.md).square < 48
+          ? 48 - KunControlMetrics.of(KunUISize.md).square
+          : 0,
+    );
   });
 }

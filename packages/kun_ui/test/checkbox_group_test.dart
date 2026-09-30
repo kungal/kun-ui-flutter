@@ -22,8 +22,12 @@ const List<KunCheckBoxGroupOption<String>> options =
   KunCheckBoxGroupOption<String>(value: 'svelte', label: 'Svelte'),
 ];
 
-Widget wrap(Widget child) => KunTheme(
-      data: KunThemeData.light(),
+Widget wrap(
+  Widget child, {
+  KunTapTargetSize tapTargetSize = KunTapTargetSize.adaptive,
+}) =>
+    KunTheme(
+      data: KunThemeData.light(tapTargetSize: tapTargetSize),
       child: Directionality(
         textDirection: TextDirection.ltr,
         child: Center(child: SizedBox(width: 400, child: child)),
@@ -276,5 +280,82 @@ void main() {
     );
 
     expect(find.text('Pick at least one'), findsOneWidget);
+  });
+
+  testWidgets('every variant pads the option, not the drawn card',
+      (tester) async {
+    for (final variant in KunCheckBoxGroupVariant.values) {
+      Size? drawn;
+      for (final size in [
+        KunTapTargetSize.padded,
+        KunTapTargetSize.shrinkWrap,
+      ]) {
+        await tester.pumpWidget(
+          wrap(
+            KunCheckBoxGroup<String>(
+              values: const <String>[],
+              options: options,
+              variant: variant,
+              onChanged: (_) {},
+            ),
+            tapTargetSize: size,
+          ),
+        );
+        await tester.pumpAndSettle();
+        final vue = tester.getSize(option('vue'));
+        final mark = tester.getSize(
+          find
+              .descendant(
+                of: option('vue'),
+                matching: find.byType(AnimatedContainer),
+              )
+              .first,
+        );
+        if (size == KunTapTargetSize.padded) {
+          expect(vue.height, greaterThanOrEqualTo(48), reason: variant.name);
+          expect(vue.width, greaterThanOrEqualTo(48), reason: variant.name);
+          drawn = mark;
+        } else {
+          expect(mark, drawn, reason: variant.name);
+        }
+      }
+    }
+  });
+
+  testWidgets('a tap in the band chooses the option', (tester) async {
+    var values = <String>[];
+    await tester.pumpWidget(
+      wrap(
+        KunCheckBoxGroup<String>(
+          values: values,
+          options: options,
+          onChanged: (next) => values = next,
+        ),
+      ),
+    );
+    await tester.pumpAndSettle();
+    final drawn = tester.getRect(option('vue'));
+    await tester.tapAt(Offset(drawn.center.dx, drawn.top + 2));
+    expect(values, ['vue']);
+  });
+
+  testWidgets('options meet the Android guideline in every variant',
+      (tester) async {
+    final handle = tester.ensureSemantics();
+    for (final variant in KunCheckBoxGroupVariant.values) {
+      await tester.pumpWidget(
+        wrap(
+          KunCheckBoxGroup<String>(
+            values: const <String>[],
+            options: options,
+            variant: variant,
+            onChanged: (_) {},
+          ),
+        ),
+      );
+      await tester.pumpAndSettle();
+      await expectLater(tester, meetsGuideline(androidTapTargetGuideline));
+    }
+    handle.dispose();
   });
 }

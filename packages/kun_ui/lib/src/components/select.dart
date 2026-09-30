@@ -16,6 +16,7 @@ import '../foundation/dismiss_layers.dart';
 import '../foundation/field_ring.dart';
 import '../foundation/focus_outline.dart';
 import '../foundation/motion.dart';
+import '../foundation/tap_target.dart';
 import '../locale/messages.dart';
 import '../theme/theme.dart';
 import 'spinner.dart';
