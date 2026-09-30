@@ -742,6 +742,35 @@ void main() {
     expect(frame.top, closeTo(avatar.top - 32 * 0.1, 0.05));
   });
 
+  testWidgets('a frame that fails to load draws nothing and reports nothing',
+      (tester) async {
+    final ui.Image pixel = await pixelImage(tester);
+    await tester.pumpWidget(
+      wrap(
+        const KunAvatar(
+          user: framed,
+          isNavigation: false,
+          decoration: KunAvatarDecorationMode.static,
+        ),
+        config: KunUIConfig(
+          imageProvider: (String url) => url == sakura.src
+              ? _FailingImageProvider()
+              : _SyncImageProvider(pixel),
+        ),
+      ),
+    );
+    await tester.pump();
+    await tester.pump();
+    expect(tester.takeException(), isNull);
+    expect(
+      find.descendant(
+        of: find.byType(IgnorePointer),
+        matching: find.byType(RawImage),
+      ),
+      findsNothing,
+    );
+  });
+
   testWidgets('xs, sm, none, and no decoration draw no frame', (tester) async {
     final ui.Image pixel = await pixelImage(tester);
     final KunUIConfig config = KunUIConfig(

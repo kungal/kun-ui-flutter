@@ -393,6 +393,8 @@ class _KunAvatarState extends State<KunAvatar> {
                     height: side * 1.2,
                     fit: BoxFit.fill,
                     excludeFromSemantics: true,
+                    errorBuilder: (context, error, stackTrace) =>
+                        const SizedBox.shrink(),
                   ),
                 ),
               ),

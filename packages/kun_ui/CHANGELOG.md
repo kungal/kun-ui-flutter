@@ -35,6 +35,10 @@ or later.
   - Covered in this release: `KunButton` (every size, text and icon-only,
     and so `KunNavItem`, `KunModal`'s ×, the alert buttons and the lightbox
     chrome).
+- **A `KunAvatar` frame that fails to load draws nothing.** The frame's
+  image had no `errorBuilder`. A failed load (an offline phone, a bad URL)
+  reported an exception and, in debug builds, painted Flutter's error box
+  over the avatar. The new gallery tap-target gate found it.
 
 ## 0.18.1
 
