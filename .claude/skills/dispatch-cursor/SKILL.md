@@ -311,6 +311,13 @@ Traps worth restating in any task book that touches them:
   a `python3` it had not started and killed it by PID so its own server could listen.
   The PID was not a pattern, but the process was someone else's. A task book names a
   fallback port, and the executor reports the collision.
+- **The executor stops its own server before its final message.** The menu-region run
+  (2026-09-30) wrote a complete report, then sat for 35 minutes with no `result` event.
+  Its `python3 -m http.server` was still running in a background shell, and cursor-agent
+  waited on it. Stopping that server by PID let the run finish on its own. A task book
+  names the server's port, and says to stop it by its recorded PID before the final
+  message. On acceptance, a live process under the dispatch's PID tree after the report's
+  timestamp is the first thing to look for.
 - **The scratchpad is tmpfs.** `/tmp` does not survive a reboot. On 2026-09-25 a restart
   took every task book, report and screenshot with it, while the worktrees on `/home`
   survived. A book that has to outlive the session belongs next to its worktree.
