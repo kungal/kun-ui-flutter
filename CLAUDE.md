@@ -167,6 +167,16 @@ clones kungal/kun-ui at `kun_ui_tokens-v<version>`, runs its
   place of the image, so `excludeFromSemantics` does not keep the text
   out of the accessibility tree. An offline phone showed it in every
   reaction label. Every raw `Image` gets an `errorBuilder`.
+- An `OverlayPortal`'s overlay reaches a screen reader only through the
+  node that holds the portal. The portal wraps its child in
+  `Semantics(traversalParentIdentifier:)`, and the SDK drops an overlay
+  whose traversal parent never appears from the tree Android receives. A
+  popup opened from inside `Semantics(excludeSemantics: true)` is therefore
+  invisible to TalkBack, while `find.bySemanticsLabel`, which reads the
+  render tree, still finds every row. The link menu on `KunAvatar` shipped
+  that way. Exclude the drawn content inside the portal's child instead,
+  and test an overlay by walking
+  `debugListChildrenInOrder(DebugSemanticsDumpOrder.traversalOrder)`.
 - In `flutter test` the paragraph cache does not key on
   `leadingDistribution`: laying the same string out again with only that
   changed returns the first layout's metrics, which reads as "even and

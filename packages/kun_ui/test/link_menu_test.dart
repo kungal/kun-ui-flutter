@@ -106,6 +106,53 @@ SemanticsData linkData(WidgetTester tester, Finder of) {
   return tester.getSemantics(of).getSemanticsData();
 }
 
+/// Every node a platform screen reader receives: the tree in traversal
+/// order, where an overlay's nodes hang under the node holding its portal,
+/// without the nodes merged into a parent. `find.bySemanticsLabel` reads the
+/// render tree instead, and there it found menu rows that the SDK dropped
+/// before sending the tree to Android.
+List<SemanticsNode> platformNodes(WidgetTester tester) {
+  final List<SemanticsNode> nodes = <SemanticsNode>[];
+  void visit(SemanticsNode node) {
+    if (node.isMergedIntoParent) {
+      return;
+    }
+    nodes.add(node);
+    node
+        .debugListChildrenInOrder(DebugSemanticsDumpOrder.traversalOrder)
+        .forEach(visit);
+  }
+
+  for (final RenderView view in tester.binding.renderViews) {
+    visit(view.owner!.semanticsOwner!.rootSemanticsNode!);
+  }
+  return nodes;
+}
+
+/// Opens the menu the way TalkBack does, through the link node's long
+/// press, and requires each row to reach the platform as a node of its own
+/// with a tap.
+Future<void> expectRowsReachable(WidgetTester tester, Finder link) async {
+  final SemanticsNode node = tester.getSemantics(link);
+  node.owner!.performAction(node.id, SemanticsAction.longPress);
+  await pumpMenu(tester);
+  await tester.pump(KunDurations.base);
+  expect(menu, findsOneWidget);
+  final List<SemanticsNode> nodes = platformNodes(tester);
+  for (final KunContextMenuItem row in menuItems) {
+    final List<SemanticsData> matches = <SemanticsData>[
+      for (final SemanticsNode node in nodes)
+        if (node.getSemanticsData().label == row.label) node.getSemanticsData(),
+    ];
+    expect(matches, hasLength(1), reason: row.label);
+    expect(
+      matches.single.hasAction(SemanticsAction.tap),
+      isTrue,
+      reason: row.label,
+    );
+  }
+}
+
 void main() {
   group('KunPressable', () {
     testWidgets('a right-click opens at the pointer and a row calls onSelected',
@@ -830,6 +877,98 @@ void main() {
       node.owner!.performAction(node.id, SemanticsAction.longPress);
       await pumpMenu(tester);
       expect(menu, findsOneWidget);
+      handle.dispose();
+    });
+  });
+
+  // An OverlayPortal's overlay child attaches its semantics where the
+  // portal is. With the host inside the link's own node, the avatar's and
+  // chip's excludeSemantics dropped every row and KunNavItem's
+  // MergeSemantics folded them into its label: a Pixel dump of an open
+  // avatar menu had no rows at all.
+  group('the open menu reaches a screen reader', () {
+    testWidgets('KunPressable with a semanticLabel',
+        (WidgetTester tester) async {
+      final SemanticsHandle handle = tester.ensureSemantics();
+      await tester.pumpWidget(
+        wrap(
+          KunPressable(
+            linkUrl: Uri(path: '/topic/1'),
+            semanticLabel: 'Topic',
+            onTap: () {},
+            builder: (BuildContext context, KunPressableState state) =>
+                const SizedBox(width: 240, height: 56),
+          ),
+          config: KunUIConfig(linkMenu: testMenu(<String>[])),
+        ),
+      );
+      await expectRowsReachable(tester, find.bySemanticsLabel('Topic'));
+      handle.dispose();
+    });
+
+    testWidgets('KunAvatar', (WidgetTester tester) async {
+      final SemanticsHandle handle = tester.ensureSemantics();
+      await tester.pumpWidget(
+        wrap(
+          const KunAvatar(user: KunUser(id: 42, name: 'Kun', avatar: '')),
+          config: KunUIConfig(linkMenu: testMenu(<String>[])),
+        ),
+      );
+      await expectRowsReachable(tester, find.bySemanticsLabel('Kun'));
+      handle.dispose();
+    });
+
+    testWidgets('KunUserChip', (WidgetTester tester) async {
+      final SemanticsHandle handle = tester.ensureSemantics();
+      await tester.pumpWidget(
+        wrap(
+          const KunUserChip(user: KunUser(id: 42, name: 'Kun', avatar: '')),
+          config: KunUIConfig(linkMenu: testMenu(<String>[])),
+        ),
+      );
+      await expectRowsReachable(tester, find.bySemanticsLabel('Kun'));
+      handle.dispose();
+    });
+
+    testWidgets('KunNavItem', (WidgetTester tester) async {
+      final SemanticsHandle handle = tester.ensureSemantics();
+      await tester.pumpWidget(
+        wrap(
+          const SizedBox(
+            width: 240,
+            child: KunNavItem(label: 'Search', href: '/search'),
+          ),
+          config: KunUIConfig(linkMenu: testMenu(<String>[])),
+        ),
+      );
+      await expectRowsReachable(tester, find.bySemanticsLabel('Search'));
+      expect(
+        tester
+            .getSemantics(find.bySemanticsLabel('Search'))
+            .getSemanticsData()
+            .label,
+        'Search',
+      );
+      handle.dispose();
+    });
+
+    testWidgets('KunTab', (WidgetTester tester) async {
+      final SemanticsHandle handle = tester.ensureSemantics();
+      await tester.pumpWidget(
+        wrap(
+          KunTab(
+            items: const <KunTabItem>[
+              KunTabItem(value: 'home', textValue: 'Home', href: '/'),
+              KunTabItem(value: 'docs', textValue: 'Docs', href: '/docs'),
+            ],
+            value: 'home',
+            onChanged: (_) {},
+          ),
+          config: KunUIConfig(linkMenu: testMenu(<String>[])),
+        ),
+      );
+      await tester.pump();
+      await expectRowsReachable(tester, find.bySemanticsLabel('Docs'));
       handle.dispose();
     });
   });

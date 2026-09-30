@@ -154,49 +154,55 @@ class _KunUserChipLinkState extends State<_KunUserChipLink> {
       onLongPress: linkMenuActive
           ? () => _linkMenu.currentState?.openFromLongPressAtCenter()
           : null,
-      excludeSemantics: true,
+      // Not excludeSemantics here: the menu's OverlayPortal names this node
+      // its traversal parent from inside the host, and excluded with the
+      // content it left the open menu without one, which the SDK drops from
+      // the platform tree. A Pixel dump of an open KunAvatar menu had no rows.
       child: KunLinkMenuHost(
         key: _linkMenu,
         url: widget.url,
         capturePointers: false,
-        child: KunTapTarget(
-          child: FocusableActionDetector(
-            onShowFocusHighlight: (bool value) =>
-                setState(() => _focused = value),
-            actions: <Type, Action<Intent>>{
-              ActivateIntent: CallbackAction<ActivateIntent>(
-                onInvoke: (_) {
-                  widget.onOpen();
-                  return null;
-                },
-              ),
-              ButtonActivateIntent: CallbackAction<ButtonActivateIntent>(
-                onInvoke: (_) {
-                  widget.onOpen();
-                  return null;
-                },
-              ),
-            },
-            child: MouseRegion(
-              cursor: SystemMouseCursors.click,
-              child: GestureDetector(
-                behavior: HitTestBehavior.opaque,
-                onTap: widget.onOpen,
-                onSecondaryTapUp: linkMenuActive
-                    ? (TapUpDetails details) =>
-                        _linkMenu.currentState?.openAt(details.globalPosition)
-                    : null,
-                onLongPressStart: linkMenuActive
-                    ? (LongPressStartDetails details) => _linkMenu.currentState
-                        ?.openFromLongPress(details.globalPosition)
-                    : null,
-                child: KunFocusOutline(
-                  visible: _focused,
-                  color: KunUIColor.primary
-                      .scaleOf(KunTheme.of(context).colors)
-                      .solid
-                      .withValues(alpha: 0.5),
-                  child: widget.child,
+        child: ExcludeSemantics(
+          child: KunTapTarget(
+            child: FocusableActionDetector(
+              onShowFocusHighlight: (bool value) =>
+                  setState(() => _focused = value),
+              actions: <Type, Action<Intent>>{
+                ActivateIntent: CallbackAction<ActivateIntent>(
+                  onInvoke: (_) {
+                    widget.onOpen();
+                    return null;
+                  },
+                ),
+                ButtonActivateIntent: CallbackAction<ButtonActivateIntent>(
+                  onInvoke: (_) {
+                    widget.onOpen();
+                    return null;
+                  },
+                ),
+              },
+              child: MouseRegion(
+                cursor: SystemMouseCursors.click,
+                child: GestureDetector(
+                  behavior: HitTestBehavior.opaque,
+                  onTap: widget.onOpen,
+                  onSecondaryTapUp: linkMenuActive
+                      ? (TapUpDetails details) =>
+                          _linkMenu.currentState?.openAt(details.globalPosition)
+                      : null,
+                  onLongPressStart: linkMenuActive
+                      ? (LongPressStartDetails details) => _linkMenu
+                          .currentState
+                          ?.openFromLongPress(details.globalPosition)
+                      : null,
+                  child: KunFocusOutline(
+                    visible: _focused,
+                    color: KunUIColor.primary
+                        .scaleOf(KunTheme.of(context).colors)
+                        .solid
+                        .withValues(alpha: 0.5),
+                    child: widget.child,
+                  ),
                 ),
               ),
             ),

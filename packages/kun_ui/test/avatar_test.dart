@@ -1105,7 +1105,10 @@ void main() {
     );
     expect(
       find.descendant(
-        of: find.byType(ExcludeSemantics),
+        of: find.descendant(
+          of: find.byType(IgnorePointer),
+          matching: find.byType(ExcludeSemantics),
+        ),
         matching: find.byType(Image),
       ),
       findsOneWidget,

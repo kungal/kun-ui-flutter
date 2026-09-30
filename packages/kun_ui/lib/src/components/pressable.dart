@@ -253,82 +253,87 @@ class _KunPressableState extends State<KunPressable> {
       disabled: widget.disabled,
     );
 
-    Widget body = KunTapTarget(
-      child: FocusableActionDetector(
-        enabled: canTap || canMenu || canLongPress,
-        focusNode: widget.focusNode,
-        autofocus: widget.autofocus,
-        onShowFocusHighlight: (bool value) => setState(() => _focused = value),
-        shortcuts: <ShortcutActivator, Intent>{
-          if (_isLink) ..._kLinkActivateKeys,
-          if (canMenu) ..._kMenuKeys,
-        },
-        actions: <Type, Action<Intent>>{
-          if (_isLink)
-            _KunLinkActivateIntent: CallbackAction<_KunLinkActivateIntent>(
-              onInvoke: (_) {
-                _activate();
-                return null;
-              },
-            )
-          else ...<Type, Action<Intent>>{
-            ActivateIntent: CallbackAction<ActivateIntent>(
-              onInvoke: (_) {
-                _activate();
-                return null;
-              },
-            ),
-            ButtonActivateIntent: CallbackAction<ButtonActivateIntent>(
-              onInvoke: (_) {
-                _activate();
-                return null;
-              },
-            ),
+    Widget body = ExcludeSemantics(
+      excluding: widget.semanticLabel != null,
+      child: KunTapTarget(
+        child: FocusableActionDetector(
+          enabled: canTap || canMenu || canLongPress,
+          focusNode: widget.focusNode,
+          autofocus: widget.autofocus,
+          onShowFocusHighlight: (bool value) =>
+              setState(() => _focused = value),
+          shortcuts: <ShortcutActivator, Intent>{
+            if (_isLink) ..._kLinkActivateKeys,
+            if (canMenu) ..._kMenuKeys,
           },
-          if (canMenu)
-            _KunContextMenuIntent: CallbackAction<_KunContextMenuIntent>(
-              onInvoke: (_) {
-                _contextMenu(_center());
-                return null;
-              },
-            ),
-        },
-        child: MouseRegion(
-          cursor: widget.disabled
-              ? SystemMouseCursors.forbidden
-              : (canTap ? SystemMouseCursors.click : MouseCursor.defer),
-          onEnter: (_) {
-            if (_enabled) {
-              setState(() => _hovered = true);
-            }
-          },
-          onExit: (_) => setState(() => _hovered = false),
-          child: GestureDetector(
-            behavior: HitTestBehavior.opaque,
-            excludeFromSemantics: true,
-            onTapDown: canTap ? (_) => _setPressed(true) : null,
-            onTapUp: canTap ? (_) => _setPressed(false) : null,
-            onTapCancel: canTap ? () => _setPressed(false) : null,
-            onTap: canTap ? _activate : null,
-            onSecondaryTapUp: canMenu
-                ? (TapUpDetails details) => _contextMenu(details.globalPosition)
-                : null,
-            onLongPressStart: canLongPress
-                ? (LongPressStartDetails details) {
-                    _setPressed(false);
-                    _longPress(details.globalPosition);
-                  }
-                : null,
-            child: KunFocusOutline(
-              visible: _focused,
-              color: KunUIColor.primary
-                  .scaleOf(theme.colors)
-                  .solid
-                  .withValues(alpha: 0.5),
-              borderRadius: BorderRadius.circular(
-                (widget.rounded ?? theme.rounded).radius,
+          actions: <Type, Action<Intent>>{
+            if (_isLink)
+              _KunLinkActivateIntent: CallbackAction<_KunLinkActivateIntent>(
+                onInvoke: (_) {
+                  _activate();
+                  return null;
+                },
+              )
+            else ...<Type, Action<Intent>>{
+              ActivateIntent: CallbackAction<ActivateIntent>(
+                onInvoke: (_) {
+                  _activate();
+                  return null;
+                },
               ),
-              child: widget.builder(context, state),
+              ButtonActivateIntent: CallbackAction<ButtonActivateIntent>(
+                onInvoke: (_) {
+                  _activate();
+                  return null;
+                },
+              ),
+            },
+            if (canMenu)
+              _KunContextMenuIntent: CallbackAction<_KunContextMenuIntent>(
+                onInvoke: (_) {
+                  _contextMenu(_center());
+                  return null;
+                },
+              ),
+          },
+          child: MouseRegion(
+            cursor: widget.disabled
+                ? SystemMouseCursors.forbidden
+                : (canTap ? SystemMouseCursors.click : MouseCursor.defer),
+            onEnter: (_) {
+              if (_enabled) {
+                setState(() => _hovered = true);
+              }
+            },
+            onExit: (_) => setState(() => _hovered = false),
+            child: GestureDetector(
+              behavior: HitTestBehavior.opaque,
+              excludeFromSemantics: true,
+              onTapDown: canTap ? (_) => _setPressed(true) : null,
+              onTapUp: canTap ? (_) => _setPressed(false) : null,
+              onTapCancel: canTap ? () => _setPressed(false) : null,
+              onTap: canTap ? _activate : null,
+              onSecondaryTapUp: canMenu
+                  ? (TapUpDetails details) =>
+                      _contextMenu(details.globalPosition)
+                  : null,
+              onLongPressStart: canLongPress
+                  ? (LongPressStartDetails details) {
+                      _setPressed(false);
+                      _longPress(details.globalPosition);
+                    }
+                  : null,
+              child: KunFocusOutline(
+                visible: _focused,
+                color: KunUIColor.primary
+                    .scaleOf(theme.colors)
+                    .solid
+                    .withValues(alpha: 0.5),
+                borderRadius: BorderRadius.circular(
+                  (widget.rounded ?? theme.rounded).radius,
+                ),
+                child: widget.builder(context, state),
+              ),
             ),
           ),
         ),
@@ -336,6 +341,10 @@ class _KunPressableState extends State<KunPressable> {
     );
     final Uri? linkUrl = widget.linkUrl;
     if (linkUrl != null) {
+      // The host stays inside this node and the label's exclusion inside
+      // the host: the menu's OverlayPortal names this node its traversal
+      // parent, and an excluded parent leaves the open menu out of the
+      // platform tree.
       body = KunLinkMenuHost(
         key: _linkMenu,
         url: linkUrl,
@@ -355,7 +364,6 @@ class _KunPressableState extends State<KunPressable> {
       expanded: widget.expanded,
       enabled: _enabled,
       label: widget.semanticLabel,
-      excludeSemantics: widget.semanticLabel != null,
       onTap: canTap ? _activate : null,
       onLongPress: canLongPress ? () => _longPress(_center()) : null,
       child: body,

@@ -450,56 +450,62 @@ class _KunAvatarState extends State<KunAvatar> {
       onLongPress: linkMenuActive
           ? () => _linkMenu.currentState?.openFromLongPressAtCenter()
           : null,
-      excludeSemantics: true,
+      // Not excludeSemantics here: the menu's OverlayPortal names this node
+      // its traversal parent from inside the host, and excluded with the
+      // content it left the open menu without one, which the SDK drops from
+      // the platform tree. A Pixel dump of an open KunAvatar menu had no rows.
       child: KunLinkMenuHost(
         key: _linkMenu,
         url: url,
         capturePointers: false,
-        child: KunTapTarget(
-          child: FocusableActionDetector(
-            onShowFocusHighlight: (bool value) =>
-                setState(() => _focused = value),
-            actions: <Type, Action<Intent>>{
-              ActivateIntent: CallbackAction<ActivateIntent>(
-                onInvoke: (_) {
-                  _open();
-                  return null;
-                },
-              ),
-              ButtonActivateIntent: CallbackAction<ButtonActivateIntent>(
-                onInvoke: (_) {
-                  _open();
-                  return null;
-                },
-              ),
-            },
-            child: MouseRegion(
-              cursor: SystemMouseCursors.click,
-              onEnter: (_) => setState(() => _hovered = true),
-              onExit: (_) => setState(() => _hovered = false),
-              child: GestureDetector(
-                behavior: HitTestBehavior.opaque,
-                onTap: _open,
-                onSecondaryTapUp: linkMenuActive
-                    ? (TapUpDetails details) =>
-                        _linkMenu.currentState?.openAt(details.globalPosition)
-                    : null,
-                onLongPressStart: linkMenuActive
-                    ? (LongPressStartDetails details) => _linkMenu.currentState
-                        ?.openFromLongPress(details.globalPosition)
-                    : null,
-                child: AnimatedScale(
-                  scale: _hovered ? 1.1 : 1,
-                  duration: kunMotion(context, KunDurations.fast),
-                  curve: KunEasing.standard,
-                  child: KunFocusOutline(
-                    visible: _focused,
-                    color: KunUIColor.primary
-                        .scaleOf(KunTheme.of(context).colors)
-                        .solid
-                        .withValues(alpha: 0.5),
-                    circle: true,
-                    child: body,
+        child: ExcludeSemantics(
+          child: KunTapTarget(
+            child: FocusableActionDetector(
+              onShowFocusHighlight: (bool value) =>
+                  setState(() => _focused = value),
+              actions: <Type, Action<Intent>>{
+                ActivateIntent: CallbackAction<ActivateIntent>(
+                  onInvoke: (_) {
+                    _open();
+                    return null;
+                  },
+                ),
+                ButtonActivateIntent: CallbackAction<ButtonActivateIntent>(
+                  onInvoke: (_) {
+                    _open();
+                    return null;
+                  },
+                ),
+              },
+              child: MouseRegion(
+                cursor: SystemMouseCursors.click,
+                onEnter: (_) => setState(() => _hovered = true),
+                onExit: (_) => setState(() => _hovered = false),
+                child: GestureDetector(
+                  behavior: HitTestBehavior.opaque,
+                  onTap: _open,
+                  onSecondaryTapUp: linkMenuActive
+                      ? (TapUpDetails details) =>
+                          _linkMenu.currentState?.openAt(details.globalPosition)
+                      : null,
+                  onLongPressStart: linkMenuActive
+                      ? (LongPressStartDetails details) => _linkMenu
+                          .currentState
+                          ?.openFromLongPress(details.globalPosition)
+                      : null,
+                  child: AnimatedScale(
+                    scale: _hovered ? 1.1 : 1,
+                    duration: kunMotion(context, KunDurations.fast),
+                    curve: KunEasing.standard,
+                    child: KunFocusOutline(
+                      visible: _focused,
+                      color: KunUIColor.primary
+                          .scaleOf(KunTheme.of(context).colors)
+                          .solid
+                          .withValues(alpha: 0.5),
+                      circle: true,
+                      child: body,
+                    ),
                   ),
                 ),
               ),

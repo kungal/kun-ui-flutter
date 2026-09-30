@@ -1164,6 +1164,23 @@ so it is decided here: the app describes the menu once, as
   into URLSpan text, and the URL here is an app path like `/user/12/info`,
   so TalkBack's Links menu would have fired an intent nothing can open. Only
   `KunPressable` carries a `linkUrl`, and only when the app passes one.
+- **The host sits inside the link's node, and nothing between them
+  excludes semantics (0.26.3).** The menu is an `OverlayPortal`, which wraps
+  its child in `Semantics(traversalParentIdentifier:)`. The SDK hangs the
+  open menu under whichever node absorbs that identifier, and it drops an
+  overlay whose parent never appears from the tree it sends to the
+  platform (`SemanticsNode._childrenInHitTestOrder`, semantics.dart). In
+  0.26.0 to 0.26.2, `KunAvatar`, `KunUserChip` and a `KunPressable` with a
+  `semanticLabel` excluded their content on the link node itself, so the
+  identifier was excluded with it. A Pixel dump of an open avatar menu had
+  no rows. The exclusion now wraps the drawn content inside the host.
+  Moving the host outside the node was rejected: the identifier would land
+  on a shared ancestor, and the SDK keeps one identifier per node.
+  `find.bySemanticsLabel` reads the render tree and found the rows either
+  way. The tests walk the tree in traversal order instead, as the platform
+  receives it. With that walk, a census found every other KunUI popup
+  reachable: two dropdowns in one row, a popover, and both submenus of one
+  menu.
 - **An `href` is parsed with `Uri.tryParse`.** One that does not parse
   gets no menu, rather than an exception in `build`.
 - Chat text links, mentions, the chat link preview and the `href` rows of
