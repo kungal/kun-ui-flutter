@@ -51,8 +51,7 @@ class _PinnedBarDemoState extends State<_PinnedBarDemo> {
                     padding: const EdgeInsets.all(KunSpacing.unit * 3),
                     child: Text(
                       'jump → $line',
-                      style:
-                          KunText.xs.copyWith(color: scheme.neutral.shade500),
+                      style: KunText.xs.copyWith(color: scheme.foregroundMuted),
                     ),
                   ),
                 ],

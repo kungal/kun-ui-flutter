@@ -77,7 +77,7 @@ class _BasicDemoState extends State<_BasicDemo> {
               ),
               child: Text(
                 'typing 事件:$_typingAt',
-                style: KunText.xs.copyWith(color: scheme.neutral.shade500),
+                style: KunText.xs.copyWith(color: scheme.foregroundMuted),
               ),
             ),
         ],
@@ -182,7 +182,7 @@ class _ReplyEditDemoState extends State<_ReplyEditDemo> {
             ),
             Text(
               _log,
-              style: KunText.xs.copyWith(color: scheme.neutral.shade500),
+              style: KunText.xs.copyWith(color: scheme.foregroundMuted),
             ),
           ],
         ),
@@ -401,7 +401,7 @@ class _AttachmentsDemoState extends State<_AttachmentsDemo> {
         ),
         child: Text(
           '点回形针添加内存图（无法打开系统选图器）。',
-          style: KunText.xs.copyWith(color: scheme.neutral.shade500),
+          style: KunText.xs.copyWith(color: scheme.foregroundMuted),
         ),
       ),
       child: KunChatComposer(

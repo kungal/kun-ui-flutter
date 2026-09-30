@@ -363,7 +363,7 @@ class _KunSelectSearchFieldState<T, O extends KunSelectOption<T>>
                 alignment: Alignment.centerLeft,
                 child: Text(
                   placeholder,
-                  style: textStyle.copyWith(color: scheme.neutral.shade400),
+                  style: textStyle.copyWith(color: scheme.foregroundMuted),
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis,
                 ),

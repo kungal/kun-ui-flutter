@@ -263,7 +263,7 @@ class _KunCheckBoxGroupState<T> extends State<KunCheckBoxGroup<T>> {
               padding: const EdgeInsets.only(top: KunSpacing.unit),
               child: Text(
                 widget.error!,
-                style: KunText.sm.copyWith(color: scheme.danger.solid),
+                style: KunText.sm.copyWith(color: scheme.danger.text),
               ),
             ),
         ],
@@ -572,7 +572,7 @@ class _KunCheckBoxGroupItemState<T> extends State<_KunCheckBoxGroupItem<T>> {
             Icon(
               widget.option.icon,
               size: KunSpacing.unit * 6,
-              color: chosen ? scale.solid : scheme.neutral.shade500,
+              color: chosen ? scale.text : scheme.neutral.shade500,
             ),
           Flexible(
             child: _labelColumn(

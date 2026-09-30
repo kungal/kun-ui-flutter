@@ -132,7 +132,7 @@ class _AvatarNavigationState extends State<_AvatarNavigation> {
           if (_href != null)
             Text(
               _href!,
-              style: KunText.sm.copyWith(color: scheme.neutral.shade500),
+              style: KunText.sm.copyWith(color: scheme.foregroundMuted),
             ),
         ],
       ),
@@ -212,7 +212,7 @@ class _DecorationSample extends StatelessWidget {
         ),
         Text(
           caption,
-          style: KunText.xs.copyWith(color: scheme.neutral.shade500),
+          style: KunText.xs.copyWith(color: scheme.foregroundMuted),
         ),
       ],
     );

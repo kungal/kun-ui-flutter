@@ -92,7 +92,7 @@ Widget scrollShadowInteractive(BuildContext context) {
                         maxLines: 1,
                         overflow: TextOverflow.ellipsis,
                         style: KunText.xs.copyWith(
-                          color: scheme.neutral.shade500,
+                          color: scheme.foregroundMuted,
                         ),
                       ),
                     ],

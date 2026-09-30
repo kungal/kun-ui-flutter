@@ -484,7 +484,7 @@ class _KunChatConversationItemState extends State<KunChatConversationItem>
         ? scheme.primary.onSolid.withValues(alpha: 0.85)
         : scheme.foregroundMuted;
     final Color typingColor =
-        widget.selected ? scheme.primary.onSolid : scheme.primary.solid;
+        widget.selected ? scheme.primary.onSolid : scheme.primary.text;
 
     Widget preview;
     if (_typingActive) {
@@ -502,9 +502,8 @@ class _KunChatConversationItemState extends State<KunChatConversationItem>
           Text(
             messages.chat.draft,
             style: KunText.sm.copyWith(
-              color: widget.selected
-                  ? scheme.primary.onSolid
-                  : scheme.danger.solid,
+              color:
+                  widget.selected ? scheme.primary.onSolid : scheme.danger.text,
               fontWeight: widget.selected
                   ? KunFontWeights.medium
                   : KunFontWeights.normal,
@@ -736,10 +735,10 @@ class _KunChatConversationItemState extends State<KunChatConversationItem>
                                   size: KunText.sm.fontSize,
                                   color:
                                       widget.status == KunChatSendStatus.failed
-                                          ? scheme.danger.solid
+                                          ? scheme.danger.text
                                           : widget.selected
                                               ? metaColor
-                                              : scheme.primary.solid,
+                                              : scheme.primary.text,
                                 ),
                               ),
                               const SizedBox(width: KunSpacing.unit),

@@ -265,7 +265,7 @@ void main() {
     expect((gap.child as SizedBox).width, KunSpacing.unit);
     final star = span.children![2] as TextSpan;
     expect(star.text, '*');
-    expect(star.style!.color, KunColors.light.danger.solid);
+    expect(star.style!.color, KunColors.light.danger.text);
   });
 
   testWidgets('the ring fades and a border change is immediate',
@@ -374,7 +374,7 @@ void main() {
       wrap(const KunTextarea(placeholder: 'Write')),
     );
     expect(find.text('Write'), findsOneWidget);
-    expect(resolved(tester, 'Write').color, KunColors.light.neutral.shade400);
+    expect(resolved(tester, 'Write').color, KunColors.light.foregroundMuted);
 
     await tester.pumpWidget(
       wrap(const KunTextarea(value: 'kun', placeholder: 'Write')),

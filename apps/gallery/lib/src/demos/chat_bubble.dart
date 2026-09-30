@@ -160,7 +160,7 @@ class _ReplyDemoState extends State<_ReplyDemo> {
               'reply-click → seq $clicked',
               style: KunText.xs.copyWith(
                 fontFamily: KunFontFamilies.mono,
-                color: scheme.neutral.shade500,
+                color: scheme.foregroundMuted,
               ),
             ),
           ],

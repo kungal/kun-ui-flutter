@@ -74,7 +74,7 @@ class _DirectDemoState extends State<_DirectDemo> {
           ),
           child: Text(
             '已读到 seq $_readUpTo',
-            style: KunText.xs.copyWith(color: scheme.neutral.shade500),
+            style: KunText.xs.copyWith(color: scheme.foregroundMuted),
           ),
         ),
       ),
@@ -175,7 +175,7 @@ class _GroupDemoState extends State<_GroupDemo> {
             child: Center(
               child: Text(
                 'Ayase 正在输入…',
-                style: KunText.xs.copyWith(color: scheme.primary.solid),
+                style: KunText.xs.copyWith(color: scheme.primary.text),
               ),
             ),
           ),
@@ -310,7 +310,7 @@ class _PagingDemoState extends State<_PagingDemo> {
               Expanded(
                 child: Text(
                   '已载入 seq $_first–$_last,共 ${_history.length} 条',
-                  style: KunText.sm.copyWith(color: scheme.neutral.shade500),
+                  style: KunText.sm.copyWith(color: scheme.foregroundMuted),
                 ),
               ),
             ],
@@ -342,7 +342,7 @@ class _PagingDemoState extends State<_PagingDemo> {
             child: Text(
               '这是你们对话的开始',
               textAlign: TextAlign.center,
-              style: KunText.xs.copyWith(color: scheme.neutral.shade500),
+              style: KunText.xs.copyWith(color: scheme.foregroundMuted),
             ),
           ),
         ),
@@ -418,7 +418,7 @@ class _ThousandsDemoState extends State<_ThousandsDemo> {
               if (_took != null)
                 Text(
                   '${_messages.length} 条,首次渲染 $_took ms',
-                  style: KunText.sm.copyWith(color: scheme.neutral.shade500),
+                  style: KunText.sm.copyWith(color: scheme.foregroundMuted),
                 ),
             ],
           ),
@@ -437,7 +437,7 @@ class _ThousandsDemoState extends State<_ThousandsDemo> {
           empty: Text(
             '点上面的按钮载入 5000 条消息',
             textAlign: TextAlign.center,
-            style: KunText.sm.copyWith(color: scheme.neutral.shade500),
+            style: KunText.sm.copyWith(color: scheme.foregroundMuted),
           ),
         ),
       ),

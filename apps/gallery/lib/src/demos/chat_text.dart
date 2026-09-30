@@ -82,7 +82,7 @@ Widget chatTextPreview(BuildContext context) {
               ),
               const SizedBox(height: KunSpacing.unit),
               DefaultTextStyle.merge(
-                style: KunText.sm.copyWith(color: scheme.neutral.shade500),
+                style: KunText.sm.copyWith(color: scheme.foregroundMuted),
                 child: KunChatText(
                   text: message.text,
                   entities: message.entities,
@@ -147,7 +147,7 @@ class _EventsDemoState extends State<_EventsDemo> {
             style: KunText.xs.copyWith(
               fontFamily: KunFontFamilies.mono,
               fontFamilyFallback: KunFontFamilies.monoFallback,
-              color: scheme.neutral.shade500,
+              color: scheme.foregroundMuted,
             ),
           ),
         ],

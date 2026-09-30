@@ -1587,7 +1587,7 @@ void main() {
       (triggerDecoration(tester).border! as Border).top.color,
       KunColors.light.danger.shade300,
     );
-    expect(resolvedOf(tester, 'Required').color, KunColors.light.danger.solid);
+    expect(resolvedOf(tester, 'Required').color, KunColors.light.danger.text);
 
     for (final KunUISize size in KunUISize.values) {
       await tester.pumpWidget(

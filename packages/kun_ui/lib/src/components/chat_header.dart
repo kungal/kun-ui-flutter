@@ -203,7 +203,7 @@ class _KunChatHeaderState extends State<KunChatHeader> {
     final Widget second = _typingActive
         ? DefaultTextStyle.merge(
             style: KunText.xs.copyWith(
-              color: scheme.primary.solid,
+              color: scheme.primary.text,
               height: 16 / 12,
               leadingDistribution: TextLeadingDistribution.even,
             ),

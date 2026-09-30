@@ -534,7 +534,7 @@ class _KunInputState extends State<KunInput>
                           child: Text(
                             widget.placeholder!,
                             style: textStyle.copyWith(
-                              color: scheme.neutral.shade400,
+                              color: scheme.foregroundMuted,
                             ),
                             maxLines: 1,
                             overflow: TextOverflow.ellipsis,
@@ -643,7 +643,7 @@ class _KunInputState extends State<KunInput>
                   if (widget.required)
                     TextSpan(
                       text: ' *',
-                      style: TextStyle(color: danger.solid),
+                      style: TextStyle(color: danger.text),
                     ),
                 ],
               ),
@@ -659,7 +659,7 @@ class _KunInputState extends State<KunInput>
             const SizedBox(height: KunSpacing.unit),
             Text(
               widget.error!,
-              style: KunText.sm.copyWith(color: danger.solid),
+              style: KunText.sm.copyWith(color: danger.text),
             ),
           ] else if (widget.description?.isNotEmpty ?? false) ...[
             const SizedBox(height: KunSpacing.unit),

@@ -1382,7 +1382,7 @@ class _ChatInlineState extends State<_ChatInline>
     final bool hovered = _hovered.contains(node.entity.offset);
     final TextStyle linkStyle = style.copyWith(
       color: tappable || (!widget.preview && href != null)
-          ? scheme.primary.shade600
+          ? scheme.primary.text
           : style.color,
       decoration: tappable || (!widget.preview && href != null)
           ? TextDecoration.underline
@@ -1390,8 +1390,8 @@ class _ChatInlineState extends State<_ChatInline>
       decorationColor: !tappable
           ? style.decorationColor
           : hovered
-              ? scheme.primary.shade600
-              : scheme.primary.shade600.withValues(alpha: 0.4),
+              ? scheme.primary.text
+              : scheme.primary.text.withValues(alpha: 0.4),
     );
     if (!tappable) {
       return _buildNodes(
@@ -1437,10 +1437,10 @@ class _ChatInlineState extends State<_ChatInline>
     final bool hovered = _hovered.contains(node.entity.offset);
     final TextStyle mentionStyle = style.copyWith(
       fontWeight: KunFontWeights.medium,
-      color: tappable ? scheme.primary.shade600 : style.color,
+      color: tappable ? scheme.primary.text : style.color,
       decoration:
           tappable && hovered ? TextDecoration.underline : TextDecoration.none,
-      decorationColor: scheme.primary.shade600,
+      decorationColor: scheme.primary.text,
     );
     if (!tappable) {
       return _buildNodes(

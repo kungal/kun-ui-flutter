@@ -31,7 +31,7 @@ class _KunDatePickerField extends StatelessWidget {
           const SizedBox(height: KunSpacing.unit),
           Text(
             widget.error!,
-            style: KunText.sm.copyWith(color: scheme.danger.solid),
+            style: KunText.sm.copyWith(color: scheme.danger.text),
           ),
         ],
       ],
@@ -71,7 +71,7 @@ class _KunDatePickerTrigger extends StatelessWidget {
       maxLines: 1,
       overflow: TextOverflow.ellipsis,
       style: textStyle.copyWith(
-        color: hasValue ? scheme.foreground : scheme.neutral.shade400,
+        color: hasValue ? scheme.foreground : scheme.foregroundMuted,
       ),
     );
 

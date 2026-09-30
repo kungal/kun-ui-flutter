@@ -292,7 +292,7 @@ class _KunCheckBoxState extends State<KunCheckBox>
                     message,
                     style: KunText.sm.copyWith(
                       color: widget.error != null
-                          ? scheme.danger.solid
+                          ? scheme.danger.text
                           : scheme.foregroundMuted,
                     ),
                   ),

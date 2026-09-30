@@ -72,8 +72,7 @@ class _RequestBarDemoState extends State<_RequestBarDemo> {
                     alignment: Alignment.centerLeft,
                     child: Text(
                       _result.isEmpty ? '选一个操作' : _result,
-                      style:
-                          KunText.xs.copyWith(color: scheme.neutral.shade500),
+                      style: KunText.xs.copyWith(color: scheme.foregroundMuted),
                     ),
                   ),
                 ),

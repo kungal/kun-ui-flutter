@@ -71,7 +71,7 @@ Widget _userCard(
                     Text(
                       joined,
                       style: KunText.xs.copyWith(
-                        color: scheme.neutral.shade500,
+                        color: scheme.foregroundMuted,
                       ),
                     ),
                   ],
@@ -129,7 +129,7 @@ Widget hoverCardBasic(BuildContext context) {
               Text(
                 'posted 3 hours ago',
                 style: KunText.sm.copyWith(
-                  color: KunTheme.of(context).colors.neutral.shade500,
+                  color: KunTheme.of(context).colors.foregroundMuted,
                 ),
               ),
             ],

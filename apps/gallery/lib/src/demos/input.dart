@@ -185,7 +185,7 @@ Widget inputAffixes(BuildContext context) {
                 suffix: Text(
                   '.com',
                   style: KunText.sm.copyWith(
-                    color: theme.colors.neutral.shade500,
+                    color: theme.colors.foregroundMuted,
                   ),
                 ),
               );

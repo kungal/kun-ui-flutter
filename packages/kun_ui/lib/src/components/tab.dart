@@ -655,7 +655,7 @@ class _KunTabState<T extends KunTabItem> extends State<KunTab<T>>
       case KunTabVariant.bordered:
         return widget.color == KunUIColor.neutral
             ? scheme.foreground
-            : scale.solid;
+            : scale.text;
     }
   }
 

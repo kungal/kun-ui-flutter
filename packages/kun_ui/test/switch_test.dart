@@ -356,7 +356,7 @@ void main() {
     expect(find.text('Helper'), findsNothing);
     expect(
       resolvedOf(tester, 'Required').color,
-      KunColors.light.danger.solid,
+      KunColors.light.danger.text,
     );
     expect(resolvedOf(tester, 'Required').fontSize, KunText.sm.fontSize);
 

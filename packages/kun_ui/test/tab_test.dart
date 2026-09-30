@@ -239,7 +239,7 @@ void main() {
     seen.clear();
     await tester.tap(find.text('Home'));
     expect(seen, isEmpty);
-    expect(resolvedOf(tester, 'Home').color, KunColors.light.primary.solid);
+    expect(resolvedOf(tester, 'Home').color, KunColors.light.primary.text);
     expect(resolvedOf(tester, 'Docs').color, KunColors.light.foregroundMuted);
   });
 
@@ -529,7 +529,7 @@ void main() {
       ),
     );
     await tester.pumpAndSettle();
-    expect(resolvedOf(tester, 'Home').color, KunColors.light.primary.solid);
+    expect(resolvedOf(tester, 'Home').color, KunColors.light.primary.text);
     expect(resolvedOf(tester, 'Docs').color, KunColors.light.foregroundMuted);
 
     final gesture = await tester.createGesture(kind: PointerDeviceKind.mouse);
@@ -1350,7 +1350,7 @@ void main() {
     expect(find.text('Docs 0 false'), findsOneWidget);
     expect(
       resolvedOf(tester, 'Home 3 true').color,
-      KunColors.light.primary.solid,
+      KunColors.light.primary.text,
     );
   });
 
@@ -1418,7 +1418,7 @@ void main() {
     await tester.pump();
     await tester.pump();
     expect(tester.getRect(indicator).left, tester.getRect(tabOf('docs')).left);
-    expect(resolvedOf(tester, 'Docs').color, KunColors.light.primary.solid);
+    expect(resolvedOf(tester, 'Docs').color, KunColors.light.primary.text);
     expect(resolvedOf(tester, 'Home').color, KunColors.light.foregroundMuted);
   });
 

@@ -219,7 +219,7 @@ class _KunChatPinnedBarState extends State<KunChatPinnedBar> {
                               maxLines: 1,
                               overflow: TextOverflow.ellipsis,
                               style: KunText.sm.copyWith(
-                                color: scheme.primary.solid,
+                                color: scheme.primary.text,
                                 fontWeight: KunFontWeights.semibold,
                               ),
                             ),

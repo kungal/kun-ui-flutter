@@ -240,7 +240,7 @@ class _KunSwitchState extends State<KunSwitch> {
           const SizedBox(height: KunSpacing.unit),
           Text(
             widget.error!,
-            style: KunText.sm.copyWith(color: danger.solid),
+            style: KunText.sm.copyWith(color: danger.text),
           ),
         ] else if (widget.description?.isNotEmpty ?? false) ...[
           const SizedBox(height: KunSpacing.unit),
