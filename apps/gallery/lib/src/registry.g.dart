@@ -24,6 +24,7 @@ import 'demos/chat_typing.dart';
 import 'demos/checkbox.dart';
 import 'demos/checkbox_group.dart';
 import 'demos/chip.dart';
+import 'demos/command_palette.dart';
 import 'demos/context_menu.dart';
 import 'demos/date_picker.dart';
 import 'demos/divider.dart';
@@ -361,6 +362,23 @@ const List<GalleryComponent> galleryComponents = <GalleryComponent>[
       GalleryDemo(slug: 'dismiss', title: 'Dismiss', builder: chipDismiss),
       GalleryDemo(
           slug: 'contract', title: 'Contract', builder: kunChipContract),
+    ],
+  ),
+  GalleryComponent(
+    slug: 'kuncommandpalette',
+    name: 'KunCommandPalette',
+    demos: <GalleryDemo>[
+      GalleryDemo(slug: 'basic', title: 'Basic', builder: commandPaletteBasic),
+      GalleryDemo(
+          slug: 'remote',
+          title: 'Remote search',
+          builder: commandPaletteRemote),
+      GalleryDemo(
+          slug: 'submit', title: 'Submit', builder: commandPaletteSubmit),
+      GalleryDemo(
+          slug: 'contract',
+          title: 'Contract',
+          builder: kunCommandPaletteContract),
     ],
   ),
   GalleryComponent(

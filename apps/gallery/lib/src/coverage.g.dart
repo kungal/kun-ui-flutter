@@ -2080,6 +2080,157 @@ const ComponentCoverage _kunChip = ComponentCoverage(
 Widget kunChipContract(BuildContext context) =>
     const CoveragePage(coverage: _kunChip);
 
+const ComponentCoverage _kunCommandPalette = ComponentCoverage(
+  name: 'KunCommandPalette',
+  entries: <CoverageEntry>[
+    CoverageEntry(
+      section: 'props',
+      contractName: 'ariaLabel',
+      status: CoverageStatus.noVisualForm,
+      dartName: 'semanticLabel',
+      reason:
+          'An accessible name has no visual form; the dialog name is asserted by the widget tests.',
+    ),
+    CoverageEntry(
+      section: 'props',
+      contractName: 'emptyText',
+      status: CoverageStatus.shown,
+      dartName: 'emptyText',
+      shownBy: 'Remote search',
+    ),
+    CoverageEntry(
+      section: 'props',
+      contractName: 'highlight',
+      status: CoverageStatus.shown,
+      dartName: 'highlight',
+      shownBy: 'Basic',
+    ),
+    CoverageEntry(
+      section: 'props',
+      contractName: 'items',
+      status: CoverageStatus.shown,
+      dartName: 'items',
+      shownBy: 'Basic',
+    ),
+    CoverageEntry(
+      section: 'props',
+      contractName: 'loading',
+      status: CoverageStatus.shown,
+      dartName: 'loading',
+      shownBy: 'Remote search',
+    ),
+    CoverageEntry(
+      section: 'props',
+      contractName: 'noResultText',
+      status: CoverageStatus.shown,
+      dartName: 'noResultText',
+      shownBy: 'Submit',
+    ),
+    CoverageEntry(
+      section: 'props',
+      contractName: 'open',
+      status: CoverageStatus.shown,
+      dartName: 'open',
+      shownBy: 'Basic',
+    ),
+    CoverageEntry(
+      section: 'props',
+      contractName: 'placeholder',
+      status: CoverageStatus.shown,
+      dartName: 'placeholder',
+      shownBy: 'Basic',
+    ),
+    CoverageEntry(
+      section: 'props',
+      contractName: 'query',
+      status: CoverageStatus.shown,
+      dartName: 'query',
+      shownBy: 'Basic',
+    ),
+    CoverageEntry(
+      section: 'props',
+      contractName: 'shortcut',
+      status: CoverageStatus.shown,
+      dartName: 'shortcut',
+      shownBy: 'Basic',
+    ),
+    CoverageEntry(
+      section: 'events',
+      contractName: 'select',
+      status: CoverageStatus.shown,
+      dartName: 'onSelected',
+      shownBy: 'Basic',
+    ),
+    CoverageEntry(
+      section: 'events',
+      contractName: 'submit',
+      status: CoverageStatus.shown,
+      dartName: 'onSubmitted',
+      shownBy: 'Submit',
+    ),
+    CoverageEntry(
+      section: 'events',
+      contractName: 'update:open',
+      status: CoverageStatus.shown,
+      dartName: 'onOpenChanged',
+      shownBy: 'Basic',
+    ),
+    CoverageEntry(
+      section: 'events',
+      contractName: 'update:query',
+      status: CoverageStatus.shown,
+      dartName: 'onQueryChanged',
+      shownBy: 'Basic',
+    ),
+    CoverageEntry(
+      section: 'slots',
+      contractName: 'empty',
+      status: CoverageStatus.shown,
+      dartName: 'empty',
+      shownBy: 'Remote search',
+    ),
+    CoverageEntry(
+      section: 'slots',
+      contractName: 'footer',
+      status: CoverageStatus.shown,
+      dartName: 'footer',
+      shownBy: 'Basic',
+    ),
+    CoverageEntry(
+      section: 'slots',
+      contractName: 'item',
+      status: CoverageStatus.shown,
+      dartName: 'itemBuilder',
+      shownBy: 'Basic',
+    ),
+    CoverageEntry(
+      section: 'slots',
+      contractName: 'loading',
+      status: CoverageStatus.shown,
+      dartName: 'loadingBuilder',
+      shownBy: 'Remote search',
+    ),
+    CoverageEntry(
+      section: 'slots',
+      contractName: 'no-result',
+      status: CoverageStatus.shown,
+      dartName: 'noResult',
+      shownBy: 'Submit',
+    ),
+    CoverageEntry(
+      section: 'slots',
+      contractName: 'trigger',
+      status: CoverageStatus.shown,
+      dartName: 'trigger',
+      shownBy: 'Basic',
+    ),
+  ],
+);
+
+/// The contract coverage page for KunCommandPalette.
+Widget kunCommandPaletteContract(BuildContext context) =>
+    const CoveragePage(coverage: _kunCommandPalette);
+
 const ComponentCoverage _kunContextMenu = ComponentCoverage(
   name: 'KunContextMenu',
   entries: <CoverageEntry>[
