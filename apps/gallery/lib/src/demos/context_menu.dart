@@ -89,7 +89,7 @@ class _Area extends StatefulWidget {
     this.width = 192,
   });
 
-  final List<KunContextMenuItem> items;
+  final List<KunMenuEntry> items;
   final String hint;
   final bool fill;
   final double padding;
@@ -290,6 +290,77 @@ Widget contextMenuSize(BuildContext context) {
           fill: true,
           width: 320,
           padding: 24,
+        ),
+      ],
+    ),
+  );
+}
+
+const List<KunMenuEntry> _commandItems = <KunMenuEntry>[
+  KunContextMenuItem(
+    key: 'reply',
+    label: 'Reply',
+    icon: KunIcons.reply,
+    shortcut: 'R',
+  ),
+  KunContextMenuItem(
+    key: 'quote',
+    label: 'Quote',
+    icon: KunIcons.quote,
+    shortcut: 'Q',
+  ),
+  KunContextMenuItem(
+    key: 'copy',
+    label: 'Copy text',
+    icon: KunIcons.copy,
+    shortcut: 'Mod+C',
+  ),
+  KunContextMenuItem(
+    key: 'share',
+    label: 'Share',
+    icon: KunIcons.externalLink,
+    children: <KunMenuEntry>[
+      KunContextMenuItem(
+        key: 'share-link',
+        label: 'Copy post link',
+        shortcut: 'Mod+Shift+C',
+      ),
+      KunContextMenuItem(key: 'share-image', label: 'Make a share image'),
+    ],
+  ),
+  KunMenuSeparator(),
+  KunContextMenuItem(
+    key: 'report',
+    label: 'Report',
+    icon: KunIcons.flag,
+    color: KunUIColor.warning,
+  ),
+  KunContextMenuItem(
+    key: 'delete',
+    label: 'Delete',
+    icon: KunIcons.trash2,
+    color: KunUIColor.danger,
+    shortcut: 'Mod+Backspace',
+  ),
+];
+
+Widget contextMenuCommands(BuildContext context) {
+  return Padding(
+    padding: const EdgeInsets.all(KunSpacing.unit * 6),
+    child: Column(
+      mainAxisSize: MainAxisSize.min,
+      crossAxisAlignment: CrossAxisAlignment.start,
+      spacing: KunSpacing.unit * 4,
+      children: <Widget>[
+        _caption(
+          context,
+          'Separators, shortcut hints, and one level of submenu. Hover Share, '
+          'or press →, to open the submenu.',
+        ),
+        const _Area(
+          items: _commandItems,
+          hint: 'Right-click or long-press inside this box',
+          fill: true,
         ),
       ],
     ),

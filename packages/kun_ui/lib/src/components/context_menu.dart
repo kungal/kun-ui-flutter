@@ -28,7 +28,7 @@ class KunContextMenu extends StatefulWidget {
   /// Creates a context menu.
   const KunContextMenu({
     required this.visible,
-    this.items = const <KunContextMenuItem>[],
+    this.items = const <KunMenuEntry>[],
     this.padding = 12,
     this.position = Offset.zero,
     this.width = 192,
@@ -42,8 +42,10 @@ class KunContextMenu extends StatefulWidget {
   /// never hides itself.
   final bool visible;
 
-  /// The rows, in order. An empty list never opens.
-  final List<KunContextMenuItem> items;
+  /// The rows, in order. An empty list never opens. Separators and one
+  /// level of submenu are allowed; an item with [KunContextMenuItem.children]
+  /// never fires [onSelected].
+  final List<KunMenuEntry> items;
 
   /// Margin kept between the panel and the edge of the view, the web's
   /// `padding`.
@@ -82,7 +84,7 @@ class _KunContextMenuState extends State<KunContextMenu>
   final Object _tapGroup = Object();
   final GlobalKey _panelKey = GlobalKey();
   final FocusNode _menuFocus = FocusNode(debugLabel: 'KunContextMenu.menu');
-  List<FocusNode> _itemFocus = <FocusNode>[];
+  final GlobalKey<KunMenuListState> _listKey = GlobalKey<KunMenuListState>();
 
   late final AnimationController _openClose;
   late final CurvedAnimation _curve;
@@ -91,13 +93,10 @@ class _KunContextMenuState extends State<KunContextMenu>
   bool _isOpen = false;
   bool _restoreFocus = false;
   bool _scrollRoute = false;
-  int _activeIndex = -1;
   Size? _viewSize;
   FocusNode? _previouslyFocused;
 
-  bool get _hasContent => widget.items.isNotEmpty;
-
-  List<int> get _enabled => kunMenuEnabledIndices(widget.items);
+  bool get _hasContent => kunMenuHasContent(widget.items);
 
   @override
   void initState() {
@@ -114,7 +113,6 @@ class _KunContextMenuState extends State<KunContextMenu>
     );
     _scale = Tween<double>(begin: 0.95, end: 1).animate(_curve);
     _openClose.addListener(_hidePortalIfDismissed);
-    _syncItemFocus();
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (mounted) {
         _syncOpen();
@@ -125,9 +123,6 @@ class _KunContextMenuState extends State<KunContextMenu>
   @override
   void didUpdateWidget(KunContextMenu oldWidget) {
     super.didUpdateWidget(oldWidget);
-    if (oldWidget.items.length != widget.items.length) {
-      _syncItemFocus();
-    }
     final bool want = widget.visible && _hasContent;
     if (want != _isOpen) {
       WidgetsBinding.instance.addPostFrameCallback((_) {
@@ -171,20 +166,7 @@ class _KunContextMenuState extends State<KunContextMenu>
     _openClose.dispose();
     _curve.dispose();
     _menuFocus.dispose();
-    for (final FocusNode node in _itemFocus) {
-      node.dispose();
-    }
     super.dispose();
-  }
-
-  void _syncItemFocus() {
-    for (final FocusNode node in _itemFocus) {
-      node.dispose();
-    }
-    _itemFocus = <FocusNode>[
-      for (int i = 0; i < widget.items.length; i++)
-        FocusNode(debugLabel: 'KunContextMenu.item.$i'),
-    ];
   }
 
   void _hidePortalIfDismissed() {
@@ -219,7 +201,6 @@ class _KunContextMenuState extends State<KunContextMenu>
     _previouslyFocused = FocusManager.instance.primaryFocus;
     _restoreFocus = false;
     _isOpen = true;
-    _activeIndex = -1;
     KunDismissLayers.add(this);
     _installScrollClose();
     if (!_portal.isShowing) {
@@ -231,9 +212,9 @@ class _KunContextMenuState extends State<KunContextMenu>
       if (!mounted || !_isOpen) {
         return;
       }
-      final List<int> enabled = _enabled;
-      if (enabled.isNotEmpty) {
-        _focusItem(enabled.first);
+      final KunMenuListState? list = _listKey.currentState;
+      if (list != null) {
+        list.focusFirst();
       } else {
         _menuFocus.requestFocus();
       }
@@ -245,7 +226,6 @@ class _KunContextMenuState extends State<KunContextMenu>
       return;
     }
     _isOpen = false;
-    _activeIndex = -1;
     KunDismissLayers.remove(this);
     _removeScrollClose();
     _openClose.reverse();
@@ -288,6 +268,10 @@ class _KunContextMenuState extends State<KunContextMenu>
     if (panel != null && panel.contains(event.position)) {
       return;
     }
+    final Rect? sub = _listKey.currentState?.submenuPanelRect;
+    if (sub != null && sub.contains(event.position)) {
+      return;
+    }
     _requestClose();
   }
 
@@ -297,14 +281,6 @@ class _KunContextMenuState extends State<KunContextMenu>
       return null;
     }
     return ro.localToGlobal(Offset.zero) & ro.size;
-  }
-
-  void _focusItem(int index) {
-    if (index < 0 || index >= _itemFocus.length) {
-      return;
-    }
-    setState(() => _activeIndex = index);
-    _itemFocus[index].requestFocus();
   }
 
   void _select(KunContextMenuItem item) {
@@ -320,18 +296,7 @@ class _KunContextMenuState extends State<KunContextMenu>
   }
 
   KeyEventResult _onMenuKey(KeyEvent event) {
-    return kunMenuKeyEvent(
-      event,
-      enabled: _enabled,
-      activeIndex: _activeIndex,
-      onFocusItem: _focusItem,
-      onClose: () => _requestClose(returnFocus: true),
-      onSelectActive: () {
-        if (_activeIndex >= 0) {
-          _select(widget.items[_activeIndex]);
-        }
-      },
-    );
+    return _listKey.currentState?.handleKey(event) ?? KeyEventResult.ignored;
   }
 
   Offset _overlayPoint(BuildContext overlayContext, Offset global) {
@@ -360,26 +325,16 @@ class _KunContextMenuState extends State<KunContextMenu>
         padding: const EdgeInsets.all(KunSpacing.unit),
         child: IntrinsicWidth(
           child: SingleChildScrollView(
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              crossAxisAlignment: CrossAxisAlignment.stretch,
-              children: <Widget>[
-                for (int i = 0; i < widget.items.length; i++)
-                  KunMenuRow(
-                    key: ValueKey<String>(
-                      'KunContextMenu.item.${widget.items[i].key}',
-                    ),
-                    item: widget.items[i],
-                    focusNode: _itemFocus[i],
-                    theme: theme,
-                    onActivate: () => _select(widget.items[i]),
-                    onHover: () {
-                      if (!widget.items[i].disabled) {
-                        _focusItem(i);
-                      }
-                    },
-                  ),
-              ],
+            child: KunMenuList(
+              key: _listKey,
+              entries: widget.items,
+              itemKeyPrefix: 'KunContextMenu.item',
+              theme: theme,
+              minWidth: widget.width,
+              tapGroup: _tapGroup,
+              onSelect: _select,
+              onClose: ({required bool returnFocus}) =>
+                  _requestClose(returnFocus: returnFocus),
             ),
           ),
         ),

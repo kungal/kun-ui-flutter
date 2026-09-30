@@ -201,3 +201,111 @@ class _DropdownEventsState extends State<_DropdownEvents> {
     );
   }
 }
+
+const List<KunMenuEntry> _groupedItems = <KunMenuEntry>[
+  KunDropdownItem(
+    key: 'reply',
+    label: 'Reply',
+    icon: KunIcons.reply,
+    shortcut: 'R',
+  ),
+  KunDropdownItem(
+    key: 'quote',
+    label: 'Quote',
+    icon: KunIcons.quote,
+    shortcut: 'Q',
+  ),
+  KunDropdownItem(
+    key: 'copy',
+    label: 'Copy link',
+    icon: KunIcons.copy,
+    shortcut: 'Mod+Shift+C',
+  ),
+  KunMenuSeparator(),
+  KunDropdownItem(
+    key: 'edit',
+    label: 'Edit',
+    icon: KunIcons.pencil,
+    shortcut: 'E',
+  ),
+  KunDropdownItem(
+    key: 'delete',
+    label: 'Delete',
+    icon: KunIcons.trash2,
+    color: KunUIColor.danger,
+    shortcut: 'Mod+Backspace',
+  ),
+];
+
+const List<KunMenuEntry> _submenuItems = <KunMenuEntry>[
+  KunDropdownItem(key: 'pin', label: 'Pin conversation', icon: KunIcons.pin),
+  KunDropdownItem(
+    key: 'mute',
+    label: 'Mute notifications',
+    icon: KunIcons.bellOff,
+    children: <KunMenuEntry>[
+      KunDropdownItem(key: 'mute-1h', label: '1 hour'),
+      KunDropdownItem(key: 'mute-8h', label: '8 hours'),
+      KunDropdownItem(key: 'mute-1d', label: '1 day'),
+      KunMenuSeparator(),
+      KunDropdownItem(key: 'mute-forever', label: 'Until I turn it back on'),
+    ],
+  ),
+  KunDropdownItem(key: 'archive', label: 'Archive', icon: KunIcons.archive),
+  KunMenuSeparator(),
+  KunDropdownItem(
+    key: 'delete',
+    label: 'Delete conversation',
+    icon: KunIcons.trash2,
+    color: KunUIColor.danger,
+  ),
+];
+
+Widget dropdownGrouped(BuildContext context) {
+  return Padding(
+    padding: const EdgeInsets.all(KunSpacing.unit * 6),
+    child: Column(
+      mainAxisSize: MainAxisSize.min,
+      crossAxisAlignment: CrossAxisAlignment.start,
+      spacing: KunSpacing.unit * 4,
+      children: <Widget>[
+        _caption(
+          context,
+          'One command list, grouped by separators. shortcut is display only.',
+        ),
+        KunDropdown(
+          items: _groupedItems,
+          trigger: KunButton(
+            onPressed: null,
+            variant: KunUIVariant.light,
+            color: KunUIColor.neutral,
+            isIconOnly: true,
+            semanticLabel: 'More actions',
+            child: const Icon(KunIcons.chevronDown),
+          ),
+        ),
+      ],
+    ),
+  );
+}
+
+Widget dropdownSubmenu(BuildContext context) {
+  return Padding(
+    padding: const EdgeInsets.all(KunSpacing.unit * 6),
+    child: Column(
+      mainAxisSize: MainAxisSize.min,
+      crossAxisAlignment: CrossAxisAlignment.start,
+      spacing: KunSpacing.unit * 4,
+      children: <Widget>[
+        _caption(
+          context,
+          'children opens a submenu: hover, → or a tap. One level only.',
+        ),
+        KunDropdown(
+          items: _submenuItems,
+          trigger: _trigger('Conversation'),
+        ),
+      ],
+    ),
+  );
+}

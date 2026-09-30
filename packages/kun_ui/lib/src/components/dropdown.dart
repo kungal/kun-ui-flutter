@@ -1,5 +1,3 @@
-import 'dart:async';
-
 import 'package:flutter/rendering.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter/widgets.dart';
@@ -13,7 +11,8 @@ import '../theme/theme.dart';
 import 'menu_panel.dart';
 import 'popover.dart' show KunPopoverPosition;
 
-export 'menu_panel.dart' show KunContextMenuItem, KunDropdownItem;
+export 'menu_panel.dart'
+    show KunContextMenuItem, KunDropdownItem, KunMenuEntry, KunMenuSeparator;
 
 /// The web's `offset: 6` for a dropdown, tighter than the 8 every other
 /// overlay uses.
@@ -52,7 +51,7 @@ class KunDropdown extends StatefulWidget {
   /// Creates a dropdown.
   const KunDropdown({
     required this.trigger,
-    this.items = const <KunDropdownItem>[],
+    this.items = const <KunMenuEntry>[],
     this.position = KunPopoverPosition.bottomStart,
     this.minWidth = 192,
     this.disabled = false,
@@ -68,8 +67,10 @@ class KunDropdown extends StatefulWidget {
   /// pass a plain widget rather than something that takes focus itself.
   final Widget trigger;
 
-  /// The rows, in order. An empty list never opens.
-  final List<KunDropdownItem> items;
+  /// The rows, in order. An empty list never opens. Separators and one
+  /// level of submenu are allowed; an item with [KunContextMenuItem.children]
+  /// never fires [onSelected].
+  final List<KunMenuEntry> items;
 
   /// Where the menu sits. It flips and shifts to stay on screen.
   final KunPopoverPosition position;
@@ -106,16 +107,13 @@ class _KunDropdownState extends State<KunDropdown>
   final Object _tapGroup = Object();
   final FocusNode _triggerFocus = FocusNode(debugLabel: 'KunDropdown.trigger');
   final FocusNode _menuFocus = FocusNode(debugLabel: 'KunDropdown.menu');
-  List<FocusNode> _itemFocus = <FocusNode>[];
+  final GlobalKey<KunMenuListState> _listKey = GlobalKey<KunMenuListState>();
 
   late final AnimationController _openClose;
   late final CurvedAnimation _curve;
   late final Animation<double> _scale;
 
   bool _isOpen = false;
-  int _activeIndex = -1;
-  String _typeBuffer = '';
-  Timer? _typeTimer;
   final ValueNotifier<KunAnchorResolution> _resolved =
       ValueNotifier<KunAnchorResolution>(
     const KunAnchorResolution(side: KunAnchorSide.bottom, arrowCross: 0),
@@ -138,7 +136,6 @@ class _KunDropdownState extends State<KunDropdown>
     _openClose.addListener(_hidePortalIfDismissed);
     _triggerFocus.canRequestFocus = !widget.disabled;
     widget.controller?._state = this;
-    _syncItemFocus();
   }
 
   @override
@@ -153,9 +150,6 @@ class _KunDropdownState extends State<KunDropdown>
     _triggerFocus.canRequestFocus = !widget.disabled;
     if (widget.disabled && _isOpen) {
       _close();
-    }
-    if (oldWidget.items.length != widget.items.length) {
-      _syncItemFocus();
     }
   }
 
@@ -172,7 +166,6 @@ class _KunDropdownState extends State<KunDropdown>
     if (identical(widget.controller?._state, this)) {
       widget.controller?._state = null;
     }
-    _typeTimer?.cancel();
     _openClose.removeListener(_hidePortalIfDismissed);
     if (_portal.isShowing) {
       _portal.hide();
@@ -181,21 +174,8 @@ class _KunDropdownState extends State<KunDropdown>
     _curve.dispose();
     _triggerFocus.dispose();
     _menuFocus.dispose();
-    for (final FocusNode node in _itemFocus) {
-      node.dispose();
-    }
     _resolved.dispose();
     super.dispose();
-  }
-
-  void _syncItemFocus() {
-    for (final FocusNode node in _itemFocus) {
-      node.dispose();
-    }
-    _itemFocus = <FocusNode>[
-      for (int i = 0; i < widget.items.length; i++)
-        FocusNode(debugLabel: 'KunDropdown.item.$i'),
-    ];
   }
 
   void _hidePortalIfDismissed() {
@@ -204,16 +184,16 @@ class _KunDropdownState extends State<KunDropdown>
     }
   }
 
-  List<int> get _enabled => kunMenuEnabledIndices(widget.items);
-
-  void _open({int? focusIndex}) {
-    if (_isOpen || widget.disabled || widget.items.isEmpty || !mounted) {
+  void _open({void Function(KunMenuListState list)? focus}) {
+    if (_isOpen ||
+        widget.disabled ||
+        !kunMenuHasContent(widget.items) ||
+        !mounted) {
       return;
     }
     KunDismissLayers.add(this);
     setState(() {
       _isOpen = true;
-      _activeIndex = -1;
     });
     _portal.show();
     _openClose.forward();
@@ -222,8 +202,9 @@ class _KunDropdownState extends State<KunDropdown>
       if (!_isOpen || !mounted) {
         return;
       }
-      if (focusIndex != null) {
-        _focusItem(focusIndex);
+      final KunMenuListState? list = _listKey.currentState;
+      if (list != null && focus != null) {
+        focus(list);
       } else {
         _menuFocus.requestFocus();
       }
@@ -231,13 +212,11 @@ class _KunDropdownState extends State<KunDropdown>
   }
 
   void _openFirst() {
-    final List<int> enabled = _enabled;
-    _open(focusIndex: enabled.isEmpty ? null : enabled.first);
+    _open(focus: (KunMenuListState list) => list.focusFirst());
   }
 
   void _openLast() {
-    final List<int> enabled = _enabled;
-    _open(focusIndex: enabled.isEmpty ? null : enabled.last);
+    _open(focus: (KunMenuListState list) => list.focusLast());
   }
 
   void _close({bool returnFocus = false}) {
@@ -247,11 +226,8 @@ class _KunDropdownState extends State<KunDropdown>
     KunDismissLayers.remove(this);
     setState(() {
       _isOpen = false;
-      _activeIndex = -1;
     });
     _openClose.reverse();
-    _typeTimer?.cancel();
-    _typeBuffer = '';
     widget.onClose?.call();
     if (returnFocus) {
       _triggerFocus.requestFocus();
@@ -259,30 +235,6 @@ class _KunDropdownState extends State<KunDropdown>
   }
 
   void _toggle() => _isOpen ? _close() : _open();
-
-  void _focusItem(int index) {
-    if (index < 0 || index >= _itemFocus.length) {
-      return;
-    }
-    setState(() => _activeIndex = index);
-    _itemFocus[index].requestFocus();
-  }
-
-  void _typeahead(String character) {
-    _typeBuffer += character.toLowerCase();
-    _typeTimer?.cancel();
-    _typeTimer = Timer(
-      const Duration(milliseconds: 600),
-      () => _typeBuffer = '',
-    );
-    final int index = widget.items.indexWhere(
-      (KunDropdownItem item) =>
-          !item.disabled && item.label.toLowerCase().startsWith(_typeBuffer),
-    );
-    if (index >= 0) {
-      _focusItem(index);
-    }
-  }
 
   void _select(KunDropdownItem item) {
     if (item.disabled) {
@@ -314,19 +266,7 @@ class _KunDropdownState extends State<KunDropdown>
   }
 
   KeyEventResult _onMenuKey(KeyEvent event) {
-    return kunMenuKeyEvent(
-      event,
-      enabled: _enabled,
-      activeIndex: _activeIndex,
-      onFocusItem: _focusItem,
-      onClose: () => _close(returnFocus: true),
-      onSelectActive: () {
-        if (_activeIndex >= 0) {
-          _select(widget.items[_activeIndex]);
-        }
-      },
-      onTypeahead: _typeahead,
-    );
+    return _listKey.currentState?.handleKey(event) ?? KeyEventResult.ignored;
   }
 
   void _onResolved(KunAnchorResolution resolution) {
@@ -366,26 +306,16 @@ class _KunDropdownState extends State<KunDropdown>
         // takes the width it is offered instead, which is the whole view.
         child: IntrinsicWidth(
           child: SingleChildScrollView(
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              crossAxisAlignment: CrossAxisAlignment.stretch,
-              children: <Widget>[
-                for (int i = 0; i < widget.items.length; i++)
-                  KunMenuRow(
-                    key: ValueKey<String>(
-                      'KunDropdown.item.${widget.items[i].key}',
-                    ),
-                    item: widget.items[i],
-                    focusNode: _itemFocus[i],
-                    theme: theme,
-                    onActivate: () => _select(widget.items[i]),
-                    onHover: () {
-                      if (!widget.items[i].disabled) {
-                        _focusItem(i);
-                      }
-                    },
-                  ),
-              ],
+            child: KunMenuList(
+              key: _listKey,
+              entries: widget.items,
+              itemKeyPrefix: 'KunDropdown.item',
+              theme: theme,
+              minWidth: widget.minWidth,
+              tapGroup: _tapGroup,
+              onSelect: _select,
+              onClose: ({required bool returnFocus}) =>
+                  _close(returnFocus: returnFocus),
             ),
           ),
         ),

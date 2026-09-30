@@ -954,6 +954,12 @@
             "props.width",
             "props.padding"
           ]
+        },
+        {
+          "slug": "commands",
+          "title": "Separators, shortcuts, submenu",
+          "builder": "contextMenuCommands",
+          "shows": []
         }
       ]
     },
@@ -1141,6 +1147,18 @@
             "events.open",
             "events.close"
           ]
+        },
+        {
+          "slug": "grouped",
+          "title": "Separators and shortcuts",
+          "builder": "dropdownGrouped",
+          "shows": []
+        },
+        {
+          "slug": "submenu",
+          "title": "Submenu",
+          "builder": "dropdownSubmenu",
+          "shows": []
         }
       ]
     },
@@ -1352,6 +1370,40 @@
       "gaps": {
         "props.autofocus": "A demo page is the payload of an iframe, and a field that takes focus on mount steals the caret from the page hosting it. Showing this honestly needs a mount-on-demand control the gallery does not have."
       }
+    },
+    "KunKbd": {
+      "source": "demos/kbd.dart",
+      "demos": [
+        {
+          "slug": "basic",
+          "title": "Basic",
+          "builder": "kbdBasic",
+          "shows": [
+            "props.keys",
+            "slots.default"
+          ]
+        },
+        {
+          "slug": "in-text",
+          "title": "In a sentence",
+          "builder": "kbdInText",
+          "shows": []
+        },
+        {
+          "slug": "plain",
+          "title": "Plain",
+          "builder": "kbdPlain",
+          "shows": [
+            "props.variant"
+          ]
+        },
+        {
+          "slug": "search",
+          "title": "Search trigger",
+          "builder": "kbdSearch",
+          "shows": []
+        }
+      ]
     },
     "KunLightbox": {
       "source": "demos/lightbox.dart",
@@ -2474,6 +2526,14 @@
           "builder": "tooltipMobile",
           "shows": [
             "props.hideOnMobile"
+          ]
+        },
+        {
+          "slug": "shortcut",
+          "title": "Shortcut",
+          "builder": "tooltipShortcut",
+          "shows": [
+            "props.shortcut"
           ]
         }
       ]

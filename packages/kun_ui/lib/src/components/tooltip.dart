@@ -8,7 +8,9 @@ import '../foundation/anchored.dart';
 import '../foundation/design.dart';
 import '../foundation/dismiss_layers.dart';
 import '../foundation/motion.dart';
+import '../locale/messages.dart';
 import '../theme/theme.dart';
+import 'kbd.dart';
 
 /// Which side of its trigger a [KunTooltip] sits on.
 enum KunTooltipPosition {
@@ -54,6 +56,7 @@ class KunTooltip extends StatefulWidget {
     this.hideOnMobile = true,
     this.rounded,
     this.showArrow = false,
+    this.shortcut = '',
     super.key,
   });
 
@@ -88,6 +91,10 @@ class KunTooltip extends StatefulWidget {
 
   /// Whether to draw a caret pointing at the trigger.
   final bool showArrow;
+
+  /// A keyboard shortcut shown after the text as [KunKbd] keys, e.g.
+  /// `'Mod+K'`. Display only — binding the key is the app's job.
+  final String shortcut;
 
   @override
   State<KunTooltip> createState() => _KunTooltipState();
@@ -244,7 +251,7 @@ class _KunTooltipState extends State<KunTooltip>
                   color: scheme.foreground,
                   fontWeight: KunFontWeights.medium,
                 ),
-                child: widget.content ?? Text(widget.text),
+                child: _panelBody(),
               ),
             ),
           ),
@@ -296,12 +303,39 @@ class _KunTooltipState extends State<KunTooltip>
     });
   }
 
+  Widget _panelBody() {
+    final Widget text = widget.content ?? Text(widget.text);
+    if (widget.shortcut.isEmpty) {
+      return text;
+    }
+    return Row(
+      mainAxisSize: MainAxisSize.min,
+      children: <Widget>[
+        text,
+        const SizedBox(width: KunSpacing.unit * 2),
+        KunKbd(keys: widget.shortcut),
+      ],
+    );
+  }
+
+  String get _accessibleText {
+    if (widget.shortcut.isEmpty) {
+      return widget.text;
+    }
+    final String spoken = kunSpeakShortcut(
+      widget.shortcut,
+      KunMessagesScope.of(context),
+    );
+    return widget.text.isEmpty ? spoken : '${widget.text} $spoken';
+  }
+
   @override
   Widget build(BuildContext context) {
-    final Widget trigger = widget.text.isEmpty
+    final String description = _accessibleText;
+    final Widget trigger = description.isEmpty
         ? widget.child
         : MergeSemantics(
-            child: Semantics(tooltip: widget.text, child: widget.child),
+            child: Semantics(tooltip: description, child: widget.child),
           );
     return PopScope(
       canPop: !_visible,

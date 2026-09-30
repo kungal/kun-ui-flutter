@@ -595,6 +595,12 @@
         "suffix": "suffix"
       }
     },
+    "KunKbd": {
+      "widget": "KunKbd",
+      "props": { "keys": "keys", "variant": "variant" },
+      "events": {},
+      "slots": { "default": "child" }
+    },
     "KunLightbox": {
       "widget": "KunLightbox",
       "props": {
@@ -928,6 +934,7 @@
         "hideOnMobile": "hideOnMobile",
         "position": "position",
         "rounded": "rounded",
+        "shortcut": "shortcut",
         "showArrow": "showArrow",
         "text": "text"
       },

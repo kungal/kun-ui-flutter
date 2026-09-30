@@ -2751,6 +2751,37 @@ const ComponentCoverage _kunInput = ComponentCoverage(
 Widget kunInputContract(BuildContext context) =>
     const CoveragePage(coverage: _kunInput);
 
+const ComponentCoverage _kunKbd = ComponentCoverage(
+  name: 'KunKbd',
+  entries: <CoverageEntry>[
+    CoverageEntry(
+      section: 'props',
+      contractName: 'keys',
+      status: CoverageStatus.shown,
+      dartName: 'keys',
+      shownBy: 'Basic',
+    ),
+    CoverageEntry(
+      section: 'props',
+      contractName: 'variant',
+      status: CoverageStatus.shown,
+      dartName: 'variant',
+      shownBy: 'Plain',
+    ),
+    CoverageEntry(
+      section: 'slots',
+      contractName: 'default',
+      status: CoverageStatus.shown,
+      dartName: 'child',
+      shownBy: 'Basic',
+    ),
+  ],
+);
+
+/// The contract coverage page for KunKbd.
+Widget kunKbdContract(BuildContext context) =>
+    const CoveragePage(coverage: _kunKbd);
+
 const ComponentCoverage _kunLightbox = ComponentCoverage(
   name: 'KunLightbox',
   entries: <CoverageEntry>[
@@ -4258,6 +4289,13 @@ const ComponentCoverage _kunTooltip = ComponentCoverage(
       status: CoverageStatus.shown,
       dartName: 'rounded',
       shownBy: 'Arrow',
+    ),
+    CoverageEntry(
+      section: 'props',
+      contractName: 'shortcut',
+      status: CoverageStatus.shown,
+      dartName: 'shortcut',
+      shownBy: 'Shortcut',
     ),
     CoverageEntry(
       section: 'props',

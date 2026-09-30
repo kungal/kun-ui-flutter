@@ -31,6 +31,7 @@ import 'demos/dropdown.dart';
 import 'demos/hover_card.dart';
 import 'demos/image.dart';
 import 'demos/input.dart';
+import 'demos/kbd.dart';
 import 'demos/lightbox.dart';
 import 'demos/loading.dart';
 import 'demos/message.dart';
@@ -374,6 +375,10 @@ const List<GalleryComponent> galleryComponents = <GalleryComponent>[
       GalleryDemo(
           slug: 'size', title: 'Width and padding', builder: contextMenuSize),
       GalleryDemo(
+          slug: 'commands',
+          title: 'Separators, shortcuts, submenu',
+          builder: contextMenuCommands),
+      GalleryDemo(
           slug: 'contract', title: 'Contract', builder: kunContextMenuContract),
     ],
   ),
@@ -430,6 +435,11 @@ const List<GalleryComponent> galleryComponents = <GalleryComponent>[
       GalleryDemo(
           slug: 'disabled', title: 'Disabled', builder: dropdownDisabled),
       GalleryDemo(slug: 'events', title: 'Events', builder: dropdownEvents),
+      GalleryDemo(
+          slug: 'grouped',
+          title: 'Separators and shortcuts',
+          builder: dropdownGrouped),
+      GalleryDemo(slug: 'submenu', title: 'Submenu', builder: dropdownSubmenu),
       GalleryDemo(
           slug: 'contract', title: 'Contract', builder: kunDropdownContract),
     ],
@@ -488,6 +498,17 @@ const List<GalleryComponent> galleryComponents = <GalleryComponent>[
       GalleryDemo(slug: 'submit', title: 'Submit', builder: inputSubmit),
       GalleryDemo(
           slug: 'contract', title: 'Contract', builder: kunInputContract),
+    ],
+  ),
+  GalleryComponent(
+    slug: 'kunkbd',
+    name: 'KunKbd',
+    demos: <GalleryDemo>[
+      GalleryDemo(slug: 'basic', title: 'Basic', builder: kbdBasic),
+      GalleryDemo(slug: 'in-text', title: 'In a sentence', builder: kbdInText),
+      GalleryDemo(slug: 'plain', title: 'Plain', builder: kbdPlain),
+      GalleryDemo(slug: 'search', title: 'Search trigger', builder: kbdSearch),
+      GalleryDemo(slug: 'contract', title: 'Contract', builder: kunKbdContract),
     ],
   ),
   GalleryComponent(
@@ -836,6 +857,8 @@ const List<GalleryComponent> galleryComponents = <GalleryComponent>[
           slug: 'content', title: 'Rich content', builder: tooltipContent),
       GalleryDemo(
           slug: 'mobile', title: 'Narrow views', builder: tooltipMobile),
+      GalleryDemo(
+          slug: 'shortcut', title: 'Shortcut', builder: tooltipShortcut),
       GalleryDemo(
           slug: 'contract', title: 'Contract', builder: kunTooltipContract),
     ],

@@ -48,6 +48,7 @@ export 'src/components/divider.dart';
 export 'src/components/dropdown.dart';
 export 'src/components/image.dart';
 export 'src/components/input.dart';
+export 'src/components/kbd.dart' show KunKbd, KunKbdVariant;
 export 'src/components/lightbox.dart';
 export 'src/components/loading.dart';
 export 'src/components/message.dart';

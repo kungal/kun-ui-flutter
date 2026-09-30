@@ -187,3 +187,74 @@ Widget tooltipMobile(BuildContext context) {
     ),
   );
 }
+
+Widget tooltipShortcut(BuildContext context) {
+  return Padding(
+    padding: const EdgeInsets.all(KunSpacing.unit * 14),
+    child: Column(
+      mainAxisSize: MainAxisSize.min,
+      crossAxisAlignment: CrossAxisAlignment.start,
+      spacing: KunSpacing.unit * 6,
+      children: <Widget>[
+        _caption(
+          context,
+          'shortcut draws keycap keys after the text. Hover or focus a button.',
+        ),
+        Row(
+          mainAxisSize: MainAxisSize.min,
+          spacing: KunSpacing.unit,
+          children: <Widget>[
+            KunTooltip(
+              text: 'Search',
+              shortcut: 'Mod+K',
+              child: KunButton(
+                variant: KunUIVariant.light,
+                color: KunUIColor.neutral,
+                isIconOnly: true,
+                semanticLabel: 'Search',
+                onPressed: () {},
+                child: const Icon(KunIcons.search),
+              ),
+            ),
+            KunTooltip(
+              text: 'Quote',
+              shortcut: 'Q',
+              child: KunButton(
+                variant: KunUIVariant.light,
+                color: KunUIColor.neutral,
+                isIconOnly: true,
+                semanticLabel: 'Quote',
+                onPressed: () {},
+                child: const Icon(KunIcons.quote),
+              ),
+            ),
+            KunTooltip(
+              text: 'Undo',
+              shortcut: 'Mod+Z',
+              child: KunButton(
+                variant: KunUIVariant.light,
+                color: KunUIColor.neutral,
+                isIconOnly: true,
+                semanticLabel: 'Undo',
+                onPressed: () {},
+                child: const Icon(KunIcons.rotateCcw),
+              ),
+            ),
+            KunTooltip(
+              text: 'Redo',
+              shortcut: 'Mod+Shift+Z',
+              child: KunButton(
+                variant: KunUIVariant.light,
+                color: KunUIColor.neutral,
+                isIconOnly: true,
+                semanticLabel: 'Redo',
+                onPressed: () {},
+                child: const Icon(KunIcons.rotateCw),
+              ),
+            ),
+          ],
+        ),
+      ],
+    ),
+  );
+}
