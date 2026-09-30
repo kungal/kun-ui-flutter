@@ -448,6 +448,35 @@
         "start": "start"
       }
     },
+    "KunCommandPalette": {
+      "widget": "KunCommandPalette",
+      "props": {
+        "ariaLabel": "semanticLabel",
+        "emptyText": "emptyText",
+        "highlight": "highlight",
+        "items": "items",
+        "loading": "loading",
+        "noResultText": "noResultText",
+        "open": "open",
+        "placeholder": "placeholder",
+        "query": "query",
+        "shortcut": "shortcut"
+      },
+      "events": {
+        "select": "onSelected",
+        "submit": "onSubmitted",
+        "update:open": "onOpenChanged",
+        "update:query": "onQueryChanged"
+      },
+      "slots": {
+        "empty": "empty",
+        "footer": "footer",
+        "item": "itemBuilder",
+        "loading": "loadingBuilder",
+        "no-result": "noResult",
+        "trigger": "trigger"
+      }
+    },
     "KunContextMenu": {
       "widget": "KunContextMenu",
       "props": {

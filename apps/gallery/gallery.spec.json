@@ -921,6 +921,54 @@
         }
       ]
     },
+    "KunCommandPalette": {
+      "source": "demos/command_palette.dart",
+      "demos": [
+        {
+          "slug": "basic",
+          "title": "Basic",
+          "builder": "commandPaletteBasic",
+          "shows": [
+            "props.items",
+            "props.open",
+            "props.query",
+            "props.placeholder",
+            "props.highlight",
+            "props.shortcut",
+            "events.select",
+            "events.update:open",
+            "events.update:query",
+            "slots.trigger",
+            "slots.item",
+            "slots.footer"
+          ]
+        },
+        {
+          "slug": "remote",
+          "title": "Remote search",
+          "builder": "commandPaletteRemote",
+          "shows": [
+            "props.loading",
+            "props.emptyText",
+            "slots.loading",
+            "slots.empty"
+          ]
+        },
+        {
+          "slug": "submit",
+          "title": "Submit",
+          "builder": "commandPaletteSubmit",
+          "shows": [
+            "events.submit",
+            "props.noResultText",
+            "slots.no-result"
+          ]
+        }
+      ],
+      "undemoable": {
+        "props.ariaLabel": "An accessible name has no visual form; the dialog name is asserted by the widget tests."
+      }
+    },
     "KunContextMenu": {
       "source": "demos/context_menu.dart",
       "demos": [

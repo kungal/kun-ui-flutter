@@ -42,6 +42,7 @@ export 'src/components/chat_typing.dart';
 export 'src/components/checkbox.dart';
 export 'src/components/checkbox_group.dart';
 export 'src/components/chip.dart';
+export 'src/components/command_palette.dart';
 export 'src/components/context_menu.dart';
 export 'src/components/date_picker.dart';
 export 'src/components/divider.dart';
