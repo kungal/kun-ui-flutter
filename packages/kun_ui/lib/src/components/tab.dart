@@ -1163,6 +1163,61 @@ class _KunTabState<T extends KunTabItem> extends State<KunTab<T>>
     );
   }
 
+  Widget _buildStrip(
+    BuildContext context,
+    KunColorScheme scheme,
+    KunColorScale scale,
+    _KunTabMetrics metrics,
+    BoxConstraints constraints,
+  ) {
+    if (_isVertical) {
+      Widget list = _buildList(
+        context,
+        scheme,
+        scale,
+        metrics,
+        fillWidth: 0,
+      );
+      if (widget.fullWidth && constraints.maxWidth.isFinite) {
+        list = SizedBox(width: constraints.maxWidth, child: list);
+      }
+      if (widget.scrollable) {
+        list = _wrapScroll(list, Axis.vertical);
+      }
+      return list;
+    }
+
+    final bool fill = widget.fullWidth && constraints.hasBoundedWidth;
+    final Widget list = _buildList(
+      context,
+      scheme,
+      scale,
+      metrics,
+      fillWidth: fill ? constraints.maxWidth : 0,
+    );
+    final Widget viewport = _maybeFade(
+      _wrapScroll(
+        ConstrainedBox(
+          constraints: BoxConstraints(
+            minWidth: fill ? constraints.maxWidth : 0,
+          ),
+          child: list,
+        ),
+        Axis.horizontal,
+      ),
+    );
+    return Stack(
+      clipBehavior: Clip.none,
+      children: <Widget>[
+        viewport,
+        if (widget.scrollButtons && _canScrollLeft)
+          _buildChevron(left: true, scheme: scheme),
+        if (widget.scrollButtons && _canScrollRight)
+          _buildChevron(left: false, scheme: scheme),
+      ],
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     _scheduleAfterLayout();
@@ -1171,56 +1226,14 @@ class _KunTabState<T extends KunTabItem> extends State<KunTab<T>>
     final KunColorScale scale = widget.color.scaleOf(scheme);
     final _KunTabMetrics metrics = _KunTabMetrics.of(widget.size);
 
-    Widget strip = LayoutBuilder(
-      builder: (BuildContext context, BoxConstraints constraints) {
-        if (_isVertical) {
-          Widget list = _buildList(
-            context,
-            scheme,
-            scale,
-            metrics,
-            fillWidth: 0,
-          );
-          if (widget.fullWidth && constraints.maxWidth.isFinite) {
-            list = SizedBox(width: constraints.maxWidth, child: list);
-          }
-          if (widget.scrollable) {
-            list = _wrapScroll(list, Axis.vertical);
-          }
-          return list;
-        }
-
-        final bool fill = widget.fullWidth && constraints.hasBoundedWidth;
-        final Widget list = _buildList(
-          context,
-          scheme,
-          scale,
-          metrics,
-          fillWidth: fill ? constraints.maxWidth : 0,
-        );
-        final Widget viewport = _maybeFade(
-          _wrapScroll(
-            ConstrainedBox(
-              constraints: BoxConstraints(
-                minWidth: fill ? constraints.maxWidth : 0,
-              ),
-              child: list,
-            ),
-            Axis.horizontal,
-          ),
-        );
-        return Stack(
-          clipBehavior: Clip.none,
-          children: <Widget>[
-            viewport,
-            if (widget.scrollButtons && _canScrollLeft)
-              _buildChevron(left: true, scheme: scheme),
-            if (widget.scrollButtons && _canScrollRight)
-              _buildChevron(left: false, scheme: scheme),
-          ],
-        );
-      },
-    );
+    // Only fullWidth reads the constraints. A LayoutBuilder cannot answer
+    // an intrinsic height, and a horizontal KunScrollShadow asks for one.
+    Widget strip = widget.fullWidth
+        ? LayoutBuilder(
+            builder: (BuildContext context, BoxConstraints constraints) =>
+                _buildStrip(context, scheme, scale, metrics, constraints),
+          )
+        : _buildStrip(context, scheme, scale, metrics, const BoxConstraints());
 
     if (widget.disabled) {
       strip = Opacity(opacity: 0.5, child: strip);

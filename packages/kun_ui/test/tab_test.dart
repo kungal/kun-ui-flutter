@@ -193,6 +193,33 @@ void main() {
     }
   });
 
+  testWidgets('a tab strip answers an IntrinsicHeight row', (tester) async {
+    for (final KunTabOrientation orientation in KunTabOrientation.values) {
+      String value = 'home';
+      await tester.pumpWidget(
+        wrap(
+          StatefulBuilder(
+            builder: (BuildContext context, StateSetter setState) =>
+                KunScrollShadow(
+              children: <Widget>[
+                KunTab(
+                  items: homeDocs,
+                  value: value,
+                  orientation: orientation,
+                  onChanged: (String next) => setState(() => value = next),
+                ),
+              ],
+            ),
+          ),
+        ),
+      );
+      expect(tester.takeException(), isNull, reason: orientation.name);
+      await tester.tap(find.text('Docs'));
+      await tester.pumpAndSettle();
+      expect(value, 'docs', reason: orientation.name);
+    }
+  });
+
   testWidgets('tapping an unselected tab calls onChanged; selected does not',
       (tester) async {
     final seen = <String>[];

@@ -32,13 +32,33 @@ or later.
     the parent's limit wins, and the control keeps its drawn size.
   - `KunThemeData.tapTargetSize` chooses: `adaptive` (the default),
     `padded` or `shrinkWrap`. Set `shrinkWrap` to get the old layout back.
-  - Covered in this release: `KunButton` (every size, text and icon-only,
-    and so `KunNavItem`, `KunModal`'s ×, the alert buttons and the lightbox
-    chrome), and the chat chrome: the composer's attach, send and text
-    field, `KunChatHeader`'s back button and title, `KunChatPinnedBar`'s
-    unpin, and `KunChatMessageList`'s scroll-to-bottom button. Padded, the
-    composer grows from 56 to 64; the header and the pinned bar keep their
-    height, and the scroll button's circle stays where it was.
+  - Covered in this release:
+    - `KunButton` at every size, text and icon-only, and so `KunNavItem`,
+      `KunModal`'s ×, the alert buttons and the lightbox chrome.
+    - `KunSwitch`, `KunCheckBox`, every `KunCheckBoxGroup` and
+      `KunRadioGroup` option, `KunReaction`, and vertical `KunTab` items.
+    - The fields: `KunInput`, `KunTextarea`, `KunSelect`, `KunDatePicker`
+      and so `KunAutocomplete`. The field's box keeps its drawn height, and
+      the band above and below it belongs to whatever is drawn there: a
+      tap above the clear button clears, and a tap above the text focuses
+      the field. The clear, reveal and close buttons are at least 48 wide,
+      taking the extra width from the value side, so each glyph stays
+      where it was.
+    - Horizontal `KunTab` strips and a closable `KunChip`, in the same way.
+    - The chat chrome: the composer's attach, send and text field,
+      `KunChatHeader`'s back button and title, `KunChatPinnedBar`'s unpin,
+      and `KunChatMessageList`'s scroll-to-bottom button. The composer
+      grows from 56 to 64. The header and the pinned bar keep their
+      height, and the scroll button's circle stays where it was.
+  - What still changes on phones besides spacing:
+    - A shrink-wrapped (`fullWidth: false`) `KunSelect` or `KunDatePicker`
+      gets wider where its value, or its clear button, would be narrower
+      than the minimum. `fullWidth` is the default for both, and there
+      the drawn width is unchanged.
+    - A popup anchored to a padded control opens from the padded box, as
+      Material's menus do. On phones the gap between a select, a date
+      picker, a popover or a tooltip and its trigger grows by the margin:
+      5px for a 38-tall control.
   - Kept at the web's density, by decision: message rows and everything
     inside a message (avatars, sender names, reply quotes, spoilers, link
     previews, the code block's copy button, reaction chips and the retry
@@ -48,6 +68,9 @@ or later.
   - `KunChatBubble`'s retry button is now one accessibility node,
     labelled and tappable. Its tooltip had split it in two: a labelled
     button with no action, and a tap named only by the tooltip.
+  - A tap on a `KunCheckBox`'s description or error no longer toggles it.
+    The web's description sits outside the `<label>`, and the padded box
+    wraps the box and label only.
 - **A `KunAvatar` frame that fails to load draws nothing.** The frame's
   image had no `errorBuilder`. A failed load (an offline phone, a bad URL)
   reported an exception and, in debug builds, painted Flutter's error box
@@ -60,6 +83,11 @@ or later.
   row could get the wrong height. The `LayoutBuilder` only kept each chip
   within the field's width, and the chips' `Wrap` already does that, so it
   is gone. Reported by the kungal app, whose filter bar needs a multi-select.
+- **A `KunTab` works inside a horizontal `KunScrollShadow`**, for the same
+  reason. Its strip was built in a `LayoutBuilder`, which only a
+  `fullWidth` tab needs. A `fullWidth` tab still cannot sit in an
+  `IntrinsicHeight` row, but in a horizontal scroll row it has no width to
+  fill anyway.
 
 ## 0.18.1
 
