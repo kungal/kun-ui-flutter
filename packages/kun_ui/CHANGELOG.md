@@ -2,6 +2,50 @@
 
 ## 0.21.0
 
+Built on kun-ui 2.56.0 (from 2.53.0). The generated packages now require
+2.56.0 or later.
+
+- **Menus get separators, shortcut hints and one level of submenu.**
+  `KunContextMenu` and `KunDropdown` share one list, as the web's do.
+  - `items` takes `KunMenuEntry`s: a `KunContextMenuItem` or a
+    `KunMenuSeparator`. Leading, trailing and repeated separators are
+    dropped. Existing lists of items compile and behave as before.
+  - `KunContextMenuItem.shortcut` (`'Mod+C'`) is drawn at the row's end:
+    ⌘C on Apple, Ctrl+C elsewhere. It is display only; the app binds the
+    key. Screen readers hear it as the row's hint.
+  - `KunContextMenuItem.children` opens a submenu. A mouse opens it after
+    resting 100ms, and a triangle toward the submenu keeps it open while
+    the pointer crosses. →, Enter or Space opens it and focuses its first
+    row, and a tap opens it on touch. ← and Esc close one level, and Tab
+    closes the whole menu. Choosing a submenu row closes everything and
+    fires `onSelected` with that row; a parent row never fires it. A
+    parent with nothing left to show is disabled.
+  - Typing jumps to the row that starts with the typed text, and ↑ with no
+    row focused goes to the last one.
+- **`KunKbd`**, ported from the web: keys drawn as keycaps, or as the
+  plain `⇧⌘Z` / `Ctrl+Shift+Z` a menu uses. `keys` takes `'Mod+K'` (`+`
+  joins a chord, a space separates a sequence), and `Mod` is ⌘ on Apple
+  and Ctrl elsewhere. It sizes in em, so a key matches the text around
+  it. Screen readers hear key names from `kun_ui_messages`.
+- **`KunTooltip.shortcut`** draws those keycaps after the tooltip's text,
+  and the tooltip's accessible text reads the shortcut too.
+- **`KunSplitPane`**, ported from the web: two panes with a divider the
+  reader drags, or moves with the arrow keys (Shift for five steps) and
+  Home and End.
+  - `size` is the `primary` pane's width, which you can control or leave
+    to the widget. `onSizeChanged` fires on every move and `onResizeEnd`
+    once per drag or key press, so persist from the second.
+  - `snapPoints` pull the divider within `snapThreshold`.
+  - Below `stackBelow`, measured on the pane's own width, it shows only
+    `showPane`. The other pane stays mounted and paused, the way
+    `KunChatLayout` keeps its panes, so a hidden message list keeps its
+    place and sends no read receipts.
+  - The divider takes keyboard focus on a press, as on the web, but draws
+    its focus ring only once a key is pressed.
+- **`KunChatLayout.resizable`** lets the reader drag the list pane between
+  `sidebarMinSize` (280) and `sidebarMaxSize` (480). `sidebarSize`
+  (default 352) with `onSidebarSizeChanged` and `onSidebarResizeEnd`
+  works like `KunSplitPane.size`. Without `resizable`, nothing changes.
 - **`KunPagination`'s highlight pops for 340ms, as on the web.** 0.20.0
   used `KunDurations.slow` (350ms). kun-ui has since ruled that a
   component's own timings stay literals on both sides, and only the shared
