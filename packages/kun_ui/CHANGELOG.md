@@ -1,5 +1,19 @@
 # Changelog
 
+## 0.26.1
+
+- A `KunAvatar` or `KunUserChip` that links to a user now claims the
+  minimum touch target on phones, as every other KunUI control has since
+  0.19.0: 48×48 on Android, 44×44 on iOS. The picture or the chip is drawn
+  at its own size in the middle of a larger layout box, and a tap anywhere
+  in the box opens the profile.
+  - The layout changes on phones: a linked `sm` avatar (24) takes 12 more
+    on each side, `md` (32) 8 and `lg` (40) 4. A chip drawn 40 tall gains
+    4 above and below.
+  - Desktop, `KunTapTargetSize.shrinkWrap` and an avatar or chip that is
+    not a link keep their size. The avatars inside KunUI's own chat
+    components are not links and do not move.
+
 ## 0.26.0
 
 - **`KunUIConfig.linkMenu`** gives KunUI's links the menu a browser gives
