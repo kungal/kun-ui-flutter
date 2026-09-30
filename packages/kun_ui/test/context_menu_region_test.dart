@@ -429,4 +429,120 @@ void main() {
       }
     },
   );
+
+  testWidgets(
+    'an empty region claims nothing and keeps its child when items arrive',
+    (WidgetTester tester) async {
+      debugDefaultTargetPlatformOverride = TargetPlatform.android;
+      try {
+        final SemanticsHandle handle = tester.ensureSemantics();
+        final List<MethodCall> log = mockPlatform(tester);
+        int outerLongPresses = 0;
+        int outerMenuKeys = 0;
+        final FocusNode inner = FocusNode();
+        addTearDown(inner.dispose);
+
+        Future<void> pump(List<KunMenuEntry> entries) => tester.pumpWidget(
+              wrap(
+                Shortcuts(
+                  shortcuts: const <ShortcutActivator, Intent>{
+                    SingleActivator(LogicalKeyboardKey.f10, shift: true):
+                        _OuterMenuIntent(),
+                  },
+                  child: Actions(
+                    actions: <Type, Action<Intent>>{
+                      _OuterMenuIntent: CallbackAction<_OuterMenuIntent>(
+                        onInvoke: (_) => outerMenuKeys++,
+                      ),
+                    },
+                    child: GestureDetector(
+                      onLongPress: () => outerLongPresses++,
+                      child: KunContextMenuRegion(
+                        items: entries,
+                        semanticActionLabel: 'More actions',
+                        child: Focus(
+                          focusNode: inner,
+                          child: const SizedBox(
+                            width: 200,
+                            height: 100,
+                            child: _Tally(),
+                          ),
+                        ),
+                      ),
+                    ),
+                  ),
+                ),
+              ),
+            );
+
+        SemanticsData regionNode() => tester
+            .getSemantics(
+              find.byKey(const ValueKey<String>('KunContextMenuRegion')),
+            )
+            .getSemanticsData();
+
+        await pump(const <KunMenuEntry>[]);
+        expect(regionNode().customSemanticsActionIds ?? <int>[], isEmpty);
+
+        await tester.tap(find.byType(_Tally));
+        await tester.pump();
+        expect(find.text('tally 1'), findsOneWidget);
+
+        await tester.longPress(find.byType(_Tally));
+        await tester.pumpAndSettle();
+        expect(outerLongPresses, 1);
+        expect(log, isEmpty);
+        expect(menu, findsNothing);
+
+        await tester.tapAt(
+          tester.getCenter(find.byType(_Tally)),
+          buttons: kSecondaryMouseButton,
+          kind: PointerDeviceKind.mouse,
+        );
+        await tester.pumpAndSettle();
+        expect(menu, findsNothing);
+
+        inner.requestFocus();
+        await tester.pump();
+        await tester.sendKeyDownEvent(LogicalKeyboardKey.shiftLeft);
+        await tester.sendKeyEvent(LogicalKeyboardKey.f10);
+        await tester.sendKeyUpEvent(LogicalKeyboardKey.shiftLeft);
+        await tester.pump();
+        expect(outerMenuKeys, 1);
+        expect(menu, findsNothing);
+
+        await pump(items);
+        expect(find.text('tally 1'), findsOneWidget);
+        expect(regionNode().customSemanticsActionIds, isNotEmpty);
+        await tester.longPress(find.byType(_Tally));
+        await pumpMenu(tester);
+        expect(menu, findsOneWidget);
+        expect(outerLongPresses, 1);
+        handle.dispose();
+      } finally {
+        debugDefaultTargetPlatformOverride = null;
+      }
+    },
+  );
+}
+
+class _OuterMenuIntent extends Intent {
+  const _OuterMenuIntent();
+}
+
+class _Tally extends StatefulWidget {
+  const _Tally();
+
+  @override
+  State<_Tally> createState() => _TallyState();
+}
+
+class _TallyState extends State<_Tally> {
+  int _count = 0;
+
+  @override
+  Widget build(BuildContext context) => GestureDetector(
+        onTap: () => setState(() => _count++),
+        child: Text('tally $_count'),
+      );
 }

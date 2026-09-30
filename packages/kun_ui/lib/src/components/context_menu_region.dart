@@ -10,6 +10,11 @@ class _KunRegionMenuIntent extends Intent {
   const _KunRegionMenuIntent();
 }
 
+const Map<ShortcutActivator, Intent> _kRegionKeys = <ShortcutActivator, Intent>{
+  SingleActivator(LogicalKeyboardKey.f10, shift: true): _KunRegionMenuIntent(),
+  SingleActivator(LogicalKeyboardKey.contextMenu): _KunRegionMenuIntent(),
+};
+
 /// A region that opens a [KunContextMenu] on a right-click, a long press, or
 /// Shift+F10 / the Menu key, without turning its contents into one button.
 ///
@@ -32,7 +37,12 @@ class KunContextMenuRegion extends StatefulWidget {
   /// The subtree that owns the menu. Not collapsed into one semantics node.
   final Widget child;
 
-  /// The rows shown by the menu. An empty list never opens.
+  /// The rows shown by the menu.
+  ///
+  /// An empty list never opens, and the region then claims nothing: no
+  /// custom semantics action, no long press (so no haptic, and an ancestor's
+  /// long press still wins), no right-click, no Shift+F10. The subtree keeps
+  /// its place, so commands that appear later do not remount [child].
   final List<KunMenuEntry> items;
 
   /// The custom semantics action that opens the menu, for a screen reader's
@@ -59,6 +69,9 @@ class KunContextMenuRegionState extends State<KunContextMenuRegion> {
 
   /// Opens the menu at [globalPosition], or moves it there when open.
   void openAt(Offset globalPosition) {
+    if (widget.items.isEmpty) {
+      return;
+    }
     setState(() {
       _position = globalPosition;
       _visible = true;
@@ -92,6 +105,7 @@ class KunContextMenuRegionState extends State<KunContextMenuRegion> {
 
   @override
   Widget build(BuildContext context) {
+    final bool active = widget.items.isNotEmpty;
     return KunContextMenu(
       visible: _visible,
       items: widget.items,
@@ -105,16 +119,13 @@ class KunContextMenuRegionState extends State<KunContextMenuRegion> {
         container: true,
         explicitChildNodes: true,
         customSemanticsActions: <CustomSemanticsAction, VoidCallback>{
-          CustomSemanticsAction(label: widget.semanticActionLabel): () =>
-              openAt(_regionCenter()),
+          if (active)
+            CustomSemanticsAction(label: widget.semanticActionLabel): () =>
+                openAt(_regionCenter()),
         },
         child: Shortcuts(
-          shortcuts: const <ShortcutActivator, Intent>{
-            SingleActivator(LogicalKeyboardKey.f10, shift: true):
-                _KunRegionMenuIntent(),
-            SingleActivator(LogicalKeyboardKey.contextMenu):
-                _KunRegionMenuIntent(),
-          },
+          shortcuts:
+              active ? _kRegionKeys : const <ShortcutActivator, Intent>{},
           child: Actions(
             actions: <Type, Action<Intent>>{
               _KunRegionMenuIntent: CallbackAction<_KunRegionMenuIntent>(
@@ -128,9 +139,10 @@ class KunContextMenuRegionState extends State<KunContextMenuRegion> {
               key: _hitKey,
               behavior: HitTestBehavior.opaque,
               excludeFromSemantics: true,
-              onSecondaryTapUp: (TapUpDetails details) =>
-                  openAt(details.globalPosition),
-              onLongPressStart: widget.longPress
+              onSecondaryTapUp: active
+                  ? (TapUpDetails details) => openAt(details.globalPosition)
+                  : null,
+              onLongPressStart: active && widget.longPress
                   ? (LongPressStartDetails details) =>
                       _openFromLongPress(details.globalPosition)
                   : null,

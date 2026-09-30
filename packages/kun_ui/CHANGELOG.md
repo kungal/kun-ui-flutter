@@ -15,6 +15,11 @@
   - Screen readers get one custom action named by `semanticActionLabel`
     (required). The content inside keeps all of its own nodes and is not
     merged into one.
+  - With no `items`, the region claims nothing: no screen-reader action, no
+    long press (no vibration, and a surrounding long press still works), no
+    right-click, no Shift+F10. Its child keeps its place, so commands that
+    appear later, after a sign-in for example, do not remount it. The
+    kungal app's deleted comments have no commands.
   - `KunPressable` no longer takes Shift+F10 and the Menu key unless it has
     an `onSecondaryTap`, so those keys reach a surrounding region.
 - **Haptics, as Flutter's own widgets give them.**
