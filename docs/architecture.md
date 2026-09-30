@@ -1098,6 +1098,56 @@ upstream has nothing to decide, and it is not claimed in the manifest.
   - iOS has no system menu for a region, because Flutter's
     `SystemContextMenu` is field-only.
 
+### KunContextMenuRegion is `@contextmenu` on any element (decided 2026-09-30)
+
+A reply card is not a button, but on a desktop a right-click on it opens
+the card's commands, as its ⋯ button does. On the web that is
+`@contextmenu.prevent` on any element. `KunPressable` would make the whole
+reply one button node and one Tab stop, so this is a separate Flutter-only
+widget, and its menu is `KunContextMenu`.
+
+- **It takes right-clicks and long presses, never taps.** Buttons and
+  links inside keep theirs. A long press on text inside a
+  `KunSelectionArea` still selects it, because the region's recognizer
+  loses that arena. A right-click inside the area reaches the region
+  through `KunSelectionArea.onSecondaryTapOutsideSelection` and
+  `KunContextMenuRegionState.openAt`.
+- **Its semantics must not merge the card.** The kungal app requires every
+  paragraph, link and inner button to stay its own screen-reader stop. The
+  region is one container node with explicit child nodes and one custom
+  action, named by the required `semanticActionLabel`. It carries no
+  button flag and no tap. The tap-target and labelled-target guidelines do
+  not count a node that has only a custom action.
+- **Shift+F10 and the Menu key bubble to it.** `KunPressable` used to bind
+  them even without `onSecondaryTap` and swallow them doing nothing. It
+  now binds them only when it has one.
+
+### Haptics follow Flutter's own widgets (decided 2026-09-30)
+
+A browser gives no tactile feedback, but Android and iOS native controls
+do. The kungal app asked kun_ui to own it rather than repeat it at every
+call site. As with touch targets, this is platform behaviour, not design,
+so it is decided here. The rule is to transcribe what Material and
+Cupertino do, per widget kind and per platform, and never invent a feel:
+
+| Moment | Android | iOS | Precedent |
+|---|---|---|---|
+| A long press that acts (`KunPressable`, the chat list's message-menu long press, `KunContextMenuRegion`) | vibrate | heavy impact + click | `Feedback.forLongPress`, used by InkWell |
+| `KunSwitch` changed by the user | — | light impact | `CupertinoSwitch._emitVibration` |
+| `KunRefreshIndicator` armed by a pull | — | medium impact | `CupertinoSliverRefreshControl` |
+
+- `Feedback` is in `widgets/feedback.dart`, so kun_ui calls it without
+  importing Material.
+- Desktop gets nothing.
+- Checkbox, radio, reaction and the split pane at its limits get nothing,
+  because neither library gives feedback there. The executor's report
+  cites the SDK lines read.
+- A tap sound (`Feedback.forTap`, Android's click) was left out. It would
+  change every button, and nobody has asked for it.
+- `KunThemeData.enableFeedback` (default true) silences all of the above.
+  It cannot reach the feedback `EditableText` and `SelectableRegion` give
+  themselves.
+
 ### Reduced motion collapses every transition (decided 2026-09-17)
 
 kun-ui's base stylesheet sets every transition and animation to 0.01ms

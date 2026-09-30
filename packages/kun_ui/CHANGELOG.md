@@ -2,6 +2,30 @@
 
 ## 0.25.0
 
+- **`KunContextMenuRegion`** opens a command menu from a right-click or a
+  long press on content that is not a button: a reply card, a comment. It
+  is the web's `@contextmenu` on any element.
+  - It takes no taps, so the buttons and links inside keep working. A long
+    press on selectable text inside a `KunSelectionArea` still selects the
+    text.
+  - Shift+F10 or the Menu key opens it while focus is inside.
+  - `KunContextMenuRegionState.openAt(Offset)`, through a `GlobalKey`,
+    opens it from code. Wire `KunSelectionArea.onSecondaryTapOutsideSelection`
+    to it.
+  - Screen readers get one custom action named by `semanticActionLabel`
+    (required). The content inside keeps all of its own nodes and is not
+    merged into one.
+  - `KunPressable` no longer takes Shift+F10 and the Menu key unless it has
+    an `onSecondaryTap`, so those keys reach a surrounding region.
+- **Haptics, as Flutter's own widgets give them.**
+  - A long press that acts (`KunPressable`, the chat message list's long
+    press, the region) vibrates on Android, and gives a heavy impact and a
+    click on iOS.
+  - `KunSwitch` gives a light impact on iOS.
+  - A pull that arms `KunRefreshIndicator` gives a medium impact on iOS.
+  - Nothing happens on desktop, and nothing is added where neither Material
+    nor Cupertino gives feedback: checkbox, radio, reaction, split pane.
+  - `KunThemeData.enableFeedback: false` turns it all off.
 - **The text selection bar's buttons are 48dp tall on phones** (44pt on
   iOS). It is the bar that `KunSelectionArea`, `KunInput` and
   `KunTextarea` show above a selection. They were 32dp, measured on a
