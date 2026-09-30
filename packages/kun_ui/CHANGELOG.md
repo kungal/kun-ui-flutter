@@ -1,5 +1,15 @@
 # Changelog
 
+## 0.26.3
+
+- The link menu of a `KunAvatar`, a `KunUserChip` and a `KunPressable`
+  with a `semanticLabel` now reaches screen readers. Since 0.26.0 its
+  rows opened on screen but never reached the platform's node tree, so
+  TalkBack could open the menu through the link's long press and then
+  neither read nor choose a row. The widgets' own nodes read as before.
+  `KunNavItem`, `KunTab` and a `KunPressable` without a label were not
+  affected.
+
 ## 0.26.2
 
 - **`KunAvatar.tapTargetOutset(context)`** is how far a linked avatar's
