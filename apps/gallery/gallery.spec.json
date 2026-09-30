@@ -1019,6 +1019,18 @@
         }
       ]
     },
+    "KunContextMenuRegion": {
+      "contract": false,
+      "source": "demos/context_menu_region.dart",
+      "demos": [
+        {
+          "slug": "basic",
+          "title": "A reply card",
+          "builder": "contextMenuRegionBasic",
+          "shows": []
+        }
+      ]
+    },
     "KunDatePicker": {
       "source": "demos/date_picker.dart",
       "demos": [

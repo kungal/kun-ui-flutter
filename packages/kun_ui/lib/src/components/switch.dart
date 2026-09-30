@@ -2,6 +2,7 @@ import 'package:flutter/widgets.dart';
 import 'package:kun_ui_tokens/kun_ui_tokens.dart';
 
 import '../foundation/design.dart';
+import '../foundation/feedback.dart';
 import '../foundation/field_ring.dart';
 import '../foundation/motion.dart';
 import '../foundation/tap_target.dart';
@@ -123,6 +124,7 @@ class _KunSwitchState extends State<KunSwitch> {
   void _toggle() {
     if (!_canToggle) return;
     widget.onChanged!(!widget.value);
+    kunSwitchChangeFeedback(context);
   }
 
   @override

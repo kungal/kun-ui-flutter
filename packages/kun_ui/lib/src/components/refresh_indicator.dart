@@ -8,6 +8,7 @@ import 'package:kun_ui_tokens/kun_ui_tokens.dart';
 
 import '../foundation/control_metrics.dart';
 import '../foundation/design.dart';
+import '../foundation/feedback.dart';
 import '../foundation/motion.dart';
 import '../foundation/shortcut.dart';
 import '../foundation/spinner_painter.dart';
@@ -311,6 +312,7 @@ class KunRefreshIndicatorState extends State<KunRefreshIndicator>
     _positionController.value = clampDouble(newValue, 0.0, 1.0);
     if (_status == _RefreshStatus.drag && _spinnerOpacity() >= 1) {
       _status = _RefreshStatus.armed;
+      kunRefreshArmFeedback(context);
     }
   }
 

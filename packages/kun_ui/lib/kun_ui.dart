@@ -44,6 +44,8 @@ export 'src/components/checkbox_group.dart';
 export 'src/components/chip.dart';
 export 'src/components/command_palette.dart';
 export 'src/components/context_menu.dart';
+export 'src/components/context_menu_region.dart'
+    show KunContextMenuRegion, KunContextMenuRegionState;
 export 'src/components/date_picker.dart';
 export 'src/components/divider.dart';
 export 'src/components/dropdown.dart';

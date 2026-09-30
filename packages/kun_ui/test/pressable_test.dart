@@ -437,4 +437,84 @@ void main() {
     );
     expect(debugDefaultTargetPlatformOverride, isNull);
   });
+
+  testWidgets(
+    'Shift+F10 and the Menu key reach an ancestor when onSecondaryTap is null',
+    (tester) async {
+      int ancestor = 0;
+      await tester.pumpWidget(
+        wrap(
+          Shortcuts(
+            shortcuts: const <ShortcutActivator, Intent>{
+              SingleActivator(LogicalKeyboardKey.f10, shift: true):
+                  _AncestorMenuIntent(),
+              SingleActivator(LogicalKeyboardKey.contextMenu):
+                  _AncestorMenuIntent(),
+            },
+            child: Actions(
+              actions: <Type, Action<Intent>>{
+                _AncestorMenuIntent: CallbackAction<_AncestorMenuIntent>(
+                  onInvoke: (_) {
+                    ancestor++;
+                    return null;
+                  },
+                ),
+              },
+              child: row(onTap: () {}),
+            ),
+          ),
+        ),
+      );
+      await tester.sendKeyEvent(LogicalKeyboardKey.tab);
+      await tester.pump();
+      await tester.sendKeyDownEvent(LogicalKeyboardKey.shift);
+      await tester.sendKeyEvent(LogicalKeyboardKey.f10);
+      await tester.sendKeyUpEvent(LogicalKeyboardKey.shift);
+      await tester.sendKeyEvent(LogicalKeyboardKey.contextMenu);
+      expect(ancestor, 2);
+    },
+  );
+
+  testWidgets(
+    'Shift+F10 and the Menu key stay on a pressable with onSecondaryTap',
+    (tester) async {
+      int ancestor = 0;
+      final List<Offset> menus = <Offset>[];
+      await tester.pumpWidget(
+        wrap(
+          Shortcuts(
+            shortcuts: const <ShortcutActivator, Intent>{
+              SingleActivator(LogicalKeyboardKey.f10, shift: true):
+                  _AncestorMenuIntent(),
+              SingleActivator(LogicalKeyboardKey.contextMenu):
+                  _AncestorMenuIntent(),
+            },
+            child: Actions(
+              actions: <Type, Action<Intent>>{
+                _AncestorMenuIntent: CallbackAction<_AncestorMenuIntent>(
+                  onInvoke: (_) {
+                    ancestor++;
+                    return null;
+                  },
+                ),
+              },
+              child: row(onSecondaryTap: menus.add),
+            ),
+          ),
+        ),
+      );
+      await tester.sendKeyEvent(LogicalKeyboardKey.tab);
+      await tester.pump();
+      await tester.sendKeyDownEvent(LogicalKeyboardKey.shift);
+      await tester.sendKeyEvent(LogicalKeyboardKey.f10);
+      await tester.sendKeyUpEvent(LogicalKeyboardKey.shift);
+      await tester.sendKeyEvent(LogicalKeyboardKey.contextMenu);
+      expect(ancestor, 0);
+      expect(menus, hasLength(2));
+    },
+  );
+}
+
+class _AncestorMenuIntent extends Intent {
+  const _AncestorMenuIntent();
 }

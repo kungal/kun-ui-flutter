@@ -2,6 +2,7 @@ import 'package:flutter/services.dart';
 import 'package:flutter/widgets.dart';
 
 import '../foundation/design.dart';
+import '../foundation/feedback.dart';
 import '../foundation/focus_outline.dart';
 import '../foundation/tap_target.dart';
 import '../theme/theme.dart';
@@ -160,6 +161,8 @@ class _KunLinkActivateIntent extends Intent {
   const _KunLinkActivateIntent();
 }
 
+// Bound only when [KunPressable.onSecondaryTap] is set. Bound always, they
+// swallowed Shift+F10 before a wrapping [KunContextMenuRegion] saw it.
 const Map<ShortcutActivator, Intent> _kMenuKeys = <ShortcutActivator, Intent>{
   SingleActivator(LogicalKeyboardKey.f10, shift: true): _KunContextMenuIntent(),
   SingleActivator(LogicalKeyboardKey.contextMenu): _KunContextMenuIntent(),
@@ -167,8 +170,8 @@ const Map<ShortcutActivator, Intent> _kMenuKeys = <ShortcutActivator, Intent>{
 
 // A link takes Enter itself and leaves ActivateIntent unhandled, so Space
 // falls through to the app's shortcuts (a page scroll on the web).
-const Map<ShortcutActivator, Intent> _kLinkKeys = <ShortcutActivator, Intent>{
-  ..._kMenuKeys,
+const Map<ShortcutActivator, Intent> _kLinkActivateKeys =
+    <ShortcutActivator, Intent>{
   SingleActivator(LogicalKeyboardKey.enter): _KunLinkActivateIntent(),
   SingleActivator(LogicalKeyboardKey.numpadEnter): _KunLinkActivateIntent(),
 };
@@ -238,7 +241,12 @@ class _KunPressableState extends State<KunPressable> {
       label: widget.semanticLabel,
       excludeSemantics: widget.semanticLabel != null,
       onTap: canTap ? _activate : null,
-      onLongPress: canLongPress ? () => widget.onLongPress!(_center()) : null,
+      onLongPress: canLongPress
+          ? () {
+              kunLongPressFeedback(context);
+              widget.onLongPress!(_center());
+            }
+          : null,
       child: KunTapTarget(
         child: FocusableActionDetector(
           enabled: canTap || canMenu || canLongPress,
@@ -246,7 +254,10 @@ class _KunPressableState extends State<KunPressable> {
           autofocus: widget.autofocus,
           onShowFocusHighlight: (bool value) =>
               setState(() => _focused = value),
-          shortcuts: _isLink ? _kLinkKeys : _kMenuKeys,
+          shortcuts: <ShortcutActivator, Intent>{
+            if (_isLink) ..._kLinkActivateKeys,
+            if (canMenu) ..._kMenuKeys,
+          },
           actions: <Type, Action<Intent>>{
             if (_isLink)
               _KunLinkActivateIntent: CallbackAction<_KunLinkActivateIntent>(
@@ -269,12 +280,13 @@ class _KunPressableState extends State<KunPressable> {
                 },
               ),
             },
-            _KunContextMenuIntent: CallbackAction<_KunContextMenuIntent>(
-              onInvoke: (_) {
-                _contextMenu(_center());
-                return null;
-              },
-            ),
+            if (canMenu)
+              _KunContextMenuIntent: CallbackAction<_KunContextMenuIntent>(
+                onInvoke: (_) {
+                  _contextMenu(_center());
+                  return null;
+                },
+              ),
           },
           child: MouseRegion(
             cursor: widget.disabled
@@ -300,6 +312,7 @@ class _KunPressableState extends State<KunPressable> {
               onLongPressStart: canLongPress
                   ? (LongPressStartDetails details) {
                       _setPressed(false);
+                      kunLongPressFeedback(context);
                       widget.onLongPress!(details.globalPosition);
                     }
                   : null,

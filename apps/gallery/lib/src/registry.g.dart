@@ -26,6 +26,7 @@ import 'demos/checkbox_group.dart';
 import 'demos/chip.dart';
 import 'demos/command_palette.dart';
 import 'demos/context_menu.dart';
+import 'demos/context_menu_region.dart';
 import 'demos/date_picker.dart';
 import 'demos/divider.dart';
 import 'demos/dropdown.dart';
@@ -400,6 +401,16 @@ const List<GalleryComponent> galleryComponents = <GalleryComponent>[
           builder: contextMenuCommands),
       GalleryDemo(
           slug: 'contract', title: 'Contract', builder: kunContextMenuContract),
+    ],
+  ),
+  GalleryComponent(
+    slug: 'kuncontextmenuregion',
+    name: 'KunContextMenuRegion',
+    demos: <GalleryDemo>[
+      GalleryDemo(
+          slug: 'basic',
+          title: 'A reply card',
+          builder: contextMenuRegionBasic),
     ],
   ),
   GalleryComponent(

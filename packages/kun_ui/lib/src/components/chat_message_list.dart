@@ -14,6 +14,7 @@ import '../chat/grouping.dart';
 import '../chat/support.dart';
 import '../chat/types.dart';
 import '../config/config.dart';
+import '../foundation/feedback.dart';
 import '../foundation/motion.dart';
 import '../foundation/tap_target.dart';
 import '../locale/messages.dart';

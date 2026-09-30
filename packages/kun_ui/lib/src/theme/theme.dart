@@ -20,6 +20,7 @@ class KunThemeData {
     this.rounded = KunUIRounded.md,
     this.breakpoints = const KunBreakpoints(),
     this.tapTargetSize = KunTapTargetSize.adaptive,
+    this.enableFeedback = true,
   });
 
   /// The light theme — the generated scheme the web ships on `:root`.
@@ -27,6 +28,7 @@ class KunThemeData {
     KunUIRounded rounded = KunUIRounded.md,
     KunBreakpoints breakpoints = const KunBreakpoints(),
     KunTapTargetSize tapTargetSize = KunTapTargetSize.adaptive,
+    bool enableFeedback = true,
   }) =>
       KunThemeData(
         colors: KunColors.light,
@@ -34,6 +36,7 @@ class KunThemeData {
         rounded: rounded,
         breakpoints: breakpoints,
         tapTargetSize: tapTargetSize,
+        enableFeedback: enableFeedback,
       );
 
   /// The dark theme — the generated scheme the web ships on `.kun-dark-mode`.
@@ -41,6 +44,7 @@ class KunThemeData {
     KunUIRounded rounded = KunUIRounded.md,
     KunBreakpoints breakpoints = const KunBreakpoints(),
     KunTapTargetSize tapTargetSize = KunTapTargetSize.adaptive,
+    bool enableFeedback = true,
   }) =>
       KunThemeData(
         colors: KunColors.dark,
@@ -48,6 +52,7 @@ class KunThemeData {
         rounded: rounded,
         breakpoints: breakpoints,
         tapTargetSize: tapTargetSize,
+        enableFeedback: enableFeedback,
       );
 
   /// The generated color scheme ([KunColors.light] or [KunColors.dark]
@@ -70,6 +75,19 @@ class KunThemeData {
   /// touch target on phones and keeps the web's sizes on desktop.
   final KunTapTargetSize tapTargetSize;
 
+  /// Whether KunUI widgets emit the platform's haptic (and, on a long
+  /// press, acoustic) feedback. Modeled on Material's per-widget
+  /// `enableFeedback`. Defaults to true. When false, none of
+  /// [KunPressable.onLongPress], a [KunSwitch] the user toggles,
+  /// [KunRefreshIndicator] becoming armed from a pull, or
+  /// [KunContextMenuRegion]'s long press fire.
+  ///
+  /// [EditableText] and [SelectableRegion] already call
+  /// [Feedback.forLongPress] and `HapticFeedback.selectionClick`
+  /// themselves (`widgets/text_selection.dart:2761`,
+  /// `widgets/selectable_region.dart:1006`). This flag cannot reach those.
+  final bool enableFeedback;
+
   /// A copy with the given fields replaced.
   KunThemeData copyWith({
     KunColorScheme? colors,
@@ -77,6 +95,7 @@ class KunThemeData {
     KunUIRounded? rounded,
     KunBreakpoints? breakpoints,
     KunTapTargetSize? tapTargetSize,
+    bool? enableFeedback,
   }) =>
       KunThemeData(
         colors: colors ?? this.colors,
@@ -84,6 +103,7 @@ class KunThemeData {
         rounded: rounded ?? this.rounded,
         breakpoints: breakpoints ?? this.breakpoints,
         tapTargetSize: tapTargetSize ?? this.tapTargetSize,
+        enableFeedback: enableFeedback ?? this.enableFeedback,
       );
 
   @override
@@ -93,11 +113,18 @@ class KunThemeData {
       other.brightness == brightness &&
       other.rounded == rounded &&
       other.breakpoints == breakpoints &&
-      other.tapTargetSize == tapTargetSize;
+      other.tapTargetSize == tapTargetSize &&
+      other.enableFeedback == enableFeedback;
 
   @override
-  int get hashCode =>
-      Object.hash(colors, brightness, rounded, breakpoints, tapTargetSize);
+  int get hashCode => Object.hash(
+        colors,
+        brightness,
+        rounded,
+        breakpoints,
+        tapTargetSize,
+        enableFeedback,
+      );
 }
 
 /// Provides a [KunThemeData] to every KunUI widget below it.

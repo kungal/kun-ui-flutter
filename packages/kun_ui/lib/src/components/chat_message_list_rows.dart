@@ -423,6 +423,7 @@ class _MessageListRowState extends State<_MessageListRow>
       if (!mounted || _mode != _PressMode.pending) {
         return;
       }
+      kunLongPressFeedback(context);
       widget.onOpenMenu(_origin);
       _mode = _PressMode.menu;
       _pointer = null;
