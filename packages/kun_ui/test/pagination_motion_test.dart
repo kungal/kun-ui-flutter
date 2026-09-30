@@ -165,6 +165,25 @@ void main() {
     handle.dispose();
   });
 
+  testWidgets('a leaving number paints under the numbers after it',
+      (WidgetTester tester) async {
+    await show(tester, host(currentPage: 10));
+
+    await tester.tap(nextButton());
+    await tester.pump();
+    await tester.pump(const Duration(milliseconds: 150));
+    await tester.pump(const Duration(milliseconds: 30));
+
+    RenderObject slotOf(int page) => tester.renderObject(
+          find
+              .ancestor(of: pageButton(page), matching: find.byType(Opacity))
+              .first,
+        );
+    final List<RenderObject> order = <RenderObject>[];
+    slotOf(10).parent!.visitChildren(order.add);
+    expect(order.indexOf(slotOf(9)), lessThan(order.indexOf(slotOf(10))));
+  });
+
   testWidgets('an entering number fades in', (WidgetTester tester) async {
     await show(tester, host(currentPage: 10));
 
@@ -206,6 +225,43 @@ void main() {
     expect(mid.dx, isNot(closeTo(start.dx, 0.5)));
     expect(rest.dx, isNot(closeTo(start.dx, 0.5)));
     expect(slotOpacity(tester, find.text('...').first), closeTo(1, 0.001));
+  });
+
+  testWidgets(
+      'the pill stays centred on the current page while the window shifts',
+      (WidgetTester tester) async {
+    await show(tester, host(currentPage: 10));
+
+    await tester.tap(nextButton());
+    await tester.pump();
+    await tester.pump(const Duration(milliseconds: 150));
+
+    void expectLockstep(String at) {
+      final Rect pill = tester.getRect(find.byType(AnimatedPositioned));
+      final Rect page = tester.getRect(pageButton(11));
+      expect(
+        pill.center.dx,
+        closeTo(page.center.dx, 1),
+        reason: '$at: pill ${pill.center.dx} vs page ${page.center.dx}',
+      );
+    }
+
+    expectLockstep('Phase B start');
+    int elapsed = 0;
+    for (final int ms in <int>[16, 32, 48, 80, 120, 150]) {
+      await tester.pump(Duration(milliseconds: ms - elapsed));
+      elapsed = ms;
+      expectLockstep('${ms}ms into the move');
+    }
+    final Offset pillRest =
+        tester.getRect(find.byType(AnimatedPositioned)).center;
+    final Offset pageRest = tester.getRect(pageButton(11)).center;
+    await tester.pump(const Duration(milliseconds: 16));
+    expect(
+      tester.getRect(find.byType(AnimatedPositioned)).center.dx,
+      closeTo(pillRest.dx, 0.5),
+    );
+    expect(tester.getRect(pageButton(11)).center.dx, closeTo(pageRest.dx, 0.5));
   });
 
   testWidgets('the highlight lands on the settled slot, not a mid-move number',
