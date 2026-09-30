@@ -281,4 +281,59 @@ void main() {
     await tester.tapAt(Offset(drawn.left + 40, drawn.top - 2));
     expect(left, 1);
   });
+
+  testWidgets('a stretched row keeps each drawn control centred in its box',
+      (tester) async {
+    debugDefaultTargetPlatformOverride = TargetPlatform.android;
+    try {
+      await tester.pumpWidget(
+        wrap(
+          SizedBox(
+            width: 600,
+            child: KunScrollShadow(
+              children: <Widget>[
+                KunSelect<String, KunSelectOption<String>>(
+                  size: KunUISize.sm,
+                  fullWidth: false,
+                  options: const <KunSelectOption<String>>[
+                    KunSelectOption<String>(value: 'pc', label: 'PC'),
+                  ],
+                  value: 'pc',
+                  onChanged: (String? value) {},
+                ),
+                iconButton(KunUISize.sm, () {}),
+                KunButton(
+                  size: KunUISize.sm,
+                  onPressed: () {},
+                  child: const Text('More filters'),
+                ),
+              ],
+            ),
+          ),
+        ),
+      );
+      final Finder drawn = find.descendant(
+        of: find.byType(KunButton),
+        matching: find.byType(Stack),
+      );
+      final double square = KunControlMetrics.of(KunUISize.sm).square;
+      for (final Element button in find.byType(KunButton).evaluate()) {
+        final Rect box = tester.getRect(find.byWidget(button.widget));
+        final Rect paint = tester.getRect(
+          find
+              .descendant(
+                of: find.byWidget(button.widget),
+                matching: find.byType(Stack),
+              )
+              .first,
+        );
+        expect(box.height, 48);
+        expect(paint.height, square);
+        expect(paint.center.dy, closeTo(box.center.dy, 0.5));
+      }
+      expect(drawn, findsWidgets);
+    } finally {
+      debugDefaultTargetPlatformOverride = null;
+    }
+  });
 }

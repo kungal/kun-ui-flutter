@@ -152,9 +152,19 @@ class _RenderTapTargetPadding extends RenderShiftedBox {
       ? 0
       : math.max(child!.getMaxIntrinsicHeight(width), minSize.height);
 
+  // A minimum no larger than the padded box is the box's to absorb: in a
+  // stretched IntrinsicHeight row (KunScrollShadow) the row is 48 tall
+  // because of these boxes, and passing the tight 48 down drew the button
+  // 48 tall with its face at the top, beside a centred KunSelect.
+  BoxConstraints _childConstraints(BoxConstraints constraints) =>
+      constraints.copyWith(
+        minWidth: constraints.minWidth <= minSize.width ? 0 : null,
+        minHeight: constraints.minHeight <= minSize.height ? 0 : null,
+      );
+
   Size _computeSize(BoxConstraints constraints, ChildLayouter layoutChild) {
     if (child == null) return Size.zero;
-    final childSize = layoutChild(child!, constraints);
+    final childSize = layoutChild(child!, _childConstraints(constraints));
     return constraints.constrain(
       Size(
         math.max(childSize.width, minSize.width),
@@ -174,9 +184,10 @@ class _RenderTapTargetPadding extends RenderShiftedBox {
   ) {
     final child = this.child;
     if (child == null) return null;
-    final result = child.getDryBaseline(constraints, baseline);
+    final result =
+        child.getDryBaseline(_childConstraints(constraints), baseline);
     if (result == null) return null;
-    final childSize = child.getDryLayout(constraints);
+    final childSize = child.getDryLayout(_childConstraints(constraints));
     return result +
         Alignment.center
             .alongOffset(getDryLayout(constraints) - childSize as Offset)
