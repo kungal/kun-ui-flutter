@@ -10,6 +10,12 @@
   A `Semantics(link: true)` around a `KunPressable` could not reach its
   node, and one inside the builder made a node that was both a link and a
   button.
+- **`KunPressable.linkUrl`** gives a link its URL, and implies `link`.
+  On a Pixel, Flutter's Android bridge reports a node as a link only when
+  it carries a URL (the label becomes a `URLSpan`). A `link: true` without
+  one reaches TalkBack as a button. On Flutter web the URL is the `<a>`'s
+  `href`, which the browser can open by itself, so pass the URL the app
+  would show.
 - **`KunPressable.selected` and `KunPressable.expanded`** carry the web's
   `aria-selected` / `aria-pressed` and `aria-expanded` on the pressable's
   own node, `semanticLabel` or not. Null, the default, reports no state.

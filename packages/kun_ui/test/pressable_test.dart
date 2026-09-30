@@ -128,6 +128,34 @@ void main() {
     handle.dispose();
   });
 
+  testWidgets('linkUrl makes a link and carries the URL', (tester) async {
+    final SemanticsHandle handle = tester.ensureSemantics();
+    int taps = 0;
+    await tester.pumpWidget(
+      wrap(
+        KunPressable(
+          linkUrl: Uri.parse('/topic/42'),
+          onTap: () => taps++,
+          builder: (BuildContext context, KunPressableState state) =>
+              const SizedBox(key: content, width: 240, height: 56),
+        ),
+      ),
+    );
+    final SemanticsData data =
+        tester.getSemantics(find.byType(KunPressable)).getSemanticsData();
+    expect(data.flagsCollection.isLink, isTrue);
+    expect(data.flagsCollection.isButton, isFalse);
+    expect(data.linkUrl, Uri.parse('/topic/42'));
+
+    await tester.sendKeyEvent(LogicalKeyboardKey.tab);
+    await tester.pump();
+    await tester.sendKeyEvent(LogicalKeyboardKey.space);
+    expect(taps, 0);
+    await tester.sendKeyEvent(LogicalKeyboardKey.enter);
+    expect(taps, 1);
+    handle.dispose();
+  });
+
   testWidgets('selected and expanded reach the node, named or not',
       (tester) async {
     final SemanticsHandle handle = tester.ensureSemantics();

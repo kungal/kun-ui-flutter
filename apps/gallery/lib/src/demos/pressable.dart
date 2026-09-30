@@ -75,7 +75,7 @@ class _PressableRowsState extends State<_PressableRows> {
           children: <Widget>[
             for (final String topic in _topics)
               KunPressable(
-                link: true,
+                linkUrl: Uri(path: '/topic/${_topics.indexOf(topic) + 1}'),
                 onTap: () => setState(() => _last = 'Opened "$topic"'),
                 onSecondaryTap: (Offset at) => _openMenu(topic, at),
                 onLongPress: (Offset at) => _openMenu(topic, at),

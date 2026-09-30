@@ -71,6 +71,7 @@ class KunPressable extends StatefulWidget {
     this.onLongPress,
     this.disabled = false,
     this.link = false,
+    this.linkUrl,
     this.selected,
     this.expanded,
     this.semanticLabel,
@@ -111,7 +112,18 @@ class KunPressable extends StatefulWidget {
   /// browser, Space on a link scrolls the page.
   ///
   /// Where it goes stays in [onTap].
+  ///
+  /// Android's TalkBack announces a link only when the node carries a URL
+  /// ([linkUrl]); without one it reads a button, as for any tappable node.
   final bool link;
+
+  /// The web's `href`: where the link goes, for assistive technology. It
+  /// makes the pressable a [link].
+  ///
+  /// TalkBack announces a link with it, and on Flutter web it becomes the
+  /// `<a>` element's `href`, which the browser can open on its own (a middle
+  /// click, "Open in new tab"). Pass the URL the app would show.
+  final Uri? linkUrl;
 
   /// The web's `aria-selected` or `aria-pressed`: the chosen one of a set, or
   /// a toggle that is on. Null reports no selection state.
@@ -168,6 +180,8 @@ class _KunPressableState extends State<KunPressable> {
 
   bool get _enabled => !widget.disabled;
 
+  bool get _isLink => widget.link || widget.linkUrl != null;
+
   Offset _center() {
     final RenderBox box = context.findRenderObject()! as RenderBox;
     return box.localToGlobal(box.size.center(Offset.zero));
@@ -215,8 +229,9 @@ class _KunPressableState extends State<KunPressable> {
 
     return Semantics(
       container: true,
-      button: !widget.link,
-      link: widget.link,
+      button: !_isLink,
+      link: _isLink,
+      linkUrl: widget.linkUrl,
       selected: widget.selected,
       expanded: widget.expanded,
       enabled: _enabled,
@@ -231,9 +246,9 @@ class _KunPressableState extends State<KunPressable> {
           autofocus: widget.autofocus,
           onShowFocusHighlight: (bool value) =>
               setState(() => _focused = value),
-          shortcuts: widget.link ? _kLinkKeys : _kMenuKeys,
+          shortcuts: _isLink ? _kLinkKeys : _kMenuKeys,
           actions: <Type, Action<Intent>>{
-            if (widget.link)
+            if (_isLink)
               _KunLinkActivateIntent: CallbackAction<_KunLinkActivateIntent>(
                 onInvoke: (_) {
                   _activate();
