@@ -114,38 +114,42 @@ class KunContextMenuRegionState extends State<KunContextMenuRegion> {
         widget.onSelected?.call(item);
       },
       onClose: _close,
-      child: Semantics(
-        key: const ValueKey<String>('KunContextMenuRegion'),
-        container: true,
-        explicitChildNodes: true,
-        customSemanticsActions: <CustomSemanticsAction, VoidCallback>{
-          if (active)
-            CustomSemanticsAction(label: widget.semanticActionLabel): () =>
-                openAt(_regionCenter()),
-        },
-        child: Shortcuts(
-          shortcuts:
-              active ? _kRegionKeys : const <ShortcutActivator, Intent>{},
-          child: Actions(
-            actions: <Type, Action<Intent>>{
-              _KunRegionMenuIntent: CallbackAction<_KunRegionMenuIntent>(
-                onInvoke: (_) {
-                  openAt(_focusedCenter());
-                  return null;
-                },
-              ),
-            },
-            child: GestureDetector(
-              key: _hitKey,
-              behavior: HitTestBehavior.opaque,
-              excludeFromSemantics: true,
-              onSecondaryTapUp: active
-                  ? (TapUpDetails details) => openAt(details.globalPosition)
-                  : null,
-              onLongPressStart: active && widget.longPress
-                  ? (LongPressStartDetails details) =>
-                      _openFromLongPress(details.globalPosition)
-                  : null,
+      child: Shortcuts(
+        shortcuts: active ? _kRegionKeys : const <ShortcutActivator, Intent>{},
+        child: Actions(
+          actions: <Type, Action<Intent>>{
+            _KunRegionMenuIntent: CallbackAction<_KunRegionMenuIntent>(
+              onInvoke: (_) {
+                openAt(_focusedCenter());
+                return null;
+              },
+            ),
+          },
+          child: GestureDetector(
+            key: _hitKey,
+            behavior: HitTestBehavior.opaque,
+            excludeFromSemantics: true,
+            onSecondaryTapUp: active
+                ? (TapUpDetails details) => openAt(details.globalPosition)
+                : null,
+            onLongPressStart: active && widget.longPress
+                ? (LongPressStartDetails details) =>
+                    _openFromLongPress(details.globalPosition)
+                : null,
+            // Directly around the child: with Shortcuts inside it, the
+            // Focus that Shortcuts builds became a node of its own under
+            // explicitChildNodes, and every plain Text below merged into
+            // that node's label (a Pixel dump read the author row and the
+            // first paragraph as one stop).
+            child: Semantics(
+              key: const ValueKey<String>('KunContextMenuRegion'),
+              container: true,
+              explicitChildNodes: true,
+              customSemanticsActions: <CustomSemanticsAction, VoidCallback>{
+                if (active)
+                  CustomSemanticsAction(label: widget.semanticActionLabel):
+                      () => openAt(_regionCenter()),
+              },
               child: widget.child,
             ),
           ),

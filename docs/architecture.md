@@ -1118,6 +1118,12 @@ widget, and its menu is `KunContextMenu`.
   action, named by the required `semanticActionLabel`. It carries no
   button flag and no tap. The tap-target and labelled-target guidelines do
   not count a node that has only a custom action.
+  - The node must sit directly around the child. The first build put
+    `Shortcuts` inside it. The `Focus` that `Shortcuts` builds then became a
+    node of its own under `explicitChildNodes`, and every plain `Text`
+    merged into that node. The Pixel read the author row and the first
+    paragraph as one label. The widget tests had checked only buttons and
+    links, which are nodes anyway.
 - **Shift+F10 and the Menu key bubble to it.** `KunPressable` used to bind
   them even without `onSecondaryTap` and swallow them doing nothing. It
   now binds them only when it has one.

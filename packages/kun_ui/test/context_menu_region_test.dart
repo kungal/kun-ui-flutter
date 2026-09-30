@@ -524,6 +524,49 @@ void main() {
       }
     },
   );
+  testWidgets('plain text inside stays one node per text, not one stop',
+      (WidgetTester tester) async {
+    final SemanticsHandle handle = tester.ensureSemantics();
+    await tester.pumpWidget(
+      wrap(
+        SizedBox(
+          width: 300,
+          child: KunContextMenuRegion(
+            items: items,
+            semanticActionLabel: 'More actions',
+            child: const Column(
+              mainAxisSize: MainAxisSize.min,
+              children: <Widget>[
+                Row(children: <Widget>[Text('Haru'), Text('#12')]),
+                Text('First paragraph.'),
+                KunSelectionArea(child: Text('Second paragraph.')),
+              ],
+            ),
+          ),
+        ),
+      ),
+    );
+    for (final String text in <String>[
+      'Haru',
+      '#12',
+      'First paragraph.',
+      'Second paragraph.',
+    ]) {
+      expect(
+        find.bySemanticsLabel(RegExp('^${RegExp.escape(text)}\$')),
+        findsOneWidget,
+        reason: '"$text" has a node of its own',
+      );
+    }
+    final SemanticsData region = tester
+        .getSemantics(
+          find.byKey(const ValueKey<String>('KunContextMenuRegion')),
+        )
+        .getSemanticsData();
+    expect(region.label, isEmpty);
+    expect(region.customSemanticsActionIds, isNotEmpty);
+    handle.dispose();
+  });
 }
 
 class _OuterMenuIntent extends Intent {
