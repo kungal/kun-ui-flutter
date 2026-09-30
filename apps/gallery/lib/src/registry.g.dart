@@ -28,6 +28,7 @@ import 'demos/context_menu.dart';
 import 'demos/date_picker.dart';
 import 'demos/divider.dart';
 import 'demos/dropdown.dart';
+import 'demos/hover_card.dart';
 import 'demos/image.dart';
 import 'demos/input.dart';
 import 'demos/lightbox.dart';
@@ -37,6 +38,7 @@ import 'demos/modal.dart';
 import 'demos/nav_item.dart';
 import 'demos/null.dart';
 import 'demos/page.dart';
+import 'demos/pagination.dart';
 import 'demos/popover.dart';
 import 'demos/pressable.dart';
 import 'demos/progress.dart';
@@ -433,6 +435,22 @@ const List<GalleryComponent> galleryComponents = <GalleryComponent>[
     ],
   ),
   GalleryComponent(
+    slug: 'kunhovercard',
+    name: 'KunHoverCard',
+    demos: <GalleryDemo>[
+      GalleryDemo(slug: 'basic', title: 'Basic', builder: hoverCardBasic),
+      GalleryDemo(slug: 'group', title: 'Group', builder: hoverCardGroup),
+      GalleryDemo(slug: 'lazy', title: 'Lazy content', builder: hoverCardLazy),
+      GalleryDemo(slug: 'arrow', title: 'Arrow', builder: hoverCardArrow),
+      GalleryDemo(
+          slug: 'disabled', title: 'Disabled', builder: hoverCardDisabled),
+      GalleryDemo(
+          slug: 'fixed', title: 'Collision handling', builder: hoverCardFixed),
+      GalleryDemo(
+          slug: 'contract', title: 'Contract', builder: kunHoverCardContract),
+    ],
+  ),
+  GalleryComponent(
     slug: 'kunimage',
     name: 'KunImage',
     demos: <GalleryDemo>[
@@ -561,6 +579,21 @@ const List<GalleryComponent> galleryComponents = <GalleryComponent>[
     demos: <GalleryDemo>[
       GalleryDemo(
           slug: 'transitions', title: 'Transitions', builder: pageTransitions),
+    ],
+  ),
+  GalleryComponent(
+    slug: 'kunpagination',
+    name: 'KunPagination',
+    demos: <GalleryDemo>[
+      GalleryDemo(slug: 'basic', title: 'Basic', builder: paginationBasic),
+      GalleryDemo(slug: 'few', title: 'Few pages', builder: paginationFew),
+      GalleryDemo(
+          slug: 'loading', title: 'Loading', builder: paginationLoading),
+      GalleryDemo(
+          slug: 'middle', title: 'Middle page', builder: paginationMiddle),
+      GalleryDemo(slug: 'last', title: 'Last page', builder: paginationLast),
+      GalleryDemo(
+          slug: 'contract', title: 'Contract', builder: kunPaginationContract),
     ],
   ),
   GalleryComponent(

@@ -29,6 +29,35 @@
   - **`KunDropdownItem` is now a typedef of `KunContextMenuItem`,** as it
     is on the web, so one command list renders the right-click, long-press
     and ⋯ menus. Existing code compiles unchanged.
+- **`KunHoverCard`**, ported from the web: a preview card for a link or a
+  user chip. It opens once a mouse has rested on the trigger for
+  `openDelay` (600ms), or keyboard focus has stayed on it that long. It
+  closes `closeDelay` (300ms) after the pointer leaves, and the pointer can
+  cross the gap into the card. The trigger keeps its own semantics and its
+  own click, and a click also closes the card. Touch never opens it, and
+  neither does focus that came from a pointer.
+  - `group` keeps one card of a list open, and moves between siblings at
+    once instead of waiting out the delay again.
+  - `builder` runs only while the card is open, so work in it, such as a
+    profile fetch, starts on open. Its `close` argument dismisses the card.
+  - `open` with `onOpenChanged` is the web's `v-model:open`; leave `open`
+    null and the card keeps its own state.
+- **`KunPagination`**, ported from the web: the seven-page window with
+  ellipses, the sliding highlight with its pop, prev and next, the jump
+  field, and the arrow-key hint, hidden below `sm`. The strings come from
+  `KunMessagesScope`.
+  - The left and right arrow keys page while nothing has keyboard focus, or
+    while focus is on the pagination's own buttons, and not while another
+    route is on top. The web pages from any element that does not use the
+    arrows itself. Flutter's handler runs before the focused widget, so
+    paging from anywhere would take the keys from a widget that uses them.
+  - On a phone, the buttons padded to 48 no longer fit a 412-wide screen
+    once an ellipsis shows. The row scrolls and keeps the current page in
+    view. The web's 32px buttons fit.
+  - Not ported yet: the numbers' slide and fade when the window shifts,
+    because the web's 120ms fade is not a token, and the pop's coloured
+    shadow. The pop runs for `KunDurations.slow` (350ms); the web's is
+    340ms.
 - **`KunChatLayout` chooses one pane or two from its own width, not the
   window's.** The web's `md:` is a viewport query. A chat opened beside an
   app's side rail took the two-pane layout in a 768 window with 679 to

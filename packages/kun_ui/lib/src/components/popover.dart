@@ -1,5 +1,6 @@
 import 'package:flutter/gestures.dart';
 import 'package:flutter/rendering.dart';
+import 'package:flutter/scheduler.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter/widgets.dart';
 import 'package:kun_ui_tokens/kun_ui_tokens.dart';
@@ -10,6 +11,8 @@ import '../foundation/dismiss_layers.dart';
 import '../foundation/motion.dart';
 import '../foundation/pointer_menu.dart';
 import '../theme/theme.dart';
+
+part 'hover_card.dart';
 
 /// Where a [KunPopover]'s panel sits relative to its trigger.
 ///
@@ -379,61 +382,22 @@ class _KunPopoverState extends State<KunPopover>
     return KeyEventResult.ignored;
   }
 
-  void _onResolved(KunAnchorResolution resolution) {
-    if (_resolved.value == resolution) {
-      return;
-    }
-    // This runs inside layout, where notifying a listener would rebuild
-    // mid-layout, so the placement reaches the caret and the scale origin on
-    // the next frame. The panel's first frame paints at opacity 0, so the
-    // frame drawn from the default placement is never seen.
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      if (mounted) {
-        _resolved.value = resolution;
-      }
-    });
-  }
+  void _onResolved(KunAnchorResolution resolution) =>
+      _kunScheduleResolved(_resolved, resolution, () => mounted);
 
   Widget _buildOverlay(BuildContext context, OverlayChildLayoutInfo info) {
     final KunThemeData theme = KunTheme.of(context);
     final KunColorScheme scheme = theme.colors;
     final KunUIRounded rounded = widget.rounded ?? theme.rounded;
-    final Rect anchor = MatrixUtils.transformRect(
-      info.childPaintTransform,
-      Offset.zero & info.childSize,
-    );
 
-    Widget panel = DecoratedBox(
-      key: _panelKey,
-      decoration: BoxDecoration(
-        color: scheme.content1,
-        borderRadius: BorderRadius.circular(rounded.radius),
-        boxShadow: KunShadows.md,
-      ),
+    final Widget panel = _kunFloatingPanel(
+      panelKey: _panelKey,
       child: widget.child,
-    );
-    if (widget.autoPosition && !widget.showArrow) {
-      // `size()` on the web sets `overflow-y: auto` alongside the cap.
-      panel = ClipRRect(
-        borderRadius: BorderRadius.circular(rounded.radius),
-        child: SingleChildScrollView(child: panel),
-      );
-    }
-    panel = Stack(
-      clipBehavior: Clip.none,
-      children: <Widget>[
-        panel,
-        if (widget.showArrow)
-          ValueListenableBuilder<KunAnchorResolution>(
-            valueListenable: _resolved,
-            builder: (BuildContext context, KunAnchorResolution resolved, _) =>
-                KunAnchorArrow(
-              side: resolved.side,
-              cross: resolved.arrowCross,
-              color: scheme.content1,
-            ),
-          ),
-      ],
+      scheme: scheme,
+      rounded: rounded,
+      autoPosition: widget.autoPosition,
+      showArrow: widget.showArrow,
+      resolved: _resolved,
     );
 
     final Widget body = TapRegion(
@@ -471,34 +435,17 @@ class _KunPopoverState extends State<KunPopover>
             child: body,
           );
 
-    return Positioned.fill(
-      child: CustomSingleChildLayout(
-        delegate: KunAnchoredLayout(
-          anchor: anchor,
-          viewport: kunAnchorViewport(context, info.overlaySize),
-          side: widget.position.side,
-          align: widget.position.align,
-          constrain: widget.autoPosition,
-          capSize: widget.autoPosition && !widget.showArrow,
-          arrowSize: widget.showArrow ? kKunArrowSize : 0,
-          onResolved: _onResolved,
-        ),
-        child: FadeTransition(
-          opacity: _curve,
-          child: ListenableBuilder(
-            listenable: Listenable.merge(<Listenable>[_scale, _resolved]),
-            builder: (BuildContext context, Widget? child) => Transform.scale(
-              scale: _scale.value,
-              alignment: kunAnchorOrigin(
-                _resolved.value.side,
-                widget.position.align,
-              ),
-              child: child,
-            ),
-            child: hoverable,
-          ),
-        ),
-      ),
+    return _kunPlaceFloating(
+      info: info,
+      context: context,
+      position: widget.position,
+      autoPosition: widget.autoPosition,
+      showArrow: widget.showArrow,
+      fade: _curve,
+      scale: _scale,
+      resolved: _resolved,
+      onResolved: _onResolved,
+      child: hoverable,
     );
   }
 
@@ -558,4 +505,110 @@ class _KunPopoverState extends State<KunPopover>
       ),
     );
   }
+}
+
+void _kunScheduleResolved(
+  ValueNotifier<KunAnchorResolution> resolved,
+  KunAnchorResolution next,
+  bool Function() isMounted,
+) {
+  if (resolved.value == next) {
+    return;
+  }
+  // This runs inside layout, where notifying a listener would rebuild
+  // mid-layout, so the placement reaches the caret and the scale origin on
+  // the next frame. The panel's first frame paints at opacity 0, so the
+  // frame drawn from the default placement is never seen.
+  WidgetsBinding.instance.addPostFrameCallback((_) {
+    if (isMounted()) {
+      resolved.value = next;
+    }
+  });
+}
+
+Widget _kunFloatingPanel({
+  required GlobalKey panelKey,
+  required Widget child,
+  required KunColorScheme scheme,
+  required KunUIRounded rounded,
+  required bool autoPosition,
+  required bool showArrow,
+  required ValueNotifier<KunAnchorResolution> resolved,
+}) {
+  Widget panel = DecoratedBox(
+    key: panelKey,
+    decoration: BoxDecoration(
+      color: scheme.content1,
+      borderRadius: BorderRadius.circular(rounded.radius),
+      boxShadow: KunShadows.md,
+    ),
+    child: child,
+  );
+  if (autoPosition && !showArrow) {
+    // `size()` on the web sets `overflow-y: auto` alongside the cap.
+    panel = ClipRRect(
+      borderRadius: BorderRadius.circular(rounded.radius),
+      child: SingleChildScrollView(child: panel),
+    );
+  }
+  return Stack(
+    clipBehavior: Clip.none,
+    children: <Widget>[
+      panel,
+      if (showArrow)
+        ValueListenableBuilder<KunAnchorResolution>(
+          valueListenable: resolved,
+          builder: (BuildContext context, KunAnchorResolution placed, _) =>
+              KunAnchorArrow(
+            side: placed.side,
+            cross: placed.arrowCross,
+            color: scheme.content1,
+          ),
+        ),
+    ],
+  );
+}
+
+Widget _kunPlaceFloating({
+  required OverlayChildLayoutInfo info,
+  required BuildContext context,
+  required KunPopoverPosition position,
+  required bool autoPosition,
+  required bool showArrow,
+  required Animation<double> fade,
+  required Animation<double> scale,
+  required ValueNotifier<KunAnchorResolution> resolved,
+  required ValueChanged<KunAnchorResolution> onResolved,
+  required Widget child,
+}) {
+  final Rect anchor = MatrixUtils.transformRect(
+    info.childPaintTransform,
+    Offset.zero & info.childSize,
+  );
+  return Positioned.fill(
+    child: CustomSingleChildLayout(
+      delegate: KunAnchoredLayout(
+        anchor: anchor,
+        viewport: kunAnchorViewport(context, info.overlaySize),
+        side: position.side,
+        align: position.align,
+        constrain: autoPosition,
+        capSize: autoPosition && !showArrow,
+        arrowSize: showArrow ? kKunArrowSize : 0,
+        onResolved: onResolved,
+      ),
+      child: FadeTransition(
+        opacity: fade,
+        child: ListenableBuilder(
+          listenable: Listenable.merge(<Listenable>[scale, resolved]),
+          builder: (BuildContext context, Widget? child) => Transform.scale(
+            scale: scale.value,
+            alignment: kunAnchorOrigin(resolved.value.side, position.align),
+            child: child,
+          ),
+          child: child,
+        ),
+      ),
+    ),
+  );
 }

@@ -1144,6 +1144,65 @@
         }
       ]
     },
+    "KunHoverCard": {
+      "source": "demos/hover_card.dart",
+      "demos": [
+        {
+          "slug": "basic",
+          "title": "Basic",
+          "builder": "hoverCardBasic",
+          "shows": [
+            "slots.trigger",
+            "slots.default",
+            "props.openDelay",
+            "props.closeDelay"
+          ]
+        },
+        {
+          "slug": "group",
+          "title": "Group",
+          "builder": "hoverCardGroup",
+          "shows": [
+            "props.group",
+            "props.position"
+          ]
+        },
+        {
+          "slug": "lazy",
+          "title": "Lazy content",
+          "builder": "hoverCardLazy",
+          "shows": [
+            "props.open",
+            "events.update:open"
+          ]
+        },
+        {
+          "slug": "arrow",
+          "title": "Arrow",
+          "builder": "hoverCardArrow",
+          "shows": [
+            "props.showArrow",
+            "props.rounded"
+          ]
+        },
+        {
+          "slug": "disabled",
+          "title": "Disabled",
+          "builder": "hoverCardDisabled",
+          "shows": [
+            "props.disabled"
+          ]
+        },
+        {
+          "slug": "fixed",
+          "title": "Collision handling",
+          "builder": "hoverCardFixed",
+          "shows": [
+            "props.autoPosition"
+          ]
+        }
+      ]
+    },
     "KunImage": {
       "source": "demos/image.dart",
       "demos": [
@@ -1556,6 +1615,47 @@
           "slug": "transitions",
           "title": "Transitions",
           "builder": "pageTransitions",
+          "shows": []
+        }
+      ]
+    },
+    "KunPagination": {
+      "source": "demos/pagination.dart",
+      "demos": [
+        {
+          "slug": "basic",
+          "title": "Basic",
+          "builder": "paginationBasic",
+          "shows": [
+            "props.currentPage",
+            "props.totalPage",
+            "events.update:currentPage"
+          ]
+        },
+        {
+          "slug": "few",
+          "title": "Few pages",
+          "builder": "paginationFew",
+          "shows": []
+        },
+        {
+          "slug": "loading",
+          "title": "Loading",
+          "builder": "paginationLoading",
+          "shows": [
+            "props.isLoading"
+          ]
+        },
+        {
+          "slug": "middle",
+          "title": "Middle page",
+          "builder": "paginationMiddle",
+          "shows": []
+        },
+        {
+          "slug": "last",
+          "title": "Last page",
+          "builder": "paginationLast",
           "shows": []
         }
       ]

@@ -520,6 +520,25 @@
         "trigger": "trigger"
       }
     },
+    "KunHoverCard": {
+      "widget": "KunHoverCard",
+      "props": {
+        "autoPosition": "autoPosition",
+        "closeDelay": "closeDelay",
+        "disabled": "disabled",
+        "group": "group",
+        "opaque": {
+          "omit": "The web's `--kun-surface-opacity` is a CSS variable a site lowers to frost every surface; this port has no such global knob and paints `content1` opaque, so there is no translucency for the prop to override."
+        },
+        "open": "open",
+        "openDelay": "openDelay",
+        "position": "position",
+        "rounded": "rounded",
+        "showArrow": "showArrow"
+      },
+      "events": { "update:open": "onOpenChanged" },
+      "slots": { "default": "builder", "trigger": "trigger" }
+    },
     "KunImage": {
       "widget": "KunImage",
       "props": {
@@ -654,6 +673,16 @@
         "src": "image"
       },
       "events": {},
+      "slots": {}
+    },
+    "KunPagination": {
+      "widget": "KunPagination",
+      "props": {
+        "currentPage": "currentPage",
+        "totalPage": "totalPage",
+        "isLoading": "isLoading"
+      },
+      "events": { "update:currentPage": "onCurrentPageChanged" },
       "slots": {}
     },
     "KunPopover": {

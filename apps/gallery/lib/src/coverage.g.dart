@@ -2380,6 +2380,108 @@ const ComponentCoverage _kunDropdown = ComponentCoverage(
 Widget kunDropdownContract(BuildContext context) =>
     const CoveragePage(coverage: _kunDropdown);
 
+const ComponentCoverage _kunHoverCard = ComponentCoverage(
+  name: 'KunHoverCard',
+  entries: <CoverageEntry>[
+    CoverageEntry(
+      section: 'props',
+      contractName: 'autoPosition',
+      status: CoverageStatus.shown,
+      dartName: 'autoPosition',
+      shownBy: 'Collision handling',
+    ),
+    CoverageEntry(
+      section: 'props',
+      contractName: 'closeDelay',
+      status: CoverageStatus.shown,
+      dartName: 'closeDelay',
+      shownBy: 'Basic',
+    ),
+    CoverageEntry(
+      section: 'props',
+      contractName: 'disabled',
+      status: CoverageStatus.shown,
+      dartName: 'disabled',
+      shownBy: 'Disabled',
+    ),
+    CoverageEntry(
+      section: 'props',
+      contractName: 'group',
+      status: CoverageStatus.shown,
+      dartName: 'group',
+      shownBy: 'Group',
+    ),
+    CoverageEntry(
+      section: 'props',
+      contractName: 'opaque',
+      status: CoverageStatus.omitted,
+      dartName: null,
+      reason:
+          'The web\'s `--kun-surface-opacity` is a CSS variable a site lowers to frost every surface; this port has no such global knob and paints `content1` opaque, so there is no translucency for the prop to override.',
+    ),
+    CoverageEntry(
+      section: 'props',
+      contractName: 'open',
+      status: CoverageStatus.shown,
+      dartName: 'open',
+      shownBy: 'Lazy content',
+    ),
+    CoverageEntry(
+      section: 'props',
+      contractName: 'openDelay',
+      status: CoverageStatus.shown,
+      dartName: 'openDelay',
+      shownBy: 'Basic',
+    ),
+    CoverageEntry(
+      section: 'props',
+      contractName: 'position',
+      status: CoverageStatus.shown,
+      dartName: 'position',
+      shownBy: 'Group',
+    ),
+    CoverageEntry(
+      section: 'props',
+      contractName: 'rounded',
+      status: CoverageStatus.shown,
+      dartName: 'rounded',
+      shownBy: 'Arrow',
+    ),
+    CoverageEntry(
+      section: 'props',
+      contractName: 'showArrow',
+      status: CoverageStatus.shown,
+      dartName: 'showArrow',
+      shownBy: 'Arrow',
+    ),
+    CoverageEntry(
+      section: 'events',
+      contractName: 'update:open',
+      status: CoverageStatus.shown,
+      dartName: 'onOpenChanged',
+      shownBy: 'Lazy content',
+    ),
+    CoverageEntry(
+      section: 'slots',
+      contractName: 'default',
+      status: CoverageStatus.shown,
+      dartName: 'builder',
+      shownBy: 'Basic',
+    ),
+    CoverageEntry(
+      section: 'slots',
+      contractName: 'trigger',
+      status: CoverageStatus.shown,
+      dartName: 'trigger',
+      shownBy: 'Basic',
+    ),
+  ],
+);
+
+/// The contract coverage page for KunHoverCard.
+Widget kunHoverCardContract(BuildContext context) =>
+    const CoveragePage(coverage: _kunHoverCard);
+
 const ComponentCoverage _kunImage = ComponentCoverage(
   name: 'KunImage',
   entries: <CoverageEntry>[
@@ -2972,6 +3074,44 @@ const ComponentCoverage _kunNull = ComponentCoverage(
 /// The contract coverage page for KunNull.
 Widget kunNullContract(BuildContext context) =>
     const CoveragePage(coverage: _kunNull);
+
+const ComponentCoverage _kunPagination = ComponentCoverage(
+  name: 'KunPagination',
+  entries: <CoverageEntry>[
+    CoverageEntry(
+      section: 'props',
+      contractName: 'currentPage',
+      status: CoverageStatus.shown,
+      dartName: 'currentPage',
+      shownBy: 'Basic',
+    ),
+    CoverageEntry(
+      section: 'props',
+      contractName: 'totalPage',
+      status: CoverageStatus.shown,
+      dartName: 'totalPage',
+      shownBy: 'Basic',
+    ),
+    CoverageEntry(
+      section: 'props',
+      contractName: 'isLoading',
+      status: CoverageStatus.shown,
+      dartName: 'isLoading',
+      shownBy: 'Loading',
+    ),
+    CoverageEntry(
+      section: 'events',
+      contractName: 'update:currentPage',
+      status: CoverageStatus.shown,
+      dartName: 'onCurrentPageChanged',
+      shownBy: 'Basic',
+    ),
+  ],
+);
+
+/// The contract coverage page for KunPagination.
+Widget kunPaginationContract(BuildContext context) =>
+    const CoveragePage(coverage: _kunPagination);
 
 const ComponentCoverage _kunPopover = ComponentCoverage(
   name: 'KunPopover',
