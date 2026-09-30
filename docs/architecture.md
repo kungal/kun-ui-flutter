@@ -1008,6 +1008,32 @@ guidance by default on touch platforms.
   can be a pseudo-element that costs no layout, so it would not change the
   design. Whether kun-ui wants one is its own question, raised separately.
 
+### KunPressable is the `<button>` element, not a component (decided 2026-09-30)
+
+The kungal app had 71 bare `GestureDetector`s on rows and cards. None had a
+hover state or a pointer cursor, none could take keyboard focus, and there
+were no right-click menus. On the web every one of them would have been a
+`<button>` or an `<a>`. The browser gives either one the cursor, `:hover`,
+focus with the `:focus-visible` ring, Enter and Space, `contextmenu` on a
+right-click or Shift+F10, and a button role. There is no KunUI component
+for that, because the element already is one.
+
+- **So `KunPressable` translates an element, not a design.** It has no look
+  of its own and hands its state to a builder. The only things it draws are
+  what the platform draws: KunUI's focus ring, from `KunFocusOutline` as
+  `KunCard(clickable)` uses it, and the phone tap-target padding. That is
+  why a Flutter-only widget does not break iron rule 2. Upstream has
+  nothing to decide.
+- **Nothing visual goes in unless kun-ui decides it.** A hover fill, a
+  press scale or a selected style is a design, and it stays in the app's
+  builder. `KunCard(clickable)` stays the component with a look.
+- **The context menu is opened, not owned.** `onSecondaryTap` and
+  `onLongPress` hand over global positions, and `KunContextMenu` opens at a
+  position. The web works the same way: the page handles `@contextmenu`
+  and shows `KunContextMenu` at the pointer. Flutter web shows the
+  browser's own menu too unless `BrowserContextMenu.disableContextMenu()`
+  is called. That is a global switch, so it is the app's call.
+
 ### Reduced motion collapses every transition (decided 2026-09-17)
 
 kun-ui's base stylesheet sets every transition and animation to 0.01ms

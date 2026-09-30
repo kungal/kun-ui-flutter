@@ -1583,6 +1583,24 @@
         "props.ariaLabel": "An accessible name has no visual form. Every demo leaves it at the web's own fallback and what is announced is asserted by the widget tests."
       }
     },
+    "KunPressable": {
+      "contract": false,
+      "source": "demos/pressable.dart",
+      "demos": [
+        {
+          "slug": "rows",
+          "title": "List rows",
+          "builder": "pressableRows",
+          "shows": []
+        },
+        {
+          "slug": "states",
+          "title": "States",
+          "builder": "pressableStates",
+          "shows": []
+        }
+      ]
+    },
     "KunProgress": {
       "source": "demos/progress.dart",
       "demos": [

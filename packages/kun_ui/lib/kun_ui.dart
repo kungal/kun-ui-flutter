@@ -54,6 +54,7 @@ export 'src/components/modal.dart';
 export 'src/components/nav_item.dart';
 export 'src/components/null.dart';
 export 'src/components/popover.dart';
+export 'src/components/pressable.dart';
 export 'src/components/progress.dart';
 export 'src/components/radio_group.dart';
 export 'src/components/reaction.dart';

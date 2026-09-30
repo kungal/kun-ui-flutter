@@ -2,6 +2,22 @@
 
 ## 0.20.0
 
+- **`KunPressable`: what a browser gives every `<button>`, without a look
+  of its own.** For list rows, cards and tiles an app draws itself, in
+  place of a bare `GestureDetector`.
+  - It gives the pointer cursor, hover, keyboard focus with KunUI's focus
+    ring, and Enter and Space.
+  - `onSecondaryTap` gets the pointer's global position on a right-click,
+    and the centre on Shift+F10 or the Menu key, as a browser fires
+    `contextmenu`. `onLongPress` gets the finger's position. Open a menu
+    from either.
+  - It is one button node, named by its text or by `semanticLabel`, and it
+    is padded to the platform's minimum on phones.
+  - `builder` gets hover, press, focus and disabled through
+    `KunPressableState`, so the look comes from the app's own tokens.
+  - Not part of the web contract, because the web needs no such component.
+  - On Flutter web, call `BrowserContextMenu.disableContextMenu()` once, or
+    the browser's own menu opens too.
 - **`KunChatLayout` chooses one pane or two from its own width, not the
   window's.** The web's `md:` is a viewport query. A chat opened beside an
   app's side rail took the two-pane layout in a 768 window with 679 to

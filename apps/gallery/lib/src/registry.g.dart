@@ -37,6 +37,7 @@ import 'demos/nav_item.dart';
 import 'demos/null.dart';
 import 'demos/page.dart';
 import 'demos/popover.dart';
+import 'demos/pressable.dart';
 import 'demos/progress.dart';
 import 'demos/radio_group.dart';
 import 'demos/reaction.dart';
@@ -562,6 +563,14 @@ const List<GalleryComponent> galleryComponents = <GalleryComponent>[
           slug: 'controlled', title: 'Controlled', builder: popoverControlled),
       GalleryDemo(
           slug: 'contract', title: 'Contract', builder: kunPopoverContract),
+    ],
+  ),
+  GalleryComponent(
+    slug: 'kunpressable',
+    name: 'KunPressable',
+    demos: <GalleryDemo>[
+      GalleryDemo(slug: 'rows', title: 'List rows', builder: pressableRows),
+      GalleryDemo(slug: 'states', title: 'States', builder: pressableStates),
     ],
   ),
   GalleryComponent(
