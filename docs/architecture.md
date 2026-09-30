@@ -966,6 +966,44 @@ guidance by default on touch platforms.
     the detector around the band. A target column carries no vertical
     padding of its own: the padding that sets the drawn height lives inside
     the column that is not a target.
+  - A `KunTapBand` asks its content for an intrinsic height, so nothing
+    inside it may be a `LayoutBuilder`: one asserts in debug and reports 0
+    in release. `KunSelect`'s chips sat in one and would have laid out at
+    the padded height on every phone. A framed tab strip, where every column
+    is a target, adds its frame's padding to the intrinsic height it reports
+    (`_ExtraMinHeight` in `tab.dart`) instead of padding a column.
+- **Where the drawn size does change, and why.**
+  - A container that holds padded controls grows: a modal footer, the date
+    panel header, the lightbox toolbar, the composer bar (56 to 64).
+  - A shrink-wrapped field grows in width where a target inside it would be
+    narrower than the minimum. A clear button's column is 48 wide, and in a
+    shrink-wrapped row that width adds to the field. The combobox's value
+    node takes a minimum width too. The alternative was to overlap the
+    clear target onto the value text, which would make a tap on the value's
+    end clear the field. `fullWidth`, the default for `KunSelect` and
+    `KunDatePicker`, takes the width from the value and draws unchanged.
+  - A popup opens from its anchor's layout box, as Material's menus do. On
+    phones the gap between a trigger and its popup therefore grows by the
+    margin: 5px for a 38-tall control. Anchoring every popup to the drawn
+    box would need each slotted trigger to report it; that was not built.
+- **What stays at the web's density, by decision.** Message rows and
+  everything inside a message: avatars, sender names, reply quotes,
+  spoilers, link previews, the code block's copy button, reaction chips and
+  the bubble's retry button. Padding them would change every bubble. Popup
+  content (select and dropdown rows, date cells, the reaction picker) and
+  the composer attachment's 20px remove button are deferred, not decided.
+- **The gallery gate enforces it.** `apps/gallery/test/tap_targets_test.dart`
+  renders every demo on Android and iOS and requires the platform's
+  guideline, except for the demos in its `exempt` map, each with its reason.
+  Every demo, exempt or not, must also meet `labeledTapTargetGuideline`.
+  The gate does not compare semantics trees. When the forms sweep added a
+  `MergeSemantics` to `KunCheckBox`, the description merged into the label,
+  so the node read "At most one a month.\nMarketing email" and read the
+  description again as its hint. Every guideline passed; only a dump of the
+  tree before and after caught it. Nodes nested under a `MergeSemantics`
+  look like duplicates in `flutter test` but are merged into their parent
+  and never reach the platform (`SemanticsOwner.sendSemanticsUpdate`), so
+  a duplicate in the test tree is not by itself a bug on the device.
 - **The web is not asked to follow.** A coarse-pointer hit area on the web
   can be a pseudo-element that costs no layout, so it would not change the
   design. Whether kun-ui wants one is its own question, raised separately.
