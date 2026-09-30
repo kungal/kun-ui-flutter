@@ -3,12 +3,17 @@ import 'package:flutter/services.dart';
 import 'package:flutter/widgets.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:kun_ui/kun_ui.dart';
+import 'package:kun_ui/src/foundation/tap_target.dart';
 
-Widget wrap(Widget child, {KunMessages messages = KunMessages.en}) {
+Widget wrap(
+  Widget child, {
+  KunMessages messages = KunMessages.en,
+  KunTapTargetSize tapTargetSize = KunTapTargetSize.adaptive,
+}) {
   return KunMessagesScope(
     messages: messages,
     child: KunTheme(
-      data: KunThemeData.light(),
+      data: KunThemeData.light(tapTargetSize: tapTargetSize),
       child: Directionality(
         textDirection: TextDirection.ltr,
         child: Overlay(
@@ -563,4 +568,230 @@ void main() {
     await tester.pump();
     expect(_hostOf(tester).sent, hasLength(1));
   });
+
+  Finder drawnIcon(IconData icon) => find
+      .ancestor(
+        of: find.byIcon(icon),
+        matching: find.byType(AnimatedContainer),
+      )
+      .first;
+
+  Finder iconTarget(IconData icon) => find
+      .ancestor(
+        of: find.byIcon(icon),
+        matching: find.byType(KunTapTarget),
+      )
+      .first;
+
+  testWidgets(
+    'padded attach, send and field meet the minimum and keep the drawn box',
+    (WidgetTester tester) async {
+      final SemanticsHandle handle = tester.ensureSemantics();
+      await tester.pumpWidget(
+        wrap(
+          const _Host(),
+          tapTargetSize: KunTapTargetSize.padded,
+        ),
+      );
+      final Size min = kunMinTapTargetSize(
+        tester.element(find.byType(KunChatComposer)),
+      );
+      final Size attachBox = tester.getSize(iconTarget(KunIcons.paperclip));
+      final Size attachDrawn = tester.getSize(drawnIcon(KunIcons.paperclip));
+      expect(attachDrawn, Size.square(KunSpacing.unit * 10));
+      expect(attachBox.width, greaterThanOrEqualTo(min.width));
+      expect(attachBox.height, greaterThanOrEqualTo(min.height));
+      expect(
+        tester.getCenter(drawnIcon(KunIcons.paperclip)),
+        tester.getCenter(iconTarget(KunIcons.paperclip)),
+      );
+
+      final Size sendBox = tester.getSize(iconTarget(KunIcons.sendHorizontal));
+      expect(tester.getSize(drawnIcon(KunIcons.sendHorizontal)), attachDrawn);
+      expect(sendBox.width, greaterThanOrEqualTo(min.width));
+      expect(sendBox.height, greaterThanOrEqualTo(min.height));
+
+      final Rect pill = tester.getRect(
+        find.descendant(
+          of: find.byType(KunTapBand),
+          matching: find.byType(AnimatedContainer),
+        ),
+      );
+      final Size band = tester.getSize(find.byType(KunTapBand));
+      expect(pill.height, KunSpacing.unit * 10);
+      expect(band.height, greaterThanOrEqualTo(min.height));
+      expect(pill.center.dy, tester.getRect(find.byType(KunTapBand)).center.dy);
+
+      expect(
+        tester.getSize(find.byType(KunChatComposer)).height,
+        KunSpacing.unit * 16,
+      );
+
+      await tester.tapAt(Offset(pill.center.dx, pill.top - 3));
+      await tester.pump();
+      expect(editableOf(tester).focusNode.hasFocus, isTrue);
+
+      await tester.tapAt(
+        Offset(
+          tester.getRect(drawnIcon(KunIcons.paperclip)).center.dx,
+          tester.getRect(drawnIcon(KunIcons.paperclip)).top - 3,
+        ),
+      );
+      await tester.pump();
+      expect(_hostOf(tester).attach, 1);
+
+      await expectLater(tester, meetsGuideline(androidTapTargetGuideline));
+      handle.dispose();
+    },
+  );
+
+  testWidgets(
+    'a padded send tap in the margin sends',
+    (WidgetTester tester) async {
+      await tester.pumpWidget(
+        wrap(
+          _Host(
+            attachments: const <KunChatAttachment>[
+              KunChatAttachment(key: 'a'),
+            ],
+          ),
+          tapTargetSize: KunTapTargetSize.padded,
+        ),
+      );
+      final Rect drawn = tester.getRect(drawnIcon(KunIcons.sendHorizontal));
+      await tester.tapAt(Offset(drawn.right + 3, drawn.center.dy));
+      await tester.pump();
+      expect(_hostOf(tester).sent, hasLength(1));
+    },
+  );
+
+  testWidgets(
+    'shrinkWrap keeps the composer at the web size',
+    (WidgetTester tester) async {
+      await tester.pumpWidget(
+        wrap(const _Host(), tapTargetSize: KunTapTargetSize.shrinkWrap),
+      );
+      expect(
+        tester.getSize(drawnIcon(KunIcons.paperclip)),
+        Size.square(KunSpacing.unit * 10),
+      );
+      expect(
+        tester.getSize(iconTarget(KunIcons.paperclip)),
+        Size.square(KunSpacing.unit * 10),
+      );
+      expect(
+        tester.getSize(find.byType(KunTapBand)),
+        tester.getSize(
+          find.descendant(
+            of: find.byType(KunTapBand),
+            matching: find.byType(AnimatedContainer),
+          ),
+        ),
+      );
+      expect(
+        tester.getSize(find.byType(KunChatComposer)).height,
+        KunSpacing.unit * 14,
+      );
+    },
+  );
+
+  testWidgets(
+    'padded cancel in the reply bar meets the minimum',
+    (WidgetTester tester) async {
+      await tester.pumpWidget(
+        wrap(
+          _Host(
+            replyTo: message(),
+            users: const <KunChatUser>[
+              KunChatUser(id: '1002', name: 'Haru', avatar: ''),
+            ],
+          ),
+          tapTargetSize: KunTapTargetSize.padded,
+        ),
+      );
+      final Size min = kunMinTapTargetSize(
+        tester.element(find.byType(KunChatComposer)),
+      );
+      expect(tester.getSize(drawnIcon(KunIcons.x)),
+          Size.square(KunSpacing.unit * 8));
+      expect(
+        tester.getSize(iconTarget(KunIcons.x)).width,
+        greaterThanOrEqualTo(min.width),
+      );
+      expect(
+        tester.getSize(iconTarget(KunIcons.x)).height,
+        greaterThanOrEqualTo(min.height),
+      );
+      final Rect drawn = tester.getRect(drawnIcon(KunIcons.x));
+      await tester.tapAt(Offset(drawn.center.dx, drawn.top - 3));
+      await tester.pump();
+      expect(_hostOf(tester).replyTo, isNull);
+    },
+  );
+
+  testWidgets(
+    'the attachment remove is below the minimum (exempt)',
+    (WidgetTester tester) async {
+      final SemanticsHandle handle = tester.ensureSemantics();
+      await tester.pumpWidget(
+        wrap(
+          _Host(
+            attachments: <KunChatAttachment>[
+              KunChatAttachment(
+                key: 'up',
+                image: MemoryImage(_png),
+                name: 'up.png',
+              ),
+            ],
+          ),
+          tapTargetSize: KunTapTargetSize.padded,
+        ),
+      );
+      final Finder removeIcon = find.byIcon(KunIcons.x);
+      final Finder removeBox = find.ancestor(
+        of: removeIcon,
+        matching: find.byType(Container),
+      );
+      final Rect drawn = tester.getRect(removeBox);
+      expect(drawn.size, Size.square(KunSpacing.unit * 5));
+      final Size node = tester.getSemantics(removeIcon).rect.size;
+      expect(node, Size.square(KunSpacing.unit * 5));
+      final Size min = kunMinTapTargetSize(
+        tester.element(find.byType(KunChatComposer)),
+      );
+      final Rect wouldBe = Rect.fromCenter(
+        center: drawn.center,
+        width: min.width,
+        height: min.height,
+      );
+      final Rect chip = tester.getRect(find.byType(ClipRRect).first);
+      expect(chip.size, Size.square(KunSpacing.unit * 16));
+      expect(wouldBe.overlaps(chip), isTrue);
+      expect(wouldBe.top, lessThan(chip.top));
+      expect(wouldBe.right, greaterThan(chip.right));
+      handle.dispose();
+    },
+  );
+
+  testWidgets(
+    'padded composer icons meet the iOS guideline',
+    (WidgetTester tester) async {
+      debugDefaultTargetPlatformOverride = TargetPlatform.iOS;
+      final SemanticsHandle handle = tester.ensureSemantics();
+      await tester.pumpWidget(
+        wrap(const _Host(), tapTargetSize: KunTapTargetSize.padded),
+      );
+      final Size min = kunMinTapTargetSize(
+        tester.element(find.byType(KunChatComposer)),
+      );
+      expect(min, const Size.square(44));
+      expect(
+        tester.getSize(iconTarget(KunIcons.paperclip)),
+        Size.square(min.width),
+      );
+      await expectLater(tester, meetsGuideline(iOSTapTargetGuideline));
+      handle.dispose();
+      debugDefaultTargetPlatformOverride = null;
+    },
+  );
 }

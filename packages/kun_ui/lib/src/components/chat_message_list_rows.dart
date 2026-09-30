@@ -787,9 +787,11 @@ class _ScrollFab extends StatelessWidget {
     final String label = count > 0
         ? catalog.chat.scrollToBottomUnread(count: count)
         : catalog.chat.scrollToBottom;
+    final Size drawn = Size.square(KunSpacing.unit * 10);
+    final EdgeInsets outset = kunTapTargetOutset(context, drawn);
     return Positioned(
-      right: KunSpacing.unit * 3,
-      bottom: KunSpacing.unit * 3,
+      right: math.max(0, KunSpacing.unit * 3 - outset.right),
+      bottom: math.max(0, KunSpacing.unit * 3 - outset.bottom),
       child: AnimatedBuilder(
         animation: animation,
         builder: (BuildContext context, Widget? child) {
@@ -813,65 +815,67 @@ class _ScrollFab extends StatelessWidget {
           label: label,
           onTap: onPressed,
           excludeSemantics: true,
-          child: MouseRegion(
-            cursor: SystemMouseCursors.click,
-            child: GestureDetector(
-              excludeFromSemantics: true,
-              onTap: onPressed,
-              child: DecoratedBox(
-                key: KunChatMessageList.fabKey,
-                decoration: BoxDecoration(
-                  color: scheme.content1,
-                  shape: BoxShape.circle,
-                  boxShadow: KunShadows.md,
-                ),
-                child: SizedBox(
-                  width: KunSpacing.unit * 10,
-                  height: KunSpacing.unit * 10,
-                  child: Stack(
-                    clipBehavior: Clip.none,
-                    alignment: Alignment.center,
-                    children: <Widget>[
-                      Icon(
-                        KunIcons.chevronDown,
-                        size: KunText.xl.fontSize,
-                        color: scheme.neutral.shade600,
-                      ),
-                      if (count > 0)
-                        Positioned(
-                          top: -KunSpacing.unit * 1.5,
-                          child: DecoratedBox(
-                            decoration: BoxDecoration(
-                              color: scheme.primary.solid,
-                              borderRadius: BorderRadius.circular(
-                                KunRadius.full,
-                              ),
-                            ),
-                            child: Padding(
-                              padding: const EdgeInsets.symmetric(
-                                horizontal: KunSpacing.unit * 1.5,
-                              ),
-                              child: ConstrainedBox(
-                                constraints: const BoxConstraints(
-                                  minWidth: KunSpacing.unit * 5,
+          child: KunTapTarget(
+            child: MouseRegion(
+              cursor: SystemMouseCursors.click,
+              child: GestureDetector(
+                excludeFromSemantics: true,
+                onTap: onPressed,
+                child: DecoratedBox(
+                  key: KunChatMessageList.fabKey,
+                  decoration: BoxDecoration(
+                    color: scheme.content1,
+                    shape: BoxShape.circle,
+                    boxShadow: KunShadows.md,
+                  ),
+                  child: SizedBox(
+                    width: KunSpacing.unit * 10,
+                    height: KunSpacing.unit * 10,
+                    child: Stack(
+                      clipBehavior: Clip.none,
+                      alignment: Alignment.center,
+                      children: <Widget>[
+                        Icon(
+                          KunIcons.chevronDown,
+                          size: KunText.xl.fontSize,
+                          color: scheme.neutral.shade600,
+                        ),
+                        if (count > 0)
+                          Positioned(
+                            top: -KunSpacing.unit * 1.5,
+                            child: DecoratedBox(
+                              decoration: BoxDecoration(
+                                color: scheme.primary.solid,
+                                borderRadius: BorderRadius.circular(
+                                  KunRadius.full,
                                 ),
-                                child: Text(
-                                  count > _kFabBadgeCap ? '999+' : '$count',
-                                  textAlign: TextAlign.center,
-                                  style: KunText.xs.copyWith(
-                                    color: scheme.primary.onSolid,
-                                    fontWeight: KunFontWeights.medium,
-                                    height: 20 / 12,
-                                    fontFeatures: const <FontFeature>[
-                                      FontFeature.tabularFigures(),
-                                    ],
+                              ),
+                              child: Padding(
+                                padding: const EdgeInsets.symmetric(
+                                  horizontal: KunSpacing.unit * 1.5,
+                                ),
+                                child: ConstrainedBox(
+                                  constraints: const BoxConstraints(
+                                    minWidth: KunSpacing.unit * 5,
+                                  ),
+                                  child: Text(
+                                    count > _kFabBadgeCap ? '999+' : '$count',
+                                    textAlign: TextAlign.center,
+                                    style: KunText.xs.copyWith(
+                                      color: scheme.primary.onSolid,
+                                      fontWeight: KunFontWeights.medium,
+                                      height: 20 / 12,
+                                      fontFeatures: const <FontFeature>[
+                                        FontFeature.tabularFigures(),
+                                      ],
+                                    ),
                                   ),
                                 ),
                               ),
                             ),
                           ),
-                        ),
-                    ],
+                      ],
+                    ),
                   ),
                 ),
               ),

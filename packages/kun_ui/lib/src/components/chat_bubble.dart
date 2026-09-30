@@ -1704,11 +1704,15 @@ class _RetryButton extends StatelessWidget {
   Widget build(BuildContext context) {
     return Semantics(
       key: KunChatBubble.retryKey,
+      container: true,
       button: true,
       label: label,
+      onTap: onTap,
+      excludeSemantics: true,
       child: KunTooltip(
         text: label,
         child: GestureDetector(
+          excludeFromSemantics: true,
           onTap: onTap,
           child: DecoratedBox(
             decoration: BoxDecoration(

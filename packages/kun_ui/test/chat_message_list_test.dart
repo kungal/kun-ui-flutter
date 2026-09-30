@@ -4,6 +4,7 @@ import 'package:flutter/services.dart';
 import 'package:flutter/widgets.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:kun_ui/kun_ui.dart';
+import 'package:kun_ui/src/foundation/tap_target.dart';
 
 final List<String> _requestedImages = <String>[];
 
@@ -186,6 +187,7 @@ Widget wrap(
   double height = 400,
   List<String>? navigated,
   KunMessages messages = KunMessages.en,
+  KunTapTargetSize tapTargetSize = KunTapTargetSize.adaptive,
 }) {
   return MediaQuery(
     data: MediaQueryData(
@@ -193,7 +195,7 @@ Widget wrap(
       disableAnimations: reducedMotion,
     ),
     child: KunTheme(
-      data: KunThemeData.light(),
+      data: KunThemeData.light(tapTargetSize: tapTargetSize),
       child: KunMessagesScope(
         messages: messages,
         child: KunUIConfigScope(
@@ -274,6 +276,7 @@ Future<void> pumpList(
   double height = 400,
   Duration groupWindow = const Duration(minutes: 10),
   Widget Function(Widget list)? around,
+  KunTapTargetSize tapTargetSize = KunTapTargetSize.adaptive,
 }) async {
   final Widget Function(Widget list) host = around ?? (Widget list) => list;
   await tester.pumpWidget(
@@ -318,6 +321,7 @@ Future<void> pumpList(
       navigated: navigated,
       reducedMotion: reducedMotion,
       height: height,
+      tapTargetSize: tapTargetSize,
     ),
   );
   await settleList(tester);
@@ -774,7 +778,6 @@ void main() {
     await tester.pumpAndSettle();
     expect(find.byKey(KunChatMessageList.stickyDayKey), findsOneWidget);
     final String scrollLabel = KunMessages.en.chat.scrollToBottom;
-    final Rect fab = tester.getRect(find.byKey(KunChatMessageList.fabKey));
     final List<SemanticsData> carrying = <SemanticsData>[];
     void walk(SemanticsNode node) {
       final SemanticsData data = node.getSemanticsData();
@@ -791,8 +794,17 @@ void main() {
     expect(carrying, hasLength(1));
     expect(carrying.single.label, scrollLabel);
     expect(carrying.single.hasAction(SemanticsAction.tap), isTrue);
-    expect(carrying.single.rect.width, lessThanOrEqualTo(fab.width + 1));
-    expect(carrying.single.rect.height, lessThanOrEqualTo(fab.height + 1));
+    final Rect paddedFab = tester.getRect(
+      find.ancestor(
+        of: find.byKey(KunChatMessageList.fabKey),
+        matching: find.byType(KunTapTarget),
+      ),
+    );
+    expect(carrying.single.rect.width, lessThanOrEqualTo(paddedFab.width + 1));
+    expect(
+      carrying.single.rect.height,
+      lessThanOrEqualTo(paddedFab.height + 1),
+    );
     handle.dispose();
   });
 
@@ -1899,4 +1911,61 @@ void main() {
     expect(menuPanel, findsOneWidget);
     handle.dispose();
   });
+
+  testWidgets(
+    'padded scroll-to-bottom meets the minimum and keeps the drawn button',
+    (WidgetTester tester) async {
+      final SemanticsHandle handle = tester.ensureSemantics();
+      final List<KunChatMessage> messages = thread(20);
+
+      await pumpList(
+        tester,
+        messages: messages,
+        height: 300,
+        tapTargetSize: KunTapTargetSize.shrinkWrap,
+      );
+      scrollOf(tester).position.jumpTo(180);
+      await tester.pump();
+      await tester.pump(KunDurations.base);
+      await tester.pump();
+      final Rect compactDrawn =
+          tester.getRect(find.byKey(KunChatMessageList.fabKey));
+
+      int taps = 0;
+      await pumpList(
+        tester,
+        messages: messages,
+        height: 300,
+        hasNewer: true,
+        tapTargetSize: KunTapTargetSize.padded,
+        onLatest: () => taps++,
+      );
+      scrollOf(tester).position.jumpTo(180);
+      await tester.pump();
+      await tester.pump(KunDurations.base);
+      await tester.pump();
+      final Size min = kunMinTapTargetSize(
+        tester.element(find.byType(KunChatMessageList)),
+      );
+      final Finder target = find.ancestor(
+        of: find.byKey(KunChatMessageList.fabKey),
+        matching: find.byType(KunTapTarget),
+      );
+      final Rect drawn = tester.getRect(find.byKey(KunChatMessageList.fabKey));
+      expect(drawn.size, Size.square(KunSpacing.unit * 10));
+      expect(drawn.size, compactDrawn.size);
+      expect(drawn.bottomRight, compactDrawn.bottomRight);
+      expect(tester.getSize(target).width, greaterThanOrEqualTo(min.width));
+      expect(tester.getSize(target).height, greaterThanOrEqualTo(min.height));
+      expect(
+        tester.getCenter(find.byKey(KunChatMessageList.fabKey)),
+        tester.getCenter(target),
+      );
+
+      await tester.tapAt(Offset(drawn.right + 3, drawn.center.dy));
+      await tester.pump();
+      expect(taps, 1);
+      handle.dispose();
+    },
+  );
 }

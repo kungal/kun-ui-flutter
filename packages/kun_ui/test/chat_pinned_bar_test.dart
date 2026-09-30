@@ -3,11 +3,13 @@ import 'package:flutter/rendering.dart';
 import 'package:flutter/widgets.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:kun_ui/kun_ui.dart';
+import 'package:kun_ui/src/foundation/tap_target.dart';
 
 Widget wrap(
   Widget child, {
   Size size = const Size(480, 800),
   KunUIConfig? config,
+  KunTapTargetSize tapTargetSize = KunTapTargetSize.adaptive,
 }) {
   return MediaQuery(
     data: MediaQueryData(size: size),
@@ -16,7 +18,7 @@ Widget wrap(
       child: KunUIConfigScope(
         config: config ?? const KunUIConfig(),
         child: KunTheme(
-          data: KunThemeData.light(),
+          data: KunThemeData.light(tapTargetSize: tapTargetSize),
           child: Directionality(
             textDirection: TextDirection.ltr,
             child: Center(child: SizedBox(width: 480, child: child)),
@@ -370,5 +372,120 @@ void main() {
       isEmpty,
     );
     handle.dispose();
+  });
+
+  Finder unpinDrawn() => find
+      .ancestor(
+        of: find.byIcon(KunIcons.x),
+        matching: find.byType(AnimatedContainer),
+      )
+      .first;
+
+  Finder unpinTarget() => find
+      .ancestor(
+        of: find.byIcon(KunIcons.x),
+        matching: find.byType(KunTapTarget),
+      )
+      .first;
+
+  testWidgets(
+    'padded unpin and jump meet the minimum and the bar keeps its height',
+    (WidgetTester tester) async {
+      final SemanticsHandle handle = tester.ensureSemantics();
+      final List<int> unpins = <int>[];
+      final List<int> jumps = <int>[];
+      await tester.pumpWidget(
+        wrap(
+          KunChatPinnedBar(
+            messages: <KunChatMessage>[message(seq: 7, text: 'pin')],
+            unpinnable: true,
+            onUnpin: unpins.add,
+            onJump: jumps.add,
+          ),
+          tapTargetSize: KunTapTargetSize.padded,
+        ),
+      );
+      final Size min = kunMinTapTargetSize(
+        tester.element(find.byType(KunChatPinnedBar)),
+      );
+      expect(
+        tester.getSize(find.byType(KunChatPinnedBar)).height,
+        KunSpacing.unit * 12,
+      );
+      expect(tester.getSize(unpinDrawn()), Size.square(KunSpacing.unit * 9));
+      expect(
+        tester.getSize(unpinTarget()).width,
+        greaterThanOrEqualTo(min.width),
+      );
+      expect(
+        tester.getSize(unpinTarget()).height,
+        greaterThanOrEqualTo(min.height),
+      );
+      expect(tester.getCenter(unpinDrawn()), tester.getCenter(unpinTarget()));
+
+      final Size jumpNode = tester
+          .getSemantics(
+            find.bySemanticsLabel(
+              '${KunMessages.en.chatPinned.label}, pin',
+            ),
+          )
+          .rect
+          .size;
+      expect(jumpNode.height, greaterThanOrEqualTo(min.height));
+
+      final Rect drawn = tester.getRect(unpinDrawn());
+      await tester.tapAt(Offset(drawn.center.dx, drawn.top - 3));
+      await tester.pump();
+      expect(unpins, <int>[7]);
+
+      await expectLater(tester, meetsGuideline(androidTapTargetGuideline));
+      handle.dispose();
+    },
+  );
+
+  testWidgets(
+    'shrinkWrap keeps the pinned bar at the web size',
+    (WidgetTester tester) async {
+      await tester.pumpWidget(
+        wrap(
+          KunChatPinnedBar(
+            messages: <KunChatMessage>[message(seq: 7, text: 'pin')],
+            unpinnable: true,
+          ),
+          tapTargetSize: KunTapTargetSize.shrinkWrap,
+        ),
+      );
+      expect(
+        tester.getSize(find.byType(KunChatPinnedBar)).height,
+        KunSpacing.unit * 12,
+      );
+      expect(tester.getSize(unpinDrawn()), Size.square(KunSpacing.unit * 9));
+      expect(tester.getSize(unpinTarget()), Size.square(KunSpacing.unit * 9));
+    },
+  );
+
+  testWidgets('padded unpin meets the iOS guideline',
+      (WidgetTester tester) async {
+    debugDefaultTargetPlatformOverride = TargetPlatform.iOS;
+    final SemanticsHandle handle = tester.ensureSemantics();
+    await tester.pumpWidget(
+      wrap(
+        KunChatPinnedBar(
+          messages: <KunChatMessage>[message(seq: 7, text: 'pin')],
+          unpinnable: true,
+        ),
+        tapTargetSize: KunTapTargetSize.padded,
+      ),
+    );
+    expect(
+      tester.getSize(unpinTarget()).height,
+      greaterThanOrEqualTo(
+        kunMinTapTargetSize(tester.element(find.byType(KunChatPinnedBar)))
+            .height,
+      ),
+    );
+    await expectLater(tester, meetsGuideline(iOSTapTargetGuideline));
+    handle.dispose();
+    debugDefaultTargetPlatformOverride = null;
   });
 }

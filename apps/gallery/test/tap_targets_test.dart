@@ -10,14 +10,6 @@ import 'package:kun_ui_gallery/src/registry.g.dart';
 const Set<String> pending = <String>{
   'kunautocomplete',
   'kunbadge',
-  'kunchatbubble',
-  'kunchatcomposer',
-  'kunchatheader',
-  'kunchatlayout',
-  'kunchatmessagelist',
-  'kunchatpinnedbar',
-  'kunchatreactionpicker',
-  'kunchattext',
   'kuncheckbox',
   'kuncheckboxgroup',
   'kunchip',
@@ -33,7 +25,19 @@ const Set<String> pending = <String>{
 };
 
 /// Demos that stay below the minimum by decision, with the reason.
-const Map<String, String> exempt = <String, String>{};
+const Map<String, String> exempt = <String, String>{
+  'kunchatbubble/reply': 'reply quote inside the bubble',
+  'kunchatbubble/status': 'retry button inside the bubble',
+  'kunchatbubble/reactions': 'reaction chips inside the bubble',
+  'kunchatbubble/many': 'reaction chips inside the bubble',
+  'kunchatmessagelist/group':
+      'message row, avatar, sender name, reaction chip and retry nodes',
+  'kunchatmessagelist/paging': 'reply quote and reaction chip in a message',
+  'kunchatmessagelist/thousands': 'reaction chip in a message',
+  'kunchatreactionpicker/basic': 'reaction picker items (popup content)',
+  'kunchattext/basic': 'code-block copy button in chat text',
+  'kunchattext/spoiler': 'spoiler in chat text',
+};
 
 void main() {
   for (final GalleryComponent component in galleryComponents) {

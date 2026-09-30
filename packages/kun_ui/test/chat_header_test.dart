@@ -1,15 +1,21 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter/rendering.dart';
 import 'package:flutter/widgets.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:kun_ui/kun_ui.dart';
+import 'package:kun_ui/src/foundation/tap_target.dart';
 
-Widget wrap(Widget child, {Size size = const Size(480, 800)}) {
+Widget wrap(
+  Widget child, {
+  Size size = const Size(480, 800),
+  KunTapTargetSize tapTargetSize = KunTapTargetSize.adaptive,
+}) {
   return MediaQuery(
     data: MediaQueryData(size: size),
     child: KunMessagesScope(
       messages: KunMessages.en,
       child: KunTheme(
-        data: KunThemeData.light(),
+        data: KunThemeData.light(tapTargetSize: tapTargetSize),
         child: Directionality(
           textDirection: TextDirection.ltr,
           child: Center(
@@ -242,5 +248,115 @@ void main() {
       isEmpty,
     );
     handle.dispose();
+  });
+
+  Finder backDrawn() => find
+      .ancestor(
+        of: find.byIcon(KunIcons.arrowLeft),
+        matching: find.byType(AnimatedContainer),
+      )
+      .first;
+
+  Finder backTarget() => find
+      .ancestor(
+        of: find.byIcon(KunIcons.arrowLeft),
+        matching: find.byType(KunTapTarget),
+      )
+      .first;
+
+  testWidgets(
+    'padded back and title meet the minimum and the bar keeps its height',
+    (WidgetTester tester) async {
+      final SemanticsHandle handle = tester.ensureSemantics();
+      var backs = 0;
+      var titles = 0;
+      await tester.pumpWidget(
+        wrap(
+          KunChatHeader(
+            user: haru,
+            back: KunChatHeaderBack.always,
+            onBack: () => backs += 1,
+            onTitleTap: () => titles += 1,
+          ),
+          tapTargetSize: KunTapTargetSize.padded,
+        ),
+      );
+      final Size min = kunMinTapTargetSize(
+        tester.element(find.byType(KunChatHeader)),
+      );
+      expect(
+        tester.getSize(find.byType(KunChatHeader)).height,
+        KunSpacing.unit * 14,
+      );
+      expect(tester.getSize(backDrawn()), Size.square(KunSpacing.unit * 10));
+      expect(
+          tester.getSize(backTarget()).width, greaterThanOrEqualTo(min.width));
+      expect(
+        tester.getSize(backTarget()).height,
+        greaterThanOrEqualTo(min.height),
+      );
+      expect(tester.getCenter(backDrawn()), tester.getCenter(backTarget()));
+
+      final Size titleNode =
+          tester.getSemantics(find.bySemanticsLabel('Haru')).rect.size;
+      expect(titleNode.height, greaterThanOrEqualTo(min.height));
+      expect(titleNode.height, KunSpacing.unit * 14);
+
+      final Rect drawn = tester.getRect(backDrawn());
+      await tester.tapAt(Offset(drawn.center.dx, drawn.top - 3));
+      await tester.pump();
+      expect(backs, 1);
+
+      await tester.tapAt(
+        Offset(
+          tester.getRect(find.byType(KunChatHeader)).center.dx,
+          tester.getRect(find.byType(KunChatHeader)).top + 2,
+        ),
+      );
+      await tester.pump();
+      expect(titles, 1);
+
+      await expectLater(tester, meetsGuideline(androidTapTargetGuideline));
+      handle.dispose();
+    },
+  );
+
+  testWidgets(
+    'shrinkWrap keeps the header at the web size',
+    (WidgetTester tester) async {
+      await tester.pumpWidget(
+        wrap(
+          const KunChatHeader(user: haru, back: KunChatHeaderBack.always),
+          tapTargetSize: KunTapTargetSize.shrinkWrap,
+        ),
+      );
+      expect(
+        tester.getSize(find.byType(KunChatHeader)).height,
+        KunSpacing.unit * 14,
+      );
+      expect(tester.getSize(backDrawn()), Size.square(KunSpacing.unit * 10));
+      expect(tester.getSize(backTarget()), Size.square(KunSpacing.unit * 10));
+    },
+  );
+
+  testWidgets('padded back meets the iOS guideline',
+      (WidgetTester tester) async {
+    debugDefaultTargetPlatformOverride = TargetPlatform.iOS;
+    final SemanticsHandle handle = tester.ensureSemantics();
+    await tester.pumpWidget(
+      wrap(
+        const KunChatHeader(user: haru, back: KunChatHeaderBack.always),
+        tapTargetSize: KunTapTargetSize.padded,
+      ),
+    );
+    expect(
+      tester.getSize(backTarget()),
+      Size.square(
+          kunMinTapTargetSize(tester.element(find.byType(KunChatHeader)))
+              .width),
+    );
+    await expectLater(tester, meetsGuideline(iOSTapTargetGuideline));
+    handle.dispose();
+    debugDefaultTargetPlatformOverride = null;
   });
 }
