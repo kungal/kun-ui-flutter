@@ -989,9 +989,23 @@ guidance by default on touch platforms.
 - **What stays at the web's density, by decision.** Message rows and
   everything inside a message: avatars, sender names, reply quotes,
   spoilers, link previews, the code block's copy button, reaction chips and
-  the bubble's retry button. Padding them would change every bubble. Popup
-  content (select and dropdown rows, date cells, the reaction picker) and
-  the composer attachment's 20px remove button are deferred, not decided.
+  the bubble's retry button. Padding them would change every bubble. Date
+  cells, the reaction picker and the composer attachment's 20px remove
+  button are deferred, not decided.
+- **A popup row grows itself (decided 2026-09-30).** The kungal app opens
+  its ⋯ menus, long-press menus and filter selects on phones, where 32dp
+  menu rows and 36dp select options made a finger land on the neighbouring
+  row.
+  - A row of `KunDropdown`, `KunContextMenu` (submenus included),
+    `KunChatMessageMenu`, `KunSelect`'s popup and `KunCommandPalette` takes
+    the theme's minimum as its minimum height. Its content is centred, and
+    its hover, focus and active fill covers the whole row.
+  - This is the one place the drawn size grows instead of the layout box.
+    Rows stack with no margin between them, so a `KunTapTarget` around each
+    32dp row would leave 16dp between fills, with the panel growing by the
+    same height either way. Material draws its menu rows 48 tall on touch
+    density too.
+  - Desktop and `shrinkWrap` keep the web's rows.
 - **The gallery gate enforces it.** `apps/gallery/test/tap_targets_test.dart`
   renders every demo on Android and iOS and requires the platform's
   guideline, except for the demos in its `exempt` map, each with its reason.

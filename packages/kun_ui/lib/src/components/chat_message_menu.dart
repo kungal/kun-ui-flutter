@@ -14,6 +14,7 @@ import '../foundation/anchored.dart';
 import '../foundation/design.dart';
 import '../foundation/dismiss_layers.dart';
 import '../foundation/motion.dart';
+import '../foundation/tap_target.dart';
 import '../foundation/variant_style.dart';
 import '../locale/messages.dart';
 import '../theme/theme.dart';
@@ -1036,6 +1037,9 @@ class _KunChatMessageMenuRowState extends State<_KunChatMessageMenuRow> {
     final bool lit = !item.disabled && (_hovered || widget.focusNode.hasFocus);
 
     final Widget row = Container(
+      constraints: BoxConstraints(
+        minHeight: kunMinTapTargetSize(context).height,
+      ),
       decoration: BoxDecoration(
         color: lit ? style.hoverOverlay : null,
         borderRadius: BorderRadius.circular(KunRadius.md),

@@ -185,7 +185,10 @@ class _KunSelectOptionRow<T, O extends KunSelectOption<T>>
           overflow: TextOverflow.ellipsis,
         );
 
-    Widget row = Padding(
+    Widget row = Container(
+      constraints: BoxConstraints(
+        minHeight: kunMinTapTargetSize(context).height,
+      ),
       padding: const EdgeInsets.symmetric(
         horizontal: KunSpacing.unit * 3,
         vertical: KunSpacing.unit * 2,

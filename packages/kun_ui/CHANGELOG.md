@@ -1,5 +1,44 @@
 # Changelog
 
+## 0.22.0
+
+- **`KunCommandPalette`**, ported from the web: the ⌘K launcher. It owns
+  the dialog, the query field, keyboard navigation, grouped rows, match
+  highlighting and accessibility. The search is the app's job.
+  - `items` is the results, as `KunCommandGroup`s of `KunCommandItem`s.
+    Compute them from `query` / `onQueryChanged`. `open` /
+    `onOpenChanged` is controlled too.
+  - `KunCommandShortcut.modK` (the default) opens and closes it with ⌘K
+    on Apple and Ctrl+K elsewhere, while its route is current.
+    `KunCommandShortcut.key('p')` binds another letter, and `none` binds
+    nothing.
+  - ↑ and ↓ skip disabled rows, and Enter fires `onSelected`. With nothing
+    to choose, Enter calls `onSubmitted` with the trimmed query. Neither
+    fires while an IME is composing. Esc closes it.
+  - A row with `href` goes to `KunUIConfig.navigate`, as a `KunDropdown`
+    href row does, and `onSelected` still fires.
+  - It draws its own overlay rather than a `KunModal`. The web panel is
+    576 wide and sits 12% down the screen, and `KunModal` has neither the
+    size nor the placement.
+- **Popup rows are 48dp tall on phones** (44pt on iOS). This covers
+  `KunDropdown` and `KunContextMenu` rows (submenus included),
+  `KunChatMessageMenu` actions, `KunSelect` options and
+  `KunCommandPalette` results.
+  - A 32dp menu row or a 36dp option made a finger land on the
+    neighbouring row. The kungal app asked for the change.
+  - The row itself grows, and its hover and highlight fill covers all of
+    it. A padded margin around a 32dp row would leave gaps between the
+    fills.
+  - It follows `KunThemeData.tapTargetSize`, like every other touch
+    target. Desktop and `shrinkWrap` keep the web's rows.
+- **`KunPagination`'s number row moves as the web's does.**
+  - Numbers slide to their new slots (150ms).
+  - A number leaving the window fades out where it stood (120ms), under
+    the numbers crossing it. An entering one fades in (150ms).
+  - When the window follows the highlight, the highlight rides with the
+    current page's number instead of catching up a frame late.
+  - Reduced motion jumps.
+
 ## 0.21.0
 
 Built on kun-ui 2.56.1 (from 2.53.0). The generated packages now require

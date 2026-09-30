@@ -14,6 +14,7 @@ import '../foundation/design.dart';
 import '../foundation/dismiss_layers.dart';
 import '../foundation/motion.dart';
 import '../foundation/shortcut.dart';
+import '../foundation/tap_target.dart';
 import '../foundation/text_selection.dart';
 import '../locale/messages.dart';
 import '../theme/theme.dart';
@@ -1375,6 +1376,10 @@ class _KunCommandPaletteRow extends StatelessWidget {
             child: AnimatedContainer(
               duration: kunMotion(context, KunDefaultTransition.duration),
               curve: KunDefaultTransition.curve,
+              constraints: BoxConstraints(
+                minHeight: kunMinTapTargetSize(context).height,
+              ),
+              alignment: AlignmentDirectional.centerStart,
               decoration: BoxDecoration(
                 color: fill,
                 borderRadius: BorderRadius.circular(KunRadius.md),

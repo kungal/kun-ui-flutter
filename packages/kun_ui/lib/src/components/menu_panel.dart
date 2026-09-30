@@ -11,6 +11,7 @@ import '../foundation/anchored.dart';
 import '../foundation/design.dart';
 import '../foundation/motion.dart';
 import '../foundation/pointer_menu.dart';
+import '../foundation/tap_target.dart';
 import '../foundation/variant_style.dart';
 import '../locale/messages.dart';
 import '../theme/theme.dart';
@@ -721,6 +722,9 @@ class _KunMenuRowState extends State<KunMenuRow> {
         : kunSpeakShortcut(shortcut, KunMessagesScope.of(context));
 
     final Widget row = Container(
+      constraints: BoxConstraints(
+        minHeight: kunMinTapTargetSize(context).height,
+      ),
       decoration: BoxDecoration(
         color: lit ? style.hoverOverlay : null,
         borderRadius: BorderRadius.circular(KunRadius.md),
