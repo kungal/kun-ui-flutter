@@ -50,6 +50,7 @@ import 'demos/refresh_indicator.dart';
 import 'demos/scaffold.dart';
 import 'demos/scroll_shadow.dart';
 import 'demos/select.dart';
+import 'demos/selection_area.dart';
 import 'demos/skeleton.dart';
 import 'demos/spinner.dart';
 import 'demos/split_pane.dart';
@@ -787,6 +788,14 @@ const List<GalleryComponent> galleryComponents = <GalleryComponent>[
       GalleryDemo(slug: 'sizes', title: 'Sizes', builder: selectSizes),
       GalleryDemo(
           slug: 'contract', title: 'Contract', builder: kunSelectContract),
+    ],
+  ),
+  GalleryComponent(
+    slug: 'kunselectionarea',
+    name: 'KunSelectionArea',
+    demos: <GalleryDemo>[
+      GalleryDemo(
+          slug: 'basic', title: 'Selectable text', builder: selectionAreaBasic),
     ],
   ),
   GalleryComponent(
