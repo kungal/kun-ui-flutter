@@ -1048,6 +1048,54 @@ for that, because the element already is one.
   browser's own menu too unless `BrowserContextMenu.disableContextMenu()`
   is called. That is a global switch, so it is the app's call.
 
+### KunSelectionArea is the browser's text selection (decided 2026-09-30)
+
+The kungal app's post bodies, replies, comments and profile text could not
+be selected, where a browser selects and copies any text. Flutter's
+`SelectionArea` is Material, so `KunSelectionArea` is its widgets-layer
+counterpart. Like `KunPressable`, it translates what the browser gives, so
+upstream has nothing to decide, and it is not claimed in the manifest.
+
+- **The look is the text fields' one.** It builds a `SelectableRegion` with
+  `KunTextSelectionControls` and `kunSelectableRegionContextMenu`. That
+  menu shares its rows, panel and theme capture with the field menu from
+  "Touch selection is KunUI-drawn". The highlight is the field's 20%
+  primary.
+- **A right-click off the selection belongs to the app.** The kungal app
+  opens the same object menu from a right-click as from its ⋯ button.
+  Gestures do not bubble in Flutter: the region's recognizer beats an
+  enclosing `KunPressable`, for right-clicks and for plain taps alike. So
+  `onSecondaryTapOutsideSelection` hands a right-click that misses the
+  active selection to the app:
+  - no KunUI menu opens;
+  - nothing stays selected, although iOS and macOS would otherwise select
+    the word;
+  - the call runs in a microtask, outside build.
+  A right-click on the selection keeps the KunUI menu. On a phone a long
+  press selects, so the app's object menu goes through ⋯.
+- **Whether a press lands on the selection comes from a recording
+  registrar.** `SelectableRegion` keeps that check private. A
+  `SelectionRegistrar` under the region records every selectable and
+  forwards each add and remove to the region's own registrar, and the check
+  reads their public `value.selectionRects`.
+  - A nested `SelectionContainer` was tried first, with the static
+    delegate, `SelectionListener`, or a bare
+    `MultiSelectableSelectionContainerDelegate`. Every one of them makes
+    the text fragments register with it instead. `_selectWordAt` then
+    never reaches them, and a long press selected nothing.
+  - `RenderParagraph.selections` gives the geometry but is
+    `@visibleForTesting`, which a published package must not depend on.
+- **The tree does not depend on the callback.** The detector and the
+  registrar are always mounted and steal nothing when the callback is
+  null, so setting it later does not remount the app's text. The
+  `KunChatLayout` back-scope bug was that kind of swap.
+- **Known differences from a browser:**
+  - A `KunButton` inside the area has a selectable label.
+  - `SelectedContent` joins blocks with no separator.
+  - There is no magnifier.
+  - iOS has no system menu for a region, because Flutter's
+    `SystemContextMenu` is field-only.
+
 ### Reduced motion collapses every transition (decided 2026-09-17)
 
 kun-ui's base stylesheet sets every transition and animation to 0.01ms

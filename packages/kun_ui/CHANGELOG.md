@@ -1,5 +1,23 @@
 # Changelog
 
+## 0.24.0
+
+- **`KunSelectionArea`** makes read-only text selectable, as a browser does
+  for any text on the web. The kungal app's post bodies, replies and
+  profiles could not be selected.
+  - On a phone, a long press selects a word and shows KunUI's handles, with
+    Copy and Select all. On a desktop, a drag selects. Ctrl+C / ⌘C copies,
+    and Ctrl+A / ⌘A selects the area's text only.
+  - A right-click on the selection opens KunUI's menu.
+  - `onSecondaryTapOutsideSelection` receives a right-click that misses
+    the selection, with its global position. Open the app's own menu there
+    with a `KunContextMenu`. No KunUI menu opens and nothing stays
+    selected.
+  - An enclosing `KunPressable` never sees taps or right-clicks inside the
+    area, because the region wins the gesture arena. Wrap only the text
+    that should be selectable.
+  - Link spans and buttons inside still work.
+
 ## 0.23.0
 
 - **`KunPressable.link`** makes it the web's `<a>` rather than a
