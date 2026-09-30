@@ -6,6 +6,7 @@ import 'package:kun_ui_tokens/kun_ui_tokens.dart';
 import '../chat/support.dart';
 import '../chat/types.dart';
 import '../foundation/motion.dart';
+import '../foundation/tap_target.dart';
 import '../locale/messages.dart';
 import '../theme/theme.dart';
 import 'chat_bubble.dart';
@@ -410,45 +411,47 @@ class _IconTapState extends State<_IconTap> {
       label: widget.label,
       excludeSemantics: true,
       onTap: widget.onTap,
-      child: FocusableActionDetector(
-        actions: <Type, Action<Intent>>{
-          ActivateIntent: CallbackAction<ActivateIntent>(
-            onInvoke: (_) {
-              widget.onTap();
-              return null;
-            },
-          ),
-          ButtonActivateIntent: CallbackAction<ButtonActivateIntent>(
-            onInvoke: (_) {
-              widget.onTap();
-              return null;
-            },
-          ),
-        },
-        child: MouseRegion(
-          cursor: SystemMouseCursors.click,
-          onEnter: (_) => setState(() => _hovered = true),
-          onExit: (_) => setState(() => _hovered = false),
-          child: GestureDetector(
-            behavior: HitTestBehavior.opaque,
-            excludeFromSemantics: true,
-            onTap: widget.onTap,
-            child: AnimatedContainer(
-              duration: kunMotion(context, KunDurations.base),
-              curve: KunEasing.enter,
-              width: widget.size,
-              height: widget.size,
-              decoration: BoxDecoration(
-                color: _hovered
-                    ? widget.hoverFill
-                    : widget.hoverFill.withValues(alpha: 0),
-                shape: BoxShape.circle,
-              ),
-              alignment: Alignment.center,
-              child: Icon(
-                widget.icon,
-                size: widget.iconSize,
-                color: _hovered ? widget.hoverColor : widget.color,
+      child: KunTapTarget(
+        child: FocusableActionDetector(
+          actions: <Type, Action<Intent>>{
+            ActivateIntent: CallbackAction<ActivateIntent>(
+              onInvoke: (_) {
+                widget.onTap();
+                return null;
+              },
+            ),
+            ButtonActivateIntent: CallbackAction<ButtonActivateIntent>(
+              onInvoke: (_) {
+                widget.onTap();
+                return null;
+              },
+            ),
+          },
+          child: MouseRegion(
+            cursor: SystemMouseCursors.click,
+            onEnter: (_) => setState(() => _hovered = true),
+            onExit: (_) => setState(() => _hovered = false),
+            child: GestureDetector(
+              behavior: HitTestBehavior.opaque,
+              excludeFromSemantics: true,
+              onTap: widget.onTap,
+              child: AnimatedContainer(
+                duration: kunMotion(context, KunDurations.base),
+                curve: KunEasing.enter,
+                width: widget.size,
+                height: widget.size,
+                decoration: BoxDecoration(
+                  color: _hovered
+                      ? widget.hoverFill
+                      : widget.hoverFill.withValues(alpha: 0),
+                  shape: BoxShape.circle,
+                ),
+                alignment: Alignment.center,
+                child: Icon(
+                  widget.icon,
+                  size: widget.iconSize,
+                  color: _hovered ? widget.hoverColor : widget.color,
+                ),
               ),
             ),
           ),

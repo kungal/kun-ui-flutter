@@ -166,11 +166,12 @@ Widget wrap(
   KunMessages messages = KunMessages.en,
   Size size = const Size(800, 800),
   double width = 400,
+  KunTapTargetSize tapTargetSize = KunTapTargetSize.adaptive,
 }) {
   return MediaQuery(
     data: MediaQueryData(size: size),
     child: KunTheme(
-      data: KunThemeData.light(),
+      data: KunThemeData.light(tapTargetSize: tapTargetSize),
       child: KunMessagesScope(
         messages: messages,
         child: KunUIConfigScope(
@@ -1483,6 +1484,77 @@ void main() {
     expect(textNode, isNotNull);
     expect(linkNode, isNotNull);
     expect(linkNode!.getSemanticsData().hasAction(SemanticsAction.tap), isTrue);
+    handle.dispose();
+  });
+
+  testWidgets('retry is one labelled actionable node and keeps its size', (
+    WidgetTester tester,
+  ) async {
+    final SemanticsHandle handle = tester.ensureSemantics();
+    int retries = 0;
+    await tester.pumpWidget(
+      wrap(
+        KunChatBubble(
+          message: _msg(senderId: '1001'),
+          users: _users,
+          own: true,
+          status: KunChatSendStatus.failed,
+          onRetry: () => retries++,
+        ),
+        width: 400,
+        tapTargetSize: KunTapTargetSize.padded,
+      ),
+    );
+    final String label = KunMessages.en.chatStatus.failed;
+    final List<SemanticsNode> retryNodes = <SemanticsNode>[];
+    void walk(SemanticsNode node) {
+      final SemanticsData data = node.getSemanticsData();
+      final bool actionable = data.hasAction(SemanticsAction.tap) ||
+          data.hasAction(SemanticsAction.longPress);
+      if (data.label == label || (actionable && data.label.contains(label))) {
+        retryNodes.add(node);
+      }
+      node.visitChildren((SemanticsNode child) {
+        walk(child);
+        return true;
+      });
+    }
+
+    walk(tester.getSemantics(find.byType(KunChatBubble)));
+    final List<SemanticsNode> actionable = retryNodes
+        .where(
+          (SemanticsNode n) =>
+              n.getSemanticsData().hasAction(SemanticsAction.tap),
+        )
+        .toList();
+    expect(actionable, hasLength(1));
+    expect(actionable.single.getSemanticsData().label, label);
+    expect(
+      actionable.single.getSemanticsData().flagsCollection.isButton,
+      isTrue,
+    );
+    expect(
+      tester.getSize(find.byKey(KunChatBubble.retryKey)),
+      Size.square(KunSpacing.unit * 6),
+    );
+
+    await tester.pumpWidget(
+      wrap(
+        KunChatBubble(
+          message: _msg(senderId: '1001'),
+          users: _users,
+          own: true,
+          status: KunChatSendStatus.failed,
+          onRetry: () => retries++,
+        ),
+        width: 400,
+        tapTargetSize: KunTapTargetSize.shrinkWrap,
+      ),
+    );
+    expect(
+      tester.getSize(find.byKey(KunChatBubble.retryKey)),
+      Size.square(KunSpacing.unit * 6),
+    );
     handle.dispose();
   });
 }

@@ -10,6 +10,7 @@ import '../chat/constants.dart';
 import '../chat/support.dart';
 import '../chat/types.dart';
 import '../foundation/motion.dart';
+import '../foundation/tap_target.dart';
 import '../locale/messages.dart';
 import '../theme/theme.dart';
 import 'avatar.dart';
@@ -258,45 +259,49 @@ class _KunChatHeaderState extends State<KunChatHeader> {
                     onTap: () => widget.onBack?.call(),
                   ),
                 Expanded(
-                  child: _TitleButton(
-                    label: name,
-                    onTap: () => widget.onTitleTap?.call(),
-                    child: Padding(
-                      padding: const EdgeInsets.symmetric(
-                        horizontal: KunSpacing.unit,
-                        vertical: KunSpacing.unit,
-                      ),
-                      child: Row(
-                        children: <Widget>[
-                          ExcludeSemantics(
-                            child: KunAvatar(
-                              user: avatarUser,
-                              size: KunAvatarSize.lg,
-                              isNavigation: false,
+                  child: SizedBox(
+                    height: double.infinity,
+                    child: _TitleButton(
+                      label: name,
+                      onTap: () => widget.onTitleTap?.call(),
+                      child: Padding(
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: KunSpacing.unit,
+                          vertical: KunSpacing.unit,
+                        ),
+                        child: Row(
+                          children: <Widget>[
+                            ExcludeSemantics(
+                              child: KunAvatar(
+                                user: avatarUser,
+                                size: KunAvatarSize.lg,
+                                isNavigation: false,
+                              ),
                             ),
-                          ),
-                          const SizedBox(width: KunSpacing.unit * 3),
-                          Expanded(
-                            child: Column(
-                              mainAxisAlignment: MainAxisAlignment.center,
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: <Widget>[
-                                Text(
-                                  name,
-                                  maxLines: 1,
-                                  overflow: TextOverflow.ellipsis,
-                                  style: TextStyle(
-                                    fontWeight: KunFontWeights.semibold,
-                                    height: 20 / (KunText.base.fontSize ?? 16),
-                                    leadingDistribution:
-                                        TextLeadingDistribution.even,
+                            const SizedBox(width: KunSpacing.unit * 3),
+                            Expanded(
+                              child: Column(
+                                mainAxisAlignment: MainAxisAlignment.center,
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: <Widget>[
+                                  Text(
+                                    name,
+                                    maxLines: 1,
+                                    overflow: TextOverflow.ellipsis,
+                                    style: TextStyle(
+                                      fontWeight: KunFontWeights.semibold,
+                                      height:
+                                          20 / (KunText.base.fontSize ?? 16),
+                                      leadingDistribution:
+                                          TextLeadingDistribution.even,
+                                    ),
                                   ),
-                                ),
-                                second,
-                              ],
+                                  second,
+                                ],
+                              ),
                             ),
-                          ),
-                        ],
+                          ],
+                        ),
                       ),
                     ),
                   ),
@@ -339,40 +344,42 @@ class _BackButton extends StatelessWidget {
       label: label,
       excludeSemantics: true,
       onTap: onTap,
-      child: FocusableActionDetector(
-        actions: <Type, Action<Intent>>{
-          ActivateIntent: CallbackAction<ActivateIntent>(
-            onInvoke: (_) {
-              onTap();
-              return null;
-            },
-          ),
-          ButtonActivateIntent: CallbackAction<ButtonActivateIntent>(
-            onInvoke: (_) {
-              onTap();
-              return null;
-            },
-          ),
-        },
-        child: MouseRegion(
-          cursor: SystemMouseCursors.click,
-          onEnter: (_) => onHover(true),
-          onExit: (_) => onHover(false),
-          child: GestureDetector(
-            behavior: HitTestBehavior.opaque,
-            excludeFromSemantics: true,
-            onTap: onTap,
-            child: AnimatedContainer(
-              duration: kunMotion(context, KunDurations.base),
-              curve: KunEasing.enter,
-              width: _kBackSize,
-              height: _kBackSize,
-              decoration: BoxDecoration(color: fill, shape: BoxShape.circle),
-              alignment: Alignment.center,
-              child: Icon(
-                KunIcons.arrowLeft,
-                size: KunText.xl.fontSize,
-                color: color,
+      child: KunTapTarget(
+        child: FocusableActionDetector(
+          actions: <Type, Action<Intent>>{
+            ActivateIntent: CallbackAction<ActivateIntent>(
+              onInvoke: (_) {
+                onTap();
+                return null;
+              },
+            ),
+            ButtonActivateIntent: CallbackAction<ButtonActivateIntent>(
+              onInvoke: (_) {
+                onTap();
+                return null;
+              },
+            ),
+          },
+          child: MouseRegion(
+            cursor: SystemMouseCursors.click,
+            onEnter: (_) => onHover(true),
+            onExit: (_) => onHover(false),
+            child: GestureDetector(
+              behavior: HitTestBehavior.opaque,
+              excludeFromSemantics: true,
+              onTap: onTap,
+              child: AnimatedContainer(
+                duration: kunMotion(context, KunDurations.base),
+                curve: KunEasing.enter,
+                width: _kBackSize,
+                height: _kBackSize,
+                decoration: BoxDecoration(color: fill, shape: BoxShape.circle),
+                alignment: Alignment.center,
+                child: Icon(
+                  KunIcons.arrowLeft,
+                  size: KunText.xl.fontSize,
+                  color: color,
+                ),
               ),
             ),
           ),

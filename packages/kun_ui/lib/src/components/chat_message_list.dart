@@ -15,6 +15,7 @@ import '../chat/support.dart';
 import '../chat/types.dart';
 import '../config/config.dart';
 import '../foundation/motion.dart';
+import '../foundation/tap_target.dart';
 import '../locale/messages.dart';
 import '../theme/theme.dart';
 import 'avatar.dart';

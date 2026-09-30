@@ -12,6 +12,7 @@ import '../chat/markdown.dart';
 import '../chat/support.dart';
 import '../chat/types.dart';
 import '../foundation/motion.dart';
+import '../foundation/tap_target.dart';
 import '../foundation/text_selection.dart';
 import '../locale/messages.dart';
 import '../theme/theme.dart';
@@ -705,18 +706,22 @@ class _KunChatComposerState extends State<KunChatComposer>
         ],
       );
 
-      input = AnimatedContainer(
-        duration: kunMotion(context, KunDefaultTransition.duration),
-        curve: KunDefaultTransition.curve,
-        padding: const EdgeInsets.symmetric(
-          horizontal: KunSpacing.unit * 3,
-          vertical: KunSpacing.unit * 2,
+      input = KunTapBand(
+        background: AnimatedContainer(
+          duration: kunMotion(context, KunDefaultTransition.duration),
+          curve: KunDefaultTransition.curve,
+          decoration: BoxDecoration(
+            color: fieldFill,
+            borderRadius: BorderRadius.circular(KunRadius.lg),
+          ),
         ),
-        decoration: BoxDecoration(
-          color: fieldFill,
-          borderRadius: BorderRadius.circular(KunRadius.lg),
+        child: Padding(
+          padding: const EdgeInsets.symmetric(
+            horizontal: KunSpacing.unit * 3,
+            vertical: KunSpacing.unit * 2,
+          ),
+          child: input,
         ),
-        child: input,
       );
 
       input = Semantics(
@@ -996,29 +1001,34 @@ class _ComposerIconButtonState extends State<_ComposerIconButton> {
             : (_hovered ? scheme.neutral.solid.withValues(alpha: 0.2) : null);
 
     return Semantics(
+      container: true,
       button: true,
       enabled: widget.enabled,
       label: widget.semanticLabel,
-      child: MouseRegion(
-        cursor: widget.enabled
-            ? SystemMouseCursors.click
-            : SystemMouseCursors.basic,
-        onEnter: (_) => setState(() => _hovered = true),
-        onExit: (_) => setState(() => _hovered = false),
-        child: GestureDetector(
-          behavior: HitTestBehavior.opaque,
-          onTap: widget.enabled ? widget.onPressed : null,
-          child: AnimatedContainer(
-            duration: kunMotion(context, KunDefaultTransition.duration),
-            curve: KunDefaultTransition.curve,
-            width: widget.size,
-            height: widget.size,
-            decoration: BoxDecoration(color: splash, shape: BoxShape.circle),
-            alignment: Alignment.center,
-            child: Icon(
-              widget.icon,
-              size: KunText.xl.fontSize,
-              color: iconColor,
+      onTap: widget.enabled ? widget.onPressed : null,
+      child: KunTapTarget(
+        child: MouseRegion(
+          cursor: widget.enabled
+              ? SystemMouseCursors.click
+              : SystemMouseCursors.basic,
+          onEnter: (_) => setState(() => _hovered = true),
+          onExit: (_) => setState(() => _hovered = false),
+          child: GestureDetector(
+            behavior: HitTestBehavior.opaque,
+            excludeFromSemantics: true,
+            onTap: widget.enabled ? widget.onPressed : null,
+            child: AnimatedContainer(
+              duration: kunMotion(context, KunDefaultTransition.duration),
+              curve: KunDefaultTransition.curve,
+              width: widget.size,
+              height: widget.size,
+              decoration: BoxDecoration(color: splash, shape: BoxShape.circle),
+              alignment: Alignment.center,
+              child: Icon(
+                widget.icon,
+                size: KunText.xl.fontSize,
+                color: iconColor,
+              ),
             ),
           ),
         ),
