@@ -7,68 +7,17 @@ import 'package:kun_ui_tokens/kun_ui_tokens.dart';
 
 import '../config/config.dart';
 import '../foundation/anchored.dart';
-import '../foundation/design.dart';
 import '../foundation/dismiss_layers.dart';
 import '../foundation/motion.dart';
-import '../foundation/variant_style.dart';
 import '../theme/theme.dart';
+import 'menu_panel.dart';
 import 'popover.dart' show KunPopoverPosition;
+
+export 'menu_panel.dart' show KunContextMenuItem, KunDropdownItem;
 
 /// The web's `offset: 6` for a dropdown, tighter than the 8 every other
 /// overlay uses.
 const double _kDropdownOffset = 6;
-
-/// One row of a [KunDropdown]'s menu.
-///
-/// The same model the web shares between its dropdown and its context menu,
-/// with the icon as [IconData] rather than an Iconify name: `kun_ui_icons`
-/// carries only the glyphs the components themselves draw, so a menu's icons
-/// come from the app's own set.
-@immutable
-class KunDropdownItem {
-  /// Creates an item.
-  const KunDropdownItem({
-    required this.key,
-    required this.label,
-    this.icon,
-    this.color = KunUIColor.neutral,
-    this.disabled = false,
-    this.href,
-  });
-
-  /// Identifies the item to the application; never shown.
-  final String key;
-
-  /// The row's text.
-  final String label;
-
-  /// Drawn before [label].
-  final IconData? icon;
-
-  /// Tints the row, through the `light` variant.
-  final KunUIColor color;
-
-  /// Whether the row is inert: it is skipped by the arrow keys and by
-  /// type-ahead, and activating it does nothing.
-  final bool disabled;
-
-  /// Hands this row to [KunUIConfig.navigate] when it is activated, for a
-  /// menu that goes somewhere rather than doing something.
-  final String? href;
-
-  @override
-  bool operator ==(Object other) =>
-      other is KunDropdownItem &&
-      other.key == key &&
-      other.label == label &&
-      other.icon == icon &&
-      other.color == color &&
-      other.disabled == disabled &&
-      other.href == href;
-
-  @override
-  int get hashCode => Object.hash(key, label, icon, color, disabled, href);
-}
 
 /// Opens and closes a [KunDropdown] from outside it, the web's
 /// `defineExpose`.
@@ -255,10 +204,7 @@ class _KunDropdownState extends State<KunDropdown>
     }
   }
 
-  List<int> get _enabled => <int>[
-        for (int i = 0; i < widget.items.length; i++)
-          if (!widget.items[i].disabled) i,
-      ];
+  List<int> get _enabled => kunMenuEnabledIndices(widget.items);
 
   void _open({int? focusIndex}) {
     if (_isOpen || widget.disabled || widget.items.isEmpty || !mounted) {
@@ -322,16 +268,6 @@ class _KunDropdownState extends State<KunDropdown>
     _itemFocus[index].requestFocus();
   }
 
-  void _move(int delta) {
-    final List<int> enabled = _enabled;
-    if (enabled.isEmpty) {
-      return;
-    }
-    final int at = enabled.indexOf(_activeIndex);
-    final int next = (at + delta + enabled.length) % enabled.length;
-    _focusItem(enabled[at == -1 && delta < 0 ? enabled.length - 1 : next]);
-  }
-
   void _typeahead(String character) {
     _typeBuffer += character.toLowerCase();
     _typeTimer?.cancel();
@@ -378,47 +314,19 @@ class _KunDropdownState extends State<KunDropdown>
   }
 
   KeyEventResult _onMenuKey(KeyEvent event) {
-    if (event is! KeyDownEvent) {
-      return KeyEventResult.ignored;
-    }
-    switch (event.logicalKey) {
-      case LogicalKeyboardKey.arrowDown:
-        _move(1);
-        return KeyEventResult.handled;
-      case LogicalKeyboardKey.arrowUp:
-        _move(-1);
-        return KeyEventResult.handled;
-      case LogicalKeyboardKey.home:
-        final List<int> enabled = _enabled;
-        if (enabled.isNotEmpty) {
-          _focusItem(enabled.first);
-        }
-        return KeyEventResult.handled;
-      case LogicalKeyboardKey.end:
-        final List<int> enabled = _enabled;
-        if (enabled.isNotEmpty) {
-          _focusItem(enabled.last);
-        }
-        return KeyEventResult.handled;
-      case LogicalKeyboardKey.enter:
-      case LogicalKeyboardKey.space:
+    return kunMenuKeyEvent(
+      event,
+      enabled: _enabled,
+      activeIndex: _activeIndex,
+      onFocusItem: _focusItem,
+      onClose: () => _close(returnFocus: true),
+      onSelectActive: () {
         if (_activeIndex >= 0) {
           _select(widget.items[_activeIndex]);
         }
-        return KeyEventResult.handled;
-      case LogicalKeyboardKey.escape:
-      case LogicalKeyboardKey.tab:
-        _close(returnFocus: true);
-        return KeyEventResult.handled;
-    }
-    final String? character = event.character;
-    if (character != null &&
-        character.length == 1 &&
-        character.trim().isNotEmpty) {
-      _typeahead(character);
-      return KeyEventResult.handled;
-    }
-    return KeyEventResult.ignored;
+      },
+      onTypeahead: _typeahead,
+    );
   }
 
   void _onResolved(KunAnchorResolution resolution) {
@@ -463,9 +371,10 @@ class _KunDropdownState extends State<KunDropdown>
               crossAxisAlignment: CrossAxisAlignment.stretch,
               children: <Widget>[
                 for (int i = 0; i < widget.items.length; i++)
-                  _KunDropdownRow(
+                  KunMenuRow(
                     key: ValueKey<String>(
-                        'KunDropdown.item.${widget.items[i].key}'),
+                      'KunDropdown.item.${widget.items[i].key}',
+                    ),
                     item: widget.items[i],
                     focusNode: _itemFocus[i],
                     theme: theme,
@@ -575,107 +484,6 @@ class _KunDropdownState extends State<KunDropdown>
                 overlayChildBuilder: _buildOverlay,
                 child: trigger,
               ),
-            ),
-          ),
-        ),
-      ),
-    );
-  }
-}
-
-class _KunDropdownRow extends StatefulWidget {
-  const _KunDropdownRow({
-    required this.item,
-    required this.focusNode,
-    required this.theme,
-    required this.onActivate,
-    required this.onHover,
-    super.key,
-  });
-
-  final KunDropdownItem item;
-  final FocusNode focusNode;
-  final KunThemeData theme;
-  final VoidCallback onActivate;
-  final VoidCallback onHover;
-
-  @override
-  State<_KunDropdownRow> createState() => _KunDropdownRowState();
-}
-
-class _KunDropdownRowState extends State<_KunDropdownRow> {
-  bool _hovered = false;
-
-  @override
-  Widget build(BuildContext context) {
-    final KunDropdownItem item = widget.item;
-    final KunVariantStyle style = KunVariantStyle.resolve(
-      scheme: widget.theme.colors,
-      brightness: widget.theme.brightness,
-      variant: KunUIVariant.light,
-      color: item.color,
-    );
-    // The web's `light` cell defines only `hover:`, so the menu adds a focus
-    // tint of the same 20% — a row reached by the arrow keys has to look
-    // exactly like one reached by the pointer.
-    final bool lit = !item.disabled && (_hovered || widget.focusNode.hasFocus);
-
-    final Widget row = Container(
-      decoration: BoxDecoration(
-        color: lit ? style.hoverOverlay : null,
-        borderRadius: BorderRadius.circular(KunRadius.md),
-      ),
-      padding: const EdgeInsets.symmetric(
-        horizontal: KunSpacing.unit * 3,
-        vertical: KunSpacing.unit * 1.5,
-      ),
-      child: Row(
-        mainAxisSize: MainAxisSize.min,
-        children: <Widget>[
-          if (item.icon != null) ...<Widget>[
-            Icon(item.icon,
-                size: KunText.base.fontSize, color: style.foreground),
-            const SizedBox(width: KunSpacing.unit * 2),
-          ],
-          Flexible(
-            child: Text(
-              item.label,
-              maxLines: 1,
-              overflow: TextOverflow.ellipsis,
-              style: KunText.sm.copyWith(
-                color: style.foreground,
-                fontWeight: KunFontWeights.medium,
-              ),
-            ),
-          ),
-        ],
-      ),
-    );
-
-    return Semantics(
-      role: SemanticsRole.menuItem,
-      label: item.label,
-      enabled: !item.disabled,
-      onTap: item.disabled ? null : widget.onActivate,
-      child: ExcludeSemantics(
-        child: Focus(
-          focusNode: widget.focusNode,
-          canRequestFocus: !item.disabled,
-          skipTraversal: true,
-          onFocusChange: (_) => setState(() {}),
-          child: MouseRegion(
-            cursor: item.disabled
-                ? SystemMouseCursors.basic
-                : SystemMouseCursors.click,
-            onEnter: (_) {
-              setState(() => _hovered = true);
-              widget.onHover();
-            },
-            onExit: (_) => setState(() => _hovered = false),
-            child: GestureDetector(
-              behavior: HitTestBehavior.opaque,
-              onTap: item.disabled ? null : widget.onActivate,
-              child: Opacity(opacity: item.disabled ? 0.5 : 1, child: row),
             ),
           ),
         ),

@@ -441,6 +441,18 @@
         "start": "start"
       }
     },
+    "KunContextMenu": {
+      "widget": "KunContextMenu",
+      "props": {
+        "visible": "visible",
+        "items": "items",
+        "padding": "padding",
+        "position": "position",
+        "width": "width"
+      },
+      "events": { "close": "onClose", "select": "onSelected" },
+      "slots": {}
+    },
     "KunDatePicker": {
       "widget": "KunDatePicker",
       "props": {

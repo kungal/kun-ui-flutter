@@ -24,6 +24,7 @@ import 'demos/chat_typing.dart';
 import 'demos/checkbox.dart';
 import 'demos/checkbox_group.dart';
 import 'demos/chip.dart';
+import 'demos/context_menu.dart';
 import 'demos/date_picker.dart';
 import 'demos/divider.dart';
 import 'demos/dropdown.dart';
@@ -356,6 +357,22 @@ const List<GalleryComponent> galleryComponents = <GalleryComponent>[
       GalleryDemo(slug: 'dismiss', title: 'Dismiss', builder: chipDismiss),
       GalleryDemo(
           slug: 'contract', title: 'Contract', builder: kunChipContract),
+    ],
+  ),
+  GalleryComponent(
+    slug: 'kuncontextmenu',
+    name: 'KunContextMenu',
+    demos: <GalleryDemo>[
+      GalleryDemo(slug: 'basic', title: 'Basic', builder: contextMenuBasic),
+      GalleryDemo(
+          slug: 'icons', title: 'With icons', builder: contextMenuIcons),
+      GalleryDemo(
+          slug: 'disabled', title: 'Disabled', builder: contextMenuDisabled),
+      GalleryDemo(slug: 'colors', title: 'Colors', builder: contextMenuColors),
+      GalleryDemo(
+          slug: 'size', title: 'Width and padding', builder: contextMenuSize),
+      GalleryDemo(
+          slug: 'contract', title: 'Contract', builder: kunContextMenuContract),
     ],
   ),
   GalleryComponent(

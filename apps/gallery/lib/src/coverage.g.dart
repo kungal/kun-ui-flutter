@@ -2036,6 +2036,65 @@ const ComponentCoverage _kunChip = ComponentCoverage(
 Widget kunChipContract(BuildContext context) =>
     const CoveragePage(coverage: _kunChip);
 
+const ComponentCoverage _kunContextMenu = ComponentCoverage(
+  name: 'KunContextMenu',
+  entries: <CoverageEntry>[
+    CoverageEntry(
+      section: 'props',
+      contractName: 'visible',
+      status: CoverageStatus.shown,
+      dartName: 'visible',
+      shownBy: 'Basic',
+    ),
+    CoverageEntry(
+      section: 'props',
+      contractName: 'items',
+      status: CoverageStatus.shown,
+      dartName: 'items',
+      shownBy: 'Basic',
+    ),
+    CoverageEntry(
+      section: 'props',
+      contractName: 'padding',
+      status: CoverageStatus.shown,
+      dartName: 'padding',
+      shownBy: 'Width and padding',
+    ),
+    CoverageEntry(
+      section: 'props',
+      contractName: 'position',
+      status: CoverageStatus.shown,
+      dartName: 'position',
+      shownBy: 'Basic',
+    ),
+    CoverageEntry(
+      section: 'props',
+      contractName: 'width',
+      status: CoverageStatus.shown,
+      dartName: 'width',
+      shownBy: 'Width and padding',
+    ),
+    CoverageEntry(
+      section: 'events',
+      contractName: 'close',
+      status: CoverageStatus.shown,
+      dartName: 'onClose',
+      shownBy: 'Basic',
+    ),
+    CoverageEntry(
+      section: 'events',
+      contractName: 'select',
+      status: CoverageStatus.shown,
+      dartName: 'onSelected',
+      shownBy: 'Basic',
+    ),
+  ],
+);
+
+/// The contract coverage page for KunContextMenu.
+Widget kunContextMenuContract(BuildContext context) =>
+    const CoveragePage(coverage: _kunContextMenu);
+
 const ComponentCoverage _kunDatePicker = ComponentCoverage(
   name: 'KunDatePicker',
   entries: <CoverageEntry>[

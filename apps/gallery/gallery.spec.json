@@ -913,6 +913,50 @@
         }
       ]
     },
+    "KunContextMenu": {
+      "source": "demos/context_menu.dart",
+      "demos": [
+        {
+          "slug": "basic",
+          "title": "Basic",
+          "builder": "contextMenuBasic",
+          "shows": [
+            "props.visible",
+            "props.items",
+            "props.position",
+            "events.select",
+            "events.close"
+          ]
+        },
+        {
+          "slug": "icons",
+          "title": "With icons",
+          "builder": "contextMenuIcons",
+          "shows": []
+        },
+        {
+          "slug": "disabled",
+          "title": "Disabled",
+          "builder": "contextMenuDisabled",
+          "shows": []
+        },
+        {
+          "slug": "colors",
+          "title": "Colors",
+          "builder": "contextMenuColors",
+          "shows": []
+        },
+        {
+          "slug": "size",
+          "title": "Width and padding",
+          "builder": "contextMenuSize",
+          "shows": [
+            "props.width",
+            "props.padding"
+          ]
+        }
+      ]
+    },
     "KunDatePicker": {
       "source": "demos/date_picker.dart",
       "demos": [
