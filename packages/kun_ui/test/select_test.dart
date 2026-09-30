@@ -1513,6 +1513,40 @@ void main() {
     );
   });
 
+  testWidgets('chips answer an IntrinsicHeight row and stay inside the field',
+      (WidgetTester tester) async {
+    const String long = 'A framework name far too long for the field';
+    await tester.pumpWidget(
+      wrap(
+        Center(
+          child: KunScrollShadow(
+            children: <Widget>[
+              SizedBox(
+                width: 160,
+                child: KunSelect<String, KunSelectOption<String>>.multiple(
+                  options: const <KunSelectOption<String>>[
+                    KunSelectOption<String>(value: 'a', label: long),
+                    KunSelectOption<String>(value: 'b', label: 'B'),
+                  ],
+                  values: const <String>['a', 'b'],
+                  onValuesChanged: (_) {},
+                  size: KunUISize.sm,
+                  maxVisibleTags: 1,
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+    expect(tester.takeException(), isNull);
+    expect(find.text('+1'), findsOneWidget);
+    final Rect field = tester.getRect(trigger);
+    final Rect chip = tester.getRect(find.text(long));
+    expect(chip.left, greaterThan(field.left));
+    expect(chip.right, lessThan(field.right));
+  });
+
   testWidgets('styling: fill, border, radius, heights, chips, copy',
       (WidgetTester tester) async {
     await tester.pumpWidget(

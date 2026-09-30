@@ -39,6 +39,14 @@ or later.
   image had no `errorBuilder`. A failed load (an offline phone, a bad URL)
   reported an exception and, in debug builds, painted Flutter's error box
   over the avatar. The new gallery tap-target gate found it.
+- **A `KunSelect.multiple` showing chips works inside a horizontal
+  `KunScrollShadow`.** That scroll shadow puts its children in an
+  `IntrinsicHeight` row. The chips sat in a `LayoutBuilder`, which cannot
+  report an intrinsic height, so in debug builds layout threw "LayoutBuilder
+  does not support returning intrinsic dimensions". In release builds the
+  row could get the wrong height. The `LayoutBuilder` only kept each chip
+  within the field's width, and the chips' `Wrap` already does that, so it
+  is gone. Reported by the kungal app, whose filter bar needs a multi-select.
 
 ## 0.18.1
 

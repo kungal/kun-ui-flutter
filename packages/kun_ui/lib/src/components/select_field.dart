@@ -72,44 +72,38 @@ class _KunSelectTrigger<T, O extends KunSelectOption<T>>
 
     Widget content;
     if (state._showsChips) {
-      content = LayoutBuilder(
-        builder: (BuildContext context, BoxConstraints constraints) {
-          final double maxChipWidth = constraints.maxWidth.isFinite
-              ? constraints.maxWidth
-              : double.infinity;
-          return Wrap(
-            spacing: KunSpacing.unit,
-            runSpacing: KunSpacing.unit,
-            crossAxisAlignment: WrapCrossAlignment.center,
-            children: [
-              for (final ({T value, String label}) chip in state._visibleTags)
-                ConstrainedBox(
-                  constraints: BoxConstraints(maxWidth: maxChipWidth),
-                  child: _KunSelectChip<T>(
-                    label: chip.label,
-                    disabled: widget.disabled,
-                    scheme: scheme,
-                    onRemove: () => state._removeValue(chip.value),
-                    onAbsorbTap: () => state._absorbTriggerTap = true,
-                    onAbsorbTapDone: () => state._absorbTriggerTap = false,
-                  ),
+      // No LayoutBuilder to cap a chip at the field's width: a Wrap already
+      // lays each child out at its own maxWidth, and a LayoutBuilder asserted
+      // when a horizontal KunScrollShadow's IntrinsicHeight row asked the
+      // field its height.
+      content = Wrap(
+        spacing: KunSpacing.unit,
+        runSpacing: KunSpacing.unit,
+        crossAxisAlignment: WrapCrossAlignment.center,
+        children: [
+          for (final ({T value, String label}) chip in state._visibleTags)
+            _KunSelectChip<T>(
+              label: chip.label,
+              disabled: widget.disabled,
+              scheme: scheme,
+              onRemove: () => state._removeValue(chip.value),
+              onAbsorbTap: () => state._absorbTriggerTap = true,
+              onAbsorbTapDone: () => state._absorbTriggerTap = false,
+            ),
+          if (state._hiddenTagCount > 0)
+            _KunSelectChipBox(
+              scheme: scheme,
+              child: Text(
+                '+${state._hiddenTagCount}',
+                style: KunText.xs.copyWith(
+                  color: scheme.neutral.shade700,
+                  fontFeatures: const <FontFeature>[
+                    FontFeature.tabularFigures()
+                  ],
                 ),
-              if (state._hiddenTagCount > 0)
-                _KunSelectChipBox(
-                  scheme: scheme,
-                  child: Text(
-                    '+${state._hiddenTagCount}',
-                    style: KunText.xs.copyWith(
-                      color: scheme.neutral.shade700,
-                      fontFeatures: const <FontFeature>[
-                        FontFeature.tabularFigures()
-                      ],
-                    ),
-                  ),
-                ),
-            ],
-          );
-        },
+              ),
+            ),
+        ],
       );
     } else {
       content = Text(
