@@ -1052,6 +1052,23 @@ applies it globally, so each widget runs its durations through `kunMotion`
 KunUI 0.3.0 ignored the setting everywhere. It was found while accepting
 KunTab, whose web scroll code checks `prefers-reduced-motion` by hand.
 
+### A component's own timings are literals (decided upstream 2026-09-30)
+
+Iron rule 1 covers the shared vocabulary: `KunDurations`, `KunEasing`, and
+the feel models generated as physics constants (`KunShatterPhysics`,
+`KunSwipeDismissPhysics`). A timing that belongs to one component's
+choreography is not a token on either side. Examples are a hover delay, a
+grace period, a type-ahead reset and a keyframe's length. The web writes it
+as a literal in the component, and the port copies the same number, with a
+dartdoc line naming the web source (`select.dart`'s `_kTypeaheadReset`).
+It still goes through `kunMotion` when it is motion.
+
+KunPagination 0.20.0 swapped the web's 340ms pop for `KunDurations.slow`
+(350ms), on the reading that a missing token must never become a literal.
+kun-ui ruled the other way: the port copies the literal, and a nearby token
+is a fork. So a missing token is still reported upstream, but only for a
+value the web itself takes from its theme.
+
 ### Shadows are painted outside the box (decided 2026-09-17)
 
 CSS paints `box-shadow` only outside the border box. `BoxDecoration` also

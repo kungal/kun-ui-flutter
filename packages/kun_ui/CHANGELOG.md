@@ -1,5 +1,12 @@
 # Changelog
 
+## 0.21.0
+
+- **`KunPagination`'s highlight pops for 340ms, as on the web.** 0.20.0
+  used `KunDurations.slow` (350ms). kun-ui has since ruled that a
+  component's own timings stay literals on both sides, and only the shared
+  feel models are tokens.
+
 ## 0.20.0
 
 Still on kun-ui 2.53.0. Desktop pieces the kungal app asked for: a
