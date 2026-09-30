@@ -40,8 +40,9 @@ class KunVariantStyle {
 
   /// Resolves the cell for [variant] × [color] against [scheme].
   ///
-  /// [brightness] must be the mode [scheme] was built for — it selects the
-  /// web's `dark:` text overrides on the `flat` variant.
+  /// [brightness] must be the mode [scheme] was built for. Since kun-ui 2.56.0
+  /// no cell depends on it: the `dark:` text overrides of `flat` became the
+  /// `text` token, which flips with the scheme.
   static KunVariantStyle resolve({
     required KunColorScheme scheme,
     required Brightness brightness,
@@ -49,12 +50,10 @@ class KunVariantStyle {
     required KunUIColor color,
   }) {
     final scale = color.scaleOf(scheme);
-    final dark = brightness == Brightness.dark;
     const transparent = Color(0x00000000);
     // Web `bordered`/`light` for color `default` set no text class — the text
     // inherits the page foreground instead of taking the near-grey solid.
-    final tinted =
-        color == KunUIColor.neutral ? scheme.foreground : scale.solid;
+    final tinted = color == KunUIColor.neutral ? scheme.foreground : scale.text;
     switch (variant) {
       case KunUIVariant.solid:
         return KunVariantStyle._(
@@ -76,20 +75,9 @@ class KunVariantStyle {
           hoverOverlay: scale.solid.withValues(alpha: 0.2),
         );
       case KunUIVariant.flat:
-        // The web deepens the text per color so it clears AA on the 20% tint,
-        // and re-lightens the bright hues in dark mode (`dark:text-…`).
-        final foreground = switch (color) {
-          KunUIColor.neutral => scale.shade700,
-          KunUIColor.primary || KunUIColor.secondary => scale.shade600,
-          KunUIColor.success ||
-          KunUIColor.warning =>
-            dark ? scale.solid : scale.shade700,
-          KunUIColor.danger => dark ? scale.shade500 : scale.shade600,
-          KunUIColor.info => dark ? scale.shade500 : scale.shade700,
-        };
         return KunVariantStyle._(
           background: scale.solid.withValues(alpha: 0.2),
-          foreground: foreground,
+          foreground: scale.text,
           border: transparent,
         );
       case KunUIVariant.shadow:
