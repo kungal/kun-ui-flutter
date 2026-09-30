@@ -679,7 +679,7 @@ class _ChatPreState extends State<_ChatPre> {
                       maxLines: 1,
                       overflow: TextOverflow.ellipsis,
                       style: KunText.xs.copyWith(
-                        color: scheme.foregroundMuted,
+                        color: scheme.neutral.text,
                         fontWeight: KunFontWeights.medium,
                       ),
                     ),

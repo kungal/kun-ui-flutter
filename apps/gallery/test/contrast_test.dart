@@ -26,15 +26,6 @@ const Map<String, String> exempt = <String, String>{
   // The guideline reads the merge boundary's own flags, not the merged ones.
   'kunnavitem/sidebar': 'the disabled item is disabled in its merged '
       'semantics, which is what TalkBack reads',
-  // The web draws these the same way; raised with kun-ui on 2026-09-30.
-  'kunkbd/basic': 'dark keycap: foreground-muted on default-100 is 4.49:1 '
-      '(Kbd.vue capClass)',
-  'kunchatlayout/app': 'unread divider: text-default-600 on bg-default/15 is '
-      '4.01:1 (ChatMessageList.vue:825)',
-  'kunchatmessagelist/direct': 'unread divider: text-default-600 on '
-      'bg-default/15 is 4.12:1 (ChatMessageList.vue:825)',
-  'kunchattext/basic': 'dark code language: text-foreground-muted on '
-      'bg-default/15 is 4.18:1 (ChatText.vue)',
 };
 
 void main() {

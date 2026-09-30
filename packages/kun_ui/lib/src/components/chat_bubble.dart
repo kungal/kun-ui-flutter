@@ -49,8 +49,8 @@ const double _kPhotoMaxRatio = 2.4;
 /// Web `ALBUM_W`.
 const double _kAlbumWidth = 320;
 
-/// Web `bg-black/45`.
-const double _kMediaMetaAlpha = 0.45;
+/// Web `bg-black/55`: the least that keeps white at 4.5:1 over any photo.
+const double _kMediaMetaAlpha = 0.55;
 
 /// Web tail `viewBox` width.
 const double _kTailWidth = 7;
@@ -963,7 +963,7 @@ class _ReplyPreview extends StatelessWidget {
         maxLines: 1,
         overflow: TextOverflow.ellipsis,
         style: KunText.sm.copyWith(
-          color: scheme.neutral.shade500,
+          color: scheme.foregroundMuted,
           fontStyle: FontStyle.italic,
         ),
       );

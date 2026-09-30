@@ -156,7 +156,7 @@ class _UnreadDividerState extends State<_UnreadDivider> {
           widget.label,
           textAlign: TextAlign.center,
           style: KunText.xs.copyWith(
-            color: widget.scheme.neutral.shade600,
+            color: widget.scheme.neutral.text,
             fontWeight: KunFontWeights.medium,
           ),
         ),

@@ -2,8 +2,8 @@
 
 ## 0.21.0
 
-Built on kun-ui 2.56.0 (from 2.53.0). The generated packages now require
-2.56.0 or later.
+Built on kun-ui 2.56.1 (from 2.53.0). The generated packages now require
+2.56.1 or later.
 
 - **Text meets WCAG AA contrast in both themes.** The kungal app measured
   primary text at 4.18:1, a flat primary chip at 3.98:1 and the KunSelect
@@ -18,6 +18,16 @@ Built on kun-ui 2.56.0 (from 2.53.0). The generated packages now require
     `foregroundMuted`.
   - In the chat, sender names, bar titles, links, mentions, typing, status
     and draft marks, and the own bubble's time use `primary.text`.
+  - `foregroundMuted` is a new grey between the scale's steps (kun-ui
+    2.56.1). The old one fell to 3.9:1 on a hovered row, a keycap and a
+    code-block header. It now clears 4.5:1 on every surface it lands on,
+    and reads 5.98:1 on the light page (it was 5.03).
+  - Text on a tint over another tint (the unread divider on the chat
+    wallpaper, a code block's language in a bubble) uses `neutral.text`.
+  - A selected conversation row's time and preview are opaque, a muted
+    chat's unread badge draws `neutral.onSolid` on `neutral.solid`, a
+    deleted reply is `foregroundMuted`, and the time over a photo sits on
+    black at 55%.
   - Fills, borders, focus rings, checkmarks, spinners, disabled text and
     outside-month days keep their colours, as on the web.
   - Your own text in a hue should use `scale.text`, not `scale.solid`.

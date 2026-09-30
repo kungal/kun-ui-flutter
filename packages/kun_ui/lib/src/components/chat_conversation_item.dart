@@ -477,12 +477,10 @@ class _KunChatConversationItemState extends State<KunChatConversationItem>
             : scheme.content1;
     final Color titleColor =
         widget.selected ? scheme.primary.onSolid : scheme.foreground;
-    final Color metaColor = widget.selected
-        ? scheme.primary.onSolid.withValues(alpha: 0.8)
-        : scheme.foregroundMuted;
-    final Color previewColor = widget.selected
-        ? scheme.primary.onSolid.withValues(alpha: 0.85)
-        : scheme.foregroundMuted;
+    final Color metaColor =
+        widget.selected ? scheme.primary.onSolid : scheme.foregroundMuted;
+    final Color previewColor =
+        widget.selected ? scheme.primary.onSolid : scheme.foregroundMuted;
     final Color typingColor =
         widget.selected ? scheme.primary.onSolid : scheme.primary.text;
 
@@ -623,7 +621,7 @@ class _KunChatConversationItemState extends State<KunChatConversationItem>
                 color: widget.selected
                     ? scheme.primary.onSolid
                     : widget.muted
-                        ? scheme.neutral.shade400
+                        ? scheme.neutral.solid
                         : scheme.primary.solid,
                 borderRadius: BorderRadius.circular(KunRadius.full),
               ),
@@ -639,7 +637,7 @@ class _KunChatConversationItemState extends State<KunChatConversationItem>
                         color: widget.selected
                             ? scheme.primary.solid
                             : widget.muted
-                                ? KunColors.white
+                                ? scheme.neutral.onSolid
                                 : scheme.primary.onSolid,
                       ),
                     )
