@@ -116,6 +116,25 @@ class _KunButtonState extends State<KunButton> {
     widget.onPressed!();
   }
 
+  void _setPressed(bool value) {
+    if (_pressed != value) {
+      setState(() => _pressed = value);
+    }
+  }
+
+  @override
+  void didUpdateWidget(KunButton oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    // A button that stopped being pressable mid-press threw "setState()
+    // called during build" in the kungal app: the GestureDetector below
+    // disposes its tap recognizer in its own didUpdateWidget, and the
+    // dispose cancels the live tap synchronously. Released here first, the
+    // cancel finds nothing to undo.
+    if (!_canPress) {
+      _pressed = false;
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     final theme = KunTheme.of(context);
@@ -290,16 +309,14 @@ class _KunButtonState extends State<KunButton> {
             onExit: (_) => setState(() => _hovered = false),
             child: GestureDetector(
               behavior: HitTestBehavior.opaque,
-              onTapDown:
-                  _canPress ? (_) => setState(() => _pressed = true) : null,
+              onTapDown: _canPress ? (_) => _setPressed(true) : null,
               onTapUp: _canPress
                   ? (details) {
-                      setState(() => _pressed = false);
+                      _setPressed(false);
                       _ripple.currentState?.spawn(details.globalPosition);
                     }
                   : null,
-              onTapCancel:
-                  _canPress ? () => setState(() => _pressed = false) : null,
+              onTapCancel: _canPress ? () => _setPressed(false) : null,
               onTap: _canPress ? _handleActivate : null,
               child: AnimatedScale(
                 scale: _pressed ? 0.97 : 1, // web active:scale-[0.97]

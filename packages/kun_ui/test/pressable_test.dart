@@ -513,6 +513,42 @@ void main() {
       expect(menus, hasLength(2));
     },
   );
+
+  testWidgets('onTap going null while held releases the press without throwing',
+      (tester) async {
+    late StateSetter setOuter;
+    VoidCallback? onTap = () {};
+    final List<KunPressableState> states = <KunPressableState>[];
+    await tester.pumpWidget(
+      wrap(
+        StatefulBuilder(
+          builder: (BuildContext context, StateSetter setState) {
+            setOuter = setState;
+            return KunPressable(
+              onTap: onTap,
+              builder: (BuildContext context, KunPressableState state) {
+                states.add(state);
+                return const SizedBox(key: content, width: 80, height: 48);
+              },
+            );
+          },
+        ),
+      ),
+    );
+    final TestGesture gesture =
+        await tester.startGesture(tester.getCenter(find.byKey(content)));
+    await tester.pump();
+    expect(states.last.pressed, isTrue);
+
+    setOuter(() => onTap = null);
+    await tester.pump();
+    expect(tester.takeException(), isNull);
+    expect(states.last.pressed, isFalse);
+
+    await gesture.up();
+    await tester.pump();
+    expect(tester.takeException(), isNull);
+  });
 }
 
 class _AncestorMenuIntent extends Intent {

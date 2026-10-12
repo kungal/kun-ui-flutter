@@ -232,8 +232,12 @@ class _KunPressableState extends State<KunPressable> {
   @override
   void didUpdateWidget(KunPressable oldWidget) {
     super.didUpdateWidget(oldWidget);
-    if (widget.disabled && (_hovered || _pressed)) {
+    if (widget.disabled) {
       _hovered = false;
+    }
+    // As in KunButton: the GestureDetector cancels a live tap inside this
+    // build when onTap goes null and it drops its recognizer.
+    if (!_enabled || widget.onTap == null) {
       _pressed = false;
     }
   }

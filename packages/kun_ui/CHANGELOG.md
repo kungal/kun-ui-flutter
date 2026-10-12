@@ -1,5 +1,15 @@
 # Changelog
 
+## 0.27.1
+
+- A `KunButton`, a clickable `KunCard` or a `KunPressable` that stops
+  being pressable while a finger or mouse button is still down no longer
+  throws "setState() or markNeedsBuild() called during build". This
+  covers a button turning `disabled` or `loading`, `onPressed` or `onTap`
+  going null, and a card losing `clickable`. The press is released
+  instead, and the held pointer's release does nothing. The bug was there
+  before 0.27.0; the kungal app hit it on its Linux desktop build.
+
 ## 0.27.0
 
 - **`KunButton` and a clickable `KunCard` draw the web's click ripple.**

@@ -329,4 +329,27 @@ void main() {
     await tester.pumpWidget(wrap(const KunCard(child: Text('static'))));
     expect(find.byType(KunFocusOutline), findsNothing);
   });
+
+  testWidgets('a held card that stops being clickable does not throw',
+      (tester) async {
+    await tester.pumpWidget(
+      wrap(KunCard(clickable: true, onTap: () {}, child: body)),
+    );
+    final TestGesture gesture =
+        await tester.startGesture(tester.getCenter(find.byKey(body.key!)));
+    await tester.pump();
+    expect(
+        tester.widget<AnimatedScale>(find.byType(AnimatedScale)).scale, 0.97);
+
+    await tester.pumpWidget(wrap(const KunCard(child: body)));
+    expect(tester.takeException(), isNull);
+
+    await tester.pumpWidget(
+      wrap(KunCard(clickable: true, onTap: () {}, child: body)),
+    );
+    expect(tester.widget<AnimatedScale>(find.byType(AnimatedScale)).scale, 1);
+    await gesture.up();
+    await tester.pump();
+    expect(tester.takeException(), isNull);
+  });
 }

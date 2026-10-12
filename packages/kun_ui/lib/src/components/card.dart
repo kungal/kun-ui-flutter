@@ -121,6 +121,22 @@ class _KunCardState extends State<KunCard> {
 
   bool get _showsHoverLayer => widget.clickable || widget.isHoverable;
 
+  void _setPressed(bool value) {
+    if (_pressed != value) {
+      setState(() => _pressed = value);
+    }
+  }
+
+  @override
+  void didUpdateWidget(KunCard oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    // As in KunButton: the GestureDetector cancels a live tap inside this
+    // build when it drops its recognizer.
+    if (!widget.clickable) {
+      _pressed = false;
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     final theme = KunTheme.of(context);
@@ -276,18 +292,14 @@ class _KunCardState extends State<KunCard> {
           onExit: (_) => setState(() => _hovered = false),
           child: GestureDetector(
             behavior: HitTestBehavior.opaque,
-            onTapDown: widget.clickable
-                ? (_) => setState(() => _pressed = true)
-                : null,
+            onTapDown: widget.clickable ? (_) => _setPressed(true) : null,
             onTapUp: widget.clickable
                 ? (details) {
-                    setState(() => _pressed = false);
+                    _setPressed(false);
                     _ripple.currentState?.spawn(details.globalPosition);
                   }
                 : null,
-            onTapCancel: widget.clickable
-                ? () => setState(() => _pressed = false)
-                : null,
+            onTapCancel: widget.clickable ? () => _setPressed(false) : null,
             onTap: widget.onTap,
             child: card,
           ),

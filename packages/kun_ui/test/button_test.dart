@@ -369,4 +369,52 @@ void main() {
     expect(reaction.getSemanticsData().label, '点赞,3');
     handle.dispose();
   });
+
+  // The kungal app's desktop build threw "setState() called during build"
+  // three times: GestureDetector disposes a recognizer it no longer needs in
+  // didUpdateWidget, and the dispose cancels the live tap synchronously.
+  for (final (String change, KunButton Function(VoidCallback) after) in <(
+    String,
+    KunButton Function(VoidCallback),
+  )>[
+    (
+      'disabled',
+      (VoidCallback press) => KunButton(
+          disabled: true, onPressed: press, child: const Text('Save')),
+    ),
+    (
+      'loading',
+      (VoidCallback press) =>
+          KunButton(loading: true, onPressed: press, child: const Text('Save')),
+    ),
+    (
+      'onPressed null',
+      (VoidCallback press) => const KunButton(child: Text('Save'))
+    ),
+  ]) {
+    testWidgets('$change while held down releases the press without throwing',
+        (tester) async {
+      var presses = 0;
+      void press() => presses++;
+      await tester.pumpWidget(
+        wrap(KunButton(onPressed: press, child: const Text('Save'))),
+      );
+      final TestGesture gesture =
+          await tester.startGesture(tester.getCenter(find.text('Save')));
+      await tester.pump();
+      expect(
+        tester.widget<AnimatedScale>(find.byType(AnimatedScale)).scale,
+        0.97,
+      );
+
+      await tester.pumpWidget(wrap(after(press)));
+      expect(tester.takeException(), isNull);
+      expect(tester.widget<AnimatedScale>(find.byType(AnimatedScale)).scale, 1);
+
+      await gesture.up();
+      await tester.pump();
+      expect(tester.takeException(), isNull);
+      expect(presses, 0);
+    });
+  }
 }
