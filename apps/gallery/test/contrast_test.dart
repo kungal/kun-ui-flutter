@@ -23,6 +23,12 @@ const Map<String, String> exempt = <String, String>{
   'kunbadge/sizes': 'the sm count "5" at 10px measures 4.41:1 the same way',
   'kunchatbubble/basic': 'own-bubble "已编辑" measures 2.65:1 light and 3.86:1 '
       'dark; its pixels sample 6.80:1 and 5.78:1 on the bubble',
+  // Its 5,000 messages are dated back from now, so the time of day decides
+  // which day pill is where; it passed on 2026-09-30 and failed on 10-12.
+  'kunchatmessagelist/thousands': 'a "今天" or "昨天" day pill, which the test '
+      'font draws as hollow boxes, measures 1.12:1 light and 1.13:1 dark '
+      'from the pill and the page at its corners; neutral.shade600 on '
+      'content1 is 5.53:1 light and 6.99:1 dark',
   // The guideline reads the merge boundary's own flags, not the merged ones.
   'kunnavitem/sidebar': 'the disabled item is disabled in its merged '
       'semantics, which is what TalkBack reads',
