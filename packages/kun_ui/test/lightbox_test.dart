@@ -416,6 +416,23 @@ void main() {
     expect(find.text('2 / 3'), findsOneWidget);
   });
 
+  testWidgets('a modified arrow does not page (Alt+← is Back)',
+      (WidgetTester tester) async {
+    await _pumpOpen(tester);
+    for (final LogicalKeyboardKey modifier in <LogicalKeyboardKey>[
+      LogicalKeyboardKey.altLeft,
+      LogicalKeyboardKey.controlLeft,
+      LogicalKeyboardKey.metaLeft,
+      LogicalKeyboardKey.shiftLeft,
+    ]) {
+      await tester.sendKeyDownEvent(modifier);
+      await tester.sendKeyEvent(LogicalKeyboardKey.arrowRight);
+      await tester.sendKeyUpEvent(modifier);
+      await tester.pumpAndSettle();
+      expect(find.text('1 / 3'), findsOneWidget, reason: '$modifier');
+    }
+  });
+
   testWidgets('initialIndex', (WidgetTester tester) async {
     await _pumpOpen(tester, initialIndex: 2);
     expect(find.text('3 / 3'), findsOneWidget);

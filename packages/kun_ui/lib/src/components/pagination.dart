@@ -359,6 +359,15 @@ class _KunPaginationState extends State<KunPagination> {
     if (event is! KeyDownEvent || widget.isLoading || !_ownsArrowKeys()) {
       return false;
     }
+    // With a modifier the arrow is a browser or OS shortcut: Alt+← is Back,
+    // Shift+← extends a selection. Both paged on the web until kun-ui 2.56.2.
+    final HardwareKeyboard keyboard = HardwareKeyboard.instance;
+    if (keyboard.isAltPressed ||
+        keyboard.isControlPressed ||
+        keyboard.isMetaPressed ||
+        keyboard.isShiftPressed) {
+      return false;
+    }
     if (event.logicalKey == LogicalKeyboardKey.arrowLeft) {
       if (widget.currentPage > 1) {
         _change(widget.currentPage - 1);

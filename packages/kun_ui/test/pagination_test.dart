@@ -333,6 +333,31 @@ void main() {
     expect(find.text('7'), findsNothing);
   });
 
+  testWidgets('a modified arrow is left to the browser and the OS',
+      (WidgetTester tester) async {
+    setView(tester, const Size(800, 600));
+    await tester.pumpWidget(host(currentPage: 5));
+    await tester.pump();
+
+    for (final LogicalKeyboardKey modifier in <LogicalKeyboardKey>[
+      LogicalKeyboardKey.altLeft,
+      LogicalKeyboardKey.controlLeft,
+      LogicalKeyboardKey.metaLeft,
+      LogicalKeyboardKey.shiftLeft,
+    ]) {
+      await tester.sendKeyDownEvent(modifier);
+      await tester.sendKeyEvent(LogicalKeyboardKey.arrowRight);
+      await tester.sendKeyUpEvent(modifier);
+      await tester.pumpAndSettle();
+      expect(find.text('4'), findsOneWidget, reason: '$modifier');
+      expect(find.text('7'), findsNothing, reason: '$modifier');
+    }
+
+    await tester.sendKeyEvent(LogicalKeyboardKey.arrowRight);
+    await tester.pumpAndSettle();
+    expect(find.text('7'), findsOneWidget);
+  });
+
   testWidgets('arrow keys page from a focused page button',
       (WidgetTester tester) async {
     setView(tester, const Size(800, 600));
