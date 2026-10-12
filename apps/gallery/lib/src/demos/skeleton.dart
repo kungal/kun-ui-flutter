@@ -9,7 +9,6 @@ Widget skeletonBasic(BuildContext context) {
       child: Column(
         mainAxisSize: MainAxisSize.min,
         crossAxisAlignment: CrossAxisAlignment.stretch,
-        spacing: KunSpacing.unit * 3,
         children: [
           KunSkeleton(variant: KunSkeletonVariant.text, widthFactor: 0.6),
           KunSkeleton(variant: KunSkeletonVariant.text),
@@ -27,8 +26,8 @@ Widget skeletonShapes(BuildContext context) {
       constraints: const BoxConstraints(maxWidth: KunContainerWidths.sm),
       child: Row(
         spacing: KunSpacing.unit * 4,
-        children: const [
-          KunSkeleton(
+        children: [
+          const KunSkeleton(
             variant: KunSkeletonVariant.circle,
             height: KunSpacing.unit * 12,
           ),
@@ -36,20 +35,22 @@ Widget skeletonShapes(BuildContext context) {
             child: Column(
               mainAxisSize: MainAxisSize.min,
               crossAxisAlignment: CrossAxisAlignment.start,
-              spacing: KunSpacing.unit * 2,
               children: [
-                KunSkeleton(
+                const KunSkeleton(
                   variant: KunSkeletonVariant.text,
                   widthFactor: 0.4,
                 ),
-                KunSkeleton(
-                  variant: KunSkeletonVariant.text,
-                  widthFactor: 0.7,
+                DefaultTextStyle.merge(
+                  style: KunText.sm,
+                  child: const KunSkeleton(
+                    variant: KunSkeletonVariant.text,
+                    widthFactor: 0.7,
+                  ),
                 ),
               ],
             ),
           ),
-          KunSkeleton(
+          const KunSkeleton(
             variant: KunSkeletonVariant.rect,
             width: KunSpacing.unit * 20,
             height: KunSpacing.unit * 12,
@@ -143,26 +144,32 @@ class _SkeletonLoadedState extends State<_SkeletonLoaded> {
             onPressed: () => setState(() => _loaded = !_loaded),
             child: Text(_loaded ? '重新加载' : '完成加载'),
           ),
-          KunSkeleton(
-            loaded: _loaded,
-            variant: KunSkeletonVariant.rect,
-            height: KunSpacing.unit * 16,
-            child: SizedBox(
-              width: double.infinity,
-              child: KunCard(
-                child: Column(
-                  mainAxisSize: MainAxisSize.min,
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    const Text(
-                      '内容已就绪',
-                      style: TextStyle(fontWeight: KunFontWeights.medium),
-                    ),
-                    Text(
-                      'loaded 为 true 时渲染默认插槽。',
-                      style: KunText.sm.copyWith(color: scheme.foregroundMuted),
-                    ),
-                  ],
+          // Docs Loaded.vue: aria-live on the loading region; Flutter has
+          // no aria-busy.
+          Semantics(
+            liveRegion: true,
+            child: KunSkeleton(
+              loaded: _loaded,
+              variant: KunSkeletonVariant.rect,
+              height: KunSpacing.unit * 16,
+              child: SizedBox(
+                width: double.infinity,
+                child: KunCard(
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      const Text(
+                        '内容已就绪',
+                        style: TextStyle(fontWeight: KunFontWeights.medium),
+                      ),
+                      Text(
+                        'loaded 为 true 时渲染默认插槽。',
+                        style:
+                            KunText.sm.copyWith(color: scheme.foregroundMuted),
+                      ),
+                    ],
+                  ),
                 ),
               ),
             ),

@@ -1,3 +1,5 @@
+import 'dart:math' as math;
+
 import 'package:flutter/widgets.dart';
 import 'package:kun_ui_tokens/kun_ui_tokens.dart';
 
@@ -7,7 +9,10 @@ import 'pulse.dart';
 
 /// Web `KunSkeleton` `variant`.
 enum KunSkeletonVariant {
-  /// A line of text: one em tall, [KunRounded.md] corners.
+  /// A line of text: one line box of the ambient [DefaultTextStyle] tall,
+  /// the height a line of words in that style takes, with a bar one em tall
+  /// and [KunRounded.md] corners centred in it. With [KunSkeleton.height]
+  /// the bar is that tall and there is no line box around it.
   text,
 
   /// A circle, as wide as it is tall.
@@ -32,6 +37,17 @@ enum KunSkeletonAnimation {
 /// built when [child] is null). Otherwise a single box is painted, excluded
 /// from semantics. A skeleton whose width fills its parent in a [Row] needs
 /// an [Expanded], as the web's `flex-1` wrapper does in the Shapes example.
+///
+/// A [KunSkeletonVariant.text] placeholder takes the line box of the text
+/// style it inherits, so the content below does not move when the words
+/// arrive. Give it the style of the content it stands in for, with a
+/// [DefaultTextStyle.merge] (the web's `class-name="text-sm"`), and stack the
+/// lines of one paragraph without a gap.
+///
+/// A load is announced once for the loading region, never once per
+/// placeholder, and in the app's own words. kun-ui's docs put
+/// `aria-live="polite"` and `aria-busy` on the region; `aria-live` is
+/// Flutter's `Semantics(liveRegion: true)`, and Flutter has no `aria-busy`.
 class KunSkeleton extends StatelessWidget {
   /// Creates a skeleton placeholder.
   const KunSkeleton({
@@ -87,13 +103,32 @@ class KunSkeleton extends StatelessWidget {
           )
         : theme.colors.neutral.shade200;
 
-    final double resolvedHeight = height ??
-        switch (variant) {
-          KunSkeletonVariant.text =>
-            DefaultTextStyle.of(context).style.fontSize ?? kDefaultFontSize,
-          KunSkeletonVariant.circle => KunSpacing.unit * 10,
-          KunSkeletonVariant.rect => KunSpacing.unit * 5,
-        };
+    double? lineBox;
+    final double resolvedHeight;
+    if (height != null) {
+      resolvedHeight = height!;
+    } else {
+      switch (variant) {
+        case KunSkeletonVariant.text:
+          final DefaultTextStyle text = DefaultTextStyle.of(context);
+          final TextScaler scaler = MediaQuery.textScalerOf(context);
+          resolvedHeight =
+              scaler.scale(text.style.fontSize ?? kDefaultFontSize);
+          final TextPainter line = TextPainter(
+            text: TextSpan(style: text.style),
+            textDirection: Directionality.maybeOf(context) ?? TextDirection.ltr,
+            textScaler: scaler,
+            textHeightBehavior: text.textHeightBehavior ??
+                DefaultTextHeightBehavior.maybeOf(context),
+          );
+          lineBox = math.max(line.preferredLineHeight, resolvedHeight);
+          line.dispose();
+        case KunSkeletonVariant.circle:
+          resolvedHeight = KunSpacing.unit * 10;
+        case KunSkeletonVariant.rect:
+          resolvedHeight = KunSpacing.unit * 5;
+      }
+    }
 
     final BorderRadius? radius;
     final BoxShape shape;
@@ -137,6 +172,16 @@ class KunSkeleton extends StatelessWidget {
     }
     if (animation == KunSkeletonAnimation.pulse) {
       box = KunPulseLayer(child: box);
+    }
+    if (lineBox != null) {
+      box = SizedBox(
+        height: lineBox,
+        child: Align(
+          alignment: AlignmentDirectional.centerStart,
+          widthFactor: 1,
+          child: box,
+        ),
+      );
     }
     return ExcludeSemantics(
       child: Align(

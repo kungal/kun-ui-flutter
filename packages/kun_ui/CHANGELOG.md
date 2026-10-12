@@ -1,5 +1,31 @@
 # Changelog
 
+## 0.28.0
+
+Adopts kun-ui 2.57.0, which includes 2.56.2. The generated family's floor
+is now `^2.57.0`.
+
+- **A `text` `KunSkeleton` is one line box tall.** Without a `height`, the
+  placeholder now takes the line box of the `DefaultTextStyle` it inherits
+  (font size × line height, under the ambient text scale), with the same
+  one-em bar centred in it, the way a line of words sits in its box.
+  Before, it was one em tall, so the content below moved by the leading
+  when the words arrived. This was asked by the kungal app and decided
+  upstream.
+  - **What it costs:** each default-height text placeholder grows by its
+    leading, for example from 14 to 20 under `KunText.sm`, so a stack of
+    them is taller than before. Give the placeholder the style of the
+    content it stands in for (`DefaultTextStyle.merge(style: KunText.sm,
+    child: …)`), and remove any gap you added between the lines of one
+    paragraph to fake the leading.
+  - The bar now follows the text scale, as the words do.
+  - With an explicit `height`, a `text` placeholder is unchanged: the bar
+    is that height, with no line box around it.
+- **`KunPagination` leaves a modified arrow alone.** ← and → with Alt,
+  Ctrl, Meta or Shift held no longer change page; they are browser and OS
+  shortcuts (Alt+← is Back, Shift+← extends a selection). `KunLightbox`
+  already ignored them, and a test now holds it to that.
+
 ## 0.27.1
 
 - A `KunButton`, a clickable `KunCard` or a `KunPressable` that stops

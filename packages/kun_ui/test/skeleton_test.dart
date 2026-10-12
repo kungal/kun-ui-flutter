@@ -60,19 +60,160 @@ void main() {
     expect(tester.getSize(find.byType(KunSkeleton)), const Size(300, 20));
   });
 
-  testWidgets('text is one em tall and full width', (tester) async {
+  testWidgets('text is one line box tall with a one-em bar centred in it',
+      (tester) async {
+    const TextStyle style = TextStyle(fontSize: 18, height: 1.5);
     await tester.pumpWidget(
       wrap(
         ConstrainedBox(
-          constraints: BoxConstraints(maxWidth: 300),
-          child: DefaultTextStyle(
-            style: TextStyle(fontSize: 18),
-            child: KunSkeleton(variant: KunSkeletonVariant.text),
+          constraints: const BoxConstraints(maxWidth: 300),
+          child: const DefaultTextStyle(
+            style: style,
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: <Widget>[
+                KunSkeleton(variant: KunSkeletonVariant.text),
+                Text('Line'),
+              ],
+            ),
           ),
         ),
       ),
     );
-    expect(tester.getSize(find.byType(KunSkeleton)), const Size(300, 18));
+    expect(tester.getSize(find.byType(KunSkeleton)), const Size(300, 27));
+    expect(tester.getSize(find.text('Line')).height, 27);
+    final Rect bar = tester.getRect(
+      find.descendant(
+        of: find.byType(KunSkeleton),
+        matching: find.byType(DecoratedBox),
+      ),
+    );
+    final Rect box = tester.getRect(find.byType(KunSkeleton));
+    expect(bar.size, const Size(300, 18));
+    expect(bar.top - box.top, 4.5);
+  });
+
+  testWidgets('a paragraph of text placeholders is as tall as its words',
+      (tester) async {
+    await tester.pumpWidget(
+      wrap(
+        DefaultTextStyle(
+          style: KunText.sm,
+          child: SizedBox(
+            width: 300,
+            child: Row(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: <Widget>[
+                const Expanded(
+                  child: Column(
+                    key: ValueKey<String>('placeholder'),
+                    mainAxisSize: MainAxisSize.min,
+                    children: <Widget>[
+                      KunSkeleton(variant: KunSkeletonVariant.text),
+                      KunSkeleton(variant: KunSkeletonVariant.text),
+                      KunSkeleton(
+                        variant: KunSkeletonVariant.text,
+                        widthFactor: 0.6,
+                      ),
+                    ],
+                  ),
+                ),
+                const Expanded(child: Text('one\ntwo\nthree')),
+              ],
+            ),
+          ),
+        ),
+      ),
+    );
+    expect(
+      tester.getSize(find.byKey(const ValueKey<String>('placeholder'))).height,
+      tester.getSize(find.text('one\ntwo\nthree')).height,
+    );
+    expect(
+      tester.getSize(find.byKey(const ValueKey<String>('placeholder'))).height,
+      60,
+    );
+  });
+
+  testWidgets('the line box and the bar follow the text scale', (tester) async {
+    await tester.pumpWidget(
+      MediaQuery(
+        data: const MediaQueryData(textScaler: TextScaler.linear(2)),
+        child: KunTheme(
+          data: KunThemeData.light(),
+          child: const Directionality(
+            textDirection: TextDirection.ltr,
+            child: Center(
+              child: SizedBox(
+                width: 300,
+                child: DefaultTextStyle(
+                  style: TextStyle(fontSize: 10, height: 1.5),
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    children: <Widget>[
+                      KunSkeleton(variant: KunSkeletonVariant.text),
+                      Text('Scaled'),
+                    ],
+                  ),
+                ),
+              ),
+            ),
+          ),
+        ),
+      ),
+    );
+    expect(tester.getSize(find.byType(KunSkeleton)).height, 30);
+    expect(tester.getSize(find.text('Scaled')).height, 30);
+    expect(
+      tester
+          .getSize(
+            find.descendant(
+              of: find.byType(KunSkeleton),
+              matching: find.byType(DecoratedBox),
+            ),
+          )
+          .height,
+      20,
+    );
+  });
+
+  testWidgets('an explicit height is the bar alone; a tight line keeps the em',
+      (tester) async {
+    await tester.pumpWidget(
+      wrap(
+        const SizedBox(
+          width: 300,
+          child: DefaultTextStyle(
+            style: TextStyle(fontSize: 18, height: 1.5),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: <Widget>[
+                KunSkeleton(
+                  key: ValueKey<String>('explicit'),
+                  variant: KunSkeletonVariant.text,
+                  height: 10,
+                ),
+                DefaultTextStyle(
+                  style: TextStyle(fontSize: 18, height: 0.8),
+                  child: KunSkeleton(
+                    key: ValueKey<String>('tight'),
+                    variant: KunSkeletonVariant.text,
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ),
+      ),
+    );
+    expect(
+      tester.getSize(find.byKey(const ValueKey<String>('explicit'))),
+      const Size(300, 10),
+    );
+    expect(
+      tester.getSize(find.byKey(const ValueKey<String>('tight'))),
+      const Size(300, 18),
+    );
   });
 
   testWidgets('an intrinsic parent can measure every variant', (tester) async {

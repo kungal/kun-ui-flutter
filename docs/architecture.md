@@ -1243,9 +1243,9 @@ mounted. Each layer used to own a controller started at mount, so six list
 rows built over several frames pulsed out of step, which the kungal app
 reported; Fluent 2's skeleton guidance asks for every placeholder on a page
 to animate in sync. Each layer still owns its ticker, so `TickerMode` and
-reduced motion work as before. The web has the same drift for elements
-inserted at different times (a CSS animation starts at insertion), and
-nothing in the tokens changes.
+reduced motion work as before. kun-ui 2.57.0 did the same on the web, where
+a CSS animation starts at insertion: each placeholder pins its animation's
+`startTime` to the document timeline's origin.
 
 ### The click ripple is the press feedback on touch (decided 2026-10-12)
 
