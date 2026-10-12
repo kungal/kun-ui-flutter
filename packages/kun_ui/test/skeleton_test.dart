@@ -1,3 +1,4 @@
+import 'package:flutter/scheduler.dart';
 import 'package:flutter/widgets.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:kun_ui/kun_ui.dart';
@@ -33,6 +34,17 @@ FadeTransition pulseOf(WidgetTester tester) => tester.widget<FadeTransition>(
         matching: find.byType(FadeTransition),
       ),
     );
+
+/// Pumps until the frame timestamp is a whole number of pulse cycles, the
+/// moment every pulse on screen is at opacity 1.
+Future<void> pumpToCycleStart(WidgetTester tester) async {
+  late Duration stamp;
+  SchedulerBinding.instance.addPostFrameCallback((ts) => stamp = ts);
+  await tester.pump();
+  final int period = KunPulse.duration.inMicroseconds;
+  final int rest = period - stamp.inMicroseconds % period;
+  await tester.pump(Duration(microseconds: rest % period));
+}
 
 void main() {
   testWidgets('defaults: rect is 20 tall and fills a 300-wide parent',
@@ -260,7 +272,8 @@ void main() {
         ),
       ),
     );
-    expect(pulseOf(tester).opacity.value, 1);
+    await pumpToCycleStart(tester);
+    expect(pulseOf(tester).opacity.value, closeTo(1, 0.001));
 
     await tester.pump(KunPulse.duration ~/ 4);
     expect(
@@ -273,6 +286,44 @@ void main() {
 
     await tester.pump(KunPulse.duration ~/ 2);
     expect(pulseOf(tester).opacity.value, closeTo(1, 0.001));
+  });
+
+  testWidgets('skeletons mounted at different times pulse in step',
+      (tester) async {
+    Widget rows(int count) => wrap(
+          SizedBox(
+            width: 300,
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: <Widget>[
+                for (int i = 0; i < count; i++) KunSkeleton(key: ValueKey(i)),
+              ],
+            ),
+          ),
+        );
+    List<double> opacities() => <double>[
+          for (final FadeTransition fade in tester.widgetList<FadeTransition>(
+            find.descendant(
+              of: find.byType(KunSkeleton),
+              matching: find.byType(FadeTransition),
+            ),
+          ))
+            fade.opacity.value,
+        ];
+
+    await tester.pumpWidget(rows(1));
+    await tester.pump(const Duration(milliseconds: 300));
+    await tester.pumpWidget(rows(2));
+    await tester.pump(const Duration(milliseconds: 170));
+    await tester.pumpWidget(rows(3));
+
+    for (int frame = 0; frame < 8; frame++) {
+      final List<double> values = opacities();
+      expect(values, hasLength(3));
+      expect(values[1], closeTo(values[0], 0.0001));
+      expect(values[2], closeTo(values[0], 0.0001));
+      await tester.pump(const Duration(milliseconds: 230));
+    }
   });
 
   testWidgets('animation none keeps opacity 1 and runs no ticker',
@@ -299,6 +350,8 @@ void main() {
     );
     expect(pulseOf(tester).opacity.value, 1);
     expect(tester.hasRunningAnimations, isFalse);
+    await tester.pump(KunPulse.duration ~/ 4);
+    expect(pulseOf(tester).opacity.value, 1);
 
     await tester.pumpWidget(
       wrap(
@@ -307,7 +360,8 @@ void main() {
       ),
     );
     expect(tester.hasRunningAnimations, isTrue);
-    expect(pulseOf(tester).opacity.value, 1);
+    await pumpToCycleStart(tester);
+    expect(pulseOf(tester).opacity.value, closeTo(1, 0.001));
     await tester.pump(KunPulse.duration ~/ 2);
     expect(pulseOf(tester).opacity.value, closeTo(KunPulse.midOpacity, 0.001));
   });
