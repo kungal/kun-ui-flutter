@@ -4,6 +4,7 @@ import 'package:kun_ui_tokens/kun_ui_tokens.dart';
 import '../foundation/control_metrics.dart';
 import '../foundation/design.dart';
 import '../foundation/motion.dart';
+import '../foundation/ripple.dart';
 import '../foundation/tap_target.dart';
 import '../foundation/variant_style.dart';
 import '../theme/theme.dart';
@@ -104,6 +105,8 @@ class _KunButtonState extends State<KunButton> {
   bool _hovered = false;
   bool _focused = false;
   bool _pressed = false;
+  final GlobalKey<KunRippleLayerState> _ripple =
+      GlobalKey<KunRippleLayerState>();
 
   bool get _inactive => widget.disabled || widget.loading;
   bool get _canPress => !_inactive && widget.onPressed != null;
@@ -225,7 +228,12 @@ class _KunButtonState extends State<KunButton> {
     final withRing = Stack(
       clipBehavior: Clip.none,
       children: [
-        box,
+        KunRippleLayer(
+          key: _ripple,
+          radius: corner,
+          borderWidth: 1,
+          child: box,
+        ),
         if (_focused) ...[
           band(
             4,
@@ -284,8 +292,12 @@ class _KunButtonState extends State<KunButton> {
               behavior: HitTestBehavior.opaque,
               onTapDown:
                   _canPress ? (_) => setState(() => _pressed = true) : null,
-              onTapUp:
-                  _canPress ? (_) => setState(() => _pressed = false) : null,
+              onTapUp: _canPress
+                  ? (details) {
+                      setState(() => _pressed = false);
+                      _ripple.currentState?.spawn(details.globalPosition);
+                    }
+                  : null,
               onTapCancel:
                   _canPress ? () => setState(() => _pressed = false) : null,
               onTap: _canPress ? _handleActivate : null,

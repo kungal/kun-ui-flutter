@@ -1226,10 +1226,55 @@ applies it globally, so each widget runs its durations through `kunMotion`
   transition) reads `kunReducedMotion(context)` and jumps.
 - `KunSpinner` is the exception. The web spinner turns by SMIL
   `<animateTransform>`, which the stylesheet rule does not reach, so the
-  spinner keeps turning there and here.
+  spinner keeps turning there and here. `KunRefreshIndicator`'s ring is
+  the same spinner and turns with it. A frozen 90° arc reads as a stalled
+  request, and Flutter's own Material and Cupertino indicators do not read
+  the setting either. Stopping it would be a change to the web icon first
+  (asked by the kungal app 2026-10-12, kept).
 
 KunUI 0.3.0 ignored the setting everywhere. It was found while accepting
 KunTab, whose web scroll code checks `prefers-reduced-motion` by hand.
+
+### Placeholders pulse on one clock (decided 2026-10-12)
+
+`KunPulseLayer`, the `animate-pulse` of `KunSkeleton`, `KunAvatar` and
+`KunImage`, reads its phase from the frame timestamp, not from when it
+mounted. Each layer used to own a controller started at mount, so six list
+rows built over several frames pulsed out of step, which the kungal app
+reported; Fluent 2's skeleton guidance asks for every placeholder on a page
+to animate in sync. Each layer still owns its ticker, so `TickerMode` and
+reduced motion work as before. The web has the same drift for elements
+inserted at different times (a CSS animation starts at insertion), and
+nothing in the tokens changes.
+
+### The click ripple is the press feedback on touch (decided 2026-10-12)
+
+The web `KunButton` and an interactive `KunCard` render `KunRipple` on every
+click: a circle of `foreground` at 30%, as wide as the host's longer side,
+grows from the pointer to twice that and fades out in 600ms
+(`--ease-kun-out`), clipped by the host's `overflow-hidden`. The contract
+marks `KunRipple` web-only because the SDK has `InkWell`, which is Material
+(iron rule 4), so `KunRippleLayer` (`lib/src/foundation/ripple.dart`, not
+exported) draws it.
+
+0.2.0 deferred it and took `active:scale-[0.97]` as the press feedback.
+That works on a filled button, but a `light` icon button, transparent
+until hovered, shows a finger almost nothing: the hover tint never comes on
+a phone, on the web too, because Tailwind v4 gates `hover:` behind
+`@media (hover: hover)`. The
+kungal app hit it with its back, more and share buttons. Material's pressed
+state layer was proposed and not taken, because the web has no such design;
+the ripple is the one the web already draws.
+
+- It spawns on the tap's release, where the web's `click` fires, and only
+  while the press is live: not disabled, not loading, a listener set.
+- A key press spawns none. A browser clicks a key-activated button at
+  (0, 0) (measured in Chromium 151), which puts the web's ripple outside
+  the host.
+- Under reduced motion none spawns: the base stylesheet ends the keyframes
+  on their last frame, which is invisible.
+- The layer always builds its `Stack`, with the overlay added only while a
+  ripple runs, so the first ripple never remounts the host's content.
 
 ### A component's own timings are literals (decided upstream 2026-09-30)
 
@@ -1276,8 +1321,6 @@ color matched, and only the dark fills did not.
   pointer environments, which covers today's need.
 - **Per-component theme overrides** (`KunButtonTheme` etc.): additive when a
   real app needs one; premature now.
-- **Ripple**: the web button's ripple is not contract surface; press
-  feedback is the web's `active:scale-[0.97]`. Revisit if an app asks.
 - **The selection magnifier, and touch selection in KunSelect's search
   field**: see "Touch selection is KunUI-drawn" above. Each waits for an
   app to need it.

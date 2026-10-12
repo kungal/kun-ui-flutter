@@ -1,5 +1,22 @@
 # Changelog
 
+## 0.27.0
+
+- **`KunButton` and a clickable `KunCard` draw the web's click ripple.**
+  A tap leaves a circle of `foreground` at 30% that grows from the finger
+  and fades in 600ms, clipped inside the border, as the web's `KunRipple`
+  does. This is the press feedback a touch screen gets: a `light` button
+  is transparent until hovered and a phone never hovers, so until now a
+  tap only scaled it to 0.97, which on an icon button is barely visible.
+  A key press, reduced motion, a disabled or loading button and a button
+  without `onPressed` draw none. Every widget built on `KunButton` gets it,
+  `KunNavItem` included; `KunPressable` stays headless.
+- **Every pulsing placeholder pulses in step.** `KunSkeleton`, a loading
+  `KunAvatar` and a loading `KunImage` take their phase from the frame
+  clock instead of the moment they mounted, so a list whose rows mount over
+  several frames no longer ripples out of sync. The fade itself, its
+  timing and reduced motion are unchanged.
+
 ## 0.26.3
 
 - The link menu of a `KunAvatar`, a `KunUserChip` and a `KunPressable`

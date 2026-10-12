@@ -5,6 +5,7 @@ import '../foundation/design.dart';
 import '../foundation/focus_outline.dart';
 import '../foundation/motion.dart';
 import '../foundation/outer_shadow.dart';
+import '../foundation/ripple.dart';
 import '../theme/theme.dart';
 
 /// A card's inner padding (web type `KunCardPadding`).
@@ -115,6 +116,8 @@ class _KunCardState extends State<KunCard> {
   bool _hovered = false;
   bool _pressed = false;
   bool _focused = false;
+  final GlobalKey<KunRippleLayerState> _ripple =
+      GlobalKey<KunRippleLayerState>();
 
   bool get _showsHoverLayer => widget.clickable || widget.isHoverable;
 
@@ -226,6 +229,12 @@ class _KunCardState extends State<KunCard> {
     }
 
     if (widget.clickable) {
+      card = KunRippleLayer(
+        key: _ripple,
+        radius: cornerRadius,
+        borderWidth: outline?.top.width ?? 0,
+        child: card,
+      );
       card = AnimatedScale(
         scale: _pressed ? 0.97 : 1, // web active:scale-[0.97]
         duration: kunMotion(context, KunDurations.fast),
@@ -271,7 +280,10 @@ class _KunCardState extends State<KunCard> {
                 ? (_) => setState(() => _pressed = true)
                 : null,
             onTapUp: widget.clickable
-                ? (_) => setState(() => _pressed = false)
+                ? (details) {
+                    setState(() => _pressed = false);
+                    _ripple.currentState?.spawn(details.globalPosition);
+                  }
                 : null,
             onTapCancel: widget.clickable
                 ? () => setState(() => _pressed = false)
