@@ -139,6 +139,7 @@ const List<GalleryComponent> galleryComponents = <GalleryComponent>[
       GalleryDemo(slug: 'sizes', title: 'Sizes', builder: buttonSizes),
       GalleryDemo(slug: 'states', title: 'States', builder: buttonStates),
       GalleryDemo(slug: 'rounded', title: 'Rounded', builder: buttonRounded),
+      GalleryDemo(slug: 'expanded', title: 'Expanded', builder: buttonExpanded),
       GalleryDemo(
           slug: 'contract', title: 'Contract', builder: kunButtonContract),
     ],

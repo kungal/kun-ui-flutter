@@ -46,6 +46,7 @@ class KunButton extends StatefulWidget {
     this.fullWidth = false,
     this.isIconOnly = false,
     this.semanticLabel,
+    this.expanded,
   });
 
   /// Called on tap and on keyboard activation (web event `click`).
@@ -93,9 +94,18 @@ class KunButton extends StatefulWidget {
   /// no text of its own.
   final bool isIconOnly;
 
-  /// Accessible name (web `ariaLabel`). When null, assistive technology
-  /// reads the [child] text.
+  /// Accessible name (web `ariaLabel`). It replaces what the [child] and
+  /// [icon] would read, as `aria-label` does. When null or empty, assistive
+  /// technology reads the [child] text.
   final String? semanticLabel;
+
+  /// The web's `aria-expanded`, for a button that shows or hides a panel.
+  /// Null, the default, reports no expansion state.
+  ///
+  /// On the web the attribute falls through to the `<button>`; Dart has no
+  /// attribute pass-through, so it is a parameter here, on the button's own
+  /// node.
+  final bool? expanded;
 
   @override
   State<KunButton> createState() => _KunButtonState();
@@ -220,9 +230,12 @@ class _KunButtonState extends State<KunButton> {
       ),
       // Container.alignment would fill a bounded height too: four fullWidth
       // buttons in a bottom bar took the whole screen on a Pixel 10 Pro.
-      child: widget.fullWidth && !widget.isIconOnly
-          ? Align(heightFactor: 1, child: content)
-          : content,
+      child: ExcludeSemantics(
+        excluding: widget.semanticLabel?.isNotEmpty ?? false,
+        child: widget.fullWidth && !widget.isIconOnly
+            ? Align(heightFactor: 1, child: content)
+            : content,
+      ),
     );
 
     // The keyboard-focus ring, in a Stack overlay so it never shifts layout.
@@ -275,6 +288,7 @@ class _KunButtonState extends State<KunButton> {
     return Semantics(
       container: true,
       button: true,
+      expanded: widget.expanded,
       enabled: !_inactive,
       label: widget.semanticLabel,
       child: KunTapTarget(

@@ -180,3 +180,51 @@ Widget buttonRounded(BuildContext context) {
     ),
   );
 }
+
+Widget buttonExpanded(BuildContext context) {
+  return const Padding(
+    padding: EdgeInsets.all(KunSpacing.unit * 6),
+    child: _ButtonExpanded(),
+  );
+}
+
+class _ButtonExpanded extends StatefulWidget {
+  const _ButtonExpanded();
+
+  @override
+  State<_ButtonExpanded> createState() => _ButtonExpandedState();
+}
+
+class _ButtonExpandedState extends State<_ButtonExpanded> {
+  bool _open = false;
+
+  @override
+  Widget build(BuildContext context) {
+    final KunColorScheme scheme = KunTheme.of(context).colors;
+    return SizedBox(
+      width: KunSpacing.unit * 100,
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        crossAxisAlignment: CrossAxisAlignment.start,
+        spacing: KunSpacing.unit * 3,
+        children: [
+          KunButton(
+            variant: KunUIVariant.bordered,
+            size: KunUISize.sm,
+            expanded: _open,
+            semanticLabel: 'Hide the tag Comedy',
+            icon: Icon(_open ? KunIcons.chevronDown : KunIcons.chevronRight),
+            iconPosition: KunIconPosition.right,
+            onPressed: () => setState(() => _open = !_open),
+            child: const Text('Hide'),
+          ),
+          if (_open)
+            Text(
+              'Topics tagged Comedy are hidden from your lists.',
+              style: KunText.sm.copyWith(color: scheme.foregroundMuted),
+            ),
+        ],
+      ),
+    );
+  }
+}

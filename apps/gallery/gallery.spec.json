@@ -253,6 +253,12 @@
           "shows": [
             "props.rounded"
           ]
+        },
+        {
+          "slug": "expanded",
+          "title": "Expanded",
+          "builder": "buttonExpanded",
+          "shows": []
         }
       ],
       "undemoable": {

@@ -80,6 +80,15 @@ Fixed here so every port maps the same way:
 The last row is deliberate: the web contract separates looks from listeners,
 so Material's `onPressed: null == disabled` convention is not carried over.
 
+An `aria-*` state the web sets by attribute fall-through is not in the
+contract, which lists props: `<KunButton aria-expanded>` lands on the
+`<button>` because the component leaves `inheritAttrs` on. Dart has no
+fall-through, and a `Semantics` wrapper cannot reach a widget that is a
+node of its own, so the state becomes a nullable parameter on that node:
+`KunButton.expanded` (decided 2026-10-13, asked by the kungal app). Like
+`KunPressable`, it translates the element rather than a design, so it
+needs no upstream decision. Anything with a look still does.
+
 ### KunSpinner is a widget, not an icon
 
 Tier 1's honest count was 29 of 30 icons crossing: the web's loading icon

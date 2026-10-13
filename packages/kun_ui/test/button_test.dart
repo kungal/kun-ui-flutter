@@ -370,6 +370,79 @@ void main() {
     handle.dispose();
   });
 
+  testWidgets('expanded reaches the button node, named or not', (tester) async {
+    final SemanticsHandle handle = tester.ensureSemantics();
+    Future<SemanticsNode> node({bool? expanded, String? semanticLabel}) async {
+      await tester.pumpWidget(
+        wrap(
+          Semantics(
+            container: true,
+            child: KunButton(
+              expanded: expanded,
+              semanticLabel: semanticLabel,
+              onPressed: () {},
+              icon: const Icon(KunIcons.chevronDown),
+              iconPosition: KunIconPosition.right,
+              child: const Text('屏蔽此标签'),
+            ),
+          ),
+        ),
+      );
+      return tester.getSemantics(find.byType(KunButton));
+    }
+
+    SemanticsNode button = await node();
+    expect(button, isSemantics(isButton: true, hasExpandedState: false));
+
+    button = await node(expanded: false);
+    expect(
+      button,
+      isSemantics(isButton: true, hasExpandedState: true, isExpanded: false),
+    );
+
+    button = await node(expanded: true, semanticLabel: '屏蔽标签 妹控');
+    expect(
+      button,
+      isSemantics(
+        isButton: true,
+        hasExpandedState: true,
+        isExpanded: true,
+        label: '屏蔽标签 妹控',
+      ),
+    );
+    handle.dispose();
+  });
+
+  testWidgets('a semanticLabel replaces the label text, as aria-label does',
+      (tester) async {
+    final SemanticsHandle handle = tester.ensureSemantics();
+    Future<String> label(String? semanticLabel) async {
+      await tester.pumpWidget(
+        wrap(
+          Semantics(
+            container: true,
+            child: KunButton(
+              semanticLabel: semanticLabel,
+              loading: true,
+              icon: const Icon(KunIcons.x, semanticLabel: 'x'),
+              onPressed: () {},
+              child: const Text('屏蔽'),
+            ),
+          ),
+        ),
+      );
+      return tester
+          .getSemantics(find.byType(KunButton))
+          .getSemanticsData()
+          .label;
+    }
+
+    expect(await label('屏蔽 妹控'), '屏蔽 妹控');
+    expect(await label(null), 'x\n屏蔽');
+    expect(await label(''), 'x\n屏蔽', reason: 'the web reads "" as unset');
+    handle.dispose();
+  });
+
   // The kungal app's desktop build threw "setState() called during build"
   // three times: GestureDetector disposes a recognizer it no longer needs in
   // didUpdateWidget, and the dispose cancels the live tap synchronously.

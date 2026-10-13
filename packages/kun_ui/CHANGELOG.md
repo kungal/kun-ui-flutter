@@ -1,5 +1,22 @@
 # Changelog
 
+## 0.29.0
+
+- **`KunButton.expanded`** carries the web's `aria-expanded` on the
+  button's own node, for a button that shows or hides a panel. Null, the
+  default, reports no state. On the web the attribute falls through to the
+  `<button>`. In Flutter a `Semantics(expanded:)` around a `KunButton`
+  could not reach it, because the button is a node of its own; it took a
+  `MergeSemantics` to land. Asked by the kungal app.
+- **A `KunButton`'s `semanticLabel` replaces its text,** as `aria-label`
+  does on the web. Before, a screen reader read both: a button labelled
+  屏蔽 妹控 with the text 屏蔽 was announced as both strings. An icon with
+  a semantic label of its own is replaced too. An empty label counts as
+  none, and the text is read, as on the web.
+  - **What it costs:** if you relied on hearing both, put the whole name
+    in `semanticLabel`. An `ExcludeSemantics` you wrapped around the child
+    as a workaround is now redundant and can go.
+
 ## 0.28.0
 
 Adopts kun-ui 2.57.0, which includes 2.56.2. The generated family's floor
