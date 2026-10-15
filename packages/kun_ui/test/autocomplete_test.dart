@@ -1,3 +1,6 @@
+import 'dart:ui' show Tristate;
+
+import 'package:flutter/rendering.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter/widgets.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -63,6 +66,8 @@ class Host extends StatefulWidget {
     this.debounce = Duration.zero,
     this.onSearch,
     this.onSelected,
+    this.onSubmitted,
+    this.optionBuilder,
     super.key,
   });
 
@@ -74,6 +79,9 @@ class Host extends StatefulWidget {
   final Duration debounce;
   final ValueChanged<String>? onSearch;
   final ValueChanged<KunAutocompleteOption>? onSelected;
+  final ValueChanged<String>? onSubmitted;
+  final Widget Function(BuildContext, KunAutocompleteOption, bool)?
+      optionBuilder;
 
   @override
   State<Host> createState() => HostState();
@@ -96,6 +104,8 @@ class HostState extends State<Host> {
       onChanged: (String v) => setState(() => value = v),
       onSearch: widget.onSearch,
       onSelected: widget.onSelected,
+      onSubmitted: widget.onSubmitted,
+      optionBuilder: widget.optionBuilder,
     );
   }
 }
@@ -374,5 +384,208 @@ void main() {
           ? 48 - KunControlMetrics.of(KunUISize.md).square
           : 0,
     );
+  });
+
+  testWidgets('a row is the web size on desktop and 48dp on a phone',
+      (tester) async {
+    setView(tester, const Size(500, 800));
+    await tester.pumpWidget(
+      wrap(const Host(), tapTargetSize: KunTapTargetSize.shrinkWrap),
+    );
+    await focusField(tester);
+    expect(
+      tester.getSize(row('vue')).height,
+      KunText.sm.fontSize! * KunText.sm.height! + KunSpacing.unit * 2 * 2,
+    );
+
+    await tester.pumpWidget(
+      wrap(const Host(key: ValueKey<String>('padded'))),
+    );
+    await focusField(tester);
+    expect(tester.getSize(row('vue')).height, 48);
+  });
+
+  testWidgets('a builder row is as tall as what it draws', (tester) async {
+    setView(tester, const Size(500, 800));
+    await tester.pumpWidget(
+      wrap(
+        Host(
+          optionBuilder: (_, KunAutocompleteOption option, __) =>
+              SizedBox(height: 50, child: Text(option.label)),
+        ),
+        tapTargetSize: KunTapTargetSize.shrinkWrap,
+      ),
+    );
+    await focusField(tester);
+    expect(tester.getSize(row('vue')).height, 50 + KunSpacing.unit * 2 * 2);
+  });
+
+  testWidgets('the arrow keys keep a tall highlighted row in view',
+      (tester) async {
+    setView(tester, const Size(500, 800));
+    final List<KunAutocompleteOption> many = <KunAutocompleteOption>[
+      for (int i = 0; i < 12; i++)
+        KunAutocompleteOption(value: 'o$i', label: 'Option $i'),
+    ];
+    await tester.pumpWidget(
+      wrap(
+        Host(
+          options: many,
+          optionBuilder: (_, KunAutocompleteOption option, __) =>
+              SizedBox(height: 44, child: Text(option.label)),
+        ),
+        tapTargetSize: KunTapTargetSize.shrinkWrap,
+      ),
+    );
+    await focusField(tester);
+    final Rect panel = tester.getRect(list);
+
+    for (int i = 0; i < 11; i++) {
+      await tester.sendKeyEvent(LogicalKeyboardKey.arrowDown);
+      await tester.pumpAndSettle();
+    }
+    Rect last = tester.getRect(row('o11'));
+    expect(last.bottom, lessThanOrEqualTo(panel.bottom));
+    expect(last.top, greaterThanOrEqualTo(panel.top));
+
+    await tester.sendKeyEvent(LogicalKeyboardKey.arrowDown);
+    await tester.pumpAndSettle();
+    final Rect first = tester.getRect(row('o0'));
+    expect(first.top, greaterThanOrEqualTo(panel.top));
+    expect(first.bottom, lessThanOrEqualTo(panel.bottom));
+
+    await tester.sendKeyEvent(LogicalKeyboardKey.arrowUp);
+    await tester.pumpAndSettle();
+    last = tester.getRect(row('o11'));
+    expect(last.bottom, lessThanOrEqualTo(panel.bottom));
+  });
+
+  testWidgets('a builder row is named by all of its text', (tester) async {
+    setView(tester, const Size(500, 800));
+    final SemanticsHandle handle = tester.ensureSemantics();
+    await tester.pumpWidget(
+      wrap(
+        Host(
+          optionBuilder: (_, KunAutocompleteOption option, __) => Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: <Widget>[
+              Text(option.label),
+              Text('${option.value} framework'),
+            ],
+          ),
+        ),
+      ),
+    );
+    await focusField(tester);
+
+    final SemanticsNode vue = tester.getSemantics(row('vue'));
+    expect(vue.label, 'Vue\nvue framework');
+    expect(vue.getSemanticsData().hasAction(SemanticsAction.tap), isTrue);
+    expect(vue.getSemanticsData().flagsCollection.isSelected, Tristate.isTrue);
+
+    final List<SemanticsNode> unnamed = <SemanticsNode>[];
+    void visit(SemanticsNode node) {
+      final SemanticsData data = node.getSemanticsData();
+      if (data.hasAction(SemanticsAction.tap) && data.label.isEmpty) {
+        unnamed.add(node);
+      }
+      node.visitChildren((SemanticsNode child) {
+        visit(child);
+        return true;
+      });
+    }
+
+    visit(
+      tester
+          .binding.renderViews.first.owner!.semanticsOwner!.rootSemanticsNode!,
+    );
+    expect(unnamed, isEmpty);
+    handle.dispose();
+  });
+
+  testWidgets('Enter on a highlighted option commits it, not the text',
+      (tester) async {
+    setView(tester, const Size(500, 800));
+    final List<String> submitted = <String>[];
+    final List<String> selected = <String>[];
+    await tester.pumpWidget(
+      wrap(
+        Host(
+          onSubmitted: submitted.add,
+          onSelected: (KunAutocompleteOption o) => selected.add(o.value),
+        ),
+      ),
+    );
+    await focusField(tester);
+    await tester.enterText(find.byType(EditableText), 'v');
+    await tester.pumpAndSettle();
+    await tester.sendKeyEvent(LogicalKeyboardKey.enter);
+    await tester.pumpAndSettle();
+
+    expect(selected, <String>['vue']);
+    expect(submitted, isEmpty);
+  });
+
+  testWidgets('the action key commits a highlighted option too',
+      (tester) async {
+    setView(tester, const Size(500, 800));
+    final List<String> submitted = <String>[];
+    final List<String> selected = <String>[];
+    await tester.pumpWidget(
+      wrap(
+        Host(
+          onSubmitted: submitted.add,
+          onSelected: (KunAutocompleteOption o) => selected.add(o.value),
+        ),
+      ),
+    );
+    await focusField(tester);
+    await tester.enterText(find.byType(EditableText), 'v');
+    await tester.pumpAndSettle();
+    await tester.testTextInput.receiveAction(TextInputAction.done);
+    await tester.pumpAndSettle();
+
+    expect(selected, <String>['vue']);
+    expect(hostOf(tester).value, 'Vue');
+    expect(submitted, isEmpty);
+  });
+
+  testWidgets('submitting with nothing highlighted reports the text',
+      (tester) async {
+    setView(tester, const Size(500, 800));
+    final List<String> submitted = <String>[];
+    final List<String> selected = <String>[];
+    await tester.pumpWidget(
+      wrap(
+        Host(
+          onSubmitted: submitted.add,
+          onSelected: (KunAutocompleteOption o) => selected.add(o.value),
+        ),
+      ),
+    );
+    await focusField(tester);
+    await tester.enterText(find.byType(EditableText), 'zig');
+    await tester.pumpAndSettle();
+    expect(
+      await tester.sendKeyEvent(LogicalKeyboardKey.enter),
+      isFalse,
+      reason: 'an Enter with nothing to commit falls through to the field',
+    );
+    await tester.testTextInput.receiveAction(TextInputAction.done);
+    await tester.pumpAndSettle();
+    expect(submitted, <String>['zig']);
+
+    await focusField(tester);
+    await tester.enterText(find.byType(EditableText), 'v');
+    await tester.pumpAndSettle();
+    await tester.sendKeyEvent(LogicalKeyboardKey.escape);
+    await tester.pumpAndSettle();
+    expect(list, findsNothing);
+    await tester.testTextInput.receiveAction(TextInputAction.done);
+    await tester.pumpAndSettle();
+
+    expect(submitted, <String>['zig', 'v']);
+    expect(selected, isEmpty);
   });
 }

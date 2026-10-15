@@ -11,6 +11,7 @@ import '../foundation/anchored.dart';
 import '../foundation/design.dart';
 import '../foundation/dismiss_layers.dart';
 import '../foundation/motion.dart';
+import '../foundation/tap_target.dart';
 import '../locale/messages.dart';
 import '../theme/theme.dart';
 import 'input.dart';
@@ -67,6 +68,7 @@ class KunAutocomplete<T extends KunAutocompleteOption> extends StatefulWidget {
     this.onChanged,
     this.onSelected,
     this.onSearch,
+    this.onSubmitted,
     this.optionBuilder,
     this.allowCustomValue = true,
     this.clearable = false,
@@ -106,7 +108,17 @@ class KunAutocomplete<T extends KunAutocompleteOption> extends StatefulWidget {
   /// with [manualFilter] for a remote source.
   final ValueChanged<String>? onSearch;
 
-  /// Draws a row in place of its label, the web's `option` slot.
+  /// Called with the field's text when the user presses Enter, or the soft
+  /// keyboard's action key, while no option is highlighted: the list is
+  /// closed or nothing in it can be chosen. On the web that Enter submits
+  /// the enclosing form. With an option highlighted, Enter commits the
+  /// option instead, as on the web, and the soft keyboard's key does the
+  /// same.
+  final ValueChanged<String>? onSubmitted;
+
+  /// Draws a row in place of its label, the web's `option` slot. The row is
+  /// as tall as what this returns, and a screen reader reads its text as
+  /// the option's name, as the web reads the slot's text.
   final Widget Function(BuildContext context, T option, bool active)?
       optionBuilder;
 
@@ -185,6 +197,7 @@ class _KunAutocompleteState<T extends KunAutocompleteOption>
   final Object _tapGroup = Object();
   final GlobalKey _fieldKey = GlobalKey(debugLabel: 'KunAutocomplete.field');
   final ScrollController _listScroll = ScrollController();
+  final Map<int, GlobalKey> _rowKeys = <int, GlobalKey>{};
 
   late final AnimationController _openClose;
   late final CurvedAnimation _curve;
@@ -354,6 +367,15 @@ class _KunAutocompleteState<T extends KunAutocompleteOption>
     _close();
   }
 
+  void _onSubmitted(String text) {
+    final List<T> shown = _shown;
+    if (_isOpen && _activeIndex >= 0 && _activeIndex < shown.length) {
+      _select(shown[_activeIndex]);
+      return;
+    }
+    widget.onSubmitted?.call(text);
+  }
+
   void _clear() {
     _dirty = true;
     widget.onChanged?.call('');
@@ -377,28 +399,26 @@ class _KunAutocompleteState<T extends KunAutocompleteOption>
     }
   }
 
-  void _scrollActiveIntoView() {
-    if (!_listScroll.hasClients || _activeIndex < 0) {
-      return;
-    }
-    final double row = _rowHeight;
-    final double top = _activeIndex * row;
-    final double bottom = top + row;
-    final double viewTop = _listScroll.offset;
-    final double viewBottom = viewTop + _listScroll.position.viewportDimension;
-    if (top < viewTop) {
-      _listScroll.jumpTo(math.max(0, top));
-    } else if (bottom > viewBottom) {
-      _listScroll.jumpTo(
-        math.min(_listScroll.position.maxScrollExtent,
-            bottom - (viewBottom - viewTop)),
-      );
-    }
-  }
+  GlobalKey _rowKey(int index) => _rowKeys.putIfAbsent(index, GlobalKey.new);
 
-  /// A row is the web's `py-2` either side of one line of `text-sm`.
-  double get _rowHeight =>
-      KunText.sm.fontSize! * KunText.sm.height! + KunSpacing.unit * 2 * 2;
+  void _scrollActiveIntoView() {
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (!mounted || _activeIndex < 0) {
+        return;
+      }
+      final BuildContext? row = _rowKey(_activeIndex).currentContext;
+      if (row != null) {
+        Scrollable.ensureVisible(
+          row,
+          alignmentPolicy: ScrollPositionAlignmentPolicy.keepVisibleAtEnd,
+        );
+        Scrollable.ensureVisible(
+          row,
+          alignmentPolicy: ScrollPositionAlignmentPolicy.keepVisibleAtStart,
+        );
+      }
+    });
+  }
 
   void _onFocusChange(bool focused) {
     if (focused) {
@@ -522,25 +542,29 @@ class _KunAutocompleteState<T extends KunAutocompleteOption>
         ),
       );
     } else {
-      body = ListView.builder(
+      body = SingleChildScrollView(
         controller: _listScroll,
-        shrinkWrap: true,
-        padding: EdgeInsets.zero,
-        itemCount: shown.length,
-        itemExtent: _rowHeight,
-        itemBuilder: (BuildContext context, int index) =>
-            _KunAutocompleteRow<T>(
-          key: ValueKey<String>('KunAutocomplete.option.${shown[index].value}'),
-          option: shown[index],
-          active: index == _activeIndex && !shown[index].disabled,
-          scheme: scheme,
-          builder: widget.optionBuilder,
-          onHover: () {
-            if (!shown[index].disabled && _activeIndex != index) {
-              setState(() => _activeIndex = index);
-            }
-          },
-          onTap: () => _select(shown[index]),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: <Widget>[
+            for (int index = 0; index < shown.length; index++)
+              _KunAutocompleteRow<T>(
+                key: ValueKey<String>(
+                  'KunAutocomplete.option.${shown[index].value}',
+                ),
+                rowKey: _rowKey(index),
+                option: shown[index],
+                active: index == _activeIndex && !shown[index].disabled,
+                scheme: scheme,
+                builder: widget.optionBuilder,
+                onHover: () {
+                  if (!shown[index].disabled && _activeIndex != index) {
+                    setState(() => _activeIndex = index);
+                  }
+                },
+                onTap: () => _select(shown[index]),
+              ),
+          ],
         ),
       );
     }
@@ -601,6 +625,7 @@ class _KunAutocompleteState<T extends KunAutocompleteOption>
       key: _fieldKey,
       value: widget.value,
       onChanged: _onInput,
+      onSubmitted: _onSubmitted,
       onClear: _clear,
       isClearable: widget.clearable,
       label: widget.label,
@@ -682,6 +707,7 @@ class _KunAutocompleteListLayout extends KunAnchoredLayout {
 class _KunAutocompleteRow<T extends KunAutocompleteOption>
     extends StatelessWidget {
   const _KunAutocompleteRow({
+    required this.rowKey,
     required this.option,
     required this.active,
     required this.scheme,
@@ -691,6 +717,7 @@ class _KunAutocompleteRow<T extends KunAutocompleteOption>
     super.key,
   });
 
+  final GlobalKey rowKey;
   final T option;
   final bool active;
   final KunColorScheme scheme;
@@ -711,24 +738,29 @@ class _KunAutocompleteRow<T extends KunAutocompleteOption>
           ),
         );
 
-    return Semantics(
-      selected: active,
-      enabled: !option.disabled,
-      label: option.label,
-      onTap: option.disabled ? null : onTap,
-      child: ExcludeSemantics(
+    return MergeSemantics(
+      child: Semantics(
+        selected: active,
+        enabled: !option.disabled,
+        onTap: option.disabled ? null : onTap,
         child: MouseRegion(
           cursor: option.disabled
               ? SystemMouseCursors.basic
               : SystemMouseCursors.click,
           onHover: (_) => onHover(),
           child: GestureDetector(
+            key: rowKey,
             behavior: HitTestBehavior.opaque,
+            excludeFromSemantics: true,
             onTap: option.disabled ? null : onTap,
             child: Container(
+              constraints: BoxConstraints(
+                minHeight: kunMinTapTargetSize(context).height,
+              ),
               alignment: AlignmentDirectional.centerStart,
               padding: const EdgeInsets.symmetric(
                 horizontal: KunSpacing.unit * 3,
+                vertical: KunSpacing.unit * 2,
               ),
               decoration: BoxDecoration(
                 color: active ? scheme.neutral.shade100 : null,

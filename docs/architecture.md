@@ -89,6 +89,16 @@ node of its own, so the state becomes a nullable parameter on that node:
 `KunPressable`, it translates the element rather than a design, so it
 needs no upstream decision. Anything with a look still does.
 
+A browser behaviour a field relies on is translated the same way. An
+Enter in a web text field that the component does not `preventDefault`
+submits the enclosing `<form>`. Flutter has no forms, so the field takes
+`onSubmitted`: `KunInput` has it, and `KunAutocomplete` (decided
+2026-10-15, asked by the kungal app) calls it only when Enter commits no
+option, which is exactly when the web's form would submit. The soft
+keyboard's action key follows Enter: it commits the highlighted option,
+and otherwise submits. Measured on Flutter web: a hardware Enter on a
+highlighted option commits it and does not also submit.
+
 ### KunSpinner is a widget, not an icon
 
 Tier 1's honest count was 29 of 30 icons crossing: the web's loading icon

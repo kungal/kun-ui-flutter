@@ -1,5 +1,25 @@
 # Changelog
 
+## 0.31.0
+
+- **A `KunAutocomplete` row is as tall as what it draws,** as on the web,
+  where the `option` slot sizes its row. Before, every row was fixed at
+  one line of text, so an `optionBuilder` could not add a second line.
+  The default row is unchanged on desktop. Asked by the kungal app.
+- **`KunAutocomplete` rows are 48dp tall on phones** (44pt on iOS), like
+  every other popup row since 0.22.0. It follows
+  `KunThemeData.tapTargetSize`.
+- **A screen reader reads all of a builder row's text** as the option's
+  name, as the web reads the slot's text. Before, it read only `label`,
+  so a second line was never announced.
+- **`KunAutocomplete.onSubmitted`** is called with the text when Enter
+  commits no option: the list is closed, or nothing in it can be chosen.
+  On the web, that Enter submits the enclosing form. With an option
+  highlighted, Enter still commits the option. Asked by the kungal app.
+  - **What changes on a phone:** the soft keyboard's action key now does
+    what Enter does. It commits the highlighted option, where before it
+    only closed the keyboard.
+
 ## 0.30.0
 
 - **`KunPageTransition.rise`**: the page fades in while it moves up a

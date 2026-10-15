@@ -87,19 +87,12 @@ Widget autocompleteBasic(BuildContext context) {
 Widget autocompleteFree(BuildContext context) {
   return _page(
     context,
-    'The left field keeps whatever you type; the right one empties itself '
-    'shortly after losing focus unless the text is one of the options.',
+    'The first field keeps whatever you type, and Enter with nothing '
+    'highlighted submits it: type something no option matches, or press '
+    'Escape first. The second empties itself shortly after losing focus '
+    'unless the text is one of the options.',
     <Widget>[
-      _Field(
-        builder: (String value, ValueChanged<String> onChanged) =>
-            KunAutocomplete<KunAutocompleteOption>(
-          options: _frameworks,
-          value: value,
-          onChanged: onChanged,
-          label: 'Free text (default)',
-          clearable: true,
-        ),
-      ),
+      const _Submitting(),
       _Field(
         builder: (String value, ValueChanged<String> onChanged) =>
             KunAutocomplete<KunAutocompleteOption>(
@@ -113,6 +106,41 @@ Widget autocompleteFree(BuildContext context) {
       ),
     ],
   );
+}
+
+class _Submitting extends StatefulWidget {
+  const _Submitting();
+
+  @override
+  State<_Submitting> createState() => _SubmittingState();
+}
+
+class _SubmittingState extends State<_Submitting> {
+  String _value = '';
+  final List<String> _log = <String>[];
+
+  @override
+  Widget build(BuildContext context) {
+    return Column(
+      mainAxisSize: MainAxisSize.min,
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      spacing: KunSpacing.unit * 2,
+      children: <Widget>[
+        KunAutocomplete<KunAutocompleteOption>(
+          options: _frameworks,
+          value: _value,
+          onChanged: (String value) => setState(() => _value = value),
+          onSelected: (KunAutocompleteOption option) =>
+              setState(() => _log.add('Selected ${option.label}')),
+          onSubmitted: (String text) =>
+              setState(() => _log.add('Submitted "$text"')),
+          label: 'Free text (default)',
+          clearable: true,
+        ),
+        _caption(context, _log.isEmpty ? 'Nothing yet.' : _log.join(' · ')),
+      ],
+    );
+  }
 }
 
 Widget autocompleteStates(BuildContext context) {
@@ -240,23 +268,57 @@ class _RemoteState extends State<_Remote> {
   }
 }
 
+class _Framework extends KunAutocompleteOption {
+  const _Framework({
+    required super.value,
+    required super.label,
+    required this.tagline,
+  });
+
+  final String tagline;
+}
+
+const List<_Framework> _described = <_Framework>[
+  _Framework(
+    value: 'vue',
+    label: 'Vue',
+    tagline: 'The progressive JavaScript framework',
+  ),
+  _Framework(
+    value: 'react',
+    label: 'React',
+    tagline: 'The library for web and native user interfaces',
+  ),
+  _Framework(
+    value: 'svelte',
+    label: 'Svelte',
+    tagline: 'Web development for the rest of us',
+  ),
+  _Framework(
+    value: 'solid',
+    label: 'Solid',
+    tagline: 'Simple and performant reactivity',
+  ),
+];
+
 Widget autocompleteOption(BuildContext context) {
   return _page(
     context,
-    'A builder draws each row, so an option can carry more than a label.',
+    'A builder draws each row, so an option can carry more than a label: '
+    'the row is as tall as what it draws, and a screen reader reads all of '
+    'its text.',
     <Widget>[
       _Field(
         builder: (String value, ValueChanged<String> onChanged) =>
-            KunAutocomplete<KunAutocompleteOption>(
-          options: _frameworks,
+            KunAutocomplete<_Framework>(
+          options: _described,
           value: value,
           onChanged: onChanged,
           label: 'Framework',
-          optionBuilder: (BuildContext context, KunAutocompleteOption option,
-              bool active) {
+          optionBuilder:
+              (BuildContext context, _Framework option, bool active) {
             final KunColorScheme scheme = KunTheme.of(context).colors;
             return Row(
-              mainAxisSize: MainAxisSize.min,
               spacing: KunSpacing.unit * 2,
               children: <Widget>[
                 Icon(
@@ -265,10 +327,21 @@ Widget autocompleteOption(BuildContext context) {
                   color:
                       active ? scheme.primary.solid : scheme.neutral.shade400,
                 ),
-                Text(option.label, style: KunText.sm),
-                Text(
-                  option.value,
-                  style: KunText.xs.copyWith(color: scheme.neutral.shade400),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: <Widget>[
+                      Text(option.label, style: KunText.sm),
+                      Text(
+                        option.tagline,
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                        style: KunText.xs.copyWith(
+                          color: scheme.neutral.shade500,
+                        ),
+                      ),
+                    ],
+                  ),
                 ),
               ],
             );
