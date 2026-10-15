@@ -1,5 +1,54 @@
 # Changelog
 
+## 0.32.0
+
+Adopts kun-ui 2.58.0. The generated family's floor is now `^2.58.0`.
+
+- **`KunCommandSearch`**, new: a search field that stays in place, with
+  its results opening in a panel under it. There is no dialog, scrim or
+  focus trap, and focus never leaves the field. It takes the same
+  `KunCommandItem` rows as `KunCommandPalette`: flat or grouped, with an
+  icon, a section, a highlighted label and a description. You compute
+  `items` from `query` and own the debounce; about 200 ms is the upstream
+  advice.
+  - Nothing is highlighted until an arrow key moves onto a row, so Enter
+    submits the trimmed query through `onSubmitted`. Enter on a row, or a
+    tap, calls `onSelected`. Both close the panel and leave the field.
+  - The first Escape closes the panel, the second clears the text, and a
+    third is left to whoever else handles it. Inside a `KunModal`, that
+    third Escape dismisses the modal.
+  - `loading` turns the field's icon into a spinner and keeps the rows
+    already showing.
+  - The panel is at least 360 wide (up to the room available) and at most
+    `maxHeight` (420) tall.
+  - Mod+K focuses the field and selects its text.
+    `shortcut: KunCommandShortcut.none` turns that off.
+  - On narrow screens, use a `KunCommandPalette` instead, chosen by your
+    own layout width.
+  - Asked by the kungal app for its desktop top bar.
+- **Removable command rows.** `KunCommandItem.removable` draws a remove
+  button on the row, for a recent search say. That button and Shift+Delete
+  call the new `onRemoved` on both `KunCommandSearch` and
+  `KunCommandPalette`. A screen reader gets a "Remove" action on the row.
+  The highlight stays on the row that moves up once you drop the item.
+- **`KunCommandPalette`:**
+  - A group's heading is a semantics header.
+  - Empty groups are not drawn.
+  - Its Mod+K defers to a visible `KunCommandSearch` that also uses Mod+K.
+    If you keep both on screen, set the search's `shortcut` to `none` to
+    give the palette the key.
+- **`KunImage` with a `thumbhash`** paints the hash's average colour at
+  once, and the blurred preview fades in over it (`kun-slow`). An image
+  that loads from cache never decodes the preview. Before, the blur
+  appeared as soon as it was decoded, with nothing under it.
+- **`KunInput.semanticLabel` and `KunInput.expanded`** carry the web's
+  `aria-label` and `aria-expanded` on the text field itself. A
+  `semanticLabel` replaces the placeholder as the field's name.
+  - `KunAutocomplete` now uses them: its field is named by `semanticLabel`
+    when it has no visible label, and it reports whether its list is open.
+    Before, that name sat on a node above the field, and the open state
+    was not reported.
+
 ## 0.31.1
 
 - **Popups, modals and the `fade` page transition speed up as they

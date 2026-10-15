@@ -88,6 +88,13 @@ node of its own, so the state becomes a nullable parameter on that node:
 `KunButton.expanded` (decided 2026-10-13, asked by the kungal app). Like
 `KunPressable`, it translates the element rather than a design, so it
 needs no upstream decision. Anything with a look still does.
+The same holds for `KunInput`: Input.vue binds `$attrs` to its `<input>`,
+so `aria-label` and `aria-expanded` name the input and report its popup.
+`KunInput.semanticLabel` and `KunInput.expanded` (2026-10-15) put both on
+the text field's own node, and a `semanticLabel` replaces the placeholder as
+the name, as `aria-label` does. KunCommandSearch and KunAutocomplete use
+them. Before, a semantics dump showed the name and the expanded state on a
+container above an unnamed text field.
 
 A browser behaviour a field relies on is translated the same way. An
 Enter in a web text field that the component does not `preventDefault`
@@ -774,24 +781,6 @@ KunUI's own pieces.
     curve, the page had already sunk 10 of its 16 px half way through the
     exit. See "Exits accelerate" below for the other 12 sites.
 
-### Exits accelerate (decided 2026-10-15)
-
-A KunUI surface enters on `ease-kun-out` and leaves on `ease-kun-in`. It
-decelerates into place and speeds up on its way out, as Material 3
-prescribes: its `Easing.standardAccelerate`, `Cubic(0.3, 0, 1, 1)`, is
-exactly `KunEasing.exit`. Flutter's `CurvedAnimation` runs `reverseCurve`
-on the reversing value without flipping it. So `reverseCurve:
-KunEasing.exit` played the curve backwards in time: the surface lost most
-of its opacity early and lingered faint. Ten popups, the modal and
-lightbox routes and the `fade` page transition shipped that way until
-0.31.1. Flutter's
-own Cupertino routes and sheets pass their curve `.flipped` for this
-reason.
-
-`kunSurfaceCurve(parent)` in `foundation/motion.dart` now builds that pair
-for every surface. Measured with the old curve: opacity was 0.37 half way
-through an exit, where the web's is 0.63. Tests in `motion_test.dart`,
-`dropdown_test.dart` and `page_test.dart` fail on the unflipped curve.
   - `slide` is the iOS convention on `kun-slow` and the emphasized ease. The
     covered page's parallax goes through Flutter's `delegatedTransition`. The
     leading edge casts `KunShadows.md` instead of Cupertino's gradient.
@@ -1330,6 +1319,56 @@ the ripple is the one the web already draws.
   on their last frame, which is invisible.
 - The layer always builds its `Stack`, with the overlay added only while a
   ripple runs, so the first ripple never remounts the host's content.
+
+### Exits accelerate (decided 2026-10-15)
+
+A KunUI surface enters on `ease-kun-out` and leaves on `ease-kun-in`. It
+decelerates into place and speeds up on its way out, as Material 3
+prescribes: its `Easing.standardAccelerate`, `Cubic(0.3, 0, 1, 1)`, is
+exactly `KunEasing.exit`. Flutter's `CurvedAnimation` runs `reverseCurve`
+on the reversing value without flipping it. So `reverseCurve:
+KunEasing.exit` played the curve backwards in time: the surface lost most
+of its opacity early and lingered faint. Ten popups, the modal and
+lightbox routes and the `fade` page transition shipped that way until
+0.31.1. Flutter's own Cupertino routes and sheets pass their curve
+`.flipped` for this reason.
+
+`kunSurfaceCurve(parent)` in `foundation/motion.dart` now builds that pair
+for every surface. Measured with the old curve: opacity was 0.37 half way
+through an exit, where the web's is 0.63. Tests in `motion_test.dart`,
+`dropdown_test.dart` and `page_test.dart` fail on the unflipped curve.
+
+### KunCommandSearch (ported 2026-10-15, kun-ui 2.58.0)
+
+The field-in-place sibling of KunCommandPalette, ruled by the maintainer in
+kun-ui and designed there. Both render `command_results.dart`, the port of
+`CommandResults.vue`. What Flutter could not take as it is:
+
+- **No group role.** Flutter 3.47.2 has no `SemanticsRole.group`, and a
+  container around a group's rows broke the rule that a `listItem`'s parent
+  is the `list` (it asserts). A labelled group's heading is a semantics
+  header instead, which TalkBack can navigate by.
+- **No key-shortcut semantics.** The web marks a removable row
+  `aria-keyshortcuts="Shift+Delete"`. A screen-reader user on a phone has
+  no Delete key, so the row carries a "Remove" custom semantics action.
+  The ✕ itself is pointer-only, as on the web, with a padded hit box on
+  phones.
+- **No combobox role.** `SemanticsRole.comboBox` throws when sent (see
+  KunSelect), so the field reports `expanded` through `KunInput.expanded`.
+- **Mod+K.** The web listens in the capture phase and the palette skips a
+  `defaultPrevented` key. Every `HardwareKeyboard` handler runs, so one
+  coordinator asks an eligible search first (its route current,
+  `TickerMode` on, not `Offstage`, the field laid out), then the palettes.
+  `shortcut: KunCommandShortcut.none` leaves the key to a palette. A
+  focus-tree handler elsewhere that binds Mod+K (an editor, say) cannot be
+  seen from `HardwareKeyboard`, so both would act. That gap is open.
+- **Escape inside a KunModal.** kun-ui 2.58.0 made the modal skip an Escape
+  a field inside already used. Here the modal dismisses through the focus
+  tree (`DismissIntent` from the app's root `Shortcuts`), so a key the
+  field handles never reaches it. A test walks the three Escapes.
+- **Nothing in the panel takes focus.** The web prevents `mousedown` on the
+  panel; here the panel is under `ExcludeFocus`, and a `KunButton` in the
+  footer still fires while the field keeps focus (tested with a real one).
 
 ### A component's own timings are literals (decided upstream 2026-09-30)
 
