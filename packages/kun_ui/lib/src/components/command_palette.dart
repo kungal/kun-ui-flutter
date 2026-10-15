@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:math' as math;
 import 'dart:ui' show ImageFilter;
 
 import 'package:flutter/rendering.dart';
@@ -14,11 +15,12 @@ import '../foundation/design.dart';
 import '../foundation/dismiss_layers.dart';
 import '../foundation/motion.dart';
 import '../foundation/shortcut.dart';
-import '../foundation/tap_target.dart';
 import '../foundation/text_selection.dart';
 import '../locale/messages.dart';
 import '../theme/theme.dart';
 import 'button.dart';
+import 'command_results.dart';
+import 'command_shortcuts.dart';
 
 /// Opening scale of the panel.
 /// CommandPalette.vue:447 `transform: translateY(-8px) scale(0.98)`
@@ -56,6 +58,7 @@ class KunCommandItem {
     this.icon,
     this.href,
     this.disabled = false,
+    this.removable = false,
   });
 
   /// Stable key and what [KunCommandPalette.onSelected] carries. Null uses
@@ -81,6 +84,12 @@ class KunCommandItem {
   /// Whether the row is inert: it is skipped by the arrow keys and
   /// activating it does nothing.
   final bool disabled;
+
+  /// Show a remove button on the row (a recent search, say) and let
+  /// Shift+Delete remove the highlighted row; both emit
+  /// [KunCommandPalette.onRemoved]. The shell removes nothing itself:
+  /// drop the item from [KunCommandPalette.items].
+  final bool removable;
 
   /// [value], or [label] when [value] is null.
   Object get resolvedValue => value ?? label;
@@ -189,6 +198,7 @@ class KunCommandPalette extends StatefulWidget {
     this.onQueryChanged,
     this.onSelected,
     this.onSubmitted,
+    this.onRemoved,
     this.trigger,
     this.itemBuilder,
     this.empty,
@@ -245,6 +255,11 @@ class KunCommandPalette extends StatefulWidget {
   /// Enter with nothing to select — no results, or every result disabled.
   /// The payload is the trimmed query.
   final ValueChanged<String>? onSubmitted;
+
+  /// The remove button or Shift+Delete on a [KunCommandItem.removable] row.
+  /// Drop the item from [items]; the highlight stays on the row that takes
+  /// its place.
+  final ValueChanged<KunCommandItem>? onRemoved;
 
   /// Optional trigger. The arguments are `open`, the platform
   /// [KunCommandShortcut.label], and [KunCommandShortcut.keys].
@@ -313,6 +328,8 @@ class _KunCommandPaletteState extends State<KunCommandPalette> {
   FocusNode? _previouslyFocused;
   int _activeIndex = 0;
   int? _hoveredIndex;
+  ({Object key, int index})? _removed;
+  KunCommandShortcutRegistration? _shortcutRegistration;
   bool _disposed = false;
 
   @override
@@ -321,6 +338,12 @@ class _KunCommandPaletteState extends State<KunCommandPalette> {
     _controller.text = widget.query;
     _controller.addListener(_onControllerTick);
     HardwareKeyboard.instance.addHandler(_onGlobalKey);
+    _shortcutRegistration =
+        KunCommandShortcutCoordinator.instance.registerPalette(
+      shortcut: () => widget.shortcut,
+      eligible: () => mounted && _ownsShortcut(),
+      activate: _toggleFromShortcut,
+    );
     if (widget.open) {
       WidgetsBinding.instance.addPostFrameCallback((_) => _openIfNeeded());
     }
@@ -345,9 +368,11 @@ class _KunCommandPaletteState extends State<KunCommandPalette> {
     } else if (!widget.open && oldWidget.open) {
       _closeSilent();
     }
-    if (!_sameRows(oldWidget.items, widget.items) ||
-        oldWidget.loading != widget.loading) {
-      _activeIndex = _firstEnabled();
+    if (widget.query != oldWidget.query) {
+      _removed = null;
+    }
+    if (!_sameRows(oldWidget.items, widget.items)) {
+      _applyItemsChanged();
     }
     _publish();
   }
@@ -355,6 +380,8 @@ class _KunCommandPaletteState extends State<KunCommandPalette> {
   @override
   void dispose() {
     _disposed = true;
+    _shortcutRegistration?.unregister();
+    _shortcutRegistration = null;
     HardwareKeyboard.instance.removeHandler(_onGlobalKey);
     _controller.removeListener(_onControllerTick);
     _controller.dispose();
@@ -393,9 +420,7 @@ class _KunCommandPaletteState extends State<KunCommandPalette> {
   }
 
   List<KunCommandItem> _flatten(List<KunCommandGroup> groups) {
-    return <KunCommandItem>[
-      for (final KunCommandGroup group in groups) ...group.items,
-    ];
+    return kunCommandFlat(kunCommandToRows(groups));
   }
 
   List<KunCommandItem> get _flat => _flatten(widget.items);
@@ -460,7 +485,32 @@ class _KunCommandPaletteState extends State<KunCommandPalette> {
     if (_controller.text == widget.query) {
       return;
     }
+    _removed = null;
     widget.onQueryChanged?.call(_controller.text);
+  }
+
+  void _applyItemsChanged() {
+    final ({Object key, int index})? removed = _removed;
+    _removed = null;
+    final List<KunCommandItem> list = _flat;
+    if (removed != null &&
+        list.isNotEmpty &&
+        !list.any(
+          (KunCommandItem item) => item.resolvedValue == removed.key,
+        )) {
+      final int i = math.min(removed.index, list.length - 1);
+      _activeIndex = list[i].disabled ? _firstEnabled() : i;
+      return;
+    }
+    _activeIndex = _firstEnabled();
+  }
+
+  void _removeItem(KunCommandItem item, int index) {
+    if (item.disabled) {
+      return;
+    }
+    _removed = (key: item.resolvedValue, index: index);
+    widget.onRemoved?.call(item);
   }
 
   bool _ownsShortcut() {
@@ -478,32 +528,15 @@ class _KunCommandPaletteState extends State<KunCommandPalette> {
       _requestClose();
       return true;
     }
-    final String? character = widget.shortcut.character;
-    if (character == null || !_ownsShortcut()) {
-      return false;
-    }
-    if (event.logicalKey == LogicalKeyboardKey.controlLeft ||
-        event.logicalKey == LogicalKeyboardKey.controlRight ||
-        event.logicalKey == LogicalKeyboardKey.metaLeft ||
-        event.logicalKey == LogicalKeyboardKey.metaRight ||
-        event.logicalKey == LogicalKeyboardKey.control ||
-        event.logicalKey == LogicalKeyboardKey.meta) {
-      return false;
-    }
-    final String label = event.logicalKey.keyLabel;
-    if (label.toLowerCase() != character) {
-      return false;
-    }
-    if (!HardwareKeyboard.instance.isControlPressed &&
-        !HardwareKeyboard.instance.isMetaPressed) {
-      return false;
-    }
+    return false;
+  }
+
+  void _toggleFromShortcut() {
     if (widget.open) {
       _requestClose();
     } else {
       _requestOpen();
     }
-    return true;
   }
 
   KeyEventResult _onInputKey(FocusNode node, KeyEvent event) {
@@ -534,6 +567,18 @@ class _KunCommandPaletteState extends State<KunCommandPalette> {
       case LogicalKeyboardKey.escape:
         _requestClose();
         return KeyEventResult.handled;
+      case LogicalKeyboardKey.delete:
+        if (HardwareKeyboard.instance.isShiftPressed) {
+          final List<KunCommandItem> flat = _flat;
+          if (_activeIndex >= 0 && _activeIndex < flat.length) {
+            final KunCommandItem row = flat[_activeIndex];
+            if (row.removable) {
+              _removeItem(row, _activeIndex);
+              return KeyEventResult.handled;
+            }
+          }
+        }
+        return KeyEventResult.ignored;
       default:
         return KeyEventResult.ignored;
     }
@@ -1183,18 +1228,24 @@ class _KunCommandPaletteResults extends StatelessWidget {
         role: SemanticsRole.list,
         child: Padding(
           padding: const EdgeInsets.all(KunSpacing.unit * 2),
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            crossAxisAlignment: CrossAxisAlignment.stretch,
-            children: <Widget>[
-              for (int gi = 0; gi < widget.items.length; gi++)
-                _KunCommandPaletteGroup(
-                  state: state,
-                  group: widget.items[gi],
-                  startIndex: _startIndex(widget.items, gi),
-                  last: gi == widget.items.length - 1,
-                ),
-            ],
+          child: KunCommandResults(
+            groups: kunCommandToRows(widget.items),
+            activeIndex: state._activeIndex,
+            hoveredIndex: state._hoveredIndex,
+            query: liveQuery,
+            highlight: widget.highlight,
+            itemKeyPrefix: 'KunCommandPalette.item',
+            rowKey: state._rowKey,
+            itemBuilder: widget.itemBuilder,
+            onSelect: state._select,
+            onHover: (int index) {
+              if (index >= 0 && index < flat.length && !flat[index].disabled) {
+                state._setActive(index);
+              }
+            },
+            onPointerEnter: (int index) => state._setHovered(index, true),
+            onPointerExit: (int index) => state._setHovered(index, false),
+            onRemove: state._removeItem,
           ),
         ),
       );
@@ -1252,281 +1303,6 @@ class _KunCommandPaletteResults extends StatelessWidget {
       ),
     );
   }
-
-  static int _startIndex(List<KunCommandGroup> groups, int groupIndex) {
-    int i = 0;
-    for (int g = 0; g < groupIndex; g++) {
-      i += groups[g].items.length;
-    }
-    return i;
-  }
-}
-
-class _KunCommandPaletteGroup extends StatelessWidget {
-  const _KunCommandPaletteGroup({
-    required this.state,
-    required this.group,
-    required this.startIndex,
-    required this.last,
-  });
-
-  final _KunCommandPaletteState state;
-  final KunCommandGroup group;
-  final int startIndex;
-  final bool last;
-
-  @override
-  Widget build(BuildContext context) {
-    final KunColorScheme scheme = KunTheme.of(context).colors;
-    return Padding(
-      padding: EdgeInsets.only(
-        bottom: last ? 0 : KunSpacing.unit * 1,
-      ),
-      child: Column(
-        mainAxisSize: MainAxisSize.min,
-        crossAxisAlignment: CrossAxisAlignment.stretch,
-        children: <Widget>[
-          if (group.label != null && group.label!.isNotEmpty)
-            Padding(
-              padding: const EdgeInsets.fromLTRB(
-                KunSpacing.unit * 3,
-                KunSpacing.unit * 2,
-                KunSpacing.unit * 3,
-                KunSpacing.unit * 1,
-              ),
-              child: Text(
-                group.label!,
-                style: KunText.xs.copyWith(
-                  color: scheme.foregroundMuted,
-                  fontWeight: KunFontWeights.medium,
-                ),
-              ),
-            ),
-          for (int i = 0; i < group.items.length; i++)
-            _KunCommandPaletteRow(
-              state: state,
-              item: group.items[i],
-              index: startIndex + i,
-            ),
-        ],
-      ),
-    );
-  }
-}
-
-class _KunCommandPaletteRow extends StatelessWidget {
-  const _KunCommandPaletteRow({
-    required this.state,
-    required this.item,
-    required this.index,
-  });
-
-  final _KunCommandPaletteState state;
-  final KunCommandItem item;
-  final int index;
-
-  @override
-  Widget build(BuildContext context) {
-    final KunCommandPalette widget = state.widget;
-    final KunColorScheme scheme = KunTheme.of(context).colors;
-    final bool active = index == state._activeIndex;
-    final Widget content = widget.itemBuilder?.call(context, item, active) ??
-        _KunCommandPaletteDefaultRow(
-          item: item,
-          query: state._liveQuery,
-          highlight: widget.highlight,
-        );
-    // CommandPalette.vue:355 `bg-primary/10` on the active row,
-    // `hover:bg-default-100` on any other row under the pointer.
-    final Color? fill = active
-        ? scheme.primary.solid.withValues(alpha: 0.1)
-        : state._hoveredIndex == index && !item.disabled
-            ? scheme.neutral.shade100.withValues(alpha: KunColors.globalOpacity)
-            : null;
-
-    final String label = item.description == null || item.description!.isEmpty
-        ? item.label
-        : '${item.label}\n${item.description}';
-
-    return Semantics(
-      key: ValueKey<String>(
-        'KunCommandPalette.item.${item.resolvedValue}',
-      ),
-      container: true,
-      role: SemanticsRole.listItem,
-      label: label,
-      selected: active,
-      enabled: !item.disabled,
-      button: item.href == null,
-      link: item.href != null,
-      onTap: item.disabled ? null : () => state._select(item),
-      child: ExcludeSemantics(
-        child: MouseRegion(
-          cursor: item.disabled
-              ? SystemMouseCursors.basic
-              : SystemMouseCursors.click,
-          onHover: item.disabled ? null : (_) => state._setActive(index),
-          onEnter: (_) => state._setHovered(index, true),
-          onExit: (_) => state._setHovered(index, false),
-          child: GestureDetector(
-            key: state._rowKey(index),
-            behavior: HitTestBehavior.opaque,
-            excludeFromSemantics: true,
-            onTap: item.disabled ? null : () => state._select(item),
-            child: AnimatedContainer(
-              duration: kunMotion(context, KunDefaultTransition.duration),
-              curve: KunDefaultTransition.curve,
-              constraints: BoxConstraints(
-                minHeight: kunMinTapTargetSize(context).height,
-              ),
-              alignment: AlignmentDirectional.centerStart,
-              decoration: BoxDecoration(
-                color: fill,
-                borderRadius: BorderRadius.circular(KunRadius.md),
-              ),
-              padding: const EdgeInsets.symmetric(
-                horizontal: KunSpacing.unit * 3,
-                vertical: KunSpacing.unit * 2,
-              ),
-              child: Opacity(
-                opacity: item.disabled ? 0.5 : 1,
-                child: content,
-              ),
-            ),
-          ),
-        ),
-      ),
-    );
-  }
-}
-
-class _KunCommandPaletteDefaultRow extends StatelessWidget {
-  const _KunCommandPaletteDefaultRow({
-    required this.item,
-    required this.query,
-    required this.highlight,
-  });
-
-  final KunCommandItem item;
-  final String query;
-  final bool highlight;
-
-  @override
-  Widget build(BuildContext context) {
-    final KunColorScheme scheme = KunTheme.of(context).colors;
-    final List<String> terms = highlight
-        ? query
-            .trim()
-            .toLowerCase()
-            .split(RegExp(r'\s+'))
-            .where((String t) => t.isNotEmpty)
-            .toList()
-        : const <String>[];
-    return Row(
-      children: <Widget>[
-        if (item.icon != null) ...<Widget>[
-          Icon(
-            item.icon,
-            size: KunText.base.fontSize,
-            color: scheme.neutral.shade500,
-          ),
-          SizedBox(width: KunSpacing.unit * 3),
-        ],
-        Expanded(
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: <Widget>[
-              if (item.section != null && item.section!.isNotEmpty)
-                Padding(
-                  padding: const EdgeInsets.only(bottom: KunSpacing.unit * 0.5),
-                  child: Text(
-                    item.section!,
-                    maxLines: 1,
-                    overflow: TextOverflow.ellipsis,
-                    style: KunText.xs.copyWith(
-                      color: scheme.foregroundMuted,
-                    ),
-                  ),
-                ),
-              Text.rich(
-                TextSpan(
-                  children: _highlightSpans(
-                    item.label,
-                    terms,
-                    KunText.sm.copyWith(
-                      color: scheme.foreground,
-                      fontWeight: KunFontWeights.medium,
-                    ),
-                    scheme,
-                  ),
-                ),
-                maxLines: 1,
-                overflow: TextOverflow.ellipsis,
-              ),
-              if (item.description != null && item.description!.isNotEmpty)
-                Padding(
-                  padding: const EdgeInsets.only(top: KunSpacing.unit * 0.5),
-                  child: Text.rich(
-                    TextSpan(
-                      children: _highlightSpans(
-                        item.description!,
-                        terms,
-                        KunText.xs.copyWith(
-                          color: scheme.foregroundMuted,
-                        ),
-                        scheme,
-                      ),
-                    ),
-                    maxLines: 1,
-                    overflow: TextOverflow.ellipsis,
-                  ),
-                ),
-            ],
-          ),
-        ),
-      ],
-    );
-  }
-}
-
-/// Split [text] on [terms] (case-insensitive). The web escapes HTML before
-/// wrapping a match in `<mark>`; there is no HTML here, so those steps have
-/// no counterpart. Regex metacharacters in a term are still escaped so the
-/// split stays a literal match.
-List<InlineSpan> _highlightSpans(
-  String text,
-  List<String> terms,
-  TextStyle base,
-  KunColorScheme scheme,
-) {
-  if (terms.isEmpty) {
-    return <InlineSpan>[TextSpan(text: text, style: base)];
-  }
-  final String pattern = terms.map(RegExp.escape).join('|');
-  final RegExp re = RegExp('($pattern)', caseSensitive: false);
-  final TextStyle mark = base.copyWith(
-    backgroundColor: scheme.primary.solid.withValues(alpha: 0.2),
-    color: scheme.foreground,
-  );
-  final List<InlineSpan> spans = <InlineSpan>[];
-  int start = 0;
-  for (final RegExpMatch match in re.allMatches(text)) {
-    if (match.start > start) {
-      spans.add(
-        TextSpan(text: text.substring(start, match.start), style: base),
-      );
-    }
-    spans.add(TextSpan(text: match.group(0), style: mark));
-    start = match.end;
-  }
-  if (start < text.length) {
-    spans.add(TextSpan(text: text.substring(start), style: base));
-  }
-  if (spans.isEmpty) {
-    spans.add(TextSpan(text: text, style: base));
-  }
-  return spans;
 }
 
 class _KunCommandPaletteFooter extends StatelessWidget {

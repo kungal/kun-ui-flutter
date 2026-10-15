@@ -25,6 +25,7 @@ import 'demos/checkbox.dart';
 import 'demos/checkbox_group.dart';
 import 'demos/chip.dart';
 import 'demos/command_palette.dart';
+import 'demos/command_search.dart';
 import 'demos/context_menu.dart';
 import 'demos/context_menu_region.dart';
 import 'demos/date_picker.dart';
@@ -382,6 +383,21 @@ const List<GalleryComponent> galleryComponents = <GalleryComponent>[
           slug: 'contract',
           title: 'Contract',
           builder: kunCommandPaletteContract),
+    ],
+  ),
+  GalleryComponent(
+    slug: 'kuncommandsearch',
+    name: 'KunCommandSearch',
+    demos: <GalleryDemo>[
+      GalleryDemo(slug: 'basic', title: 'Basic', builder: commandSearchBasic),
+      GalleryDemo(
+          slug: 'responsive',
+          title: 'Responsive',
+          builder: commandSearchResponsive),
+      GalleryDemo(
+          slug: 'contract',
+          title: 'Contract',
+          builder: kunCommandSearchContract),
     ],
   ),
   GalleryComponent(

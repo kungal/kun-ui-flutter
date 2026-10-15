@@ -942,6 +942,7 @@
             "props.highlight",
             "props.shortcut",
             "events.select",
+            "events.remove",
             "events.update:open",
             "events.update:query",
             "slots.trigger",
@@ -973,6 +974,47 @@
       ],
       "undemoable": {
         "props.ariaLabel": "An accessible name has no visual form; the dialog name is asserted by the widget tests."
+      }
+    },
+    "KunCommandSearch": {
+      "source": "demos/command_search.dart",
+      "demos": [
+        {
+          "slug": "basic",
+          "title": "Basic",
+          "builder": "commandSearchBasic",
+          "shows": [
+            "props.items",
+            "props.query",
+            "props.loading",
+            "props.placeholder",
+            "props.highlight",
+            "props.maxHeight",
+            "props.noResultText",
+            "events.select",
+            "events.submit",
+            "events.remove",
+            "events.update:query",
+            "slots.item",
+            "slots.loading",
+            "slots.no-result"
+          ]
+        },
+        {
+          "slug": "responsive",
+          "title": "Responsive",
+          "builder": "commandSearchResponsive",
+          "shows": [
+            "props.shortcut",
+            "props.size",
+            "props.rounded",
+            "slots.empty",
+            "slots.footer"
+          ]
+        }
+      ],
+      "undemoable": {
+        "props.ariaLabel": "An accessible name has no visual form; every demo here has a visible label, and what is announced is asserted by the widget tests."
       }
     },
     "KunContextMenu": {

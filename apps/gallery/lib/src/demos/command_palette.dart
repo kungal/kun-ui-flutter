@@ -14,6 +14,20 @@ Widget _caption(BuildContext context, String text) {
 
 const List<KunCommandItem> _commands = <KunCommandItem>[
   KunCommandItem(
+    value: 'recent-senren',
+    label: '千恋万花',
+    section: '最近',
+    icon: KunIcons.clock,
+    removable: true,
+  ),
+  KunCommandItem(
+    value: 'recent-pockets',
+    label: 'Summer Pockets 汉化',
+    section: '最近',
+    icon: KunIcons.clock,
+    removable: true,
+  ),
+  KunCommandItem(
     value: 'home',
     label: '首页',
     section: '导航',
@@ -58,7 +72,7 @@ List<KunCommandGroup> _filterCommands(String query) {
         (KunCommandItem c) => q.isEmpty || c.label.toLowerCase().contains(q),
       )
       .toList();
-  return <String>['导航', '操作']
+  return <String>['最近', '导航', '操作']
       .map(
         (String s) => KunCommandGroup(
           label: s,
@@ -101,6 +115,24 @@ class _CommandPaletteBasicState extends State<_CommandPaletteBasic> {
   bool _open = false;
   String _query = '';
   String _picked = '';
+  final Set<Object> _removed = <Object>{};
+
+  List<KunCommandGroup> get _items {
+    return _filterCommands(_query)
+        .map(
+          (KunCommandGroup group) => KunCommandGroup(
+            label: group.label,
+            items: group.items
+                .where(
+                  (KunCommandItem item) =>
+                      !_removed.contains(item.resolvedValue),
+                )
+                .toList(),
+          ),
+        )
+        .where((KunCommandGroup group) => group.items.isNotEmpty)
+        .toList();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -114,12 +146,14 @@ class _CommandPaletteBasicState extends State<_CommandPaletteBasic> {
             KunCommandPalette(
               open: _open,
               query: _query,
-              items: _filterCommands(_query),
+              items: _items,
               placeholder: '输入命令…',
               onOpenChanged: (bool value) => setState(() => _open = value),
               onQueryChanged: (String value) => setState(() => _query = value),
               onSelected: (KunCommandItem item) =>
                   setState(() => _picked = '${item.resolvedValue}'),
+              onRemoved: (KunCommandItem item) =>
+                  setState(() => _removed.add(item.resolvedValue)),
               trigger: (
                 BuildContext context,
                 VoidCallback open,

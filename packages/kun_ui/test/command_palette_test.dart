@@ -100,6 +100,7 @@ class Host extends StatefulWidget {
     this.loadingBuilder,
     this.itemBuilder,
     this.onSubmitted,
+    this.onRemoved,
     super.key,
   });
 
@@ -116,6 +117,7 @@ class Host extends StatefulWidget {
   final Widget? loadingBuilder;
   final Widget Function(BuildContext, KunCommandItem, bool)? itemBuilder;
   final ValueChanged<String>? onSubmitted;
+  final ValueChanged<KunCommandItem>? onRemoved;
 
   @override
   State<Host> createState() => HostState();
@@ -125,6 +127,7 @@ class HostState extends State<Host> {
   bool open = false;
   String query = '';
   final List<KunCommandItem> selected = <KunCommandItem>[];
+  final List<KunCommandItem> removed = <KunCommandItem>[];
   final List<String> submitted = <String>[];
   String? shortcutLabel;
   String? keys;
@@ -167,6 +170,10 @@ class HostState extends State<Host> {
       onOpenChanged: (bool value) => setState(() => open = value),
       onQueryChanged: (String value) => setState(() => query = value),
       onSelected: selected.add,
+      onRemoved: (KunCommandItem item) {
+        removed.add(item);
+        widget.onRemoved?.call(item);
+      },
       onSubmitted: (String value) {
         submitted.add(value);
         widget.onSubmitted?.call(value);
@@ -660,4 +667,237 @@ void main() {
     await tester.pumpAndSettle();
     expect(panel, findsOneWidget);
   });
+
+  Finder removeOf(Object value) => find.descendant(
+        of: item(value),
+        matching: find.byIcon(KunIcons.x),
+      );
+
+  testWidgets('the remove control emits remove and does not select',
+      (WidgetTester tester) async {
+    setView(tester, const Size(800, 600));
+    await tester.pumpWidget(
+      wrap(
+        const Host(
+          items: <KunCommandGroup>[
+            KunCommandGroup(
+              items: <KunCommandItem>[
+                KunCommandItem(
+                  value: 'alpha',
+                  label: 'Alpha',
+                  removable: true,
+                ),
+                KunCommandItem(value: 'beta', label: 'Beta'),
+              ],
+            ),
+          ],
+        ),
+      ),
+    );
+    await openByTap(tester);
+    await tester.tap(removeOf('alpha'));
+    await tester.pump();
+    expect(hostOf(tester).removed.single.label, 'Alpha');
+    expect(hostOf(tester).selected, isEmpty);
+    expect(panel, findsOneWidget);
+    expect(rowSelected(tester, 'alpha'), isTrue);
+  });
+
+  testWidgets('Shift+Delete removes the highlighted removable row',
+      (WidgetTester tester) async {
+    setView(tester, const Size(800, 600));
+    await tester.pumpWidget(
+      wrap(
+        const Host(
+          items: <KunCommandGroup>[
+            KunCommandGroup(
+              items: <KunCommandItem>[
+                KunCommandItem(
+                  value: 'alpha',
+                  label: 'Alpha',
+                  removable: true,
+                ),
+                KunCommandItem(
+                  value: 'beta',
+                  label: 'Beta',
+                  removable: true,
+                ),
+              ],
+            ),
+          ],
+        ),
+      ),
+    );
+    await openByTap(tester);
+    await tester.sendKeyDownEvent(LogicalKeyboardKey.shiftLeft);
+    await tester.sendKeyDownEvent(LogicalKeyboardKey.delete);
+    await tester.sendKeyUpEvent(LogicalKeyboardKey.delete);
+    await tester.sendKeyUpEvent(LogicalKeyboardKey.shiftLeft);
+    await tester.pump();
+    expect(hostOf(tester).removed.single.label, 'Alpha');
+    expect(hostOf(tester).selected, isEmpty);
+  });
+
+  testWidgets(
+      'the highlight stays until the app drops the removed item, then follows',
+      (WidgetTester tester) async {
+    setView(tester, const Size(800, 600));
+    await tester.pumpWidget(wrap(const _RemoveHost()));
+    await tester.tap(find.text('Open'));
+    await tester.pumpAndSettle();
+
+    expect(rowSelected(tester, 'a'), isTrue);
+    await tester.sendKeyEvent(LogicalKeyboardKey.arrowDown);
+    await tester.pump();
+    expect(rowSelected(tester, 'b'), isTrue);
+
+    final _RemoveHostState state =
+        tester.state<_RemoveHostState>(find.byType(_RemoveHost));
+    await tester.tap(removeOf('b'));
+    await tester.pump();
+    expect(state.removed.single.value, 'b');
+    expect(rowSelected(tester, 'b'), isTrue);
+
+    state.dropRemoved();
+    await tester.pump();
+    await tester.pump();
+    expect(find.text('b'), findsNothing);
+    expect(rowSelected(tester, 'c'), isTrue);
+  });
+
+  testWidgets('an empty group renders nothing', (WidgetTester tester) async {
+    setView(tester, const Size(800, 600));
+    await tester.pumpWidget(
+      wrap(
+        const Host(
+          items: <KunCommandGroup>[
+            KunCommandGroup(
+              label: 'Empty',
+              items: <KunCommandItem>[],
+            ),
+            KunCommandGroup(
+              label: 'Keep',
+              items: <KunCommandItem>[
+                KunCommandItem(value: 'a', label: 'Alpha'),
+              ],
+            ),
+          ],
+        ),
+      ),
+    );
+    await openByTap(tester);
+    expect(find.text('Empty'), findsNothing);
+    expect(find.text('Keep'), findsOneWidget);
+    expect(find.text('Alpha'), findsOneWidget);
+  });
+
+  testWidgets("a labelled group's header has the header flag",
+      (WidgetTester tester) async {
+    setView(tester, const Size(800, 600));
+    final SemanticsHandle handle = tester.ensureSemantics();
+    await tester.pumpWidget(wrap(const Host()));
+    await openByTap(tester);
+
+    final SemanticsData header =
+        tester.getSemantics(find.text('Navigate')).getSemanticsData();
+    expect(header.flagsCollection.isHeader, isTrue);
+
+    handle.dispose();
+  });
+
+  testWidgets(
+      'the remove custom action is present on a removable row and absent elsewhere',
+      (WidgetTester tester) async {
+    setView(tester, const Size(800, 600));
+    final SemanticsHandle handle = tester.ensureSemantics();
+    await tester.pumpWidget(
+      wrap(
+        const Host(
+          items: <KunCommandGroup>[
+            KunCommandGroup(
+              items: <KunCommandItem>[
+                KunCommandItem(
+                  value: 'keep',
+                  label: 'Keep',
+                  removable: true,
+                ),
+                KunCommandItem(value: 'stay', label: 'Stay'),
+              ],
+            ),
+          ],
+        ),
+      ),
+    );
+    await openByTap(tester);
+
+    expect(
+      tester.getSemantics(item('keep')).getSemanticsData(),
+      isSemantics(
+        customActions: <CustomSemanticsAction>[
+          CustomSemanticsAction(label: KunMessages.en.commandPalette.remove),
+        ],
+      ),
+    );
+    expect(
+      tester
+              .getSemantics(item('stay'))
+              .getSemanticsData()
+              .customSemanticsActionIds ??
+          const <int>[],
+      isEmpty,
+    );
+
+    handle.dispose();
+  });
+}
+
+class _RemoveHost extends StatefulWidget {
+  const _RemoveHost();
+
+  @override
+  State<_RemoveHost> createState() => _RemoveHostState();
+}
+
+class _RemoveHostState extends State<_RemoveHost> {
+  bool open = false;
+  List<KunCommandItem> items = const <KunCommandItem>[
+    KunCommandItem(value: 'a', label: 'a', removable: true),
+    KunCommandItem(value: 'b', label: 'b', removable: true),
+    KunCommandItem(value: 'c', label: 'c', removable: true),
+  ];
+  final List<KunCommandItem> removed = <KunCommandItem>[];
+
+  void dropRemoved() {
+    setState(() {
+      items = items
+          .where(
+            (KunCommandItem item) =>
+                !removed.any((KunCommandItem r) => r.value == item.value),
+          )
+          .toList();
+    });
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return KunCommandPalette(
+      items: <KunCommandGroup>[KunCommandGroup(items: items)],
+      open: open,
+      onOpenChanged: (bool value) => setState(() => open = value),
+      onRemoved: (KunCommandItem item) {
+        removed.add(item);
+      },
+      trigger: (
+        BuildContext context,
+        VoidCallback openPalette,
+        String shortcutLabel,
+        String keys,
+      ) {
+        return KunButton(
+          onPressed: openPalette,
+          child: const Text('Open'),
+        );
+      },
+    );
+  }
 }

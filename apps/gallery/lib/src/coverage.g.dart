@@ -2156,6 +2156,13 @@ const ComponentCoverage _kunCommandPalette = ComponentCoverage(
     ),
     CoverageEntry(
       section: 'events',
+      contractName: 'remove',
+      status: CoverageStatus.shown,
+      dartName: 'onRemoved',
+      shownBy: 'Basic',
+    ),
+    CoverageEntry(
+      section: 'events',
       contractName: 'select',
       status: CoverageStatus.shown,
       dartName: 'onSelected',
@@ -2230,6 +2237,157 @@ const ComponentCoverage _kunCommandPalette = ComponentCoverage(
 /// The contract coverage page for KunCommandPalette.
 Widget kunCommandPaletteContract(BuildContext context) =>
     const CoveragePage(coverage: _kunCommandPalette);
+
+const ComponentCoverage _kunCommandSearch = ComponentCoverage(
+  name: 'KunCommandSearch',
+  entries: <CoverageEntry>[
+    CoverageEntry(
+      section: 'props',
+      contractName: 'ariaLabel',
+      status: CoverageStatus.noVisualForm,
+      dartName: 'semanticLabel',
+      reason:
+          'An accessible name has no visual form; every demo here has a visible label, and what is announced is asserted by the widget tests.',
+    ),
+    CoverageEntry(
+      section: 'props',
+      contractName: 'highlight',
+      status: CoverageStatus.shown,
+      dartName: 'highlight',
+      shownBy: 'Basic',
+    ),
+    CoverageEntry(
+      section: 'props',
+      contractName: 'items',
+      status: CoverageStatus.shown,
+      dartName: 'items',
+      shownBy: 'Basic',
+    ),
+    CoverageEntry(
+      section: 'props',
+      contractName: 'loading',
+      status: CoverageStatus.shown,
+      dartName: 'loading',
+      shownBy: 'Basic',
+    ),
+    CoverageEntry(
+      section: 'props',
+      contractName: 'maxHeight',
+      status: CoverageStatus.shown,
+      dartName: 'maxHeight',
+      shownBy: 'Basic',
+    ),
+    CoverageEntry(
+      section: 'props',
+      contractName: 'noResultText',
+      status: CoverageStatus.shown,
+      dartName: 'noResultText',
+      shownBy: 'Basic',
+    ),
+    CoverageEntry(
+      section: 'props',
+      contractName: 'placeholder',
+      status: CoverageStatus.shown,
+      dartName: 'placeholder',
+      shownBy: 'Basic',
+    ),
+    CoverageEntry(
+      section: 'props',
+      contractName: 'query',
+      status: CoverageStatus.shown,
+      dartName: 'query',
+      shownBy: 'Basic',
+    ),
+    CoverageEntry(
+      section: 'props',
+      contractName: 'rounded',
+      status: CoverageStatus.shown,
+      dartName: 'rounded',
+      shownBy: 'Responsive',
+    ),
+    CoverageEntry(
+      section: 'props',
+      contractName: 'shortcut',
+      status: CoverageStatus.shown,
+      dartName: 'shortcut',
+      shownBy: 'Responsive',
+    ),
+    CoverageEntry(
+      section: 'props',
+      contractName: 'size',
+      status: CoverageStatus.shown,
+      dartName: 'size',
+      shownBy: 'Responsive',
+    ),
+    CoverageEntry(
+      section: 'events',
+      contractName: 'remove',
+      status: CoverageStatus.shown,
+      dartName: 'onRemoved',
+      shownBy: 'Basic',
+    ),
+    CoverageEntry(
+      section: 'events',
+      contractName: 'select',
+      status: CoverageStatus.shown,
+      dartName: 'onSelected',
+      shownBy: 'Basic',
+    ),
+    CoverageEntry(
+      section: 'events',
+      contractName: 'submit',
+      status: CoverageStatus.shown,
+      dartName: 'onSubmitted',
+      shownBy: 'Basic',
+    ),
+    CoverageEntry(
+      section: 'events',
+      contractName: 'update:query',
+      status: CoverageStatus.shown,
+      dartName: 'onQueryChanged',
+      shownBy: 'Basic',
+    ),
+    CoverageEntry(
+      section: 'slots',
+      contractName: 'empty',
+      status: CoverageStatus.shown,
+      dartName: 'empty',
+      shownBy: 'Responsive',
+    ),
+    CoverageEntry(
+      section: 'slots',
+      contractName: 'footer',
+      status: CoverageStatus.shown,
+      dartName: 'footer',
+      shownBy: 'Responsive',
+    ),
+    CoverageEntry(
+      section: 'slots',
+      contractName: 'item',
+      status: CoverageStatus.shown,
+      dartName: 'itemBuilder',
+      shownBy: 'Basic',
+    ),
+    CoverageEntry(
+      section: 'slots',
+      contractName: 'loading',
+      status: CoverageStatus.shown,
+      dartName: 'loadingBuilder',
+      shownBy: 'Basic',
+    ),
+    CoverageEntry(
+      section: 'slots',
+      contractName: 'no-result',
+      status: CoverageStatus.shown,
+      dartName: 'noResult',
+      shownBy: 'Basic',
+    ),
+  ],
+);
+
+/// The contract coverage page for KunCommandSearch.
+Widget kunCommandSearchContract(BuildContext context) =>
+    const CoveragePage(coverage: _kunCommandSearch);
 
 const ComponentCoverage _kunContextMenu = ComponentCoverage(
   name: 'KunContextMenu',

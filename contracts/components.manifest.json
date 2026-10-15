@@ -463,6 +463,7 @@
         "shortcut": "shortcut"
       },
       "events": {
+        "remove": "onRemoved",
         "select": "onSelected",
         "submit": "onSubmitted",
         "update:open": "onOpenChanged",
@@ -475,6 +476,35 @@
         "loading": "loadingBuilder",
         "no-result": "noResult",
         "trigger": "trigger"
+      }
+    },
+    "KunCommandSearch": {
+      "widget": "KunCommandSearch",
+      "props": {
+        "ariaLabel": "semanticLabel",
+        "highlight": "highlight",
+        "items": "items",
+        "loading": "loading",
+        "maxHeight": "maxHeight",
+        "noResultText": "noResultText",
+        "placeholder": "placeholder",
+        "query": "query",
+        "rounded": "rounded",
+        "shortcut": "shortcut",
+        "size": "size"
+      },
+      "events": {
+        "remove": "onRemoved",
+        "select": "onSelected",
+        "submit": "onSubmitted",
+        "update:query": "onQueryChanged"
+      },
+      "slots": {
+        "empty": "empty",
+        "footer": "footer",
+        "item": "itemBuilder",
+        "loading": "loadingBuilder",
+        "no-result": "noResult"
       }
     },
     "KunContextMenu": {

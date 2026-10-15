@@ -43,6 +43,7 @@ export 'src/components/checkbox.dart';
 export 'src/components/checkbox_group.dart';
 export 'src/components/chip.dart';
 export 'src/components/command_palette.dart';
+export 'src/components/command_search.dart';
 export 'src/components/context_menu.dart';
 export 'src/components/context_menu_region.dart'
     show KunContextMenuRegion, KunContextMenuRegionState;
