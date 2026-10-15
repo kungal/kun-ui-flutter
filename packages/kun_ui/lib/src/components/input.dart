@@ -101,6 +101,8 @@ class KunInput extends StatefulWidget {
     this.textInputAction,
     this.onSubmitted,
     this.contentInsertionConfiguration,
+    this.semanticLabel,
+    this.expanded,
   }) : assert(
           controller == null || value == '',
           'Pass the text through the controller instead of [value].',
@@ -199,6 +201,17 @@ class KunInput extends StatefulWidget {
   /// Flutter-only: on the web the browser handles paste and insertion. Null
   /// changes nothing.
   final ContentInsertionConfiguration? contentInsertionConfiguration;
+
+  /// The text field's accessible name, the web's `aria-label` on the
+  /// `<input>`. It replaces the placeholder as the name, as `aria-label`
+  /// does. Null keeps today's reading: the placeholder while it shows.
+  final String? semanticLabel;
+
+  /// Whether a popup the field controls is open, the web's `aria-expanded`
+  /// on the `<input>`. It lands on the text field's own node, which a
+  /// `Semantics` wrapper around a `KunInput` cannot reach. Null reports no
+  /// state.
+  final bool? expanded;
 
   @override
   State<KunInput> createState() => _KunInputState();
@@ -538,13 +551,16 @@ class _KunInputState extends State<KunInput>
                             : const SizedBox.shrink(),
                         child: Align(
                           alignment: Alignment.centerLeft,
-                          child: Text(
-                            widget.placeholder!,
-                            style: textStyle.copyWith(
-                              color: scheme.foregroundMuted,
+                          child: ExcludeSemantics(
+                            excluding: widget.semanticLabel != null,
+                            child: Text(
+                              widget.placeholder!,
+                              style: textStyle.copyWith(
+                                color: scheme.foregroundMuted,
+                              ),
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
                             ),
-                            maxLines: 1,
-                            overflow: TextOverflow.ellipsis,
                           ),
                         ),
                       ),
@@ -622,6 +638,8 @@ class _KunInputState extends State<KunInput>
     // could be typed. Material's TextField sets the same three properties.
     box = Semantics(
       enabled: !widget.disabled,
+      label: widget.semanticLabel,
+      expanded: widget.expanded,
       onTap: widget.disabled ? null : _handleSemanticsTap,
       onFocus: widget.disabled ? null : _handleSemanticsFocus,
       child: TextFieldTapRegion(

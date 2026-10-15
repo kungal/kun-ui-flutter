@@ -633,13 +633,9 @@ class _KunAutocompleteState<T extends KunAutocompleteOption>
       color: widget.color,
       size: widget.size,
       rounded: widget.rounded,
+      semanticLabel: widget.label == null ? widget.semanticLabel : null,
+      expanded: _isOpen,
     );
-
-    final Widget named = widget.semanticLabel == null || widget.label != null
-        ? field
-        // KunInput names its field from the visible label; this one may have
-        // none, and a combobox with no name is what `ariaLabel` exists for.
-        : Semantics(label: widget.semanticLabel, child: field);
 
     return PopScope(
       canPop: !_isOpen,
@@ -668,7 +664,7 @@ class _KunAutocompleteState<T extends KunAutocompleteOption>
             controller: _portal,
             overlayLocation: OverlayChildLocation.rootOverlay,
             overlayChildBuilder: _buildOverlay,
-            child: named,
+            child: field,
           ),
         ),
       ),

@@ -588,4 +588,35 @@ void main() {
     expect(submitted, <String>['zig', 'v']);
     expect(selected, isEmpty);
   });
+
+  testWidgets('the field carries its name and whether the list is open',
+      (tester) async {
+    setView(tester, const Size(500, 800));
+    final SemanticsHandle handle = tester.ensureSemantics();
+    String value = '';
+    await tester.pumpWidget(
+      wrap(
+        StatefulBuilder(
+          builder: (BuildContext context, StateSetter setState) =>
+              KunAutocomplete<KunAutocompleteOption>(
+            options: frameworks,
+            value: value,
+            semanticLabel: 'Framework',
+            placeholder: 'Start typing…',
+            onChanged: (String v) => setState(() => value = v),
+          ),
+        ),
+      ),
+    );
+
+    SemanticsData field =
+        tester.getSemantics(find.byType(EditableText)).getSemanticsData();
+    expect(field.label, 'Framework');
+    expect(field.flagsCollection.isExpanded, Tristate.isFalse);
+
+    await focusField(tester);
+    field = tester.getSemantics(find.byType(EditableText)).getSemanticsData();
+    expect(field.flagsCollection.isExpanded, Tristate.isTrue);
+    handle.dispose();
+  });
 }
