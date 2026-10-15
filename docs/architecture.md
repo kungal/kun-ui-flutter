@@ -772,8 +772,26 @@ KunUI's own pieces.
     value as is. `rise` therefore leaves on `KunEasing.exit.flipped`, which
     accelerates out like the web's leave. Measured: with the unflipped
     curve, the page had already sunk 10 of its 16 px half way through the
-    exit. Every popup in the library still passes `KunEasing.exit`
-    unflipped, and so does `fade`.
+    exit. See "Exits accelerate" below for the other 12 sites.
+
+### Exits accelerate (decided 2026-10-15)
+
+A KunUI surface enters on `ease-kun-out` and leaves on `ease-kun-in`. It
+decelerates into place and speeds up on its way out, as Material 3
+prescribes: its `Easing.standardAccelerate`, `Cubic(0.3, 0, 1, 1)`, is
+exactly `KunEasing.exit`. Flutter's `CurvedAnimation` runs `reverseCurve`
+on the reversing value without flipping it. So `reverseCurve:
+KunEasing.exit` played the curve backwards in time: the surface lost most
+of its opacity early and lingered faint. Ten popups, the modal and
+lightbox routes and the `fade` page transition shipped that way until
+0.31.1. Flutter's
+own Cupertino routes and sheets pass their curve `.flipped` for this
+reason.
+
+`kunSurfaceCurve(parent)` in `foundation/motion.dart` now builds that pair
+for every surface. Measured with the old curve: opacity was 0.37 half way
+through an exit, where the web's is 0.63. Tests in `motion_test.dart`,
+`dropdown_test.dart` and `page_test.dart` fail on the unflipped curve.
   - `slide` is the iOS convention on `kun-slow` and the emphasized ease. The
     covered page's parallax goes through Flutter's `delegatedTransition`. The
     leading edge casts `KunShadows.md` instead of Cupertino's gradient.

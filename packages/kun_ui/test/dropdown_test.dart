@@ -384,4 +384,19 @@ void main() {
     expect(share.flagsCollection.isEnabled, Tristate.isFalse);
     semantics.dispose();
   });
+
+  testWidgets('the menu accelerates out', (tester) async {
+    setView(tester, const Size(800, 600));
+    await tester.pumpWidget(wrap(dropdown()));
+    await openWithTap(tester);
+
+    await tester.tap(find.text('actions'));
+    await tester.pump();
+    await tester.pump(KunDurations.exit ~/ 2);
+    final FadeTransition fade = tester.widget<FadeTransition>(
+      find.ancestor(of: menu, matching: find.byType(FadeTransition)).first,
+    );
+    expect(fade.opacity.value, greaterThan(0.5));
+    expect(fade.opacity.value, lessThan(1));
+  });
 }

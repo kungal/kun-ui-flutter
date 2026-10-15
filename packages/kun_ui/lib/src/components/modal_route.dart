@@ -78,11 +78,7 @@ class _KunModalPageState extends State<_KunModalPage>
   @override
   void initState() {
     super.initState();
-    _fade = CurvedAnimation(
-      parent: widget.route.animation!,
-      curve: KunEasing.enter,
-      reverseCurve: KunEasing.exit,
-    );
+    _fade = kunSurfaceCurve(widget.route.animation!);
     _swipe = AnimationController(
       vsync: this,
       value: 0,

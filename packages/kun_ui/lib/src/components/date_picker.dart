@@ -427,11 +427,7 @@ class _KunDatePickerState extends State<KunDatePicker>
       duration: KunDurations.base,
       reverseDuration: KunDurations.exit,
     );
-    _openCloseCurve = CurvedAnimation(
-      parent: _openClose,
-      curve: KunEasing.enter,
-      reverseCurve: KunEasing.exit,
-    );
+    _openCloseCurve = kunSurfaceCurve(_openClose);
     _panelScale = Tween<double>(begin: _kPanelScaleFrom, end: 1).animate(
       _openCloseCurve,
     );

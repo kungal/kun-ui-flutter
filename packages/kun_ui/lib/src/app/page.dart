@@ -6,6 +6,8 @@ import 'package:flutter/services.dart';
 import 'package:flutter/widgets.dart';
 import 'package:kun_ui_tokens/kun_ui_tokens.dart';
 
+import '../foundation/motion.dart';
+
 /// How a [KunPage] or [KunPageRoute] enters and leaves.
 enum KunPageTransition {
   /// [slide] on iOS and macOS, [rise] everywhere else.
@@ -360,11 +362,7 @@ class _KunFadePageTransitionState extends State<_KunFadePageTransition> {
     if (widget.linear) {
       parent = widget.animation;
     } else {
-      _curve = CurvedAnimation(
-        parent: widget.animation,
-        curve: KunEasing.enter,
-        reverseCurve: KunEasing.exit,
-      );
+      _curve = kunSurfaceCurve(widget.animation);
       parent = _curve!;
     }
     _fade = parent;
@@ -431,14 +429,7 @@ class _KunRisePageTransitionState extends State<_KunRisePageTransition> {
       _progress = widget.animation;
       return;
     }
-    // CurvedAnimation transforms the reversing value with reverseCurve as
-    // is, so an unflipped ease-kun-in decelerates out instead of
-    // accelerating out as the web's leave does.
-    _curve = CurvedAnimation(
-      parent: widget.animation,
-      curve: KunEasing.enter,
-      reverseCurve: KunEasing.exit.flipped,
-    );
+    _curve = kunSurfaceCurve(widget.animation);
     _progress = _curve!;
   }
 

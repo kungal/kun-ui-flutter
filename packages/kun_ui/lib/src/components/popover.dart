@@ -241,11 +241,7 @@ class _KunPopoverState extends State<KunPopover>
       duration: KunDurations.base,
       reverseDuration: KunDurations.exit,
     );
-    _curve = CurvedAnimation(
-      parent: _openClose,
-      curve: KunEasing.enter,
-      reverseCurve: KunEasing.exit,
-    );
+    _curve = kunSurfaceCurve(_openClose);
     // The web grows the panel from `scale-95`.
     _scale = Tween<double>(begin: 0.95, end: 1).animate(_curve);
     _openClose.addListener(_hidePortalIfDismissed);

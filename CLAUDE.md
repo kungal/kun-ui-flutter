@@ -254,7 +254,10 @@ when a real app needs it, and one consumer is not a component. Then:
   born in kun-ui's generator, not here (iron rule 1). Every duration goes
   through `kunMotion`, or the widget checks `kunReducedMotion` and jumps:
   kun-ui's base stylesheet collapses every transition under reduced motion,
-  and nothing in Flutter does that for us.
+  and nothing in Flutter does that for us. A surface that opens and closes
+  eases through `kunSurfaceCurve`. `CurvedAnimation` applies `reverseCurve`
+  unflipped, so `reverseCurve: KunEasing.exit` decelerates out where the
+  web accelerates out. Thirteen sites shipped it that way until 0.31.1.
 - The `KunUI*` enum names look unusual next to Dart's `KunUi` casing
   convention for >2-letter acronyms, but `UI` is two letters and the names
   match the contract vocabulary exactly — grep-ability across the two repos

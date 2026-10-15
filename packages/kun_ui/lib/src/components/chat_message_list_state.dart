@@ -117,11 +117,7 @@ class _KunChatMessageListState extends State<KunChatMessageList>
       duration: KunDurations.base,
       reverseDuration: KunDurations.exit,
     );
-    _fabCurve = CurvedAnimation(
-      parent: _fab,
-      curve: KunEasing.enter,
-      reverseCurve: KunEasing.exit,
-    );
+    _fabCurve = kunSurfaceCurve(_fab);
     _flash = AnimationController(vsync: this, duration: _kFlash);
     _flashCurve = CurvedAnimation(parent: _flash, curve: _kFlashEase);
     _flash.addStatusListener((AnimationStatus status) {

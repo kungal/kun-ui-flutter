@@ -1,4 +1,5 @@
 import 'package:flutter/widgets.dart';
+import 'package:kun_ui_tokens/kun_ui_tokens.dart';
 
 /// Whether the platform asks for reduced motion.
 ///
@@ -15,3 +16,16 @@ bool kunReducedMotion(BuildContext context) =>
 /// reach.
 Duration kunMotion(BuildContext context, Duration duration) =>
     kunReducedMotion(context) ? Duration.zero : duration;
+
+/// [parent] eased the way a KunUI surface enters and leaves: the web's
+/// `ease-kun-out` while it runs forward and `ease-kun-in` while it reverses.
+///
+/// [CurvedAnimation] applies `reverseCurve` to the reversing value as is, so
+/// an unflipped `ease-kun-in` decelerates out. Every popup passed it that
+/// way until 0.31.1. Flipped, it accelerates out like the web's leave
+/// transition. The caller disposes the result.
+CurvedAnimation kunSurfaceCurve(Animation<double> parent) => CurvedAnimation(
+      parent: parent,
+      curve: KunEasing.enter,
+      reverseCurve: KunEasing.exit.flipped,
+    );

@@ -85,11 +85,7 @@ class _KunLightboxPageState extends State<_KunLightboxPage> {
   @override
   void initState() {
     super.initState();
-    _fade = CurvedAnimation(
-      parent: widget.route.animation!,
-      curve: KunEasing.enter,
-      reverseCurve: KunEasing.exit,
-    );
+    _fade = kunSurfaceCurve(widget.route.animation!);
     _panelFocus = FocusNode(
       debugLabel: 'KunLightbox.panel',
       canRequestFocus: true,

@@ -121,6 +121,19 @@ void main() {
     );
     expect(scale.scale.value, greaterThan(0.95));
     expect(scale.scale.value, lessThan(1));
+
+    await tester.pumpAndSettle();
+    navKey.currentState!.pop();
+    await tester.pump();
+    await tester.pump(KunDurations.exit ~/ 2);
+    final FadeTransition leaving = tester.widget<FadeTransition>(
+      find
+          .ancestor(
+              of: find.text('next'), matching: find.byType(FadeTransition))
+          .first,
+    );
+    expect(leaving.opacity.value, greaterThan(0.5));
+    expect(leaving.opacity.value, lessThan(1));
   });
 
   testWidgets(

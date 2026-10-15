@@ -1,5 +1,19 @@
 # Changelog
 
+## 0.31.1
+
+- **Popups, modals and the `fade` page transition speed up as they
+  leave,** as on the web. They leave on `ease-kun-in`, which is Material 3's
+  standard accelerate. Flutter runs a reverse curve backwards in time, so
+  until now they lost most of their opacity at once and then lingered
+  faint: half way through an exit, opacity was 0.37 where the web's is
+  0.63. This covers `KunDropdown`, `KunPopover`, `KunHoverCard`,
+  `KunSelect`, `KunDatePicker`, `KunAutocomplete`, `KunContextMenu`, the
+  submenus of both menus, `KunChatMessageMenu`, the chat list's
+  jump-to-latest button, `KunModal`, `KunLightbox` and
+  `KunPageTransition.fade`. Durations and the way things enter are
+  unchanged. Nothing in the API changes.
+
 ## 0.31.0
 
 - **A `KunAutocomplete` row is as tall as what it draws,** as on the web,

@@ -360,11 +360,7 @@ class _KunSelectState<T, O extends KunSelectOption<T>>
       duration: KunDurations.base,
       reverseDuration: KunDurations.exit,
     );
-    _openCloseCurve = CurvedAnimation(
-      parent: _openClose,
-      curve: KunEasing.enter,
-      reverseCurve: KunEasing.exit,
-    );
+    _openCloseCurve = kunSurfaceCurve(_openClose);
     _popupScale = Tween<double>(begin: _kPopupScaleFrom, end: 1).animate(
       _openCloseCurve,
     );

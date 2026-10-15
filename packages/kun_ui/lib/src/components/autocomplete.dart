@@ -222,11 +222,7 @@ class _KunAutocompleteState<T extends KunAutocompleteOption>
       duration: KunDurations.base,
       reverseDuration: KunDurations.exit,
     );
-    _curve = CurvedAnimation(
-      parent: _openClose,
-      curve: KunEasing.enter,
-      reverseCurve: KunEasing.exit,
-    );
+    _curve = kunSurfaceCurve(_openClose);
     _scale = Tween<double>(begin: 0.95, end: 1).animate(_curve);
     _openClose.addListener(_hidePortalIfDismissed);
   }
