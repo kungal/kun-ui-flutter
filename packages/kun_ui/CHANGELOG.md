@@ -1,5 +1,18 @@
 # Changelog
 
+## 0.30.0
+
+- **`KunPageTransition.rise`**: the page fades in while it moves up a
+  short fixed distance (`KunSpacing.unit * 4`) into place, on `kun-fast`
+  both ways, with `ease-kun-out` in and `ease-kun-in` out. The covered page
+  stays still. Android predictive back scrubs it as it scrubs `fade`, and
+  reduced motion makes it instant. Asked by the kungal app.
+- **`platform` now resolves to `rise` on Android, Linux, Windows and
+  Fuchsia** (it was `fade`). iOS and macOS keep `slide`.
+  - **What it costs:** pass `transition: KunPageTransition.fade` to keep
+    the old entry. A `switch` over `KunPageTransition` with no default
+    needs a `rise` case.
+
 ## 0.29.0
 
 - **`KunButton.expanded`** carries the web's `aria-expanded` on the

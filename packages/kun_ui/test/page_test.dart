@@ -51,7 +51,7 @@ Future<void> sendBackGesture(
 
 void main() {
   testWidgets(
-    'platform resolves to slide on iOS and macOS and fade elsewhere',
+    'platform resolves to slide on iOS and macOS and rise elsewhere',
     (WidgetTester tester) async {
       final GlobalKey<NavigatorState> navKey = GlobalKey<NavigatorState>();
       await tester.pumpWidget(wrapNav(navKey: navKey));
@@ -74,10 +74,10 @@ void main() {
         expect(route.reverseTransitionDuration, KunDurations.slow);
         expect(find.byType(SlideTransition), findsWidgets);
       } else {
-        expect(route.transitionDuration, KunDurations.base);
-        expect(route.reverseTransitionDuration, KunDurations.exit);
+        expect(route.transitionDuration, KunDurations.fast);
+        expect(route.reverseTransitionDuration, KunDurations.fast);
         expect(find.byType(FadeTransition), findsWidgets);
-        expect(find.byType(ScaleTransition), findsWidgets);
+        expect(find.byType(ScaleTransition), findsNothing);
       }
     },
     variant: TargetPlatformVariant.all(),
@@ -121,6 +121,61 @@ void main() {
     );
     expect(scale.scale.value, greaterThan(0.95));
     expect(scale.scale.value, lessThan(1));
+  });
+
+  testWidgets(
+      'rise moves the page up a fixed distance while the covered page stays',
+      (WidgetTester tester) async {
+    final GlobalKey<NavigatorState> navKey = GlobalKey<NavigatorState>();
+    await tester.pumpWidget(wrapNav(navKey: navKey));
+    final Offset home = tester.getTopLeft(find.text('home'));
+    navKey.currentState!.push(
+      KunPageRoute<void>(
+        transition: KunPageTransition.rise,
+        builder: (BuildContext context) => const Text('next'),
+      ),
+    );
+    await tester.pump();
+    final KunPageRoute<void> route = ModalRoute.of(
+      tester.element(find.text('next', skipOffstage: false)),
+    )! as KunPageRoute<void>;
+    expect(route.transitionDuration, KunDurations.fast);
+    expect(route.reverseTransitionDuration, KunDurations.fast);
+    expect(
+        tester.getTopLeft(find.text('next')).dy, home.dy + KunSpacing.unit * 4);
+
+    await tester.pump(KunDurations.fast ~/ 2);
+    final double rise = tester.getTopLeft(find.text('next')).dy - home.dy;
+    expect(rise, greaterThan(0));
+    expect(rise, lessThan(KunSpacing.unit * 4));
+    final FadeTransition fade = tester.widget<FadeTransition>(
+      find
+          .ancestor(
+              of: find.text('next'), matching: find.byType(FadeTransition))
+          .first,
+    );
+    expect(fade.opacity.value, greaterThan(0));
+    expect(fade.opacity.value, lessThan(1));
+    expect(
+      find.ancestor(
+          of: find.text('next'), matching: find.byType(ScaleTransition)),
+      findsNothing,
+    );
+    expect(tester.getTopLeft(find.text('home')), home);
+
+    await tester.pumpAndSettle();
+    expect(tester.getTopLeft(find.text('next')), home);
+
+    navKey.currentState!.pop();
+    await tester.pump();
+    await tester.pump(KunDurations.fast ~/ 2);
+    final double sunk = tester.getTopLeft(find.text('next')).dy - home.dy;
+    expect(sunk, greaterThan(0));
+    expect(sunk, lessThan(KunSpacing.unit * 4 / 2));
+    expect(tester.getTopLeft(find.text('home')), home);
+
+    await tester.pumpAndSettle();
+    expect(find.text('next'), findsNothing);
   });
 
   testWidgets('slide durations and mid-push offsets',
@@ -180,23 +235,29 @@ void main() {
     expect(route.animation!.isCompleted, isTrue);
   });
 
-  testWidgets('reduced motion completes in one frame',
-      (WidgetTester tester) async {
-    final GlobalKey<NavigatorState> navKey = GlobalKey<NavigatorState>();
-    await tester.pumpWidget(wrapNav(navKey: navKey, reduce: true));
-    navKey.currentState!.push(
-      KunPageRoute<void>(
-        transition: KunPageTransition.fade,
-        builder: (BuildContext context) => const Text('next'),
-      ),
-    );
-    await tester.pump();
-    expect(find.text('next'), findsOneWidget);
-    final ModalRoute<void> route =
-        ModalRoute.of(tester.element(find.text('next')))!;
-    expect(route.transitionDuration, Duration.zero);
-    expect(route.animation!.isCompleted, isTrue);
-  });
+  for (final KunPageTransition transition in <KunPageTransition>[
+    KunPageTransition.fade,
+    KunPageTransition.rise,
+  ]) {
+    testWidgets('reduced motion completes ${transition.name} in one frame',
+        (WidgetTester tester) async {
+      final GlobalKey<NavigatorState> navKey = GlobalKey<NavigatorState>();
+      await tester.pumpWidget(wrapNav(navKey: navKey, reduce: true));
+      navKey.currentState!.push(
+        KunPageRoute<void>(
+          transition: transition,
+          builder: (BuildContext context) => const Text('next'),
+        ),
+      );
+      await tester.pump();
+      expect(find.text('next'), findsOneWidget);
+      final ModalRoute<void> route =
+          ModalRoute.of(tester.element(find.text('next')))!;
+      expect(route.transitionDuration, Duration.zero);
+      expect(route.reverseTransitionDuration, Duration.zero);
+      expect(route.animation!.isCompleted, isTrue);
+    });
+  }
 
   testWidgets('KunPage with a new child on rebuild shows the new child',
       (WidgetTester tester) async {
@@ -363,81 +424,93 @@ void main() {
     variant: TargetPlatformVariant.only(TargetPlatform.iOS),
   );
 
-  testWidgets(
-    'Android predictive back scrubs, commits and cancels',
-    (WidgetTester tester) async {
-      await tester.pumpWidget(
-        KunApp(
-          home: Builder(
-            builder: (BuildContext context) {
-              return GestureDetector(
-                onTap: () {
-                  Navigator.of(context).push(
-                    KunPageRoute<void>(
-                      transition: KunPageTransition.fade,
-                      builder: (BuildContext context) => const Text('page b'),
-                    ),
-                  );
-                },
-                child: const Text('push'),
-              );
-            },
+  for (final KunPageTransition transition in <KunPageTransition>[
+    KunPageTransition.fade,
+    KunPageTransition.rise,
+  ]) {
+    testWidgets(
+      'Android predictive back scrubs, commits and cancels ${transition.name}',
+      (WidgetTester tester) async {
+        await tester.pumpWidget(
+          KunApp(
+            home: Builder(
+              builder: (BuildContext context) {
+                return GestureDetector(
+                  onTap: () {
+                    Navigator.of(context).push(
+                      KunPageRoute<void>(
+                        transition: transition,
+                        builder: (BuildContext context) => const Text('page b'),
+                      ),
+                    );
+                  },
+                  child: const Text('push'),
+                );
+              },
+            ),
           ),
-        ),
-      );
-      await tester.tap(find.text('push'));
-      await tester.pumpAndSettle();
-      expect(find.text('page b'), findsOneWidget);
+        );
+        await tester.tap(find.text('push'));
+        await tester.pumpAndSettle();
+        expect(find.text('page b'), findsOneWidget);
+        final Offset settled = tester.getTopLeft(find.text('page b'));
 
-      await sendBackGesture(tester, 'startBackGesture', <String, dynamic>{
-        'touchOffset': <double>[5.0, 300.0],
-        'progress': 0.0,
-        'swipeEdge': 0,
-      });
-      await tester.pump();
-
-      await sendBackGesture(
-        tester,
-        'updateBackGestureProgress',
-        <String, dynamic>{
-          'touchOffset': <double>[100.0, 300.0],
-          'progress': 0.35,
+        await sendBackGesture(tester, 'startBackGesture', <String, dynamic>{
+          'touchOffset': <double>[5.0, 300.0],
+          'progress': 0.0,
           'swipeEdge': 0,
-        },
-      );
-      await tester.pump();
-      final ModalRoute<void> route =
-          ModalRoute.of(tester.element(find.text('page b')))!;
-      expect(route.animation!.value, closeTo(1 - 0.35, 0.001));
+        });
+        await tester.pump();
 
-      await sendBackGesture(tester, 'cancelBackGesture');
-      await tester.pumpAndSettle();
-      expect(find.text('page b'), findsOneWidget);
-      expect(route.animation!.value, 1);
+        await sendBackGesture(
+          tester,
+          'updateBackGestureProgress',
+          <String, dynamic>{
+            'touchOffset': <double>[100.0, 300.0],
+            'progress': 0.35,
+            'swipeEdge': 0,
+          },
+        );
+        await tester.pump();
+        final ModalRoute<void> route =
+            ModalRoute.of(tester.element(find.text('page b')))!;
+        expect(route.animation!.value, closeTo(1 - 0.35, 0.001));
+        if (transition == KunPageTransition.rise) {
+          expect(
+            tester.getTopLeft(find.text('page b')).dy - settled.dy,
+            closeTo(KunSpacing.unit * 4 * 0.35, 0.01),
+          );
+        }
 
-      await sendBackGesture(tester, 'startBackGesture', <String, dynamic>{
-        'touchOffset': <double>[5.0, 300.0],
-        'progress': 0.0,
-        'swipeEdge': 0,
-      });
-      await tester.pump();
-      await sendBackGesture(
-        tester,
-        'updateBackGestureProgress',
-        <String, dynamic>{
-          'touchOffset': <double>[200.0, 300.0],
-          'progress': 0.6,
+        await sendBackGesture(tester, 'cancelBackGesture');
+        await tester.pumpAndSettle();
+        expect(find.text('page b'), findsOneWidget);
+        expect(route.animation!.value, 1);
+
+        await sendBackGesture(tester, 'startBackGesture', <String, dynamic>{
+          'touchOffset': <double>[5.0, 300.0],
+          'progress': 0.0,
           'swipeEdge': 0,
-        },
-      );
-      await tester.pump();
-      await sendBackGesture(tester, 'commitBackGesture');
-      await tester.pumpAndSettle();
-      expect(find.text('page b'), findsNothing);
-      expect(find.text('push'), findsOneWidget);
-    },
-    variant: TargetPlatformVariant.only(TargetPlatform.android),
-  );
+        });
+        await tester.pump();
+        await sendBackGesture(
+          tester,
+          'updateBackGestureProgress',
+          <String, dynamic>{
+            'touchOffset': <double>[200.0, 300.0],
+            'progress': 0.6,
+            'swipeEdge': 0,
+          },
+        );
+        await tester.pump();
+        await sendBackGesture(tester, 'commitBackGesture');
+        await tester.pumpAndSettle();
+        expect(find.text('page b'), findsNothing);
+        expect(find.text('push'), findsOneWidget);
+      },
+      variant: TargetPlatformVariant.only(TargetPlatform.android),
+    );
+  }
 
   testWidgets(
     'Android none does not claim the gesture and commit still pops',

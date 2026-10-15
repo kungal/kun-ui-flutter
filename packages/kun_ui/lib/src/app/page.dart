@@ -8,11 +8,16 @@ import 'package:kun_ui_tokens/kun_ui_tokens.dart';
 
 /// How a [KunPage] or [KunPageRoute] enters and leaves.
 enum KunPageTransition {
-  /// [slide] on iOS and macOS, [fade] everywhere else.
+  /// [slide] on iOS and macOS, [rise] everywhere else.
   platform,
 
   /// KunUI's "a surface enters" motion: fade and scale from 0.95.
   fade,
+
+  /// The page fades in while it moves up a short fixed distance
+  /// (`KunSpacing.unit * 4`) into place, on `kun-fast` both ways. The
+  /// covered page stays still.
+  rise,
 
   /// The iOS horizontal slide, with the covered page's parallax.
   slide,
@@ -115,6 +120,8 @@ const double _kMinFlingVelocity = 1;
 // dropdown.dart / the existing "a surface enters" scale.
 const double _kEnterScaleBegin = 0.95;
 
+const double _kRiseDistance = KunSpacing.unit * 4;
+
 final Animatable<Offset> _kRightMiddleTween = Tween<Offset>(
   begin: const Offset(1, 0),
   end: Offset.zero,
@@ -144,7 +151,7 @@ mixin _KunRouteTransitionMixin<T> on PageRoute<T> {
       TargetPlatform.fuchsia ||
       TargetPlatform.linux ||
       TargetPlatform.windows =>
-        KunPageTransition.fade,
+        KunPageTransition.rise,
     };
   }
 
@@ -163,6 +170,7 @@ mixin _KunRouteTransitionMixin<T> on PageRoute<T> {
     }
     return switch (_resolved) {
       KunPageTransition.fade || KunPageTransition.platform => KunDurations.base,
+      KunPageTransition.rise => KunDurations.fast,
       KunPageTransition.slide => KunDurations.slow,
       KunPageTransition.none => Duration.zero,
     };
@@ -175,6 +183,7 @@ mixin _KunRouteTransitionMixin<T> on PageRoute<T> {
     }
     return switch (_resolved) {
       KunPageTransition.fade || KunPageTransition.platform => KunDurations.exit,
+      KunPageTransition.rise => KunDurations.fast,
       KunPageTransition.slide => KunDurations.slow,
       KunPageTransition.none => Duration.zero,
     };
@@ -258,6 +267,12 @@ mixin _KunRouteTransitionMixin<T> on PageRoute<T> {
     switch (resolved) {
       case KunPageTransition.fade:
         result = _KunFadePageTransition(
+          animation: animation,
+          linear: linear,
+          child: child,
+        );
+      case KunPageTransition.rise:
+        result = _KunRisePageTransition(
           animation: animation,
           linear: linear,
           child: child,
@@ -363,6 +378,80 @@ class _KunFadePageTransitionState extends State<_KunFadePageTransition> {
       child: ScaleTransition(
         scale: _scale,
         alignment: Alignment.center,
+        child: widget.child,
+      ),
+    );
+  }
+}
+
+class _KunRisePageTransition extends StatefulWidget {
+  const _KunRisePageTransition({
+    required this.animation,
+    required this.linear,
+    required this.child,
+  });
+
+  final Animation<double> animation;
+  final bool linear;
+  final Widget child;
+
+  @override
+  State<_KunRisePageTransition> createState() => _KunRisePageTransitionState();
+}
+
+class _KunRisePageTransitionState extends State<_KunRisePageTransition> {
+  CurvedAnimation? _curve;
+  late Animation<double> _progress;
+
+  @override
+  void initState() {
+    super.initState();
+    _setup();
+  }
+
+  @override
+  void didUpdateWidget(_KunRisePageTransition oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (oldWidget.animation != widget.animation ||
+        oldWidget.linear != widget.linear) {
+      _curve?.dispose();
+      _curve = null;
+      _setup();
+    }
+  }
+
+  @override
+  void dispose() {
+    _curve?.dispose();
+    super.dispose();
+  }
+
+  void _setup() {
+    if (widget.linear) {
+      _progress = widget.animation;
+      return;
+    }
+    // CurvedAnimation transforms the reversing value with reverseCurve as
+    // is, so an unflipped ease-kun-in decelerates out instead of
+    // accelerating out as the web's leave does.
+    _curve = CurvedAnimation(
+      parent: widget.animation,
+      curve: KunEasing.enter,
+      reverseCurve: KunEasing.exit.flipped,
+    );
+    _progress = _curve!;
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return FadeTransition(
+      opacity: _progress,
+      child: AnimatedBuilder(
+        animation: _progress,
+        builder: (BuildContext context, Widget? child) => Transform.translate(
+          offset: Offset(0, _kRiseDistance * (1 - _progress.value)),
+          child: child,
+        ),
         child: widget.child,
       ),
     );

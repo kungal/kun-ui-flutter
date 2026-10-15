@@ -742,16 +742,34 @@ the document is the frame. So they follow the pull-to-refresh and
 selection-menu split: the mechanics are Flutter's, and the visuals are
 KunUI's own pieces.
 
-- **`KunPage` / `KunPageRoute`**, `transition: platform | fade | slide |
-  none`.
+- **`KunPage` / `KunPageRoute`**, `transition: platform | fade | rise |
+  slide | none`.
   - `fade` is the motion every KunUI surface already enters with (KunDropdown,
     the selection menu, the web modal): fade plus a 0.95 scale, `kun-base` in
     and `kun-exit` out.
+  - `rise` (2026-10-15) is the page entry the maintainer asked for while
+    hand-testing the kungal desktop app: "a very simple upward pop from the
+    lower middle — very small, very short, very fast". The page fades in
+    while it moves up `KunSpacing.unit * 4` (web `translate-y-4`, the same
+    shape as the web's rising surfaces, e.g. the chat list's jump button at
+    `translate-y-2`). The distance is fixed, because a fraction of a
+    1080-tall window is far too much. It runs on `kun-fast` in both
+    directions, since `kun-exit` (180ms) would outlast the entry, with
+    `ease-kun-out` in and `ease-kun-in` out. The covered page stays still.
+    The page has no web counterpart, so no upstream round is needed, and
+    every value is an existing token.
+  - Flutter's `CurvedAnimation` applies `reverseCurve` to the reversing
+    value as is. `rise` therefore leaves on `KunEasing.exit.flipped`, which
+    accelerates out like the web's leave. Measured: with the unflipped
+    curve, the page had already sunk 10 of its 16 px half way through the
+    exit. Every popup in the library still passes `KunEasing.exit`
+    unflipped, and so does `fade`.
   - `slide` is the iOS convention on `kun-slow` and the emphasized ease. The
     covered page's parallax goes through Flutter's `delegatedTransition`. The
     leading edge casts `KunShadows.md` instead of Cupertino's gradient.
-  - `platform` is `slide` on Apple platforms and `fade` elsewhere. `none` is
-    for full-screen viewers.
+  - `platform` is `slide` on Apple platforms and `rise` elsewhere (`fade`
+    until 0.30.0, when the maintainer asked for `rise` as the page entry).
+    `none` is for full-screen viewers.
   - The iOS edge swipe is Cupertino's detector, transcribed.
   - Android predictive back is Material's observer, transcribed without its
     shrink visuals: the gesture scrubs the page's own transition, through the

@@ -88,6 +88,14 @@ class _TransitionsHome extends StatelessWidget {
             KunButton(
               onPressed: () => _push(
                 context,
+                KunPageTransition.rise,
+                '上浮',
+              ),
+              child: const Text('上浮'),
+            ),
+            KunButton(
+              onPressed: () => _push(
+                context,
                 KunPageTransition.slide,
                 '滑入',
               ),
