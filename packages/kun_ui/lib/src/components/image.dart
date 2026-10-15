@@ -80,7 +80,9 @@ class KunImage extends StatefulWidget {
 
   /// A base64 ThumbHash for the blur-up placeholder (web `thumbhash`).
   ///
-  /// Decoded when the widget builds; an undecodable hash falls through to
+  /// The hash's average colour paints immediately. If the picture is still
+  /// loading, the decoded blur fades in over it. An image that loads from
+  /// cache never decodes the blur. An undecodable hash falls through to
   /// the skeleton layer.
   final String? thumbhash;
 
@@ -111,6 +113,14 @@ class KunImage extends StatefulWidget {
   /// Key of the picture fade widget, for tests.
   @visibleForTesting
   static const Key pictureFadeKey = ValueKey<String>('kunImagePictureFade');
+
+  /// Key of the ThumbHash average-colour layer, for tests.
+  @visibleForTesting
+  static const Key thumbColorKey = ValueKey<String>('kunImageThumbColor');
+
+  /// Key of the ThumbHash blur fade widget, for tests.
+  @visibleForTesting
+  static const Key thumbBlurKey = ValueKey<String>('kunImageThumbBlur');
 
   @override
   State<KunImage> createState() => _KunImageState();
@@ -143,9 +153,6 @@ class _KunImageState extends State<KunImage> {
       widget.thumbhash != null && widget.thumbhash!.isNotEmpty;
 
   bool get _wrap => widget.skeleton || _hasThumbhash;
-
-  bool get _thumbDecodes =>
-      _hasThumbhash && tryDecodeThumbHash(widget.thumbhash!) != null;
 
   bool get _showPlaceholder {
     if (!_wrap || _dropPlaceholder || _syncLoaded) {
@@ -354,14 +361,16 @@ class _KunImageState extends State<KunImage> {
   }
 
   Widget _placeholder({required Color shade200}) {
+    final String? hash = widget.thumbhash;
+    final Color? thumbColor = hash != null && hash.isNotEmpty
+        ? tryDecodeThumbHashAverageColor(hash)
+        : null;
     final Widget inner;
-    if (_thumbDecodes) {
-      inner = Image(
-        image: KunThumbHashImage(widget.thumbhash!),
-        fit: BoxFit.cover,
-        width: double.infinity,
-        height: double.infinity,
-        excludeFromSemantics: true,
+    if (thumbColor != null) {
+      inner = ColoredBox(
+        key: KunImage.thumbColorKey,
+        color: thumbColor,
+        child: _KunThumbHashBlur(hash: hash!),
       );
     } else if (_status == _ImageStatus.error) {
       inner = const SizedBox.expand();
@@ -475,5 +484,75 @@ class _KunImageState extends State<KunImage> {
       );
     }
     return _semantics(child: ClipRect(child: body));
+  }
+}
+
+class _KunThumbHashBlur extends StatefulWidget {
+  const _KunThumbHashBlur({required this.hash});
+
+  final String hash;
+
+  @override
+  State<_KunThumbHashBlur> createState() => _KunThumbHashBlurState();
+}
+
+class _KunThumbHashBlurState extends State<_KunThumbHashBlur> {
+  bool _fadeIn = false;
+  bool _scheduled = false;
+
+  @override
+  void didUpdateWidget(_KunThumbHashBlur oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (oldWidget.hash != widget.hash) {
+      _fadeIn = false;
+      _scheduled = false;
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Image(
+      image: KunThumbHashImage(widget.hash),
+      fit: BoxFit.cover,
+      width: double.infinity,
+      height: double.infinity,
+      excludeFromSemantics: true,
+      frameBuilder: (
+        BuildContext context,
+        Widget child,
+        int? frame,
+        bool _,
+      ) {
+        if (kunReducedMotion(context)) {
+          return frame == null ? const SizedBox.expand() : child;
+        }
+        if (frame != null && !_fadeIn && !_scheduled) {
+          _scheduled = true;
+          WidgetsBinding.instance.addPostFrameCallback((_) {
+            if (mounted) {
+              setState(() => _fadeIn = true);
+            }
+          });
+        }
+        return KeyedSubtree(
+          key: KunImage.thumbBlurKey,
+          child: AnimatedOpacity(
+            opacity: _fadeIn ? 1 : 0,
+            duration: kunMotion(context, KunDurations.slow),
+            curve: KunEasing.enter,
+            child: child,
+          ),
+        );
+      },
+      errorBuilder: (
+        BuildContext context,
+        Object error,
+        StackTrace? stackTrace,
+      ) {
+        // A missing errorBuilder paints Flutter's debug error box and
+        // puts the exception in the semantics tree.
+        return const SizedBox.expand();
+      },
+    );
   }
 }

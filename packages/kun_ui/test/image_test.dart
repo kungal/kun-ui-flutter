@@ -6,6 +6,8 @@ import 'package:flutter/widgets.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:kun_ui/kun_ui.dart';
 import 'package:kun_ui/src/components/pulse.dart';
+import 'package:kun_ui/src/components/thumbhash_image.dart'
+    show tryDecodeThumbHashAverageColor;
 
 const String _docsHash = 'eBeCA4AmyAaYeIcLy20KVwg3inaCelc=';
 
@@ -145,6 +147,21 @@ bool hasThumbHashImage(WidgetTester tester) {
   return tester.widgetList<Image>(find.byType(Image)).any(
         (Image image) => image.image is KunThumbHashImage,
       );
+}
+
+Future<void> settleThumbHash(WidgetTester tester, String hash) async {
+  await tester.runAsync(() async {
+    final Completer<void> loaded = Completer<void>();
+    KunThumbHashImage(hash).resolve(ImageConfiguration.empty).addListener(
+      ImageStreamListener((ImageInfo info, bool sync) {
+        if (!loaded.isCompleted) {
+          loaded.complete();
+        }
+      }),
+    );
+    await loaded.future;
+  });
+  await tester.pump();
 }
 
 void main() {
@@ -570,5 +587,106 @@ void main() {
     expect(find.byKey(KunImage.placeholderKey), findsNothing);
     expect(find.byKey(KunImage.pictureFadeKey), findsNothing);
     expect(find.byType(RawImage), findsOneWidget);
+  });
+
+  testWidgets('the average colour is present before the blur first frame',
+      (tester) async {
+    final _GateImageProvider provider = _GateImageProvider();
+    await tester.pumpWidget(
+      wrap(
+        const KunImage(
+          src: 'https://x.test/a.png',
+          width: 80,
+          height: 80,
+          thumbhash: _docsHash,
+        ),
+        config: KunUIConfig(imageProvider: (_) => provider),
+      ),
+    );
+    expect(
+      tester.widget<ColoredBox>(find.byKey(KunImage.thumbColorKey)).color,
+      tryDecodeThumbHashAverageColor(_docsHash),
+    );
+    expect(hasThumbHashImage(tester), isTrue);
+    expect(opacityOf(tester, KunImage.thumbBlurKey), 0);
+    expect(find.byType(KunPulseLayer), findsNothing);
+  });
+
+  testWidgets('the blur fades in over the average colour', (tester) async {
+    final _GateImageProvider provider = _GateImageProvider();
+    await tester.pumpWidget(
+      wrap(
+        const KunImage(
+          src: 'https://x.test/a.png',
+          width: 80,
+          height: 80,
+          thumbhash: _docsHash,
+        ),
+        config: KunUIConfig(imageProvider: (_) => provider),
+      ),
+    );
+    expect(opacityOf(tester, KunImage.thumbBlurKey), 0);
+
+    await settleThumbHash(tester, _docsHash);
+    expect(opacityOf(tester, KunImage.thumbBlurKey), 0);
+
+    await tester.pump();
+    expect(opacityOf(tester, KunImage.thumbBlurKey), 0);
+
+    await tester.pump(KunDurations.slow ~/ 2);
+    final double mid = opacityOf(tester, KunImage.thumbBlurKey);
+    expect(mid, greaterThan(0));
+    expect(mid, lessThan(1));
+
+    await tester.pump(KunDurations.slow ~/ 2);
+    expect(opacityOf(tester, KunImage.thumbBlurKey), closeTo(1, 0.001));
+    expect(find.byKey(KunImage.thumbColorKey), findsOneWidget);
+  });
+
+  testWidgets('reduced motion shows the blur with no fade', (tester) async {
+    final _GateImageProvider provider = _GateImageProvider();
+    await tester.pumpWidget(
+      wrap(
+        const KunImage(
+          src: 'https://x.test/a.png',
+          width: 80,
+          height: 80,
+          thumbhash: _docsHash,
+        ),
+        config: KunUIConfig(imageProvider: (_) => provider),
+        disableAnimations: true,
+      ),
+    );
+    expect(find.byKey(KunImage.thumbColorKey), findsOneWidget);
+    expect(find.byKey(KunImage.thumbBlurKey), findsNothing);
+
+    await settleThumbHash(tester, _docsHash);
+    expect(find.byKey(KunImage.thumbBlurKey), findsNothing);
+    expect(hasThumbHashImage(tester), isTrue);
+    final RawImage blur =
+        tester.widgetList<RawImage>(find.byType(RawImage)).first;
+    expect(blur.image, isNotNull);
+  });
+
+  testWidgets('a synchronously available image creates no blur',
+      (tester) async {
+    final ui.Image pixel = await pixelImage(tester);
+    await tester.pumpWidget(
+      wrap(
+        const KunImage(
+          src: 'https://x.test/a.png',
+          width: 80,
+          height: 80,
+          thumbhash: _docsHash,
+        ),
+        config: KunUIConfig(
+          imageProvider: (_) => _SyncImageProvider(pixel),
+        ),
+      ),
+    );
+    expect(hasThumbHashImage(tester), isFalse);
+    expect(find.byKey(KunImage.thumbColorKey), findsNothing);
+    expect(find.byKey(KunImage.thumbBlurKey), findsNothing);
+    expect(find.byKey(KunImage.placeholderKey), findsNothing);
   });
 }

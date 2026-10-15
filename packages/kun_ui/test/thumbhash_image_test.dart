@@ -5,7 +5,7 @@ import 'package:flutter/widgets.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:kun_ui/kun_ui.dart';
 import 'package:kun_ui/src/components/thumbhash_image.dart'
-    show ThumbHashRgba, tryDecodeThumbHash;
+    show ThumbHashRgba, tryDecodeThumbHash, tryDecodeThumbHashAverageColor;
 
 typedef _Vector = ({
   String name,
@@ -61,6 +61,63 @@ void main() {
     expect(tryDecodeThumbHash(''), isNull);
     expect(tryDecodeThumbHash('not-base64!!!'), isNull);
     expect(tryDecodeThumbHash('AA=='), isNull);
+  });
+
+  // Average-colour vectors from thumbhash@0.1.1 thumbHashToAverageRGBA:
+  // node --input-type=module -e 'import {pathToFileURL} from "url"; const m = await import(pathToFileURL("/home/kun/Desktop/code/website/kun-ui/node_modules/.pnpm/thumbhash@0.1.1/node_modules/thumbhash/thumbhash.js").href); for (const h of ["eBeCA4AmyAaYeIcLy20KVwg3inaCelc=","GmoDBwBImT6IeHeId0d3iHiPg6IHC4YF","X9WFI5A6UXZQh3hRUBj1io91iIiHiIg=","qPgFJIhQhKZHq4fKmJrXgIpkBQ=="]) { console.log(JSON.stringify({h, ...m.thumbHashToAverageRGBA(Uint8Array.from(Buffer.from(h,"base64")))})); }'
+  test('tryDecodeThumbHashAverageColor matches the JS reference', () {
+    const List<(String, Color)> vectors = <(String, Color)>[
+      (
+        'eBeCA4AmyAaYeIcLy20KVwg3inaCelc=',
+        Color.from(
+          alpha: 0.4,
+          red: 0.8862433862433862,
+          green: 0.8386243386243385,
+          blue: 0.9417989417989417,
+        ),
+      ),
+      (
+        'GmoDBwBImT6IeHeId0d3iHiPg6IHC4YF',
+        Color.from(
+          alpha: 1,
+          red: 0.8597883597883598,
+          green: 0.14550264550264558,
+          blue: 0.23280423280423285,
+        ),
+      ),
+      (
+        'X9WFI5A6UXZQh3hRUBj1io91iIiHiIg=',
+        Color.from(
+          alpha: 0.6666666666666666,
+          red: 0.34126984126984117,
+          green: 0.4206349206349206,
+          blue: 0.7142857142857143,
+        ),
+      ),
+      (
+        'qPgFJIhQhKZHq4fKmJrXgIpkBQ==',
+        Color.from(
+          alpha: 1,
+          red: 0.6534391534391535,
+          green: 0.6693121693121694,
+          blue: 0.582010582010582,
+        ),
+      ),
+    ];
+    for (final (String hash, Color expected) in vectors) {
+      final Color? decoded = tryDecodeThumbHashAverageColor(hash);
+      expect(decoded, isNotNull, reason: hash);
+      expect(decoded!.a, closeTo(expected.a, 1e-12), reason: hash);
+      expect(decoded.r, closeTo(expected.r, 1e-12), reason: hash);
+      expect(decoded.g, closeTo(expected.g, 1e-12), reason: hash);
+      expect(decoded.b, closeTo(expected.b, 1e-12), reason: hash);
+    }
+  });
+
+  test('tryDecodeThumbHashAverageColor rejects invalid input', () {
+    expect(tryDecodeThumbHashAverageColor(''), isNull);
+    expect(tryDecodeThumbHashAverageColor('not-base64!!!'), isNull);
+    expect(tryDecodeThumbHashAverageColor('AA=='), isNull);
   });
 
   testWidgets('the provider paints the reference size', (tester) async {

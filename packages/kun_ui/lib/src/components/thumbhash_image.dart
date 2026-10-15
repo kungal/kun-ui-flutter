@@ -18,8 +18,9 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 // SOFTWARE.
 //
-// Port of thumbHashToRGBA and thumbHashToApproximateAspectRatio from
-// thumbhash@0.1.1 (thumbhash/thumbhash.js).
+// Port of thumbHashToRGBA, thumbHashToAverageRGBA and
+// thumbHashToApproximateAspectRatio from thumbhash@0.1.1
+// (thumbhash/thumbhash.js).
 
 import 'dart:convert';
 import 'dart:math' as math;
@@ -42,6 +43,37 @@ typedef ThumbHashRgba = ({int width, int height, Uint8List rgba});
 /// public API.
 @internal
 ThumbHashRgba? tryDecodeThumbHash(String hash) {
+  final Uint8List? bytes = _decodeThumbHashBytes(hash);
+  if (bytes == null) {
+    return null;
+  }
+  final ThumbHashRgba decoded = _thumbHashToRgba(bytes);
+  if (decoded.width <= 0 || decoded.height <= 0) {
+    return null;
+  }
+  return decoded;
+}
+
+/// Decodes a base64 ThumbHash to the reference's average colour.
+///
+/// Channels are the 0–1 floats `thumbHashToAverageRGBA` yields. Returns
+/// null when [hash] is not valid base64, the payload is shorter than the
+/// 5-byte header, or the header yields a zero dimension.
+Color? tryDecodeThumbHashAverageColor(String hash) {
+  final Uint8List? bytes = _decodeThumbHashBytes(hash);
+  if (bytes == null) {
+    return null;
+  }
+  final double ratio = _thumbHashToApproximateAspectRatio(bytes);
+  final int w = (ratio > 1 ? 32 : 32 * ratio).round();
+  final int h = (ratio > 1 ? 32 / ratio : 32).round();
+  if (w <= 0 || h <= 0) {
+    return null;
+  }
+  return _thumbHashToAverageColor(bytes);
+}
+
+Uint8List? _decodeThumbHashBytes(String hash) {
   if (hash.isEmpty) {
     return null;
   }
@@ -54,11 +86,7 @@ ThumbHashRgba? tryDecodeThumbHash(String hash) {
   if (bytes.length < 5) {
     return null;
   }
-  final ThumbHashRgba decoded = _thumbHashToRgba(bytes);
-  if (decoded.width <= 0 || decoded.height <= 0) {
-    return null;
-  }
-  return decoded;
+  return bytes;
 }
 
 int _byte(Uint8List hash, int index) =>
@@ -179,6 +207,25 @@ ThumbHashRgba _thumbHashToRgba(Uint8List hash) {
 int _channelToUint8(double value) {
   final double clamped = math.max(0, 255 * math.min(1, value));
   return clamped.toInt();
+}
+
+Color _thumbHashToAverageColor(Uint8List hash) {
+  final int header =
+      _byte(hash, 0) | (_byte(hash, 1) << 8) | (_byte(hash, 2) << 16);
+  final double l = (header & 63) / 63;
+  final double p = ((header >> 6) & 63) / 31.5 - 1;
+  final double q = ((header >> 12) & 63) / 31.5 - 1;
+  final bool hasAlpha = (header >> 23) != 0;
+  final double a = hasAlpha ? (_byte(hash, 5) & 15) / 15 : 1;
+  final double b = l - 2 / 3 * p;
+  final double r = (3 * l - b + q) / 2;
+  final double g = r - q;
+  return Color.from(
+    alpha: a,
+    red: math.max(0, math.min(1, r)),
+    green: math.max(0, math.min(1, g)),
+    blue: math.max(0, math.min(1, b)),
+  );
 }
 
 /// The web `KunImage` blur-up placeholder, as an [ImageProvider] an app can
