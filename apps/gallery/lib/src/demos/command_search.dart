@@ -58,6 +58,10 @@ class _CommandSearchBasic extends StatefulWidget {
   State<_CommandSearchBasic> createState() => _CommandSearchBasicState();
 }
 
+// Basic.vue's DEBOUNCE_MS and FAKE_LATENCY_MS.
+const Duration _kDebounce = Duration(milliseconds: 200);
+const Duration _kFakeLatency = Duration(milliseconds: 250);
+
 class _CommandSearchBasicState extends State<_CommandSearchBasic> {
   String _query = '';
   List<String> _recents = <String>['千恋万花', 'Summer Pockets 汉化', 'ゆずソフト'];
@@ -96,66 +100,66 @@ class _CommandSearchBasicState extends State<_CommandSearchBasic> {
       return;
     }
     setState(() => _loading = true);
-    _timer = Timer(const Duration(milliseconds: 450), () {
-      if (!mounted) {
-        return;
-      }
-      final List<
+    _timer = Timer(_kDebounce, () {
+      _timer = Timer(_kFakeLatency, () => _runSearch(q));
+    });
+  }
+
+  void _runSearch(String q) {
+    if (!mounted) {
+      return;
+    }
+    final List<
+            (
+              String,
+              _Kind,
+              IconData,
+              List<({String label, String description})>
+            )> groups =
+        <(String, _Kind, IconData, List<({String label, String description})>)>[
+      ('话题', _Kind.topic, KunIcons.reply, _match(q, _topics)),
+      ('Galgame', _Kind.galgame, KunIcons.image, _match(q, _galgames)),
+      ('用户', _Kind.user, KunIcons.atSign, _match(q, _users)),
+    ];
+    setState(() {
+      _results = groups
+          .where(
+        (
           (
             String,
             _Kind,
             IconData,
             List<({String label, String description})>
-          )> groups = <(
-        String,
-        _Kind,
-        IconData,
-        List<({String label, String description})>
-      )>[
-        ('话题', _Kind.topic, KunIcons.mail, _match(q, _topics)),
-        ('Galgame', _Kind.galgame, KunIcons.copy, _match(q, _galgames)),
-        ('用户', _Kind.user, KunIcons.atSign, _match(q, _users)),
-      ];
-      setState(() {
-        _results = groups
-            .where(
+          ) g,
+        ) =>
+            g.$4.isNotEmpty,
+      )
+          .map(
+        (
           (
-            (
-              String,
-              _Kind,
-              IconData,
-              List<({String label, String description})>
-            ) g,
-          ) =>
-              g.$4.isNotEmpty,
-        )
-            .map(
-          (
-            (
-              String,
-              _Kind,
-              IconData,
-              List<({String label, String description})>
-            ) g,
-          ) {
-            final List<({String label, String description})> hits =
-                g.$4.take(3).toList();
-            return KunCommandGroup(
-              label: '${g.$1} · ${hits.length}',
-              items: <KunCommandItem>[
-                for (final ({String label, String description}) h in hits)
-                  KunCommandItem(
-                    value: '${g.$2.name}:${h.label}',
-                    label: h.label,
-                    description: h.description,
-                    icon: g.$3,
-                  ),
-              ],
-            );
-          },
-        ).toList();
-        _loading = false;
-      });
+            String,
+            _Kind,
+            IconData,
+            List<({String label, String description})>
+          ) g,
+        ) {
+          final List<({String label, String description})> hits =
+              g.$4.take(3).toList();
+          return KunCommandGroup(
+            label: '${g.$1} · ${hits.length}',
+            items: <KunCommandItem>[
+              for (final ({String label, String description}) h in hits)
+                KunCommandItem(
+                  value: '${g.$2.name}:${h.label}',
+                  label: h.label,
+                  description: h.description,
+                  icon: g.$3,
+                ),
+            ],
+          );
+        },
+      ).toList();
+      _loading = false;
     });
   }
 
@@ -305,25 +309,25 @@ const List<KunCommandItem> _pages = <KunCommandItem>[
     value: 'senren',
     label: '千恋＊万花',
     description: 'ゆずソフト · 2016',
-    icon: KunIcons.copy,
+    icon: KunIcons.image,
   ),
   KunCommandItem(
     value: 'sabbat',
     label: '魔女的夜宴',
     description: 'ゆずソフト · 2015',
-    icon: KunIcons.copy,
+    icon: KunIcons.image,
   ),
   KunCommandItem(
     value: 'pockets',
     label: 'Summer Pockets',
     description: 'Key · 2018',
-    icon: KunIcons.copy,
+    icon: KunIcons.image,
   ),
   KunCommandItem(
     value: 'sakura',
     label: '樱之诗',
     description: '枕 · 2015',
-    icon: KunIcons.copy,
+    icon: KunIcons.image,
   ),
 ];
 
