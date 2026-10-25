@@ -1,4 +1,6 @@
+import 'dart:async';
 import 'dart:typed_data';
+import 'dart:ui' as ui;
 
 import 'package:flutter/foundation.dart';
 import 'package:flutter/services.dart';
@@ -187,12 +189,14 @@ class _Host extends StatefulWidget {
     this.images = _three,
     this.initialIndex = 0,
     this.behind,
+    this.veilBuilder,
   });
 
   final bool initial;
   final List<KunLightboxImage> images;
   final int initialIndex;
   final Widget? behind;
+  final KunLightboxVeilBuilder? veilBuilder;
 
   @override
   State<_Host> createState() => _HostState();
@@ -202,6 +206,7 @@ class _HostState extends State<_Host> {
   late bool isOpen = widget.initial;
   late int initialIndex = widget.initialIndex;
   final List<bool> events = <bool>[];
+  final List<int> reveals = <int>[];
 
   void open({int? at}) {
     setState(() {
@@ -229,6 +234,8 @@ class _HostState extends State<_Host> {
             events.add(next);
             setState(() => isOpen = next);
           },
+          veilBuilder: widget.veilBuilder,
+          onReveal: reveals.add,
         ),
       ],
     );
@@ -243,6 +250,7 @@ Future<_HostState> _pumpOpen(
   Widget? behind,
   KunUIConfig? config,
   EdgeInsets viewPadding = EdgeInsets.zero,
+  KunLightboxVeilBuilder? veilBuilder,
 }) async {
   setView(tester, size);
   _resolverHits.clear();
@@ -255,6 +263,7 @@ Future<_HostState> _pumpOpen(
         images: images,
         initialIndex: initialIndex,
         behind: behind,
+        veilBuilder: veilBuilder,
       ),
       config: config,
       size: size,
@@ -311,6 +320,43 @@ class _FailingImageProvider extends ImageProvider<_FailingImageProvider> {
     );
   }
 }
+
+const String _hash = 'eBeCA4AmyAaYeIcLy20KVwg3inaCelc=';
+
+class _GateProvider extends ImageProvider<_GateProvider> {
+  _GateProvider();
+
+  final Completer<ImageInfo> gate = Completer<ImageInfo>();
+
+  @override
+  Future<_GateProvider> obtainKey(ImageConfiguration configuration) {
+    return SynchronousFuture<_GateProvider>(this);
+  }
+
+  @override
+  ImageStreamCompleter loadImage(
+    _GateProvider key,
+    ImageDecoderCallback decode,
+  ) {
+    return OneFrameImageStreamCompleter(gate.future);
+  }
+}
+
+Future<ImageInfo> _decoded(int width, int height) async {
+  final ui.Codec codec = await ui.instantiateImageCodec(
+    _solidPng(width: width, height: height),
+  );
+  final ui.FrameInfo frame = await codec.getNextFrame();
+  return ImageInfo(image: frame.image);
+}
+
+Finder get placeholder => find.byKey(KunLightbox.placeholderKey);
+
+List<KunButton> _toolbarButtons(WidgetTester tester) => tester
+    .widgetList<KunButton>(
+      find.descendant(of: toolbar, matching: find.byType(KunButton)),
+    )
+    .toList();
 
 void main() {
   testWidgets('a padded glass button keeps its glass and its corner', (
@@ -680,5 +726,227 @@ void main() {
     await tester.pumpAndSettle();
     expect(layer, findsNothing);
     expect(host.events, <bool>[false]);
+  });
+
+  group('thumbhash and veil', () {
+    testWidgets('the thumbhash takes the image frame until the image loads', (
+      WidgetTester tester,
+    ) async {
+      final _GateProvider slow = _GateProvider();
+      await _pumpOpen(
+        tester,
+        images: const <KunLightboxImage>[
+          KunLightboxImage(
+            src: 'slow',
+            alt: 'Slow',
+            thumbhash: _hash,
+            width: 2048,
+            height: 1024,
+          ),
+        ],
+        config: KunUIConfig(
+          imageProvider: (String src) => src == 'slow' ? slow : _memory,
+        ),
+      );
+      expect(placeholder, findsOneWidget);
+      expect(tester.getSize(placeholder), const Size(1024, 512));
+      expect(
+        tester.widget<Image>(
+          find.descendant(of: placeholder, matching: find.byType(Image)),
+        ),
+        isA<Image>().having(
+          (Image image) => image.image,
+          'image',
+          const KunThumbHashImage(_hash),
+        ),
+      );
+
+      final ImageInfo info = (await tester.runAsync(() => _decoded(64, 32)))!;
+      slow.gate.complete(info);
+      await tester.pump();
+      await tester.pumpAndSettle();
+      expect(placeholder, findsNothing);
+      expect(find.bySemanticsLabel('Slow'), findsOneWidget);
+    });
+
+    testWidgets('without a size the thumbhash fills the viewer at its ratio', (
+      WidgetTester tester,
+    ) async {
+      final _GateProvider slow = _GateProvider();
+      await _pumpOpen(
+        tester,
+        images: const <KunLightboxImage>[
+          KunLightboxImage(src: 'slow', thumbhash: _hash),
+        ],
+        config: KunUIConfig(imageProvider: (String src) => slow),
+      );
+      final Size box = tester.getSize(placeholder);
+      expect(box.width, 1024);
+      expect(box.width / box.height, closeTo(5 / 3, 0.001));
+    });
+
+    testWidgets('a veiled image never resolves its src', (
+      WidgetTester tester,
+    ) async {
+      final _HostState host = await _pumpOpen(
+        tester,
+        images: const <KunLightboxImage>[
+          KunLightboxImage(src: 'secret', thumbhash: _hash, veiled: true),
+          KunLightboxImage(src: 'b', alt: 'Beta'),
+        ],
+      );
+      expect(_resolverHits['secret'], isNull);
+      expect(_resolverHits['b'], isNotNull);
+      expect(placeholder, findsOneWidget);
+      expect(find.text('Show image'), findsOneWidget);
+      final Iterable<Image> thumbs = tester.widgetList<Image>(
+        find.descendant(
+          of: find.byKey(KunLightbox.thumbsKey),
+          matching: find.byType(Image),
+        ),
+      );
+      expect(
+        thumbs.map((Image image) => image.image),
+        contains(const KunThumbHashImage(_hash)),
+      );
+
+      await tester.tapAt(tester.getCenter(placeholder) + const Offset(0, 100));
+      await tester.pumpAndSettle();
+      expect(layer, findsOneWidget);
+      expect(host.events, isEmpty);
+
+      await tester.tap(next);
+      await tester.pumpAndSettle();
+      expect(find.text('2 / 2'), findsOneWidget);
+      await tester.tap(prev);
+      await tester.pumpAndSettle();
+      expect(_resolverHits['secret'], isNull);
+    });
+
+    testWidgets('the toolbar and gestures are off while veiled', (
+      WidgetTester tester,
+    ) async {
+      await _pumpOpen(
+        tester,
+        images: const <KunLightboxImage>[
+          KunLightboxImage(src: 'secret', thumbhash: _hash, veiled: true),
+        ],
+      );
+      expect(_toolbarButtons(tester), hasLength(5));
+      expect(
+        _toolbarButtons(tester).map((KunButton b) => b.disabled),
+        everyElement(isTrue),
+      );
+      await tester.tap(zoomIn, warnIfMissed: false);
+      await tester.pumpAndSettle();
+      final Offset offButton =
+          tester.getCenter(placeholder) + const Offset(0, 100);
+      for (int i = 0; i < 2; i++) {
+        await tester.tapAt(offButton);
+        await tester.pump(const Duration(milliseconds: 40));
+      }
+      await tester.pumpAndSettle();
+      expect(find.text('100%'), findsOneWidget);
+      expect(find.text('Show image'), findsOneWidget);
+      expect(_resolverHits['secret'], isNull);
+    });
+
+    testWidgets('reveal loads the picture and reports the index', (
+      WidgetTester tester,
+    ) async {
+      final SemanticsHandle handle = tester.ensureSemantics();
+      final _HostState host = await _pumpOpen(
+        tester,
+        images: const <KunLightboxImage>[
+          KunLightboxImage(src: 'b', alt: 'Beta'),
+          KunLightboxImage(
+            src: 'secret',
+            alt: 'Secret',
+            thumbhash: _hash,
+            veiled: true,
+          ),
+        ],
+        initialIndex: 1,
+      );
+      expect(find.bySemanticsLabel('Secret'), findsNothing);
+      expect(
+        tester.getSemantics(find.text('Show image')),
+        isSemantics(label: 'Show image', isButton: true, hasTapAction: true),
+      );
+
+      await tester.tap(find.text('Show image'));
+      await tester.pump();
+      await _loadImages(tester);
+      expect(host.reveals, <int>[1]);
+      expect(_resolverHits['secret'], isNotNull);
+      expect(find.text('Show image'), findsNothing);
+      expect(find.bySemanticsLabel('Secret'), findsOneWidget);
+      expect(
+        _toolbarButtons(tester).map((KunButton b) => b.disabled),
+        everyElement(isFalse),
+      );
+      await tester.tap(zoomIn);
+      await tester.pumpAndSettle();
+      expect(find.text('150%'), findsOneWidget);
+
+      host.close();
+      await tester.pumpAndSettle();
+      host.open();
+      await tester.pump();
+      await tester.pumpAndSettle();
+      expect(find.text('Show image'), findsOneWidget);
+      handle.dispose();
+    });
+
+    testWidgets('showKunLightbox takes a veilBuilder', (
+      WidgetTester tester,
+    ) async {
+      setView(tester, const Size(1024, 768));
+      _resolverHits.clear();
+      final List<int> reveals = <int>[];
+      await tester.pumpWidget(
+        wrap(
+          Builder(
+            builder: (BuildContext context) {
+              return KunButton(
+                onPressed: () {
+                  showKunLightbox(
+                    context,
+                    images: const <KunLightboxImage>[
+                      KunLightboxImage(src: 'a'),
+                      KunLightboxImage(src: 'secret', veiled: true),
+                    ],
+                    initialIndex: 1,
+                    onReveal: reveals.add,
+                    veilBuilder:
+                        (BuildContext context, int index, VoidCallback reveal) {
+                      return KunButton(
+                        onPressed: reveal,
+                        child: Text('Adult image $index'),
+                      );
+                    },
+                  );
+                },
+                child: const Text('Show'),
+              );
+            },
+          ),
+        ),
+      );
+      await tester.tap(find.text('Show'));
+      await tester.pump();
+      await tester.pumpAndSettle();
+      expect(find.text('Show image'), findsNothing);
+      expect(find.text('Adult image 1'), findsOneWidget);
+      expect(_resolverHits['secret'], isNull);
+
+      await tester.tap(find.text('Adult image 1'));
+      await tester.pump();
+      await _loadImages(tester);
+      expect(layer, findsOneWidget);
+      expect(reveals, <int>[1]);
+      expect(_resolverHits['secret'], isNotNull);
+      expect(find.text('Adult image 1'), findsNothing);
+    });
   });
 }

@@ -1,5 +1,38 @@
 # Changelog
 
+## 0.33.0
+
+Adopts kun-ui 2.60.1. The generated family's floor is now `^2.60.0`.
+
+- **`KunLightbox`: thumbhash placeholders and veiled images.**
+  `KunLightboxImage` gains `thumbhash`, `width`, `height` and `veiled`.
+  Existing image lists behave as before.
+  - `thumbhash` is drawn in the image's own frame until `src` has loaded:
+    contain-fit in the viewer, never larger than the image, and zoomed and
+    rotated with it. It also sits behind each thumbnail.
+  - `width` and `height` (intrinsic, logical pixels) give the placeholder
+    the image's shape and size before the image decodes. Without them the
+    placeholder takes the hash's approximate aspect ratio and fills the
+    viewer.
+  - While an image is `veiled`, its `src` is never resolved, neither for
+    the stage nor for its thumbnail. The viewer draws the thumbhash with a
+    veil over it, and zoom, rotation and pan are off (the toolbar is
+    disabled). Paging, the thumbnail strip and closing still work. A tap
+    on the preview or the veil does not close the viewer.
+  - The new `veilBuilder` on `KunLightbox` and `showKunLightbox` builds the
+    veil from the index and a `reveal` callback. Null draws a "Show image"
+    button labelled by the new `lightbox.reveal` message.
+  - A reveal loads the picture and calls the new `onReveal` with the
+    image's index. It lasts until the viewer closes. To keep an image
+    revealed, pass `veiled: false` from `onReveal`.
+  - Asked by the kungal app, whose image viewer moves onto `KunLightbox`.
+- **`KunScrollShadow.scrollButtons`**, new (kun-ui 2.59.0): on a horizontal
+  strip, a floating chevron on each edge that can still scroll. A tap
+  scrolls about 80% of the viewport. It is the control `KunTab` shows on an
+  overflowing tab list, now shared between the two. It is off by default,
+  is ignored on a vertical strip, and stays out of the semantics tree and
+  the focus order.
+
 ## 0.32.0
 
 Adopts kun-ui 2.58.0. The generated family's floor is now `^2.58.0`.

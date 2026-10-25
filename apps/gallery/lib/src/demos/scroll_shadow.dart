@@ -57,6 +57,7 @@ Widget scrollShadowInteractive(BuildContext context) {
         wheel: KunScrollShadowWheel.contain,
         draggable: true,
         scrollbar: KunScrollShadowScrollbar.thin,
+        scrollButtons: true,
         children: <Widget>[
           for (final _Rating rating in _ratings)
             SizedBox(

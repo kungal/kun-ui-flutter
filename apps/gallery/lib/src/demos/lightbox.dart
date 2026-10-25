@@ -32,6 +32,9 @@ int _hexByte(String hex, int index) =>
 final Map<String, MemoryImage> _memory = <String, MemoryImage>{};
 
 ImageProvider _demoImageProvider(String src) {
+  if (src.startsWith('asset:')) {
+    return AssetImage(src.substring('asset:'.length));
+  }
   return _memory.putIfAbsent(src, () {
     final _DemoSrc meta =
         _srcMeta[src] ?? const _DemoSrc(hex: '000000', width: 320, height: 240);
@@ -74,6 +77,31 @@ final List<KunLightboxImage> _standaloneImages = <KunLightboxImage>[
       alt: 'Slide ${i + 1}',
     ),
 ];
+
+final List<KunLightboxImage> _veiledImages = <KunLightboxImage>[
+  const KunLightboxImage(
+    src: 'asset:assets/banner.webp',
+    alt: 'KunUI banner',
+    thumbhash: 'eBeCA4AmyAaYeIcLy20KVwg3inaCelc=',
+    width: 1920,
+    height: 1080,
+  ),
+  const KunLightboxImage(
+    src: 'asset:assets/kungalgame.webp',
+    alt: 'KunGalgame',
+    thumbhash: '+AcGDIKp5qefZ3h/loaPRvkqcg==',
+    width: 1920,
+    height: 1080,
+    veiled: true,
+  ),
+];
+
+Widget lightboxVeiled(BuildContext context) {
+  return Padding(
+    padding: const EdgeInsets.all(KunSpacing.unit * 6),
+    child: _scope(child: const _LightboxVeiled()),
+  );
+}
 
 Widget lightboxBasic(BuildContext context) {
   return Padding(
@@ -194,6 +222,73 @@ class _LightboxStandaloneState extends State<_LightboxStandalone> {
           isOpen: _open,
           initialIndex: _index,
           onOpenChanged: (bool open) => setState(() => _open = open),
+        ),
+      ],
+    );
+  }
+}
+
+class _LightboxVeiled extends StatefulWidget {
+  const _LightboxVeiled();
+
+  @override
+  State<_LightboxVeiled> createState() => _LightboxVeiledState();
+}
+
+class _LightboxVeiledState extends State<_LightboxVeiled> {
+  final List<KunLightboxImage> _images = List<KunLightboxImage>.of(
+    _veiledImages,
+  );
+  bool _open = false;
+  int _index = 0;
+
+  void _openAt(int index) {
+    setState(() {
+      _index = index;
+      _open = true;
+    });
+  }
+
+  void _onReveal(int index) {
+    final KunLightboxImage image = _images[index];
+    setState(() {
+      _images[index] = KunLightboxImage(
+        src: image.src,
+        alt: image.alt,
+        thumbhash: image.thumbhash,
+        width: image.width,
+        height: image.height,
+      );
+    });
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Column(
+      mainAxisSize: MainAxisSize.min,
+      children: <Widget>[
+        Wrap(
+          spacing: KunSpacing.unit * 3,
+          runSpacing: KunSpacing.unit * 3,
+          children: <Widget>[
+            KunButton(
+              color: KunUIColor.primary,
+              onPressed: () => _openAt(0),
+              child: const Text('打开查看器'),
+            ),
+            KunButton(
+              variant: KunUIVariant.bordered,
+              onPressed: () => _openAt(1),
+              child: const Text('打开遮罩的图片'),
+            ),
+          ],
+        ),
+        KunLightbox(
+          images: _images,
+          isOpen: _open,
+          initialIndex: _index,
+          onOpenChanged: (bool open) => setState(() => _open = open),
+          onReveal: _onReveal,
         ),
       ],
     );

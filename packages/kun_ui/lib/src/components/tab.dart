@@ -1,11 +1,9 @@
 import 'dart:math' as math;
-import 'dart:ui' show ImageFilter, SemanticsRole;
 
 import 'package:flutter/rendering.dart';
 import 'package:flutter/scheduler.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter/widgets.dart';
-import 'package:kun_ui_icons/kun_ui_icons.dart';
 import 'package:kun_ui_tokens/kun_ui_tokens.dart';
 
 import '../config/config.dart';
@@ -13,7 +11,7 @@ import '../foundation/design.dart';
 import '../foundation/focus_outline.dart';
 import '../foundation/link_menu.dart';
 import '../foundation/motion.dart';
-import '../foundation/outer_shadow.dart';
+import '../foundation/scroll_edge_button.dart';
 import '../foundation/tap_target.dart';
 import '../theme/theme.dart';
 
@@ -263,7 +261,6 @@ class _KunTabState<T extends KunTabItem> extends State<KunTab<T>>
   bool _reduceMotion = false;
   bool _ringSuppressed = false;
   final Set<int> _hovered = <int>{};
-  final Set<int> _chevronHovered = <int>{};
 
   bool get _isVertical => widget.orientation == KunTabOrientation.vertical;
 
@@ -1060,87 +1057,6 @@ class _KunTabState<T extends KunTabItem> extends State<KunTab<T>>
     return tab;
   }
 
-  Widget _buildChevron({
-    required bool left,
-    required KunColorScheme scheme,
-  }) {
-    final bool hovered = _chevronHovered.contains(left ? 0 : 1);
-    final double iconSize =
-        DefaultTextStyle.of(context).style.fontSize ?? KunText.base.fontSize!;
-    return Positioned(
-      left: left ? KunSpacing.unit * 0.5 : null,
-      right: left ? null : KunSpacing.unit * 0.5,
-      top: 0,
-      bottom: 0,
-      child: ExcludeSemantics(
-        child: Center(
-          child: MouseRegion(
-            cursor: SystemMouseCursors.click,
-            onEnter: (_) => setState(() => _chevronHovered.add(left ? 0 : 1)),
-            onExit: (_) => setState(() => _chevronHovered.remove(left ? 0 : 1)),
-            child: GestureDetector(
-              key: ValueKey<String>(
-                left ? 'KunTab.chevron.left' : 'KunTab.chevron.right',
-              ),
-              behavior: HitTestBehavior.opaque,
-              onTap: () => _scrollByStep(left ? -1 : 1),
-              child: AnimatedOpacity(
-                opacity: hovered ? 1 : 0.8,
-                duration: _motion(KunDefaultTransition.duration),
-                curve: KunDefaultTransition.curve,
-                child: DecoratedBox(
-                  decoration: const KunOuterShadowDecoration(
-                    shadows: KunShadows.sm,
-                    shape: BoxShape.circle,
-                  ),
-                  child: ClipOval(
-                    child: BackdropFilter(
-                      filter: ImageFilter.blur(
-                        sigmaX: KunBlur.sm,
-                        sigmaY: KunBlur.sm,
-                      ),
-                      child: TweenAnimationBuilder<Color?>(
-                        tween: ColorTween(
-                          end: hovered
-                              ? scheme.foreground
-                              : scheme.neutral.shade600,
-                        ),
-                        duration: _motion(KunDefaultTransition.duration),
-                        curve: KunDefaultTransition.curve,
-                        builder: (BuildContext context, Color? color,
-                            Widget? child) {
-                          return Container(
-                            width: KunSpacing.unit * 7,
-                            height: KunSpacing.unit * 7,
-                            alignment: Alignment.center,
-                            decoration: BoxDecoration(
-                              shape: BoxShape.circle,
-                              color: scheme.background.withValues(
-                                alpha: KunColors.globalOpacity * 0.8,
-                              ),
-                              border: Border.all(color: scheme.border),
-                            ),
-                            child: Icon(
-                              left
-                                  ? KunIcons.chevronLeft
-                                  : KunIcons.chevronRight,
-                              size: iconSize,
-                              color: color ?? scheme.neutral.shade600,
-                            ),
-                          );
-                        },
-                      ),
-                    ),
-                  ),
-                ),
-              ),
-            ),
-          ),
-        ),
-      ),
-    );
-  }
-
   Widget _maybeFade(Widget child) {
     if (_isVertical || (!_canScrollLeft && !_canScrollRight)) {
       return child;
@@ -1234,9 +1150,17 @@ class _KunTabState<T extends KunTabItem> extends State<KunTab<T>>
       children: <Widget>[
         viewport,
         if (widget.scrollButtons && _canScrollLeft)
-          _buildChevron(left: true, scheme: scheme),
+          KunScrollEdgeButton(
+            left: true,
+            buttonKey: const ValueKey<String>('KunTab.chevron.left'),
+            onPressed: () => _scrollByStep(-1),
+          ),
         if (widget.scrollButtons && _canScrollRight)
-          _buildChevron(left: false, scheme: scheme),
+          KunScrollEdgeButton(
+            left: false,
+            buttonKey: const ValueKey<String>('KunTab.chevron.right'),
+            onPressed: () => _scrollByStep(1),
+          ),
       ],
     );
   }

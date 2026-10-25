@@ -20,6 +20,7 @@ import '../foundation/tap_target.dart';
 import '../locale/messages.dart';
 import '../theme/theme.dart';
 import 'button.dart';
+import 'thumbhash_image.dart';
 
 part 'lightbox_route.dart';
 part 'lightbox_stage.dart';
@@ -48,7 +49,14 @@ const double _zoomPercentMinWidth = KunSpacing.unit * 14;
 @immutable
 class KunLightboxImage {
   /// Creates an image entry.
-  const KunLightboxImage({required this.src, this.alt});
+  const KunLightboxImage({
+    required this.src,
+    this.alt,
+    this.thumbhash,
+    this.width,
+    this.height,
+    this.veiled = false,
+  });
 
   /// Image URL (web `src`), resolved through [KunUIConfig.imageProvider].
   final String src;
@@ -56,23 +64,68 @@ class KunLightboxImage {
   /// Alternative text (web `alt`).
   final String? alt;
 
-  @override
-  bool operator ==(Object other) =>
-      other is KunLightboxImage && other.src == src && other.alt == alt;
+  /// A base64 ThumbHash (web `thumbhash`), drawn in the image's own frame
+  /// until [src] has loaded, behind its thumbnail, and as the preview of a
+  /// [veiled] image. An invalid hash draws nothing.
+  final String? thumbhash;
+
+  /// Intrinsic width in logical pixels (web `width`).
+  ///
+  /// With [height], the placeholder takes the image's shape and size before
+  /// it decodes; without them it takes the hash's approximate aspect ratio
+  /// and fills the viewer.
+  final double? width;
+
+  /// Intrinsic height in logical pixels (web `height`). See [width].
+  final double? height;
+
+  /// Withholds the picture until the reader asks for it (web `veiled`).
+  ///
+  /// While veiled, [src] is never resolved, neither for the stage nor for
+  /// the thumbnail. The viewer draws the [thumbhash] with the veil over it
+  /// (see [KunLightbox.veilBuilder]), and zoom, rotation and pan are off.
+  /// Paging and closing still work. A reveal lifts the veil until the
+  /// viewer closes; to keep it lifted, pass `veiled: false` from
+  /// [KunLightbox.onReveal].
+  final bool veiled;
 
   @override
-  int get hashCode => Object.hash(src, alt);
+  bool operator ==(Object other) =>
+      other is KunLightboxImage &&
+      other.src == src &&
+      other.alt == alt &&
+      other.thumbhash == thumbhash &&
+      other.width == width &&
+      other.height == height &&
+      other.veiled == veiled;
+
+  @override
+  int get hashCode => Object.hash(src, alt, thumbhash, width, height, veiled);
 }
+
+/// Builds the veil drawn over a veiled image (web slot `veil`).
+///
+/// [index] is the image's position in the list, and [reveal] loads and
+/// shows the picture.
+typedef KunLightboxVeilBuilder = Widget Function(
+  BuildContext context,
+  int index,
+  VoidCallback reveal,
+);
 
 /// Pushes the [KunLightbox] viewer on the root [Navigator] and completes
 /// when it closes.
 ///
 /// The chat bubble calls this. Theme, language and [KunUIConfigScope] are
 /// taken from [context], the same way [KunLightbox] carries them.
+/// [veilBuilder] and [onReveal] are [KunLightbox.veilBuilder] and
+/// [KunLightbox.onReveal].
 Future<void> showKunLightbox(
   BuildContext context, {
   required List<KunLightboxImage> images,
   int initialIndex = 0,
+  KunLightboxVeilBuilder? veilBuilder,
+  ValueChanged<int>? onReveal,
 }) {
   final NavigatorState navigator = Navigator.of(context, rootNavigator: true);
   final Completer<void> completer = Completer<void>();
@@ -80,6 +133,8 @@ Future<void> showKunLightbox(
   final _KunLightboxSession session = _KunLightboxSession(
     images: List<KunLightboxImage>.of(images),
     initialIndex: initialIndex,
+    veilBuilder: veilBuilder,
+    onReveal: onReveal,
     captured: InheritedTheme.capture(from: context, to: navigator.context),
     dismiss: () => _popLightboxRoute(navigator, route),
     onBack: () => _popLightboxRoute(navigator, route),
@@ -142,6 +197,8 @@ class KunLightbox extends StatefulWidget {
     required this.isOpen,
     this.initialIndex = 0,
     this.onOpenChanged,
+    this.veilBuilder,
+    this.onReveal,
   });
 
   /// Pictures to show (web `images`).
@@ -157,6 +214,17 @@ class KunLightbox extends StatefulWidget {
   ///
   /// Never called with `true`. A parent-driven close does not call this.
   final ValueChanged<bool>? onOpenChanged;
+
+  /// Builds the veil over a [KunLightboxImage.veiled] image (web slot
+  /// `veil`), drawn above its thumbhash.
+  ///
+  /// Null draws a "Show image" button. Whatever it draws, a tap on it does
+  /// not close the viewer.
+  final KunLightboxVeilBuilder? veilBuilder;
+
+  /// Called with the image's index when a veiled image is revealed (web
+  /// event `reveal`).
+  final ValueChanged<int>? onReveal;
 
   /// The full-screen layer, for tests.
   @visibleForTesting
@@ -187,6 +255,10 @@ class KunLightbox extends StatefulWidget {
   /// The zoom / rotate toolbar, for tests.
   @visibleForTesting
   static const Key toolbarKey = ValueKey<String>('KunLightbox.toolbar');
+
+  /// The thumbhash placeholder of the current image, for tests.
+  @visibleForTesting
+  static const Key placeholderKey = ValueKey<String>('KunLightbox.placeholder');
 
   @override
   State<KunLightbox> createState() => _KunLightboxState();
@@ -260,6 +332,8 @@ class _KunLightboxState extends State<KunLightbox> {
     }
     session.images = List<KunLightboxImage>.of(widget.images);
     session.initialIndex = widget.initialIndex;
+    session.veilBuilder = widget.veilBuilder;
+    session.onReveal = widget.onReveal;
     session.captured = _capture();
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (_disposed || _session != session) {
@@ -287,6 +361,8 @@ class _KunLightboxState extends State<KunLightbox> {
     _session = _KunLightboxSession(
       images: List<KunLightboxImage>.of(widget.images),
       initialIndex: widget.initialIndex,
+      veilBuilder: widget.veilBuilder,
+      onReveal: widget.onReveal,
       captured: _capture(),
       dismiss: _dismiss,
       onBack: _onBack,

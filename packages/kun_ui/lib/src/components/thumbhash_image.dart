@@ -73,6 +73,20 @@ Color? tryDecodeThumbHashAverageColor(String hash) {
   return _thumbHashToAverageColor(bytes);
 }
 
+/// The aspect ratio (width / height) a base64 ThumbHash approximates, as
+/// `thumbHashToApproximateAspectRatio` reports it.
+///
+/// Returns null when [hash] does not decode. Not a supported public API.
+@internal
+double? tryThumbHashAspectRatio(String hash) {
+  final Uint8List? bytes = _decodeThumbHashBytes(hash);
+  if (bytes == null) {
+    return null;
+  }
+  final double ratio = _thumbHashToApproximateAspectRatio(bytes);
+  return ratio > 0 && ratio.isFinite ? ratio : null;
+}
+
 Uint8List? _decodeThumbHashBytes(String hash) {
   if (hash.isEmpty) {
     return null;

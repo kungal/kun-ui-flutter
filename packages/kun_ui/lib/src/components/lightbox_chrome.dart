@@ -5,6 +5,8 @@ class _LightboxChrome extends StatelessWidget {
     required this.images,
     required this.index,
     required this.scale,
+    required this.locked,
+    required this.isVeiled,
     required this.thumbScroll,
     required this.onClose,
     required this.onPrev,
@@ -21,6 +23,8 @@ class _LightboxChrome extends StatelessWidget {
   final List<KunLightboxImage> images;
   final int index;
   final double scale;
+  final bool locked;
+  final bool Function(int index) isVeiled;
   final ScrollController thumbScroll;
   final VoidCallback onClose;
   final VoidCallback onPrev;
@@ -230,17 +234,7 @@ class _LightboxChrome extends StatelessWidget {
                 child: SizedBox(
                   width: size,
                   height: size,
-                  child: Image(
-                    image: ResizeImage.resizeIfNeeded(
-                      cache,
-                      cache,
-                      KunUIConfigScope.of(context).imageProvider(image.src),
-                    ),
-                    fit: BoxFit.cover,
-                    excludeFromSemantics: true,
-                    gaplessPlayback: true,
-                    errorBuilder: _emptyOnError,
-                  ),
+                  child: _thumbPicture(context, image, i, cache),
                 ),
               ),
             ),
@@ -248,6 +242,44 @@ class _LightboxChrome extends StatelessWidget {
         ),
       ),
     );
+  }
+
+  Widget _thumbPicture(
+    BuildContext context,
+    KunLightboxImage image,
+    int i,
+    int cache,
+  ) {
+    final String? hash = image.thumbhash;
+    final Widget? placeholder = hash == null || hash.isEmpty
+        ? null
+        : Image(
+            image: KunThumbHashImage(hash),
+            fit: BoxFit.cover,
+            excludeFromSemantics: true,
+            gaplessPlayback: true,
+            errorBuilder: _emptyOnError,
+          );
+    if (isVeiled(i)) {
+      return placeholder ??
+          ColoredBox(color: KunColors.white.withValues(alpha: 0.1));
+    }
+    final Widget picture = Image(
+      image: ResizeImage.resizeIfNeeded(
+        cache,
+        cache,
+        KunUIConfigScope.of(context).imageProvider(image.src),
+      ),
+      fit: BoxFit.cover,
+      excludeFromSemantics: true,
+      gaplessPlayback: true,
+      errorBuilder: _emptyOnError,
+    );
+    if (placeholder == null) {
+      return picture;
+    }
+    return Stack(
+        fit: StackFit.expand, children: <Widget>[placeholder, picture]);
   }
 
   Widget _toolbar(
@@ -273,6 +305,7 @@ class _LightboxChrome extends StatelessWidget {
               glass: false,
               label: strings.zoomOut,
               icon: KunIcons.zoomOut,
+              disabled: locked,
               onPressed: onZoomOut,
             ),
             Semantics(
@@ -299,6 +332,7 @@ class _LightboxChrome extends StatelessWidget {
               glass: false,
               label: strings.zoomIn,
               icon: KunIcons.zoomIn,
+              disabled: locked,
               onPressed: onZoomIn,
             ),
             _toolbarRule(theme),
@@ -308,6 +342,7 @@ class _LightboxChrome extends StatelessWidget {
               glass: false,
               label: strings.rotateLeft,
               icon: KunIcons.rotateCcw,
+              disabled: locked,
               onPressed: onRotateLeft,
             ),
             _iconButton(
@@ -316,6 +351,7 @@ class _LightboxChrome extends StatelessWidget {
               glass: false,
               label: strings.rotateRight,
               icon: KunIcons.rotateCw,
+              disabled: locked,
               onPressed: onRotateRight,
             ),
             _toolbarRule(theme),
@@ -325,6 +361,7 @@ class _LightboxChrome extends StatelessWidget {
               glass: false,
               label: strings.reset,
               icon: KunIcons.refreshCcw,
+              disabled: locked,
               onPressed: onReset,
             ),
           ],
@@ -352,6 +389,7 @@ class _LightboxChrome extends StatelessWidget {
     required String label,
     required IconData icon,
     required VoidCallback onPressed,
+    bool disabled = false,
   }) {
     final Widget button = KunButton(
       isIconOnly: true,
@@ -359,6 +397,7 @@ class _LightboxChrome extends StatelessWidget {
       variant: KunUIVariant.light,
       size: size,
       rounded: rounded,
+      disabled: disabled,
       semanticLabel: label,
       onPressed: onPressed,
       child: Icon(icon, color: KunColors.white),

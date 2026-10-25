@@ -675,9 +675,12 @@
         "isOpen": "isOpen"
       },
       "events": {
+        "reveal": "onReveal",
         "update:isOpen": "onOpenChanged"
       },
-      "slots": {}
+      "slots": {
+        "veil": "veilBuilder"
+      }
     },
     "KunLoading": {
       "widget": "KunLoading",
@@ -844,6 +847,7 @@
         "ariaLabel": "semanticLabel",
         "axis": "axis",
         "draggable": "draggable",
+        "scrollButtons": "scrollButtons",
         "scrollbar": "scrollbar",
         "shadowColor": "shadowColor",
         "shadowSize": "shadowSize",

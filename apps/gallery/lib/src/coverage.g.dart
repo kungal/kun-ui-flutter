@@ -3161,10 +3161,24 @@ const ComponentCoverage _kunLightbox = ComponentCoverage(
     ),
     CoverageEntry(
       section: 'events',
+      contractName: 'reveal',
+      status: CoverageStatus.shown,
+      dartName: 'onReveal',
+      shownBy: 'Placeholder and veil',
+    ),
+    CoverageEntry(
+      section: 'events',
       contractName: 'update:isOpen',
       status: CoverageStatus.shown,
       dartName: 'onOpenChanged',
       shownBy: 'Basic',
+    ),
+    CoverageEntry(
+      section: 'slots',
+      contractName: 'veil',
+      status: CoverageStatus.shown,
+      dartName: 'veilBuilder',
+      shownBy: 'Placeholder and veil',
     ),
   ],
 );
@@ -3915,6 +3929,13 @@ const ComponentCoverage _kunScrollShadow = ComponentCoverage(
       contractName: 'draggable',
       status: CoverageStatus.shown,
       dartName: 'draggable',
+      shownBy: 'Interactive',
+    ),
+    CoverageEntry(
+      section: 'props',
+      contractName: 'scrollButtons',
+      status: CoverageStatus.shown,
+      dartName: 'scrollButtons',
       shownBy: 'Interactive',
     ),
     CoverageEntry(

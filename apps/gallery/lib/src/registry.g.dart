@@ -567,6 +567,10 @@ const List<GalleryComponent> galleryComponents = <GalleryComponent>[
       GalleryDemo(
           slug: 'standalone', title: 'Standalone', builder: lightboxStandalone),
       GalleryDemo(
+          slug: 'veiled',
+          title: 'Placeholder and veil',
+          builder: lightboxVeiled),
+      GalleryDemo(
           slug: 'contract', title: 'Contract', builder: kunLightboxContract),
     ],
   ),

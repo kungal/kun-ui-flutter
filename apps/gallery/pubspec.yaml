@@ -9,7 +9,7 @@ resolution: workspace
 dependencies:
   flutter:
     sdk: flutter
-  kun_ui: ^0.32.0
+  kun_ui: ^0.33.0
 
 dev_dependencies:
   flutter_lints: ^6.0.0
@@ -19,3 +19,4 @@ dev_dependencies:
 flutter:
   assets:
     - assets/banner.webp
+    - assets/kungalgame.webp

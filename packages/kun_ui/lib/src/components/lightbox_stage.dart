@@ -104,6 +104,22 @@ class _LightboxViewerState extends State<_LightboxViewer>
 
   List<KunLightboxImage> get _images => session.images;
 
+  bool _isVeiled(int i) =>
+      i >= 0 &&
+      i < _images.length &&
+      _images[i].veiled &&
+      !session.revealed.contains(i);
+
+  bool get _currentVeiled => _isVeiled(_index);
+
+  void _reveal(int i) {
+    if (!_isVeiled(i)) {
+      return;
+    }
+    setState(() => session.revealed.add(i));
+    session.onReveal?.call(i);
+  }
+
   @override
   void initState() {
     super.initState();
@@ -292,6 +308,9 @@ class _LightboxViewerState extends State<_LightboxViewer>
   }
 
   void _zoomBy(double delta) {
+    if (_currentVeiled) {
+      return;
+    }
     final double next = (_xform.scale + delta).clamp(_minScale, _maxScale);
     if (next == _xform.scale) {
       return;
@@ -300,6 +319,9 @@ class _LightboxViewerState extends State<_LightboxViewer>
   }
 
   void _rotateBy(double degrees) {
+    if (_currentVeiled) {
+      return;
+    }
     setState(
       () => _xform = _xform.copyWith(rotation: _xform.rotation + degrees),
     );
@@ -310,6 +332,9 @@ class _LightboxViewerState extends State<_LightboxViewer>
   }
 
   void _doubleTapAt(Offset global) {
+    if (_currentVeiled) {
+      return;
+    }
     final RenderBox? stage = _stageBox();
     if (stage == null) {
       return;
@@ -454,7 +479,7 @@ class _LightboxViewerState extends State<_LightboxViewer>
 
   void _onPinch() {
     final List<Offset> points = _pointers.values.toList();
-    if (points.length < 2) {
+    if (points.length < 2 || _currentVeiled) {
       return;
     }
     final double distance = (points[0] - points[1]).distance;
@@ -523,7 +548,7 @@ class _LightboxViewerState extends State<_LightboxViewer>
   }
 
   void _onPointerSignal(PointerSignalEvent event) {
-    if (event is! PointerScrollEvent) {
+    if (event is! PointerScrollEvent || _currentVeiled) {
       return;
     }
     final RenderBox? stage = _stageBox();
@@ -592,6 +617,8 @@ class _LightboxViewerState extends State<_LightboxViewer>
           images: images,
           index: _index,
           scale: _xform.scale,
+          locked: _currentVeiled,
+          isVeiled: _isVeiled,
           thumbScroll: _thumbScroll,
           onClose: session.dismiss,
           onPrev: _prev,
@@ -660,12 +687,26 @@ class _LightboxViewerState extends State<_LightboxViewer>
           child: Opacity(opacity: opacity, child: child),
         );
       },
-      child: Center(child: _photo(image, interactive: incoming)),
+      child: Center(
+        child: _photo(image, index: index, interactive: incoming),
+      ),
     );
   }
 
-  Widget _photo(KunLightboxImage image, {required bool interactive}) {
-    final Widget photo = _FittedPhoto(src: image.src, alt: image.alt);
+  Widget _photo(
+    KunLightboxImage image, {
+    required int index,
+    required bool interactive,
+  }) {
+    if (_isVeiled(index)) {
+      final Widget veiled = _VeiledPhoto(
+        image: image,
+        veil: session.veilBuilder?.call(context, index, () => _reveal(index)) ??
+            _DefaultVeil(onReveal: () => _reveal(index)),
+      );
+      return interactive ? KeyedSubtree(key: _imageKey, child: veiled) : veiled;
+    }
+    final Widget photo = _FittedPhoto(image: image);
     if (!interactive) {
       return photo;
     }
@@ -696,10 +737,9 @@ class _LightboxViewerState extends State<_LightboxViewer>
 }
 
 class _FittedPhoto extends StatefulWidget {
-  const _FittedPhoto({required this.src, this.alt});
+  const _FittedPhoto({required this.image});
 
-  final String src;
-  final String? alt;
+  final KunLightboxImage image;
 
   @override
   State<_FittedPhoto> createState() => _FittedPhotoState();
@@ -719,7 +759,7 @@ class _FittedPhotoState extends State<_FittedPhoto> {
   @override
   void didUpdateWidget(covariant _FittedPhoto oldWidget) {
     super.didUpdateWidget(oldWidget);
-    if (oldWidget.src != widget.src) {
+    if (oldWidget.image.src != widget.image.src) {
       _listen();
     }
   }
@@ -732,7 +772,7 @@ class _FittedPhotoState extends State<_FittedPhoto> {
   }
 
   ImageProvider _provider() {
-    return KunUIConfigScope.of(context).imageProvider(widget.src);
+    return KunUIConfigScope.of(context).imageProvider(widget.image.src);
   }
 
   void _unlisten() {
@@ -746,7 +786,7 @@ class _FittedPhotoState extends State<_FittedPhoto> {
   }
 
   void _listen() {
-    if (widget.src.isEmpty) {
+    if (widget.image.src.isEmpty) {
       _unlisten();
       _info?.dispose();
       _info = null;
@@ -788,7 +828,7 @@ class _FittedPhotoState extends State<_FittedPhoto> {
     final ImageInfo? info = _info;
     final Widget photo;
     if (info == null) {
-      photo = const SizedBox.shrink();
+      photo = _Placeholder(image: widget.image);
     } else {
       photo = LayoutBuilder(
         builder: (BuildContext context, BoxConstraints constraints) {
@@ -809,14 +849,113 @@ class _FittedPhotoState extends State<_FittedPhoto> {
         },
       );
     }
-    if (widget.alt == '') {
+    final String? alt = widget.image.alt;
+    if (alt == '') {
       return ExcludeSemantics(child: photo);
     }
     return Semantics(
       image: true,
-      label: widget.alt,
+      label: alt,
       excludeSemantics: true,
       child: photo,
+    );
+  }
+}
+
+/// The thumbhash in the frame the loaded image will take, or nothing.
+class _Placeholder extends StatelessWidget {
+  const _Placeholder({required this.image});
+
+  final KunLightboxImage image;
+
+  @override
+  Widget build(BuildContext context) {
+    final String? hash = image.thumbhash;
+    final double? ratio =
+        hash == null || hash.isEmpty ? null : tryThumbHashAspectRatio(hash);
+    if (ratio == null) {
+      return const SizedBox.shrink();
+    }
+    return LayoutBuilder(
+      builder: (BuildContext context, BoxConstraints constraints) {
+        final Size box = _placeholderSize(image, ratio, constraints.biggest);
+        return SizedBox(
+          key: KunLightbox.placeholderKey,
+          width: box.width,
+          height: box.height,
+          child: Image(
+            image: KunThumbHashImage(hash!),
+            fit: BoxFit.fill,
+            excludeFromSemantics: true,
+            gaplessPlayback: true,
+            errorBuilder: _emptyOnError,
+          ),
+        );
+      },
+    );
+  }
+}
+
+Size _placeholderSize(KunLightboxImage image, double ratio, Size max) {
+  final double? w = image.width;
+  final double? h = image.height;
+  if (w != null && h != null && w > 0 && h > 0) {
+    return _containSize(Size(w, h), max);
+  }
+  if (max.width <= 0 || max.height <= 0) {
+    return Size.zero;
+  }
+  final double width = math.min(max.width, max.height * ratio);
+  return Size(width, width / ratio);
+}
+
+/// A veiled image: its thumbhash, with the veil centred over it. The image's
+/// own `src` is never resolved here.
+class _VeiledPhoto extends StatelessWidget {
+  const _VeiledPhoto({required this.image, required this.veil});
+
+  final KunLightboxImage image;
+  final Widget veil;
+
+  @override
+  Widget build(BuildContext context) {
+    return Stack(
+      alignment: Alignment.center,
+      children: <Widget>[
+        ExcludeSemantics(child: _Placeholder(image: image)),
+        veil,
+      ],
+    );
+  }
+}
+
+class _DefaultVeil extends StatelessWidget {
+  const _DefaultVeil({required this.onReveal});
+
+  final VoidCallback onReveal;
+
+  @override
+  Widget build(BuildContext context) {
+    return _glass(
+      radius: BorderRadius.circular(KunRounded.lg),
+      child: KunButton(
+        color: KunUIColor.neutral,
+        variant: KunUIVariant.light,
+        size: KunUISize.lg,
+        rounded: KunUIRounded.lg,
+        onPressed: onReveal,
+        child: Row(
+          mainAxisSize: MainAxisSize.min,
+          spacing: KunSpacing.unit,
+          children: <Widget>[
+            const Icon(KunIcons.eye, color: KunColors.white),
+            Text(
+              KunMessagesScope.of(context).lightbox.reveal,
+              style: const TextStyle(color: KunColors.white),
+            ),
+          ],
+        ),
+      ),
     );
   }
 }

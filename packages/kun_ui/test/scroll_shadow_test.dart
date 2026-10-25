@@ -63,6 +63,7 @@ Widget overflowingStrip({
   KunScrollShadowWheel wheel = KunScrollShadowWheel.off,
   bool draggable = false,
   KunScrollShadowScrollbar scrollbar = KunScrollShadowScrollbar.hide,
+  bool scrollButtons = false,
 }) {
   return SizedBox(
     width: 200,
@@ -76,6 +77,7 @@ Widget overflowingStrip({
       wheel: wheel,
       draggable: draggable,
       scrollbar: scrollbar,
+      scrollButtons: scrollButtons,
       children: children,
     ),
   );
@@ -624,6 +626,77 @@ void main() {
       await tester.sendEventToBinding(pointer.scroll(const Offset(0, 120)));
       await tester.pumpAndSettle();
       expect(controller.offset, 120);
+    });
+  });
+
+  group('scrollButtons', () {
+    Finder startButton() =>
+        find.byKey(const ValueKey<String>('KunScrollShadow.startButton'));
+    Finder endButton() =>
+        find.byKey(const ValueKey<String>('KunScrollShadow.endButton'));
+
+    testWidgets('a chevron on each edge that can still scroll', (
+      WidgetTester tester,
+    ) async {
+      final ScrollController controller = ScrollController();
+      addTearDown(controller.dispose);
+      await tester.pumpWidget(
+        wrap(
+          overflowingStrip(
+            controller: controller,
+            scrollButtons: true,
+            children: chips(20),
+          ),
+        ),
+      );
+      await tester.pumpAndSettle();
+      expect(startButton(), findsNothing);
+      expect(endButton(), findsOneWidget);
+      expect(
+        tester.getCenter(endButton()).dx,
+        greaterThan(tester.getCenter(startFade).dx),
+      );
+
+      await tester.tap(endButton());
+      await tester.pumpAndSettle();
+      final double viewport = controller.position.viewportDimension;
+      expect(controller.offset, closeTo(viewport * 0.8, 0.5));
+      expect(startButton(), findsOneWidget);
+
+      await tester.tap(startButton());
+      await tester.pumpAndSettle();
+      expect(controller.offset, 0);
+      expect(startButton(), findsNothing);
+    });
+
+    testWidgets('off by default, ignored on a vertical strip and unread', (
+      WidgetTester tester,
+    ) async {
+      await tester.pumpWidget(wrap(overflowingStrip(children: chips(20))));
+      await tester.pumpAndSettle();
+      expect(endButton(), findsNothing);
+
+      await tester.pumpWidget(
+        wrap(
+          overflowingStrip(
+            axis: Axis.vertical,
+            scrollButtons: true,
+            children: chips(20),
+          ),
+        ),
+      );
+      await tester.pumpAndSettle();
+      expect(endButton(), findsNothing);
+
+      final SemanticsHandle handle = tester.ensureSemantics();
+      await tester.pumpWidget(
+        wrap(overflowingStrip(scrollButtons: true, children: chips(20))),
+      );
+      await tester.pumpAndSettle();
+      expect(endButton(), findsOneWidget);
+      final RenderObject button = tester.renderObject(endButton());
+      expect(button.debugSemantics, isNull);
+      handle.dispose();
     });
   });
 }

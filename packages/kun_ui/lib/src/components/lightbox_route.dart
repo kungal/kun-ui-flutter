@@ -4,6 +4,8 @@ class _KunLightboxSession extends ChangeNotifier {
   _KunLightboxSession({
     required this.images,
     required this.initialIndex,
+    required this.veilBuilder,
+    required this.onReveal,
     required this.captured,
     required this.dismiss,
     required this.onBack,
@@ -11,6 +13,9 @@ class _KunLightboxSession extends ChangeNotifier {
 
   List<KunLightboxImage> images;
   int initialIndex;
+  KunLightboxVeilBuilder? veilBuilder;
+  ValueChanged<int>? onReveal;
+  final Set<int> revealed = <int>{};
   CapturedThemes captured;
   final VoidCallback dismiss;
   final VoidCallback onBack;

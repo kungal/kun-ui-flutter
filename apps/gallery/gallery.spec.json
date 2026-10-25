@@ -1541,6 +1541,15 @@
           "shows": [
             "props.initialIndex"
           ]
+        },
+        {
+          "slug": "veiled",
+          "title": "Placeholder and veil",
+          "builder": "lightboxVeiled",
+          "shows": [
+            "slots.veil",
+            "events.reveal"
+          ]
         }
       ]
     },
@@ -2167,7 +2176,8 @@
           "shows": [
             "props.wheel",
             "props.draggable",
-            "props.scrollbar"
+            "props.scrollbar",
+            "props.scrollButtons"
           ]
         },
         {

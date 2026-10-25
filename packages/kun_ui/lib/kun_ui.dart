@@ -77,7 +77,11 @@ export 'src/components/switch.dart';
 export 'src/components/tab.dart';
 export 'src/components/textarea.dart';
 export 'src/components/thumbhash_image.dart'
-    hide ThumbHashRgba, tryDecodeThumbHash, tryDecodeThumbHashAverageColor;
+    hide
+        ThumbHashRgba,
+        tryDecodeThumbHash,
+        tryDecodeThumbHashAverageColor,
+        tryThumbHashAspectRatio;
 export 'src/components/tooltip.dart';
 export 'src/components/user_chip.dart';
 export 'src/config/config.dart';

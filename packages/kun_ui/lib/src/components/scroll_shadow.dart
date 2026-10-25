@@ -1,8 +1,11 @@
+import 'dart:async';
+
 import 'package:flutter/gestures.dart';
 import 'package:flutter/widgets.dart';
 import 'package:kun_ui_tokens/kun_ui_tokens.dart';
 
 import '../foundation/motion.dart';
+import '../foundation/scroll_edge_button.dart';
 import '../theme/theme.dart';
 import 'scrollbar.dart';
 
@@ -16,6 +19,10 @@ const ValueKey<String> _startFadeKey =
     ValueKey<String>('KunScrollShadow.startFade');
 const ValueKey<String> _endFadeKey =
     ValueKey<String>('KunScrollShadow.endFade');
+const ValueKey<String> _startButtonKey =
+    ValueKey<String>('KunScrollShadow.startButton');
+const ValueKey<String> _endButtonKey =
+    ValueKey<String>('KunScrollShadow.endButton');
 
 /// How a vertical mouse wheel is mapped onto a horizontal strip (web
 /// `wheel`).
@@ -64,6 +71,7 @@ class KunScrollShadow extends StatefulWidget {
     this.wheel = KunScrollShadowWheel.off,
     this.draggable = false,
     this.scrollbar = KunScrollShadowScrollbar.hide,
+    this.scrollButtons = false,
     this.spacing = KunSpacing.unit * 3,
     this.padding,
     this.controller,
@@ -91,6 +99,7 @@ class KunScrollShadow extends StatefulWidget {
     this.wheel = KunScrollShadowWheel.off,
     this.draggable = false,
     this.scrollbar = KunScrollShadowScrollbar.hide,
+    this.scrollButtons = false,
     this.spacing = KunSpacing.unit * 3,
     this.padding,
     this.controller,
@@ -145,6 +154,16 @@ class KunScrollShadow extends StatefulWidget {
 
   /// Scrollbar style (web `scrollbar`).
   final KunScrollShadowScrollbar scrollbar;
+
+  /// A floating chevron on each edge that can still scroll (web
+  /// `scrollButtons`), the control [KunTab] shows on an overflowing tab
+  /// list. A tap scrolls about 80% of the viewport. Ignored when [axis] is
+  /// [Axis.vertical], as on the web.
+  ///
+  /// The chevrons are a redundant affordance, as in [KunTab]: swipe, wheel
+  /// and keyboard still scroll, so they stay out of the semantics tree and
+  /// the focus order.
+  final bool scrollButtons;
 
   /// Gap between items. Flutter-only: the web hard-codes `gap-3`.
   final double spacing;
@@ -269,6 +288,27 @@ class _KunScrollShadowState extends State<KunScrollShadow> {
     GestureBinding.instance.pointerSignalResolver.register(
       event,
       (PointerSignalEvent _) => position.pointerScroll(delta),
+    );
+  }
+
+  void _scrollByStep(int direction) {
+    if (!_controller.hasClients) {
+      return;
+    }
+    final ScrollPosition position = _controller.position;
+    final double target =
+        (position.pixels + direction * position.viewportDimension * 0.8)
+            .clamp(position.minScrollExtent, position.maxScrollExtent);
+    if (kunReducedMotion(context)) {
+      position.jumpTo(target);
+      return;
+    }
+    unawaited(
+      position.animateTo(
+        target,
+        duration: kunMotion(context, KunDurations.slow),
+        curve: KunEasing.standard,
+      ),
     );
   }
 
@@ -401,6 +441,8 @@ class _KunScrollShadowState extends State<KunScrollShadow> {
       );
     }
 
+    final bool buttons = widget.scrollButtons && widget.axis == Axis.horizontal;
+    final bool rtl = Directionality.of(context) == TextDirection.rtl;
     Widget built = Stack(
       children: <Widget>[
         scroller,
@@ -416,6 +458,18 @@ class _KunScrollShadowState extends State<KunScrollShadow> {
           start: false,
           color: color,
         ),
+        if (buttons && _showStart)
+          KunScrollEdgeButton(
+            left: !rtl,
+            buttonKey: _startButtonKey,
+            onPressed: () => _scrollByStep(-1),
+          ),
+        if (buttons && _showEnd)
+          KunScrollEdgeButton(
+            left: rtl,
+            buttonKey: _endButtonKey,
+            onPressed: () => _scrollByStep(1),
+          ),
       ],
     );
 
