@@ -146,6 +146,57 @@ void main() {
     expect(find.text('3/10'), findsNothing);
   });
 
+  testWidgets('the text keeps clear of the counter', (tester) async {
+    await tester.pumpWidget(
+      wrap(const KunTextarea(showCharCount: true, maxLength: 10)),
+    );
+    expect(tester.getSize(boxFinder).height, 114);
+
+    await tester.pumpWidget(
+      wrap(
+        const KunTextarea(
+          showCharCount: true,
+          autoGrow: true,
+          rows: 2,
+          value: tenLines,
+        ),
+      ),
+    );
+    final counter = tester.getRect(find.text('${tenLines.length}'));
+    final text = tester.getRect(find.byType(EditableText));
+    expect(text.bottom, lessThanOrEqualTo(counter.top));
+    expect(
+        tester.getRect(boxFinder).bottom - counter.bottom, KunSpacing.unit * 2);
+  });
+
+  testWidgets(
+      'strutStyle reaches EditableText and lets a tall span grow its line',
+      (tester) async {
+    await tester.pumpWidget(wrap(const KunTextarea()));
+    expect(editableOf(tester).strutStyle.forceStrutHeight, isTrue);
+
+    final controller = _TallSpanController(text: 'a\nb\nc');
+    addTearDown(controller.dispose);
+    Future<double> heightWith(StrutStyle? strut) async {
+      await tester.pumpWidget(
+        wrap(
+          KunTextarea(
+            controller: controller,
+            autoGrow: true,
+            rows: 1,
+            strutStyle: strut,
+          ),
+        ),
+      );
+      return tester.getSize(find.byType(EditableText)).height;
+    }
+
+    expect(await heightWith(null), 60);
+    const grow = StrutStyle(forceStrutHeight: false);
+    expect(await heightWith(grow), greaterThanOrEqualTo(40 + 80));
+    expect(editableOf(tester).strutStyle.forceStrutHeight, isFalse);
+  });
+
   testWidgets('without maxLength the count stands alone and nothing caps',
       (tester) async {
     final seen = <String>[];
@@ -750,5 +801,27 @@ class _ComposeHostState extends State<_ComposeHost> {
   @override
   Widget build(BuildContext context) {
     return KunTextarea(onChanged: widget.onChanged);
+  }
+}
+
+class _TallSpanController extends TextEditingController {
+  _TallSpanController({super.text});
+
+  @override
+  TextSpan buildTextSpan({
+    required BuildContext context,
+    TextStyle? style,
+    required bool withComposing,
+  }) {
+    final lines = text.split('\n');
+    return TextSpan(
+      style: style,
+      children: [
+        TextSpan(text: '${lines[0]}\n'),
+        TextSpan(text: lines[1]),
+        const WidgetSpan(child: SizedBox(width: 80, height: 80)),
+        TextSpan(text: '\n${lines[2]}'),
+      ],
+    );
   }
 }

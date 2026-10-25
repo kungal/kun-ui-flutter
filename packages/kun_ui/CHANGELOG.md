@@ -1,5 +1,21 @@
 # Changelog
 
+## 0.35.0
+
+Adopts kun-ui 2.61.1.
+
+- **`KunTextarea.strutStyle`**, passed straight to its `EditableText`.
+  Left null, nothing changes: `EditableText` forces every line to the text
+  style's height, so an inline `WidgetSpan` taller than a line (a picture
+  or a sticker in a Markdown composer) paints over the line above. Pass
+  `StrutStyle(forceStrutHeight: false)` to let each line grow to fit its
+  tallest span. Flutter-only: a browser's line boxes already grow.
+- **`KunTextarea`: the character counter no longer covers the last line.**
+  With `showCharCount`, the field reserves 24px of bottom padding for the
+  counter, as the web now does, so the text stops above it. The default
+  md box with the counter is 114 tall instead of 98.
+- Both asked by the kungal app.
+
 ## 0.34.0
 
 Adopts kun-ui 2.61.0.

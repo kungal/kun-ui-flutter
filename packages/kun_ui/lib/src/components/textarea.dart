@@ -54,6 +54,7 @@ class KunTextarea extends StatefulWidget {
     this.controller,
     this.focusNode,
     this.contentInsertionConfiguration,
+    this.strutStyle,
   })  : assert(rows > 0),
         assert(maxLength == null || maxLength > 0),
         assert(
@@ -108,8 +109,8 @@ class KunTextarea extends StatefulWidget {
   /// length.
   final int? maxLength;
 
-  /// Shows the character count over the bottom-right of the field, as
-  /// `length/maxLength` when [maxLength] is set.
+  /// Shows the character count in the bottom-right of the field, as
+  /// `length/maxLength` when [maxLength] is set. The text keeps clear of it.
   final bool showCharCount;
 
   /// Blocks editing and dims the field.
@@ -143,6 +144,14 @@ class KunTextarea extends StatefulWidget {
   /// Flutter-only: on the web the browser handles paste and insertion. Null
   /// changes nothing.
   final ContentInsertionConfiguration? contentInsertionConfiguration;
+
+  /// The strut the text lays out on, passed to [EditableText.strutStyle].
+  /// Flutter-only: a browser's line boxes grow with their content. Left null,
+  /// [EditableText] forces every line to the text style's height, so an
+  /// inline [WidgetSpan] taller than a line paints over the line above;
+  /// `StrutStyle(forceStrutHeight: false)` lets each line grow to fit its
+  /// tallest span.
+  final StrutStyle? strutStyle;
 
   @override
   State<KunTextarea> createState() => _KunTextareaState();
@@ -444,6 +453,7 @@ class _KunTextareaState extends State<KunTextarea>
               controller: _effectiveController,
               focusNode: _effectiveFocusNode,
               style: metrics.textStyle.copyWith(color: color),
+              strutStyle: widget.strutStyle,
               cursorColor: scheme.foreground,
               backgroundCursorColor: scheme.neutral.shade300,
               selectionColor:
@@ -510,9 +520,14 @@ class _KunTextareaState extends State<KunTextarea>
       ),
       child: Align(
         child: Padding(
-          padding: EdgeInsets.symmetric(
-            horizontal: metrics.horizontalPadding,
-            vertical: metrics.verticalPadding + 1,
+          padding: EdgeInsets.fromLTRB(
+            metrics.horizontalPadding,
+            metrics.verticalPadding + 1,
+            metrics.horizontalPadding,
+            (widget.showCharCount
+                    ? KunSpacing.unit * 6
+                    : metrics.verticalPadding) +
+                1,
           ),
           child: inner,
         ),

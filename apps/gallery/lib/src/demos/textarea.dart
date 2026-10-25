@@ -213,6 +213,22 @@ Widget textareaCount(BuildContext context) {
               );
             },
           ),
+          const Text('rows: 2, autoGrow: true, maxLength: 200, showCharCount'),
+          _Field(
+            initial: 'The counter keeps its own corner.\n'
+                'Type past the last line and the text stays above it, '
+                'all the way to the end.',
+            builder: (String value, ValueChanged<String> onChanged) {
+              return KunTextarea(
+                value: value,
+                onChanged: onChanged,
+                rows: 2,
+                autoGrow: true,
+                maxLength: 200,
+                showCharCount: true,
+              );
+            },
+          ),
         ],
       ),
     ),
