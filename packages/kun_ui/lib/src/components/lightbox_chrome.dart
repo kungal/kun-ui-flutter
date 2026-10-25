@@ -146,7 +146,7 @@ class _LightboxChrome extends StatelessWidget {
   ) {
     final double thumb = _thumbSize(wide);
     final double gap = _thumbGap(wide);
-    final double pad = KunSpacing.unit * (wide ? 2 : 1.5);
+    final double pad = _thumbPad(wide);
     final double maxW = MediaQuery.sizeOf(context).width *
         (wide ? _thumbsMaxFractionMd : _thumbsMaxFraction);
     final int cache = (thumb * MediaQuery.devicePixelRatioOf(context)).round();
@@ -232,7 +232,7 @@ class _LightboxChrome extends StatelessWidget {
                   KunRounded.md - _borderWidth2,
                 ),
                 child: SizedBox(
-                  width: size,
+                  width: size * _thumbRatio(image),
                   height: size,
                   child: _thumbPicture(context, image, i, cache),
                 ),
@@ -268,6 +268,7 @@ class _LightboxChrome extends StatelessWidget {
       image: _thumbProvider(
         KunUIConfigScope.of(context).imageProvider(image.src),
         _aspectRatio(image),
+        _thumbRatio(image),
         cache,
       ),
       fit: BoxFit.cover,
@@ -470,20 +471,25 @@ double? _aspectRatio(KunLightboxImage image) {
 }
 
 // Decoding to cache x cache squashed every non-square picture before
-// BoxFit.cover ever saw it: ResizeImage's default policy is exact. The short
-// side is what cover fills the square with, so that is the side to cap.
-ImageProvider _thumbProvider(ImageProvider provider, double? ratio, int cache) {
+// BoxFit.cover ever saw it: ResizeImage's default policy is exact. Cap the
+// one side that cover fills the box with, and let the other follow.
+ImageProvider _thumbProvider(
+  ImageProvider provider,
+  double? ratio,
+  double boxRatio,
+  int cacheHeight,
+) {
   if (ratio == null) {
     return ResizeImage(
       provider,
-      width: cache * 4,
-      height: cache * 4,
+      width: cacheHeight * 4,
+      height: cacheHeight * 4,
       policy: ResizeImagePolicy.fit,
     );
   }
-  return ratio >= 1
-      ? ResizeImage(provider, height: cache)
-      : ResizeImage(provider, width: cache);
+  return ratio >= boxRatio
+      ? ResizeImage(provider, height: cacheHeight)
+      : ResizeImage(provider, width: (cacheHeight * boxRatio).round());
 }
 
 Widget _glass({required BorderRadius radius, required Widget child}) {

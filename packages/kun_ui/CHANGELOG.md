@@ -1,5 +1,24 @@
 # Changelog
 
+## 0.34.0
+
+Adopts kun-ui 2.61.0.
+
+- **`KunLightbox` opens the picture inside the backdrop.** On open, the
+  picture fits within 90% of the viewer on each axis, where it used to
+  fill the whole viewer. On a desktop window, a screenshot no longer
+  covers the app edge to edge: the dimmed backdrop stays visible around
+  it. A small picture still stays at its intrinsic size. Zoom starts from
+  this size, and the thumbhash placeholder takes the same frame.
+- **`KunLightbox` thumbnails keep their picture's shape.** They are as tall
+  as before (48, or 56 from `md` up) and as wide as their picture, where
+  they used to be square crops. The ratio comes from `width`/`height`,
+  else the thumbhash, else 1. It is clamped to between 1:2 and 2:1, so a
+  panorama cannot take over the strip, and anything beyond that is
+  cropped. The ratio is known before the thumbnail loads, so the strip
+  never shifts, and the current thumbnail is centred by its real width.
+- Both asked by the kungal app.
+
 ## 0.33.1
 
 - **`KunLightbox` thumbnails keep their picture's shape.** Each thumbnail

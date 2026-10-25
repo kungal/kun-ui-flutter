@@ -285,10 +285,15 @@ class _LightboxViewerState extends State<_LightboxViewer>
         return;
       }
       final bool wide = _isWide(context);
-      final double thumb = _thumbSize(wide);
       final double gap = _thumbGap(wide);
       final double viewport = _thumbScroll.position.viewportDimension;
-      final double target = _index * (thumb + gap) - (viewport - thumb) / 2;
+      double start = _thumbPad(wide);
+      for (int i = 0; i < _index && i < _images.length; i++) {
+        start += _thumbOuterWidth(_images[i], wide) + gap;
+      }
+      final double width =
+          _index < _images.length ? _thumbOuterWidth(_images[_index], wide) : 0;
+      final double target = start - (viewport - width) / 2;
       final double clamped = target.clamp(
         _thumbScroll.position.minScrollExtent,
         _thumbScroll.position.maxScrollExtent,
@@ -836,7 +841,10 @@ class _FittedPhotoState extends State<_FittedPhoto> {
             info.image.width / info.scale,
             info.image.height / info.scale,
           );
-          final Size box = _containSize(intrinsic, constraints.biggest);
+          final Size box = _containSize(
+            intrinsic,
+            constraints.biggest * _fitFraction,
+          );
           return SizedBox(
             width: box.width,
             height: box.height,
@@ -878,7 +886,11 @@ class _Placeholder extends StatelessWidget {
     }
     return LayoutBuilder(
       builder: (BuildContext context, BoxConstraints constraints) {
-        final Size box = _placeholderSize(image, ratio, constraints.biggest);
+        final Size box = _placeholderSize(
+          image,
+          ratio,
+          constraints.biggest * _fitFraction,
+        );
         return SizedBox(
           key: KunLightbox.placeholderKey,
           width: box.width,
@@ -985,3 +997,11 @@ bool _isWide(BuildContext context) =>
 double _thumbSize(bool wide) => KunSpacing.unit * (wide ? 14 : 12);
 
 double _thumbGap(bool wide) => KunSpacing.unit * (wide ? 1.5 : 1);
+
+double _thumbPad(bool wide) => KunSpacing.unit * (wide ? 2 : 1.5);
+
+double _thumbRatio(KunLightboxImage image) =>
+    (_aspectRatio(image) ?? 1).clamp(_thumbRatioMin, _thumbRatioMax);
+
+double _thumbOuterWidth(KunLightboxImage image, bool wide) =>
+    _thumbSize(wide) * _thumbRatio(image) + _borderWidth2 * 2;

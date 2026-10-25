@@ -749,7 +749,7 @@ void main() {
         ),
       );
       expect(placeholder, findsOneWidget);
-      expect(tester.getSize(placeholder), const Size(1024, 512));
+      expect(tester.getSize(placeholder), const Size(921.6, 460.8));
       expect(
         tester.widget<Image>(
           find.descendant(of: placeholder, matching: find.byType(Image)),
@@ -767,6 +767,7 @@ void main() {
       await tester.pumpAndSettle();
       expect(placeholder, findsNothing);
       expect(find.bySemanticsLabel('Slow'), findsOneWidget);
+      expect(tester.getSize(find.byType(RawImage).first), const Size(64, 32));
     });
 
     testWidgets('without a size the thumbhash fills the viewer at its ratio', (
@@ -781,7 +782,7 @@ void main() {
         config: KunUIConfig(imageProvider: (String src) => slow),
       );
       final Size box = tester.getSize(placeholder);
-      expect(box.width, 1024);
+      expect(box.width, closeTo(921.6, 0.01));
       expect(box.width / box.height, closeTo(5 / 3, 0.001));
     });
 
@@ -997,5 +998,57 @@ void main() {
     final List<double> sized = await thumbRatios();
     expect(sized, hasLength(2));
     expect(sized, everyElement(closeTo(640 / 480, 0.02)));
+  });
+
+  testWidgets('the picture opens within 90% of the stage', (
+    WidgetTester tester,
+  ) async {
+    await _pumpOpen(tester);
+    final Size image = tester.getSize(
+      find.descendant(of: imageTransform, matching: find.byType(RawImage)),
+    );
+    expect(image, const Size(640, 480));
+
+    await _pumpOpen(tester, size: const Size(600, 400));
+    final Size capped = tester.getSize(
+      find.descendant(of: imageTransform, matching: find.byType(RawImage)),
+    );
+    expect(capped.height, closeTo(360, 0.01));
+    expect(capped.width, closeTo(480, 0.01));
+  });
+
+  testWidgets('thumbnails are as wide as their picture, within 1:2 to 2:1', (
+    WidgetTester tester,
+  ) async {
+    await _pumpOpen(
+      tester,
+      images: const <KunLightboxImage>[
+        KunLightboxImage(src: 'a', width: 640, height: 480),
+        KunLightboxImage(src: 'b'),
+        KunLightboxImage(src: 'c', width: 3000, height: 500),
+        KunLightboxImage(src: 'd', width: 100, height: 1000),
+        KunLightboxImage(src: 'e', thumbhash: _hash),
+      ],
+    );
+    final List<Size> thumbs = tester
+        .widgetList<Image>(
+          find.descendant(
+            of: find.byKey(KunLightbox.thumbsKey),
+            matching: find.byType(Image),
+          ),
+        )
+        .where((Image image) => image.image is ResizeImage)
+        .map(
+          (Image image) => tester.getSize(find.byWidget(image)),
+        )
+        .toList();
+    const double h = KunSpacing.unit * 14;
+    expect(thumbs, hasLength(5));
+    expect(thumbs[0].width, closeTo(h * 4 / 3, 0.01));
+    expect(thumbs[1].width, h);
+    expect(thumbs[2].width, h * 2);
+    expect(thumbs[3].width, h / 2);
+    expect(thumbs[4].width, closeTo(h * 5 / 3, 0.01));
+    expect(thumbs.map((Size s) => s.height), everyElement(h));
   });
 }
