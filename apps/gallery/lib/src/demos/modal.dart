@@ -80,6 +80,158 @@ Widget modalBare(BuildContext context) {
   );
 }
 
+Widget modalRoute(BuildContext context) => const _ModalRoute();
+
+class _ModalRoute extends StatefulWidget {
+  const _ModalRoute();
+
+  @override
+  State<_ModalRoute> createState() => _ModalRouteState();
+}
+
+class _ModalRouteState extends State<_ModalRoute> {
+  late final List<Page<Object?>> _pages = <Page<Object?>>[
+    KunPage<void>(
+      key: const ValueKey<String>('home'),
+      child: _RoutePage(
+        title: 'Tags',
+        body: 'The dialog is a route: a page pushed from it lands on top, '
+            'and back returns to it.',
+        actions: <Widget>[
+          KunButton(onPressed: _openTag, child: const Text('Open tag 12')),
+        ],
+      ),
+    ),
+  ];
+
+  void _push(Page<Object?> page) => setState(() => _pages.add(page));
+
+  void _openTag() {
+    _push(
+      KunModalPage<void>(
+        key: const ValueKey<String>('tag'),
+        title: 'Tag 12',
+        child: _TagBody(onOpenWork: _openWork),
+      ),
+    );
+  }
+
+  void _openWork(int index) {
+    _push(
+      KunPage<void>(
+        key: ValueKey<String>('work-$index'),
+        child: Builder(
+          builder: (BuildContext context) => _RoutePage(
+            title: 'Work $index',
+            body: 'A page over the dialog. Back brings the dialog back, '
+                'with its state.',
+            actions: <Widget>[
+              KunButton(
+                variant: KunUIVariant.flat,
+                onPressed: () => Navigator.of(context).maybePop(),
+                child: const Text('Back'),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return SizedBox.fromSize(
+      size: MediaQuery.sizeOf(context),
+      child: Navigator(
+        pages: List<Page<Object?>>.of(_pages),
+        onDidRemovePage: (Page<Object?> page) {
+          setState(() => _pages.remove(page));
+        },
+      ),
+    );
+  }
+}
+
+class _RoutePage extends StatelessWidget {
+  const _RoutePage({
+    required this.title,
+    required this.body,
+    required this.actions,
+  });
+
+  final String title;
+  final String body;
+  final List<Widget> actions;
+
+  @override
+  Widget build(BuildContext context) {
+    final KunColorScheme scheme = KunTheme.of(context).colors;
+    final bool inModal = KunModalScope.maybeOf(context) != null;
+    return ColoredBox(
+      color: scheme.background,
+      child: Padding(
+        padding: const EdgeInsets.all(KunSpacing.unit * 6),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          spacing: KunSpacing.unit * 4,
+          children: <Widget>[
+            Text(
+              '$title${inModal ? ' (in a modal)' : ''}',
+              style: KunText.xl.copyWith(
+                fontWeight: KunFontWeights.semibold,
+                color: scheme.foreground,
+              ),
+            ),
+            _bodyText(context, body),
+            Wrap(spacing: KunSpacing.unit * 2, children: actions),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+class _TagBody extends StatefulWidget {
+  const _TagBody({required this.onOpenWork});
+
+  final ValueChanged<int> onOpenWork;
+
+  @override
+  State<_TagBody> createState() => _TagBodyState();
+}
+
+class _TagBodyState extends State<_TagBody> {
+  int _likes = 0;
+
+  @override
+  Widget build(BuildContext context) {
+    final KunModalScope? scope = KunModalScope.maybeOf(context);
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      mainAxisSize: MainAxisSize.min,
+      spacing: KunSpacing.unit * 3,
+      children: <Widget>[
+        _bodyText(
+          context,
+          'KunModalScope: ${scope?.size.name}, '
+          '${scope?.isSheet ?? false ? 'sheet' : 'panel'}',
+        ),
+        KunButton(
+          variant: KunUIVariant.flat,
+          onPressed: () => setState(() => _likes++),
+          child: Text('Liked $_likes'),
+        ),
+        for (int index = 1; index <= 3; index++)
+          KunButton(
+            variant: KunUIVariant.light,
+            onPressed: () => widget.onOpenWork(index),
+            child: Text('Work $index'),
+          ),
+      ],
+    );
+  }
+}
+
 class _ModalBasic extends StatefulWidget {
   const _ModalBasic();
 

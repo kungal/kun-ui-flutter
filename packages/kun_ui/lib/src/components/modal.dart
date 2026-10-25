@@ -20,6 +20,7 @@ import '../locale/messages.dart';
 import '../theme/theme.dart';
 import 'button.dart';
 
+part 'modal_page.dart';
 part 'modal_route.dart';
 part 'modal_swipe.dart';
 part 'modal_alert.dart';
@@ -198,22 +199,85 @@ class KunModal extends StatefulWidget {
   State<KunModal> createState() => _KunModalState();
 }
 
+/// Tells the content of a [KunModal] or a [KunModalPage] that it is shown
+/// in a dialog, for example so a screen can hide its own title bar and back
+/// button. Flutter-only.
+class KunModalScope extends InheritedWidget {
+  const KunModalScope._({
+    required this.size,
+    required this.isSheet,
+    required super.child,
+  });
+
+  /// The [KunModal.size] of the dialog.
+  final KunModalSize size;
+
+  /// Whether the dialog is drawn as the bottom sheet below
+  /// [KunBreakpoints.md] rather than as a centred panel.
+  final bool isSheet;
+
+  /// The nearest enclosing scope, or null outside a dialog.
+  static KunModalScope? maybeOf(BuildContext context) =>
+      context.dependOnInheritedWidgetOfExactType<KunModalScope>();
+
+  @override
+  bool updateShouldNotify(KunModalScope oldWidget) =>
+      size != oldWidget.size || isSheet != oldWidget.isSheet;
+}
+
 enum _KunModalRemoval { none, user, silent }
 
-class _KunModalSession extends ChangeNotifier {
+abstract class _KunModalHost {
+  Listenable get changes;
+  KunModal get modal;
+  CapturedThemes? get captured;
+  bool get openedFromKeyboard;
+
+  /// Whether the layer answers back itself, with a `PopScope` that never
+  /// lets the route pop.
+  bool get interceptsBack;
+
+  /// Starts a user dismissal. Completes with whether the dialog is leaving.
+  Future<bool> dismiss();
+
+  void onBack();
+}
+
+class _KunModalSession extends ChangeNotifier implements _KunModalHost {
   _KunModalSession({
     required this.widget,
     required this.captured,
     required this.openedFromKeyboard,
-    required this.dismiss,
-    required this.onBack,
-  });
+    required VoidCallback dismiss,
+    required VoidCallback onBack,
+  })  : _dismiss = dismiss,
+        _onBack = onBack;
 
   KunModal widget;
+  @override
   CapturedThemes captured;
+  @override
   final bool openedFromKeyboard;
-  final VoidCallback dismiss;
-  final VoidCallback onBack;
+  final VoidCallback _dismiss;
+  final VoidCallback _onBack;
+
+  @override
+  Listenable get changes => this;
+
+  @override
+  KunModal get modal => widget;
+
+  @override
+  bool get interceptsBack => true;
+
+  @override
+  Future<bool> dismiss() {
+    _dismiss();
+    return SynchronousFuture<bool>(true);
+  }
+
+  @override
+  void onBack() => _onBack();
 
   void notify() => notifyListeners();
 }

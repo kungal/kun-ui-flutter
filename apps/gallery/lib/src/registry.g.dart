@@ -621,6 +621,7 @@ const List<GalleryComponent> galleryComponents = <GalleryComponent>[
       GalleryDemo(slug: 'nested', title: 'Nested', builder: modalNested),
       GalleryDemo(slug: 'events', title: 'Events', builder: modalEvents),
       GalleryDemo(slug: 'bare', title: 'Without container', builder: modalBare),
+      GalleryDemo(slug: 'route', title: 'As a route', builder: modalRoute),
       GalleryDemo(
           slug: 'contract', title: 'Contract', builder: kunModalContract),
     ],

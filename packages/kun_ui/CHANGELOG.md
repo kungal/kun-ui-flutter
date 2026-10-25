@@ -1,5 +1,30 @@
 # Changelog
 
+## 0.36.0
+
+- **`KunModalPage`**, a `Page` whose route is a `KunModal`, for Navigator 2
+  and go_router's `pageBuilder`. Flutter-only: the web modal is never a
+  route. It draws the same panel, sizes, backdrop, motion and phone sheet
+  as `KunModal`, over the page under it, which stays painted and still.
+  Because the dialog is the route, a page pushed from inside it lands on
+  top of it, and popping that page brings the dialog back with its state.
+  Today's `KunModal` pushes its own route, so such a page went under it.
+  The backdrop, Escape, the close button and the sheet's swipe call
+  `Navigator.maybePop`, so `canPop`, `onPopInvoked`, a `PopScope` and the
+  router's own pop handling apply. A refused swipe springs back. The
+  system back gesture pops it like any page. It takes `KunModal`'s
+  presentation props; `value`, `onChanged`, `onClose` and
+  `isCloseRequestDismissable` belong to the route instead. The panel
+  sizes itself from the window, like `KunModal` on the root navigator, so
+  put these routes on the root navigator.
+- **`KunModalScope.maybeOf(context)`** tells the content of a `KunModal`
+  or a `KunModalPage` that it is in a dialog, with the dialog's `size` and
+  whether it is drawn as the phone sheet (`isSheet`), so a screen that
+  also opens as a page can hide its own title bar and back button. Null
+  outside a dialog.
+- Gallery: `KunModal` gains an "As a route" page.
+- Asked by the kungal app.
+
 ## 0.35.0
 
 Adopts kun-ui 2.61.1.

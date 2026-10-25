@@ -18,7 +18,7 @@ class _KunModalRoute extends PopupRoute<void> {
     required this.reverseTransitionDuration,
   });
 
-  final _KunModalSession session;
+  final _KunModalHost session;
 
   @override
   final Duration transitionDuration;
@@ -45,14 +45,15 @@ class _KunModalRoute extends PopupRoute<void> {
     Animation<double> animation,
     Animation<double> secondaryAnimation,
   ) {
-    return _KunModalPage(route: this);
+    return _KunModalPage(route: this, host: session);
   }
 }
 
 class _KunModalPage extends StatefulWidget {
-  const _KunModalPage({required this.route});
+  const _KunModalPage({required this.route, required this.host});
 
-  final _KunModalRoute route;
+  final ModalRoute<Object?> route;
+  final _KunModalHost host;
 
   @override
   State<_KunModalPage> createState() => _KunModalPageState();
@@ -73,7 +74,7 @@ class _KunModalPageState extends State<_KunModalPage>
   Offset? _backdropDown;
   double _claimedHeight = 0;
 
-  _KunModalSession get session => widget.route.session;
+  _KunModalHost get session => widget.host;
 
   @override
   void initState() {
@@ -144,7 +145,7 @@ class _KunModalPageState extends State<_KunModalPage>
   }
 
   bool _canStartSwipe(Offset global) {
-    final KunModal modal = session.widget;
+    final KunModal modal = session.modal;
     return mounted &&
         modal.withContainer &&
         modal.isSwipeDismissable &&
@@ -215,7 +216,15 @@ class _KunModalPageState extends State<_KunModalPage>
       );
     }
     if (close) {
-      session.dismiss();
+      unawaited(
+        session.dismiss().then((bool leaving) {
+          if (leaving || !mounted) {
+            return;
+          }
+          _exitFromSwipe = false;
+          _settleSwipe(close: false);
+        }),
+      );
     }
   }
 
@@ -264,8 +273,8 @@ class _KunModalPageState extends State<_KunModalPage>
     if (!mounted || !startedOnBackdrop || _isOnPanel(event.position)) {
       return;
     }
-    if (_isBackdropDismissable(session.widget)) {
-      session.dismiss();
+    if (_isBackdropDismissable(session.modal)) {
+      unawaited(session.dismiss());
     }
   }
 
@@ -279,17 +288,50 @@ class _KunModalPageState extends State<_KunModalPage>
   @override
   Widget build(BuildContext context) {
     return ListenableBuilder(
-      listenable: session,
+      listenable: session.changes,
       builder: (BuildContext context, Widget? _) {
-        return session.captured.wrap(
-          Builder(builder: _buildCaptured),
-        );
+        final Widget content = Builder(builder: _buildCaptured);
+        return session.captured?.wrap(content) ?? content;
       },
     );
   }
 
   Widget _buildCaptured(BuildContext context) {
-    final KunModal modal = session.widget;
+    final KunModal modal = session.modal;
+    final Widget layer = Actions(
+      actions: <Type, Action<Intent>>{
+        DismissIntent: CallbackAction<DismissIntent>(
+          onInvoke: (DismissIntent intent) {
+            if (_isEscapeDismissable(modal)) {
+              unawaited(session.dismiss());
+            }
+            return null;
+          },
+        ),
+      },
+      child: FadeTransition(
+        key: _layerKey,
+        opacity: _fade,
+        child: BlockSemantics(
+          child: Listener(
+            onPointerDown: _onPointerDown,
+            onPointerMove: _onPointerMove,
+            onPointerUp: _onPointerUp,
+            onPointerCancel: _onPointerCancel,
+            child: Stack(
+              fit: StackFit.expand,
+              children: <Widget>[
+                _buildBackdrop(context),
+                _buildLayer(context, modal),
+              ],
+            ),
+          ),
+        ),
+      ),
+    );
+    if (!session.interceptsBack) {
+      return layer;
+    }
     return PopScope<void>(
       canPop: false,
       onPopInvokedWithResult: (bool didPop, void result) {
@@ -298,37 +340,7 @@ class _KunModalPageState extends State<_KunModalPage>
         }
         session.onBack();
       },
-      child: Actions(
-        actions: <Type, Action<Intent>>{
-          DismissIntent: CallbackAction<DismissIntent>(
-            onInvoke: (DismissIntent intent) {
-              if (_isEscapeDismissable(modal)) {
-                session.dismiss();
-              }
-              return null;
-            },
-          ),
-        },
-        child: FadeTransition(
-          key: _layerKey,
-          opacity: _fade,
-          child: BlockSemantics(
-            child: Listener(
-              onPointerDown: _onPointerDown,
-              onPointerMove: _onPointerMove,
-              onPointerUp: _onPointerUp,
-              onPointerCancel: _onPointerCancel,
-              child: Stack(
-                fit: StackFit.expand,
-                children: <Widget>[
-                  _buildBackdrop(context),
-                  _buildLayer(context, modal),
-                ],
-              ),
-            ),
-          ),
-        ),
-      ),
+      child: layer,
     );
   }
 
@@ -518,7 +530,11 @@ class _KunModalPageState extends State<_KunModalPage>
           minWidth: minWidth,
           maxWidth: maxWidth,
           maxHeight: maxHeight,
-          child: modal.child ?? const SizedBox.shrink(),
+          child: KunModalScope._(
+            size: modal.size,
+            isSheet: sheet,
+            child: modal.child ?? const SizedBox.shrink(),
+          ),
         ),
       );
     }
@@ -571,7 +587,9 @@ class _KunModalPageState extends State<_KunModalPage>
       );
     }
     if (modal.child != null) {
-      column.add(modal.child!);
+      column.add(
+        KunModalScope._(size: modal.size, isSheet: sheet, child: modal.child!),
+      );
     }
     final EdgeInsets closeOutset = kunTapTargetOutset(
       context,
@@ -622,7 +640,7 @@ class _KunModalPageState extends State<_KunModalPage>
               rounded: KunUIRounded.full,
               isIconOnly: true,
               semanticLabel: KunMessagesScope.of(context).modal.close,
-              onPressed: session.dismiss,
+              onPressed: () => unawaited(session.dismiss()),
               child: const Icon(KunIcons.x),
             ),
           ),

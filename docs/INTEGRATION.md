@@ -61,6 +61,27 @@ gestures. `KunScaffold` replaces `Scaffold` as the page frame (`body`,
 route, because go_router falls back to its own page type under a bare
 `WidgetsApp`.
 
+A route can open as a dialog instead: return `KunModalPage` from its
+`pageBuilder` and every push of that path shows a `KunModal` over the
+current page, with no change at the call sites. A page pushed from inside
+the dialog lands on top of it, and back returns to it. The backdrop,
+Escape, the close button and the sheet's swipe go through
+`Navigator.maybePop`, so `canPop` and `PopScope` apply. Screens that also
+open as pages read `KunModalScope.maybeOf(context)` to hide their own
+title bar. The panel sizes itself from the window, so put these routes on
+the root navigator (`parentNavigatorKey`) rather than inside a
+`ShellRoute`'s.
+
+```dart
+GoRoute(
+  path: '/tag/:id',
+  parentNavigatorKey: rootNavigatorKey,
+  pageBuilder: (context, state) => wide
+      ? KunModalPage(key: state.pageKey, title: 'Tag', child: TagScreen(...))
+      : KunPage(key: state.pageKey, child: TagScreen(...)),
+);
+```
+
 To keep another shell instead, wrap the app once:
 
 ```dart

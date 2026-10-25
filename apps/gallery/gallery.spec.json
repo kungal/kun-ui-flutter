@@ -1722,6 +1722,12 @@
           "shows": [
             "props.withContainer"
           ]
+        },
+        {
+          "slug": "route",
+          "title": "As a route",
+          "builder": "modalRoute",
+          "shows": []
         }
       ]
     },
