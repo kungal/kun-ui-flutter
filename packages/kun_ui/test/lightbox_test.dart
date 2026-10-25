@@ -949,4 +949,53 @@ void main() {
       expect(find.text('Adult image 1'), findsNothing);
     });
   });
+
+  testWidgets('thumbnails decode at the picture\'s own aspect ratio', (
+    WidgetTester tester,
+  ) async {
+    Future<List<double>> thumbRatios() async {
+      final List<double> ratios = <double>[];
+      await tester.runAsync(() async {
+        for (final Element element in find
+            .descendant(
+              of: find.byKey(KunLightbox.thumbsKey),
+              matching: find.byType(RawImage),
+            )
+            .evaluate()) {
+          final ui.Image? image = (element.widget as RawImage).image;
+          if (image != null) {
+            ratios.add(image.width / image.height);
+          }
+        }
+      });
+      return ratios;
+    }
+
+    Future<void> settleThumbs() async {
+      for (int i = 0; i < 5; i++) {
+        await tester.runAsync(
+          () => Future<void>.delayed(const Duration(milliseconds: 20)),
+        );
+        await tester.pump();
+      }
+    }
+
+    await _pumpOpen(tester);
+    await settleThumbs();
+    final List<double> unsized = await thumbRatios();
+    expect(unsized, hasLength(3));
+    expect(unsized, everyElement(closeTo(640 / 480, 0.02)));
+
+    await _pumpOpen(
+      tester,
+      images: const <KunLightboxImage>[
+        KunLightboxImage(src: 'a', width: 640, height: 480),
+        KunLightboxImage(src: 'b', width: 640, height: 480),
+      ],
+    );
+    await settleThumbs();
+    final List<double> sized = await thumbRatios();
+    expect(sized, hasLength(2));
+    expect(sized, everyElement(closeTo(640 / 480, 0.02)));
+  });
 }

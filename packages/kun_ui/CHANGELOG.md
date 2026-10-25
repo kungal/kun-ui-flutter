@@ -1,5 +1,14 @@
 # Changelog
 
+## 0.33.1
+
+- **`KunLightbox` thumbnails keep their picture's shape.** Each thumbnail
+  was decoded to a square before it was cropped, which squashed every
+  picture that was not square. They now crop the way the web's
+  `object-cover` does. The decode is capped on the picture's short side,
+  taken from `width`/`height`, else from the thumbhash's ratio. Reported
+  by the kungal app.
+
 ## 0.33.0
 
 Adopts kun-ui 2.60.1. The generated family's floor is now `^2.60.0`.

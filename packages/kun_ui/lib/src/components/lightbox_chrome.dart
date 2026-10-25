@@ -265,10 +265,10 @@ class _LightboxChrome extends StatelessWidget {
           ColoredBox(color: KunColors.white.withValues(alpha: 0.1));
     }
     final Widget picture = Image(
-      image: ResizeImage.resizeIfNeeded(
-        cache,
-        cache,
+      image: _thumbProvider(
         KunUIConfigScope.of(context).imageProvider(image.src),
+        _aspectRatio(image),
+        cache,
       ),
       fit: BoxFit.cover,
       excludeFromSemantics: true,
@@ -457,6 +457,33 @@ class _RenderPassThroughStack extends RenderStack {
   bool hitTest(BoxHitTestResult result, {required Offset position}) {
     return hitTestChildren(result, position: position);
   }
+}
+
+double? _aspectRatio(KunLightboxImage image) {
+  final double? w = image.width;
+  final double? h = image.height;
+  if (w != null && h != null && w > 0 && h > 0) {
+    return w / h;
+  }
+  final String? hash = image.thumbhash;
+  return hash == null || hash.isEmpty ? null : tryThumbHashAspectRatio(hash);
+}
+
+// Decoding to cache x cache squashed every non-square picture before
+// BoxFit.cover ever saw it: ResizeImage's default policy is exact. The short
+// side is what cover fills the square with, so that is the side to cap.
+ImageProvider _thumbProvider(ImageProvider provider, double? ratio, int cache) {
+  if (ratio == null) {
+    return ResizeImage(
+      provider,
+      width: cache * 4,
+      height: cache * 4,
+      policy: ResizeImagePolicy.fit,
+    );
+  }
+  return ratio >= 1
+      ? ResizeImage(provider, height: cache)
+      : ResizeImage(provider, width: cache);
 }
 
 Widget _glass({required BorderRadius radius, required Widget child}) {
